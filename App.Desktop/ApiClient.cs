@@ -133,19 +133,6 @@ public record ModelInventoryResponse
     public HypernetworkDto[] Hypernetworks { get; init; } = Array.Empty<HypernetworkDto>();
 }
 
-public record BaseModelDto
-{
-    public string Id { get; init; } = "";
-    public string Name { get; init; } = "";
-    public string FileName { get; init; } = "";
-    public string Size { get; init; } = "";
-    public string Format { get; init; } = "";
-    public string Architecture { get; init; } = "";
-    public int ContextLength { get; init; }
-    public string Quantization { get; init; } = "";
-    public bool IsActive { get; init; }
-}
-
 public record LoraDto
 {
     public string Id { get; init; } = "";

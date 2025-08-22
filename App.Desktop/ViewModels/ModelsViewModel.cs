@@ -167,9 +167,7 @@ public class ModelsViewModel : INotifyPropertyChanged
                     var isActive = m.Id == model.Id;
                     if (m.IsActive != isActive)
                     {
-                        var updated = m with { IsActive = isActive };
-                        var index = BaseModels.IndexOf(m);
-                        BaseModels[index] = updated;
+                        m.IsActive = isActive;
                     }
                 }
 
