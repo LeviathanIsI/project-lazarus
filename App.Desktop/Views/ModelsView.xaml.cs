@@ -6,15 +6,12 @@ namespace Lazarus.Desktop.Views
 {
     public partial class ModelsView : UserControl
     {
-        private readonly ModelsViewModel _vm = new();
-
         public ModelsView()
         {
             InitializeComponent();
 
-            // Share the same VM across all subtabs
-            DataContext = _vm;
-            BaseModelContent.DataContext = _vm;
+            // ModelsView gets the parent ViewModel for overall coordination
+            DataContext = new ModelsViewModel();
 
             // Default active tab
             SetActiveSubTab(BaseModelTab, BaseModelContent);

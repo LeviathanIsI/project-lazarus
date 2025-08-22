@@ -7,7 +7,6 @@ namespace Lazarus.Desktop.Views
         public BaseModelView()
         {
             InitializeComponent();
-            // ⚠️ Do NOT override DataContext here
         }
     }
 }

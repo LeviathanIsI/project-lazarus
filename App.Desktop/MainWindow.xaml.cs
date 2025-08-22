@@ -1,23 +1,37 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Microsoft.Extensions.DependencyInjection;
 using Lazarus.Desktop.ViewModels;
+using Lazarus.Desktop.Views;
 
 namespace Lazarus.Desktop
 {
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly IServiceProvider _serviceProvider;
+
+        public MainWindow(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             Console.WriteLine("MainWindow: Starting initialization...");
             InitializeComponent();
             Console.WriteLine("MainWindow: InitializeComponent done");
 
-            var chatViewModel = new ChatViewModel();
-            Console.WriteLine("MainWindow: ChatViewModel created");
+            // Set ViewModels for all views
+            ChatView.DataContext = _serviceProvider.GetRequiredService<ChatViewModel>();
+            ModelsView.DataContext = _serviceProvider.GetRequiredService<ModelsViewModel>();
 
-            ChatView.DataContext = chatViewModel;
-            Console.WriteLine("MainWindow: DataContext bound");
+            // Wire BaseModelView directly - the critical fix
+            var baseModelViewModel = _serviceProvider.GetRequiredService<BaseModelViewModel>();
+            var modelsView = ModelsView as ModelsView;
+            if (modelsView?.BaseModelContent != null)
+            {
+                modelsView.BaseModelContent.DataContext = baseModelViewModel;
+                Console.WriteLine("MainWindow: BaseModelView DataContext bound");
+            }
+
+            Console.WriteLine("MainWindow: DataContexts bound");
 
             _ = RefreshStatusAsync();
             Console.WriteLine("MainWindow: RefreshStatusAsync fired");
@@ -25,7 +39,7 @@ namespace Lazarus.Desktop
 
         private async Task RefreshStatusAsync()
         {
-            ApiStatus.Text = "API: checking…";
+            ApiStatus.Text = "API: checking...";
             var ok = await ApiClient.HealthAsync();
             ApiStatus.Text = ok ? "API: online (127.0.0.1:11711)" : "API: offline";
         }
@@ -47,14 +61,10 @@ namespace Lazarus.Desktop
 
         private void ShowTab(string tabName)
         {
-            // Hide all tabs
             ChatView.Visibility = Visibility.Collapsed;
             ModelsView.Visibility = Visibility.Collapsed;
-
-            // Reset button styles
             ResetTabButtonStyles();
 
-            // Show selected tab and update button style
             switch (tabName)
             {
                 case "Chat":
@@ -70,9 +80,8 @@ namespace Lazarus.Desktop
 
         private void ResetTabButtonStyles()
         {
-            // Inactive style
-            var inactiveBrush = new SolidColorBrush(Color.FromRgb(55, 65, 81)); // #374151
-            var inactiveTextBrush = new SolidColorBrush(Color.FromRgb(156, 163, 175)); // #9ca3af
+            var inactiveBrush = new SolidColorBrush(Color.FromRgb(55, 65, 81));
+            var inactiveTextBrush = new SolidColorBrush(Color.FromRgb(156, 163, 175));
 
             ChatTabButton.Background = inactiveBrush;
             ChatTabButton.Foreground = inactiveTextBrush;
@@ -82,8 +91,7 @@ namespace Lazarus.Desktop
 
         private void SetActiveTabStyle(System.Windows.Controls.Button button)
         {
-            // Active style
-            var activeBrush = new SolidColorBrush(Color.FromRgb(139, 92, 246)); // #8b5cf6
+            var activeBrush = new SolidColorBrush(Color.FromRgb(139, 92, 246));
             var activeTextBrush = new SolidColorBrush(Colors.White);
 
             button.Background = activeBrush;

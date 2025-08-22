@@ -7,6 +7,10 @@
         <conv:RoleToAlignmentConverter x:Key="RoleToAlignment"/>
         <conv:InvertBoolConverter x:Key="InvertBool"/>
         <conv:StringToBoolConverter x:Key="StringToBool"/>
+        
+        <!-- Missing converters that were causing the digital apocalypse -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <conv:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
 
         <!-- Base pill style -->
         <Style x:Key="BasePillButtonStyle" TargetType="Button">
@@ -46,19 +50,125 @@
             <Setter Property="Padding" Value="12,8"/>
         </Style>
 
-        <!-- 🔹 Sub tab button -->
-<Style x:Key="SubTabButtonStyle" TargetType="Button" BasedOn="{StaticResource BasePillButtonStyle}">
-    <Setter Property="FontSize" Value="13"/> <!-- closer to main -->
-    <Setter Property="Padding" Value="10,6"/> <!-- pill-like, not flat -->
-    <Setter Property="MinWidth" Value="100"/> <!-- keeps them consistent width -->
-    <Setter Property="Opacity" Value="0.9"/>
-</Style>
+        <!-- Sub tab button -->
+        <Style x:Key="SubTabButtonStyle" TargetType="Button" BasedOn="{StaticResource BasePillButtonStyle}">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Opacity" Value="0.9"/>
+        </Style>
 
-<!-- 🔹 Active sub tab -->
-<Style x:Key="ActiveSubTabButtonStyle" TargetType="Button" BasedOn="{StaticResource SubTabButtonStyle}">
-    <Setter Property="Background" Value="#8b5cf6"/> <!-- purple -->
-    <Setter Property="Foreground" Value="White"/>
-    <Setter Property="Opacity" Value="1"/>
-</Style>
+        <!-- Active sub tab -->
+        <Style x:Key="ActiveSubTabButtonStyle" TargetType="Button" BasedOn="{StaticResource SubTabButtonStyle}">
+            <Setter Property="Background" Value="#8b5cf6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+
+        <!-- Dark ComboBox Style - The eye-saver spell -->
+        <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#374151"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4b5563"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border Name="Border" 
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Content Presenter for selected item -->
+                                    <ContentPresenter Grid.Column="0"
+                                                    Name="ContentSite"
+                                                    IsHitTestVisible="False"
+                                                    Content="{TemplateBinding SelectionBoxItem}"
+                                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                    ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                    Margin="{TemplateBinding Padding}"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Left"/>
+                                    
+                                    <!-- Dropdown arrow -->
+                                    <Path Grid.Column="1" 
+                                          Name="Arrow"
+                                          Fill="White"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Popup for dropdown items -->
+                            <Popup Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Grid Name="DropDown"
+                                      SnapsToDevicePixels="True"
+                                      MinWidth="{TemplateBinding ActualWidth}"
+                                      MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border Name="DropDownBorder"
+                                            Background="#1f2937"
+                                            BorderBrush="#4b5563"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                        <ScrollViewer Margin="2" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#8b5cf6"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#8b5cf6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark ComboBoxItem Style - The dropdown list items -->
+        <Style x:Key="DarkComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border Name="Border" 
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#8b5cf6"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#7c3aed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

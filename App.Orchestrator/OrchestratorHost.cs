@@ -2,7 +2,7 @@ using System.Text.Json;
 using Lazarus.Orchestrator.Runners;
 using Lazarus.Orchestrator.Services;
 using Lazarus.Shared.OpenAI;
-using Lazarus.Shared.Utilities; // <-- added
+using Lazarus.Shared.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,19 +21,13 @@ public static class OrchestratorHost
     {
         if (_app != null) return;
 
-        // ensure Lazarus folders exist
-        DirectoryBootstrap.EnsureDirectories(); // <-- added
-
-        // Bind runner from env (LAZARUS_RUNNER_URL / KIND / NAME / MODEL)
+        DirectoryBootstrap.EnsureDirectories();
         RunnerRegistry.InitializeFromEnv();
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = Array.Empty<string>() });
         builder.WebHost.UseUrls(url);
 
         var app = builder.Build();
-
-        // rest of your existing endpoints remain unchanged...
-
 
         // Simple health for orchestrator + runner
         app.MapGet("/status", async () =>
@@ -65,25 +59,25 @@ public static class OrchestratorHost
 
             var body = new
             {
-                ram = new
+                Ram = new
                 {
-                    total = ram.TotalBytes,
-                    used = ram.UsedBytes,
-                    available = ram.AvailableBytes,
-                    usagePercent = ram.UsagePercentage,
-                    totalFormatted = ram.TotalFormatted,
-                    usedFormatted = ram.UsedFormatted
+                    Total = ram.TotalBytes,
+                    Used = ram.UsedBytes,
+                    Available = ram.AvailableBytes,
+                    UsagePercent = ram.UsagePercentage,
+                    TotalFormatted = ram.TotalFormatted,
+                    UsedFormatted = ram.UsedFormatted
                 },
-                gpu = new
+                Gpu = new
                 {
-                    total = gpu.TotalBytes,
-                    used = gpu.UsedBytes,
-                    available = gpu.AvailableBytes,
-                    usagePercent = gpu.UsagePercentage,
-                    totalFormatted = gpu.TotalFormatted,
-                    usedFormatted = gpu.UsedFormatted,
-                    temperature = gpu.Temperature,
-                    powerDraw = gpu.PowerDraw
+                    Total = gpu.TotalBytes,
+                    Used = gpu.UsedBytes,
+                    Available = gpu.AvailableBytes,
+                    UsagePercent = gpu.UsagePercentage,
+                    TotalFormatted = gpu.TotalFormatted,
+                    UsedFormatted = gpu.UsedFormatted,
+                    Temperature = gpu.Temperature,
+                    PowerDraw = gpu.PowerDraw
                 }
             };
             return Results.Json(body, Json);
@@ -96,7 +90,7 @@ public static class OrchestratorHost
             return Results.Json(inventory, Json);
         });
 
-        // Available models for current runner
+        // Available models for current runner - FIXED PROPERTY CASING
         app.MapGet("/v1/models/available", async () =>
         {
             var inventory = ModelScannerService.ScanAll();
@@ -104,55 +98,55 @@ public static class OrchestratorHost
 
             var body = new
             {
-                baseModels = inventory.BaseModels.Select(m => new
+                BaseModels = inventory.BaseModels.Select(m => new
                 {
-                    id = m.Name,
-                    name = m.Name,
-                    fileName = m.FileName,
-                    size = m.SizeFormatted,
-                    format = m.Format,
-                    architecture = m.Architecture,
-                    contextLength = m.ContextLength,
-                    quantization = m.Quantization,
-                    isActive = m.Name.Equals(activeModel, StringComparison.OrdinalIgnoreCase)
+                    Id = m.Name,
+                    Name = m.Name,
+                    FileName = m.FileName,
+                    Size = m.SizeFormatted,
+                    Format = m.Format,
+                    Architecture = m.Architecture,
+                    ContextLength = m.ContextLength,
+                    Quantization = m.Quantization,
+                    IsActive = m.Name.Equals(activeModel, StringComparison.OrdinalIgnoreCase)
                 }),
-                loras = inventory.LoRAs.Select(l => new
+                Loras = inventory.LoRAs.Select(l => new
                 {
-                    id = l.Name,
-                    name = l.Name,
-                    fileName = l.FileName,
-                    size = l.SizeFormatted,
-                    type = l.Type,
-                    rank = l.Rank,
-                    alpha = l.Alpha
+                    Id = l.Name,
+                    Name = l.Name,
+                    FileName = l.FileName,
+                    Size = l.SizeFormatted,
+                    Type = l.Type,
+                    Rank = l.Rank,
+                    Alpha = l.Alpha
                 }),
-                vaes = inventory.VAEs.Select(v => new
+                Vaes = inventory.VAEs.Select(v => new
                 {
-                    id = v.Name,
-                    name = v.Name,
-                    fileName = v.FileName,
-                    size = v.SizeFormatted,
-                    type = v.Type,
-                    compatibility = v.Compatibility
+                    Id = v.Name,
+                    Name = v.Name,
+                    FileName = v.FileName,
+                    Size = v.SizeFormatted,
+                    Type = v.Type,
+                    Compatibility = v.Compatibility
                 }),
-                embeddings = inventory.Embeddings.Select(e => new
+                Embeddings = inventory.Embeddings.Select(e => new
                 {
-                    id = e.Name,
-                    name = e.Name,
-                    fileName = e.FileName,
-                    size = e.SizeFormatted,
-                    type = e.Type,
-                    keyword = e.Keyword,
-                    vectors = e.Vectors
+                    Id = e.Name,
+                    Name = e.Name,
+                    FileName = e.FileName,
+                    Size = e.SizeFormatted,
+                    Type = e.Type,
+                    Keyword = e.Keyword,
+                    Vectors = e.Vectors
                 }),
-                hypernetworks = inventory.Hypernetworks.Select(h => new
+                Hypernetworks = inventory.Hypernetworks.Select(h => new
                 {
-                    id = h.Name,
-                    name = h.Name,
-                    fileName = h.FileName,
-                    size = h.SizeFormatted,
-                    architecture = h.Architecture,
-                    trainingSteps = h.TrainingSteps
+                    Id = h.Name,
+                    Name = h.Name,
+                    FileName = h.FileName,
+                    Size = h.SizeFormatted,
+                    Architecture = h.Architecture,
+                    TrainingSteps = h.TrainingSteps
                 })
             };
             return Results.Json(body, Json);
@@ -177,11 +171,11 @@ public static class OrchestratorHost
         {
             var body = new
             {
-                active = RunnerRegistry.Active?.Name,
-                available = new[]
+                Active = RunnerRegistry.Active?.Name,
+                Available = new[]
                 {
-                    new { id = "llama-server", name = "LLaMA Server", description = "External llama-server process" },
-                    new { id = "llama-cpp", name = "LLaMA.cpp", description = "Direct llama.cpp integration" }
+                    new { Id = "llama-server", Name = "LLaMA Server", Description = "External llama-server process" },
+                    new { Id = "llama-cpp", Name = "LLaMA.cpp", Description = "Direct llama.cpp integration" }
                 }
             };
             return Results.Json(body, Json);
@@ -192,8 +186,6 @@ public static class OrchestratorHost
         {
             try
             {
-                // This would typically restart the runner with the new model
-                // For now, just update the active model reference
                 var success = RunnerRegistry.LoadModel(request.ModelPath);
                 return Results.Ok(new { success, message = success ? "Model loaded" : "Failed to load model" });
             }

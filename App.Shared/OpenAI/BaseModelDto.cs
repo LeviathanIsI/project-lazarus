@@ -1,3 +1,5 @@
+using Lazarus.Shared.Models;
+
 namespace Lazarus.Shared.OpenAI;
 
 public class BaseModelDto
@@ -11,4 +13,8 @@ public class BaseModelDto
     public int ContextLength { get; set; }
     public string Quantization { get; set; } = "";
     public bool IsActive { get; set; }
+
+    // The blood and guts of what this model can actually do
+    public SamplingParameters? DefaultParameters { get; set; }
+    public Dictionary<string, ParameterMetadata>? SupportedParameters { get; set; }
 }

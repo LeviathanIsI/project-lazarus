@@ -3,9 +3,172 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Lazarus.Desktop.Views"
              mc:Ignorable="d"
-             Background="#0f0f0f"
-             DataContext="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}"> 
+             Background="#0f0f0f">
+
+    <UserControl.Resources>
+        <!-- Float Parameter Template -->
+        <DataTemplate x:Key="FloatParameterTemplate">
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Grid.Column="0" 
+                          Text="{Binding Value.Name}" 
+                          Foreground="#d1d5db" 
+                          VerticalAlignment="Center"
+                          ToolTip="{Binding Value.Description}"/>
+                
+                <TextBox Grid.Row="0" Grid.Column="1" 
+                        Text="{Binding Value.DefaultValue, StringFormat=F2}" 
+                        Background="#374151" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Padding="8,4" 
+                        TextAlignment="Center"/>
+                
+                <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                       Value="{Binding Value.DefaultValue}"
+                       Minimum="{Binding Value.MinValue}"
+                       Maximum="{Binding Value.MaxValue}"
+                       TickFrequency="0.1" 
+                       Margin="0,4,0,0" 
+                       Foreground="#8b5cf6"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Integer Parameter Template -->
+        <DataTemplate x:Key="IntParameterTemplate">
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Grid.Column="0" 
+                          Text="{Binding Value.Name}" 
+                          Foreground="#d1d5db" 
+                          VerticalAlignment="Center"
+                          ToolTip="{Binding Value.Description}"/>
+                
+                <TextBox Grid.Row="0" Grid.Column="1" 
+                        Text="{Binding Value.DefaultValue}" 
+                        Background="#374151" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Padding="8,4" 
+                        TextAlignment="Center"/>
+                
+                <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                       Value="{Binding Value.DefaultValue}"
+                       Minimum="{Binding Value.MinValue}"
+                       Maximum="{Binding Value.MaxValue}"
+                       TickFrequency="1" 
+                       Margin="0,4,0,0" 
+                       Foreground="#8b5cf6"
+                       IsSnapToTickEnabled="True"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Boolean Parameter Template -->
+        <DataTemplate x:Key="BoolParameterTemplate">
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Text="{Binding Value.Name}" 
+                          Foreground="#d1d5db" 
+                          VerticalAlignment="Center"
+                          ToolTip="{Binding Value.Description}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         IsChecked="{Binding Value.DefaultValue}"
+                         Background="#374151"
+                         BorderBrush="#6b7280"
+                         Foreground="#8b5cf6"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Dropdown Parameter Template -->
+        <DataTemplate x:Key="DropdownParameterTemplate">
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Text="{Binding Value.Name}" 
+                          Foreground="#d1d5db" 
+                          VerticalAlignment="Center"
+                          ToolTip="{Binding Value.Description}"/>
+                
+                <ComboBox Grid.Column="1"
+                         ItemsSource="{Binding Value.AllowedValues}"
+                         SelectedItem="{Binding Value.DefaultValue}"
+                         Background="#374151" 
+                         Foreground="White"
+                         BorderBrush="#6b7280"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Parameter Template Selector -->
+        <local:ParameterTemplateSelector x:Key="ParameterTemplateSelector"
+                                        FloatTemplate="{StaticResource FloatParameterTemplate}"
+                                        IntTemplate="{StaticResource IntParameterTemplate}"
+                                        BoolTemplate="{StaticResource BoolParameterTemplate}"
+                                        DropdownTemplate="{StaticResource DropdownParameterTemplate}"/>
+
+        <!-- Custom Execute Button Style -->
+        <Style x:Key="ExecuteButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#8b5cf6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"
+                                            TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#7c3aed"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#6d28d9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#4b5563"/>
+                                <Setter Property="Foreground" Value="#9ca3af"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid>
@@ -14,7 +177,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Column: Model Selection & Sampling -->
+            <!-- Left Column: Model Selection & Dynamic Sampling -->
             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                 <!-- Model Selection -->
                 <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
@@ -28,49 +191,157 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             
-                            <!-- ComboBox bound to BaseModels -->
+                            <!-- Dark ComboBox -->
                             <ComboBox ItemsSource="{Binding BaseModels}" 
                                       SelectedItem="{Binding SelectedModel}" 
                                       DisplayMemberPath="Name"
-                                      Background="Black" Foreground="White"/>
+                                      Background="#374151" 
+                                      Foreground="White"
+                                      BorderBrush="#6b7280"
+                                      BorderThickness="1"
+                                      Padding="8,6">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ComboBox">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="4">
+                                                        <Grid>
+                                                            <ToggleButton Name="ToggleButton"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0"
+                                                                        IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        ClickMode="Press">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="20"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <ContentPresenter Grid.Column="0"
+                                                                                    Name="ContentSite"
+                                                                                    Content="{TemplateBinding SelectionBoxItem}"
+                                                                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                                                    Margin="{TemplateBinding Padding}"
+                                                                                    VerticalAlignment="Center"
+                                                                                    HorizontalAlignment="Left"/>
+                                                                    <Path Grid.Column="1" 
+                                                                          Fill="White"
+                                                                          HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"
+                                                                          Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                                                </Grid>
+                                                            </ToggleButton>
+                                                            <Popup Name="Popup"
+                                                                   Placement="Bottom"
+                                                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                                                   AllowsTransparency="True"
+                                                                   Focusable="False">
+                                                                <Border Background="#1f2937"
+                                                                        BorderBrush="#4b5563"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="4"
+                                                                        MinWidth="{TemplateBinding ActualWidth}">
+                                                                    <ScrollViewer>
+                                                                        <StackPanel IsItemsHost="True"/>
+                                                                    </ScrollViewer>
+                                                                </Border>
+                                                            </Popup>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ComboBox.Style>
+                                <ComboBox.Resources>
+                                    <Style TargetType="ComboBoxItem">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="Padding" Value="8,6"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#8b5cf6"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#7c3aed"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.Resources>
+                            </ComboBox>
                             
                             <Button Grid.Column="1" Content="Load" 
-        Background="#8b5cf6" Foreground="White" 
-        BorderThickness="0" Padding="12,8" Margin="8,0,0,0"
-        Command="{Binding LoadModelCommand}" 
-        CommandParameter="{Binding SelectedModel}"/>
-
+                                    Background="#8b5cf6" Foreground="White" 
+                                    BorderThickness="0" Padding="12,8" Margin="8,0,0,0"
+                                    Command="{Binding LoadModelCommand}" 
+                                    CommandParameter="{Binding SelectedModel}"/>
                         </Grid>
 
-                        <TextBlock Text="Status: Loaded • VRAM: 18.2 GB" 
+                        <TextBlock Text="{Binding StatusText}" 
                                    Foreground="#10b981" 
                                    FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Sampling Parameters -->
+                <!-- Dynamic Sampling Parameters -->
                 <Border Background="#1a1a1a" CornerRadius="8" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="Sampling Parameters" FontWeight="Bold" Foreground="White" 
-                                   FontSize="16" Margin="0,0,0,16"/>
-
-                        <!-- Temperature -->
-                        <Grid Margin="0,0,0,12">
+                        <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Temperature" Foreground="#d1d5db" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1" Text="0.7" Background="#374151" Foreground="White" 
-                                     BorderThickness="0" Padding="8,4" TextAlignment="Center"/>
+                            <TextBlock Text="Sampling Parameters" FontWeight="Bold" Foreground="White" FontSize="16"/>
+                            
+                            <!-- Loading indicator -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" 
+                                       Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="Scanning..." Foreground="#9ca3af" FontSize="12" Margin="0,0,8,0"/>
+                                <Border Background="#8b5cf6" Width="16" Height="16" CornerRadius="8">
+                                    <Border.RenderTransform>
+                                        <RotateTransform x:Name="LoadingRotation"/>
+                                    </Border.RenderTransform>
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="Border.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetName="LoadingRotation"
+                                                                   Storyboard.TargetProperty="Angle"
+                                                                   From="0" To="360" Duration="0:0:1"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+                                </Border>
+                            </StackPanel>
                         </Grid>
-                        <Slider Value="0.7" Minimum="0" Maximum="2" TickFrequency="0.1" 
-                                Margin="0,0,0,16" Foreground="#8b5cf6"/>
+
+                        <!-- Dynamic parameter controls -->
+                        <ItemsControl ItemsSource="{Binding SupportedParameterSchema}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Visibility="{Binding Value.IsSupported, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <ContentPresenter Content="{Binding}" 
+                                                        ContentTemplateSelector="{StaticResource ParameterTemplateSelector}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Fallback message -->
+                        <TextBlock Text="Load a model to see available parameters..." 
+                                   Foreground="#6b7280" 
+                                   FontStyle="Italic"
+                                   Visibility="{Binding SupportedParameterSchema.Count, Converter={StaticResource ZeroToVisibilityConverter}}"
+                                   Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- Right Column: System Prompt & Model Info -->
+            <!-- Right Column: System Prompt, Test Prompt & Model Info -->
             <StackPanel Grid.Column="1" Margin="8,0,0,0">
                 <!-- System Prompt -->
                 <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
@@ -81,6 +352,97 @@
                                  Padding="12" MinHeight="150" TextWrapping="Wrap" 
                                  AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
                                  Text="You are a helpful, harmless, and honest AI assistant."/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Test Prompt Laboratory -->
+                <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Test Prompt" FontWeight="Bold" Foreground="White" 
+                                   FontSize="16" Margin="0,0,0,12"/>
+                        
+                        <TextBox Background="#374151" Foreground="White" BorderThickness="1" 
+                                 BorderBrush="#6b7280" Padding="12" MinHeight="100" TextWrapping="Wrap" 
+                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                 Text="{Binding TestPromptText, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,12" TabIndex="1"/>
+                        
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Properly styled Execute Button -->
+                            <Button Content="Execute Test" 
+                                    Style="{StaticResource ExecuteButtonStyle}"
+                                    Command="{Binding TestParametersCommand}"
+                                    IsEnabled="{Binding CanExecuteTest}"/>
+                            
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding TestStatus}" 
+                                          Foreground="#10b981" FontSize="12" 
+                                          VerticalAlignment="Center"/>
+                                
+                                <!-- Test execution spinner -->
+                                <Border Background="#8b5cf6" Width="12" Height="12" CornerRadius="6" 
+                                        Margin="8,0,0,0"
+                                        Visibility="{Binding IsTestRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Border.RenderTransform>
+                                        <RotateTransform x:Name="TestSpinner"/>
+                                    </Border.RenderTransform>
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="Border.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetName="TestSpinner"
+                                                                   Storyboard.TargetProperty="Angle"
+                                                                   From="0" To="360" Duration="0:0:0.8"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- Response area with proper visibility logic -->
+                        <Border Background="#0f0f0f" BorderBrush="#374151" BorderThickness="1" 
+                                CornerRadius="4" Padding="12" MinHeight="120">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <!-- Actual response text -->
+                                    <TextBlock Text="{Binding TestResponse}" 
+                                              Foreground="White" TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    
+                                    <!-- Placeholder text -->
+                                    <TextBlock Text="Craft your dark prompt above and hit Execute Test to watch the model's digital soul respond..." 
+                                              Foreground="#6b7280" FontStyle="Italic" TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
                     </StackPanel>
                 </Border>
 
@@ -117,13 +479,25 @@
                             <TextBlock Grid.Column="1" Text="{Binding SelectedModel.Architecture}" Foreground="White"/>
                         </Grid>
 
-                        <Grid>
+                        <Grid Margin="0,0,0,6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Quant:" Foreground="#9ca3af" Width="80"/>
                             <TextBlock Grid.Column="1" Text="{Binding SelectedModel.Quantization}" Foreground="White"/>
+                        </Grid>
+
+                        <!-- Parameter Summary -->
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Params:" Foreground="#9ca3af" Width="80"/>
+                            <TextBlock Grid.Column="1" 
+                                      Text="{Binding SupportedParameterSchema.Count, StringFormat={}{0} available}" 
+                                      Foreground="White"/>
                         </Grid>
                     </StackPanel>
                 </Border>
