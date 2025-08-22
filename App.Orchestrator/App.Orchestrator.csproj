@@ -14,4 +14,9 @@
   <ItemGroup>
     <ProjectReference Include="..\App.Shared\App.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.8" />
+    <PackageReference Include="System.Management" Version="9.0.8" />
+  </ItemGroup>
 </Project>

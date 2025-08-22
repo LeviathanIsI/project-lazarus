@@ -6,49 +6,96 @@ namespace Lazarus.Desktop.Views
 {
     public partial class ModelsView : UserControl
     {
-        private static readonly Brush ActiveBg = (Brush)new BrushConverter().ConvertFromString("#8b5cf6")!;
-        private static readonly Brush InactiveBg = (Brush)new BrushConverter().ConvertFromString("#374151")!;
-        private static readonly Brush ActiveFg = Brushes.White;
-        private static readonly Brush InactiveFg = (Brush)new BrushConverter().ConvertFromString("#9ca3af")!;
-
         public ModelsView()
         {
             InitializeComponent();
-            ShowTab("BaseModel");
         }
 
         private void SubTabButton_Click(object sender, RoutedEventArgs e)
         {
-            var tag = (sender as Button)?.Tag as string ?? "BaseModel";
-            ShowTab(tag);
+            if (sender is Button button && button.Tag is string tabTag)
+            {
+                // Hide all content sections
+                BaseModelContent.Visibility = Visibility.Collapsed;
+                LoRAsContent.Visibility = Visibility.Collapsed;
+                ControlNetsContent.Visibility = Visibility.Collapsed;
+                VAEsContent.Visibility = Visibility.Collapsed;
+                EmbeddingsContent.Visibility = Visibility.Collapsed;
+                HypernetworksContent.Visibility = Visibility.Collapsed;
+                AdvancedContent.Visibility = Visibility.Collapsed;
+
+                // Reset all tab button styles
+                ResetSubTabButtonStyles();
+
+                // Show the selected section + highlight button
+                switch (tabTag)
+                {
+                    case "BaseModel":
+                        BaseModelContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(BaseModelTab);
+                        break;
+                    case "LoRAs":
+                        LoRAsContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(LoRAsTab);
+                        break;
+                    case "ControlNets":
+                        ControlNetsContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(ControlNetsTab);
+                        break;
+                    case "VAEs":
+                        VAEsContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(VAEsTab);
+                        break;
+                    case "Embeddings":
+                        EmbeddingsContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(EmbeddingsTab);
+                        break;
+                    case "Hypernetworks":
+                        HypernetworksContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(HypernetworksTab);
+                        break;
+                    case "Advanced":
+                        AdvancedContent.Visibility = Visibility.Visible;
+                        SetActiveSubTabStyle(AdvancedTab);
+                        break;
+                }
+            }
         }
 
-        private void ShowTab(string tag)
+        private void ResetSubTabButtonStyles()
         {
-            // Content visibility
-            BaseModelContent.Visibility = tag == "BaseModel" ? Visibility.Visible : Visibility.Collapsed;
-            LoRAsContent.Visibility = tag == "LoRAs" ? Visibility.Visible : Visibility.Collapsed;
-            ControlNetsContent.Visibility = tag == "ControlNets" ? Visibility.Visible : Visibility.Collapsed;
-            VAEsContent.Visibility = tag == "VAEs" ? Visibility.Visible : Visibility.Collapsed;
-            EmbeddingsContent.Visibility = tag == "Embeddings" ? Visibility.Visible : Visibility.Collapsed;
-            HypernetworksContent.Visibility = tag == "Hypernetworks" ? Visibility.Visible : Visibility.Collapsed;
-            AdvancedContent.Visibility = tag == "Advanced" ? Visibility.Visible : Visibility.Collapsed;
+            var inactiveBrush = new SolidColorBrush(Color.FromRgb(55, 65, 81)); // #374151
+            var inactiveTextBrush = new SolidColorBrush(Color.FromRgb(156, 163, 175)); // #9ca3af
 
-            // Tab button styling
-            SetActive(BaseModelTab, tag == "BaseModel");
-            SetActive(LoRAsTab, tag == "LoRAs");
-            SetActive(ControlNetsTab, tag == "ControlNets");
-            SetActive(VAEsTab, tag == "VAEs");
-            SetActive(EmbeddingsTab, tag == "Embeddings");
-            SetActive(HypernetworksTab, tag == "Hypernetworks");
-            SetActive(AdvancedTab, tag == "Advanced");
+            BaseModelTab.Background = inactiveBrush;
+            BaseModelTab.Foreground = inactiveTextBrush;
+
+            LoRAsTab.Background = inactiveBrush;
+            LoRAsTab.Foreground = inactiveTextBrush;
+
+            ControlNetsTab.Background = inactiveBrush;
+            ControlNetsTab.Foreground = inactiveTextBrush;
+
+            VAEsTab.Background = inactiveBrush;
+            VAEsTab.Foreground = inactiveTextBrush;
+
+            EmbeddingsTab.Background = inactiveBrush;
+            EmbeddingsTab.Foreground = inactiveTextBrush;
+
+            HypernetworksTab.Background = inactiveBrush;
+            HypernetworksTab.Foreground = inactiveTextBrush;
+
+            AdvancedTab.Background = inactiveBrush;
+            AdvancedTab.Foreground = inactiveTextBrush;
         }
 
-        private void SetActive(Button btn, bool active)
+        private void SetActiveSubTabStyle(Button button)
         {
-            if (btn is null) return;
-            btn.Background = active ? ActiveBg : InactiveBg;
-            btn.Foreground = active ? ActiveFg : InactiveFg;
+            var activeBrush = new SolidColorBrush(Color.FromRgb(139, 92, 246)); // #8b5cf6
+            var activeTextBrush = new SolidColorBrush(Colors.White);
+
+            button.Background = activeBrush;
+            button.Foreground = activeTextBrush;
         }
     }
 }

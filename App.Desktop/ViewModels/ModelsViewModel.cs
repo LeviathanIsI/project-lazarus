@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Lazarus.Desktop.Helpers;
+using Lazarus.Shared.OpenAI;
 
 namespace Lazarus.Desktop.ViewModels;
 

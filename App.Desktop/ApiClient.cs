@@ -27,7 +27,7 @@ public static class ApiClient
         catch { return false; }
     }
 
-    public static async Task<ChatCompletionResponse?> ChatAsync(ChatCompletionRequest request)
+    public static async Task<ChatCompletionResponse?> ChatCompletionAsync(ChatCompletionRequest request)
     {
         try
         {
@@ -37,6 +37,7 @@ public static class ApiClient
         }
         catch { return null; }
     }
+
 
     public static async Task<SystemInfo?> GetSystemInfoAsync()
     {

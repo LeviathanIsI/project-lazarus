@@ -1,10 +1,10 @@
 using System.Windows.Controls;
 
-namespace App.Desktop.Views
+namespace Lazarus.Desktop.Views
 {
-    public partial class LoRAsView : UserControl
+    public partial class LorAsView : UserControl
     {
-        public LoRAsView()
+        public LorAsView()
         {
             InitializeComponent();
         }

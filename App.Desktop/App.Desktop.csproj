@@ -1,7 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\App.Orchestrator\App.Orchestrator.csproj" />
-  </ItemGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -12,4 +9,8 @@
     <RootNamespace>Lazarus.Desktop</RootNamespace>
     <AssemblyName>Lazarus.Desktop</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\App.Orchestrator\App.Orchestrator.csproj" />
+  </ItemGroup>
 </Project>

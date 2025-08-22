@@ -4,11 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
+
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+
+        <!-- Messages -->
         <ScrollViewer x:Name="MessageScroller" Grid.Row="0" VerticalScrollBarVisibility="Auto" 
                       Background="#1a1a1a" Padding="8">
             <ItemsControl ItemsSource="{Binding Messages}">
@@ -30,12 +33,14 @@
             </ItemsControl>
         </ScrollViewer>
 
+        <!-- Input -->
         <Border Grid.Row="1" Background="#2d2d2d" CornerRadius="8" Padding="8" Margin="0,8,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+
                 <TextBox x:Name="InputBox" Grid.Column="0" 
                          Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}" 
                          AcceptsReturn="True" MinHeight="36" MaxHeight="120"
@@ -46,21 +51,49 @@
                         <KeyBinding Command="{Binding SendCommand}" Key="Return" />
                     </TextBox.InputBindings>
                 </TextBox>
-                <Button Grid.Column="1" Content="Send" 
-                        Command="{Binding SendCommand}" 
-                        Margin="8,0,0,0" MinWidth="70" Height="36"
-                        Foreground="White" BorderThickness="0">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Background" Value="#6b46c1"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Input, Converter={StaticResource StringToBool}}" Value="True">
-                                    <Setter Property="Background" Value="#8b5cf6"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+
+                <Button Grid.Column="1"
+        Content="Send"
+        Command="{Binding SendCommand}"
+        Margin="5"
+        Padding="10,5"
+        Foreground="White"
+        FontWeight="Bold">
+    <Button.Template>
+        <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}"
+                    CornerRadius="6"
+                    Padding="{TemplateBinding Padding}">
+                <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  RecognizesAccessKey="True"/>
+            </Border>
+        </ControlTemplate>
+    </Button.Template>
+
+    <Button.Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#6A0DAD"/> <!-- default dark purple -->
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Style.Triggers>
+                <!-- When enabled -->
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="Background" Value="#9B30FF"/> <!-- brighter purple -->
+                </Trigger>
+
+                <!-- When disabled -->
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#6A0DAD"/> <!-- keep dark purple -->
+                    <Setter Property="Foreground" Value="White"/>  <!-- keep white text -->
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Button.Style>
+</Button>
+
             </Grid>
         </Border>
     </Grid>

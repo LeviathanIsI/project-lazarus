@@ -35,12 +35,12 @@
         <!-- Tab Navigation -->
         <Border Grid.Row="2" Background="#1a1a1a" CornerRadius="8,8,0,0" Margin="0,0,0,0">
             <StackPanel Orientation="Horizontal" Margin="12,8">
-                <Button x:Name="ChatTabButton" Content="Chat" 
+                <Button x:Name="ChatTabButton" Content="Conversations" 
                         Click="ChatTab_Click" 
                         Margin="0,0,8,0" Padding="16,8"
                         Background="#8b5cf6" Foreground="White" BorderThickness="0"
                         FontWeight="SemiBold"/>
-                <Button x:Name="ModelsTabButton" Content="Models" 
+                <Button x:Name="ModelsTabButton" Content="Model Configuration" 
                         Click="ModelsTab_Click" 
                         Margin="0,0,8,0" Padding="16,8"
                         Background="#374151" Foreground="#9ca3af" BorderThickness="0"
