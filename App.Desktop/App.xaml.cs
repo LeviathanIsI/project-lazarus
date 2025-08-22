@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Lazarus.Orchestrator;
+using Lazarus.Shared.Utilities; // <-- added
 
 namespace Lazarus.Desktop
 {
@@ -19,6 +20,9 @@ namespace Lazarus.Desktop
 
             try
             {
+                // ensure Lazarus folders exist
+                DirectoryBootstrap.EnsureDirectories(); // <-- added
+
                 Console.WriteLine("App: Starting orchestrator...");
                 await OrchestratorHost.StartAsync("http://127.0.0.1:11711", _cts.Token);
                 Console.WriteLine("App: Orchestrator started successfully");

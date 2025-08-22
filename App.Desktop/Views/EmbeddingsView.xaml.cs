@@ -2,9 +2,9 @@ using System.Windows.Controls;
 
 namespace Lazarus.Desktop.Views
 {
-    public partial class LoRAsView : UserControl
+    public partial class EmbeddingsView : UserControl
     {
-        public LoRAsView()
+        public EmbeddingsView()
         {
             InitializeComponent();
         }

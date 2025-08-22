@@ -1,13 +1,17 @@
 namespace Lazarus.Orchestrator.Services;
 
+using Lazarus.Shared.Utilities;
+
+
 public static class ModelScannerService
 {
     private static readonly string[] ModelDirectories =
-    {
-        @"C:\Models",
-        @"D:\AI\Models",
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Models")
-    };
+{
+    Path.Combine(DirectoryBootstrap.GetRootPath(), "models"), // <-- Lazarus managed folder
+    @"C:\Models",                                             // legacy/manual
+    @"D:\AI\Models",
+    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Models")
+};
 
     public static ModelInventory ScanAll()
     {

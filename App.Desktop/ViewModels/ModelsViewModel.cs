@@ -1,9 +1,14 @@
+using System.Windows;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Lazarus.Desktop.Helpers;
 using Lazarus.Shared.OpenAI;
+using System.IO;
+using System.Linq;
+
+
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -77,14 +82,15 @@ public class ModelsViewModel : INotifyPropertyChanged
             StatusText = "Scanning models...";
 
             var inventory = await ApiClient.GetAvailableModelsAsync();
-            if (inventory != null)
-            {
-                BaseModels.Clear();
-                LoRAs.Clear();
-                VAEs.Clear();
-                Embeddings.Clear();
-                Hypernetworks.Clear();
 
+            BaseModels.Clear();
+            LoRAs.Clear();
+            VAEs.Clear();
+            Embeddings.Clear();
+            Hypernetworks.Clear();
+
+            if (inventory != null && inventory.BaseModels.Any())
+            {
                 foreach (var model in inventory.BaseModels)
                     BaseModels.Add(model);
 
@@ -105,7 +111,33 @@ public class ModelsViewModel : INotifyPropertyChanged
             }
             else
             {
-                StatusText = "Failed to load models";
+                // fallback: scan local "models" folder
+                var modelsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "models");
+                if (Directory.Exists(modelsPath))
+                {
+                    foreach (var file in Directory.GetFiles(modelsPath, "*.gguf"))
+                    {
+                        var fileInfo = new FileInfo(file);
+                        BaseModels.Add(new BaseModelDto
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Name = Path.GetFileNameWithoutExtension(file),
+                            FileName = fileInfo.FullName,
+                            Size = $"{fileInfo.Length / (1024 * 1024)} MB",
+                            ContextLength = 4096, // default fallback
+                            Architecture = "LLM", // fallback
+                            Quantization = Path.GetExtension(file).Trim('.').ToUpper(),
+                            IsActive = false
+                        });
+                    }
+
+                    SelectedModel = BaseModels.FirstOrDefault();
+                    StatusText = $"Found {BaseModels.Count} local model(s)";
+                }
+                else
+                {
+                    StatusText = "No models found (API or local)";
+                }
             }
         }
         catch (Exception ex)
@@ -117,6 +149,7 @@ public class ModelsViewModel : INotifyPropertyChanged
             IsLoading = false;
         }
     }
+
 
     private async Task LoadModelAsync(BaseModelDto model)
     {

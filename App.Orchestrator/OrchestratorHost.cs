@@ -2,6 +2,7 @@ using System.Text.Json;
 using Lazarus.Orchestrator.Runners;
 using Lazarus.Orchestrator.Services;
 using Lazarus.Shared.OpenAI;
+using Lazarus.Shared.Utilities; // <-- added
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -20,6 +21,9 @@ public static class OrchestratorHost
     {
         if (_app != null) return;
 
+        // ensure Lazarus folders exist
+        DirectoryBootstrap.EnsureDirectories(); // <-- added
+
         // Bind runner from env (LAZARUS_RUNNER_URL / KIND / NAME / MODEL)
         RunnerRegistry.InitializeFromEnv();
 
@@ -27,6 +31,9 @@ public static class OrchestratorHost
         builder.WebHost.UseUrls(url);
 
         var app = builder.Build();
+
+        // rest of your existing endpoints remain unchanged...
+
 
         // Simple health for orchestrator + runner
         app.MapGet("/status", async () =>
