@@ -1,664 +1,667 @@
 <UserControl x:Class="Lazarus.Desktop.Views.BaseModelView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:Lazarus.Desktop.Views"
-             mc:Ignorable="d"
-             Background="#0f0f0f">
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
+			 mc:Ignorable="d"
+			 Background="{StaticResource PrimaryDarkBrush}">
 
-    <UserControl.Resources>
-        <!-- Float Parameter Template - A1111 Inspired Section -->
-        <DataTemplate x:Key="FloatParameterTemplate">
-            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
-                    BorderBrush="#333333" BorderThickness="1">
-                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
-                    <Expander.Header>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" 
-                                      Text="{Binding Value.Name}" 
-                                      Foreground="#e2e8f0" 
-                                      VerticalAlignment="Center"
-                                      FontWeight="Medium"
-                                      FontSize="13"/>
-                            
-                            <!-- Dropdown indicator on the right -->
-                            <Path Grid.Column="1" 
-                                  Fill="#94a3b8" 
-                                  Data="M7 10l5 5 5-5z" 
-                                  Width="12" Height="12" 
-                                  VerticalAlignment="Center" 
-                                  Margin="8,0,8,0"
-                                  RenderTransformOrigin="0.5,0.5">
-                                <Path.RenderTransform>
-                                    <RotateTransform Angle="0"/>
-                                </Path.RenderTransform>
-                            </Path>
-                            
-                            <Border Grid.Column="2" 
-                                   Background="#2d3748" 
-                                   CornerRadius="4" 
-                                   BorderBrush="#4a5568" 
-                                   BorderThickness="1">
-                                <TextBox Text="{Binding Value.DefaultValue, StringFormat=F2}" 
-                                        Background="Transparent"
-                                        Foreground="#f7fafc" 
-                                        BorderThickness="0" 
-                                        Padding="8,4" 
-                                        TextAlignment="Center"
-                                        FontFamily="Consolas"
-                                        FontSize="12"/>
-                            </Border>
-                        </Grid>
-                    </Expander.Header>
-                    
-                    <StackPanel Margin="0,12,0,4">
-                        <TextBlock Text="{Binding Value.Description}" 
-                                  Foreground="#94a3b8" 
-                                  FontSize="11" 
-                                  TextWrapping="Wrap"
-                                  LineHeight="16"
-                                  Margin="0,0,0,12"/>
-                        
-                        <Slider Value="{Binding Value.DefaultValue}"
-                               Minimum="{Binding Value.MinValue}"
-                               Maximum="{Binding Value.MaxValue}"
-                               TickFrequency="0.01" 
-                               Foreground="#8b5cf6"
-                               Background="#374151"
-                               Height="20"/>
-                    </StackPanel>
-                </Expander>
-            </Border>
-        </DataTemplate>
+	<UserControl.Resources>
+		<!-- Float Parameter Template - A1111 Inspired Section -->
+		<DataTemplate x:Key="FloatParameterTemplate">
+			<Border Style="{StaticResource DarkCardStyle}">
+				<Expander Background="Transparent"
+						  BorderThickness="0"
+						  IsExpanded="False">
+					<Expander.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="80"/>
+							</Grid.ColumnDefinitions>
 
-        <!-- Integer Parameter Template - A1111 Inspired Section -->
-        <DataTemplate x:Key="IntParameterTemplate">
-            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
-                    BorderBrush="#333333" BorderThickness="1">
-                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
-                    <Expander.Header>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" 
-                                      Text="{Binding Value.Name}" 
-                                      Foreground="#e2e8f0" 
-                                      VerticalAlignment="Center"
-                                      FontWeight="Medium"
-                                      FontSize="13"/>
-                            
-                            <Path Grid.Column="1" 
-                                  Fill="#94a3b8" 
-                                  Data="M7 10l5 5 5-5z" 
-                                  Width="12" Height="12" 
-                                  VerticalAlignment="Center" 
-                                  Margin="8,0,8,0"/>
-                            
-                            <Border Grid.Column="2" 
-                                   Background="#2d3748" 
-                                   CornerRadius="4" 
-                                   BorderBrush="#4a5568" 
-                                   BorderThickness="1">
-                                <TextBox Text="{Binding Value.DefaultValue}" 
-                                        Background="Transparent"
-                                        Foreground="#f7fafc" 
-                                        BorderThickness="0" 
-                                        Padding="8,4" 
-                                        TextAlignment="Center"
-                                        FontFamily="Consolas"
-                                        FontSize="12"/>
-                            </Border>
-                        </Grid>
-                    </Expander.Header>
-                    
-                    <StackPanel Margin="0,12,0,4">
-                        <TextBlock Text="{Binding Value.Description}" 
-                                  Foreground="#94a3b8" 
-                                  FontSize="11" 
-                                  TextWrapping="Wrap"
-                                  LineHeight="16"
-                                  Margin="0,0,0,12"/>
-                        
-                        <Slider Value="{Binding Value.DefaultValue}"
-                               Minimum="{Binding Value.MinValue}"
-                               Maximum="{Binding Value.MaxValue}"
-                               TickFrequency="1" 
-                               IsSnapToTickEnabled="True"
-                               Foreground="#8b5cf6"
-                               Background="#374151"
-                               Height="20"/>
-                    </StackPanel>
-                </Expander>
-            </Border>
-        </DataTemplate>
+							<TextBlock Grid.Column="0"
+									   Text="{Binding Value.Name}"
+									   Style="{StaticResource BodyTextStyle}"
+									   VerticalAlignment="Center"
+									   FontWeight="Medium"
+									   FontSize="13"/>
 
-        <!-- Boolean Parameter Template - A1111 Inspired Section -->
-        <DataTemplate x:Key="BoolParameterTemplate">
-            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
-                    BorderBrush="#333333" BorderThickness="1">
-                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
-                    <Expander.Header>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" 
-                                      Text="{Binding Value.Name}" 
-                                      Foreground="#e2e8f0" 
-                                      VerticalAlignment="Center"
-                                      FontWeight="Medium"
-                                      FontSize="13"/>
-                            
-                            <Path Grid.Column="1" 
-                                  Fill="#94a3b8" 
-                                  Data="M7 10l5 5 5-5z" 
-                                  Width="12" Height="12" 
-                                  VerticalAlignment="Center" 
-                                  Margin="8,0,8,0"/>
-                            
-                            <CheckBox Grid.Column="2" 
-                                     IsChecked="{Binding Value.DefaultValue}"
-                                     Background="#2d3748"
-                                     BorderBrush="#4a5568"
-                                     Foreground="#8b5cf6"/>
-                        </Grid>
-                    </Expander.Header>
-                    
-                    <TextBlock Text="{Binding Value.Description}" 
-                              Foreground="#94a3b8" 
-                              FontSize="11" 
-                              TextWrapping="Wrap"
-                              LineHeight="16"
-                              Margin="0,12,0,4"/>
-                </Expander>
-            </Border>
-        </DataTemplate>
+							<!-- Dropdown indicator on the right -->
+							<Path Grid.Column="1"
+								  Fill="{StaticResource TextMutedBrush}"
+								  Data="M7 10l5 5 5-5z"
+								  Width="12"
+								  Height="12"
+								  VerticalAlignment="Center"
+								  Margin="8,0,8,0"
+								  RenderTransformOrigin="0.5,0.5">
+								<Path.RenderTransform>
+									<RotateTransform Angle="0"/>
+								</Path.RenderTransform>
+							</Path>
 
-        <!-- Dropdown Parameter Template - A1111 Inspired Section -->
-        <DataTemplate x:Key="DropdownParameterTemplate">
-            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
-                    BorderBrush="#333333" BorderThickness="1">
-                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
-                    <Expander.Header>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="120"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" 
-                                      Text="{Binding Value.Name}" 
-                                      Foreground="#e2e8f0" 
-                                      VerticalAlignment="Center"
-                                      FontWeight="Medium"
-                                      FontSize="13"/>
-                            
-                            <Path Grid.Column="1" 
-                                  Fill="#94a3b8" 
-                                  Data="M7 10l5 5 5-5z" 
-                                  Width="12" Height="12" 
-                                  VerticalAlignment="Center" 
-                                  Margin="8,0,8,0"/>
-                            
-                            <Border Grid.Column="2" 
-                                   Background="#2d3748" 
-                                   CornerRadius="4" 
-                                   BorderBrush="#4a5568" 
-                                   BorderThickness="1">
-                                <ComboBox ItemsSource="{Binding Value.AllowedValues}"
-                                         SelectedItem="{Binding Value.DefaultValue}"
-                                         Background="Transparent" 
-                                         Foreground="#f7fafc"
-                                         BorderThickness="0"
-                                         Padding="8,4">
-                                    <ComboBox.Style>
-                                        <Style TargetType="ComboBox">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ComboBox">
-                                                        <Grid>
-                                                            <ToggleButton Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                                                                <Grid>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                        <ColumnDefinition Width="20"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <ContentPresenter Grid.Column="0"
-                                                                                    Content="{TemplateBinding SelectionBoxItem}"
-                                                                                    Margin="{TemplateBinding Padding}"
-                                                                                    VerticalAlignment="Center"/>
-                                                                    <Path Grid.Column="1" 
-                                                                          Fill="#94a3b8"
-                                                                          Data="M 0 0 L 4 4 L 8 0 Z"
-                                                                          VerticalAlignment="Center"
-                                                                          HorizontalAlignment="Center"/>
-                                                                </Grid>
-                                                            </ToggleButton>
-                                                            <Popup IsOpen="{TemplateBinding IsDropDownOpen}"
-                                                                   Placement="Bottom">
-                                                                <Border Background="#1f2937"
-                                                                        BorderBrush="#374151"
-                                                                        BorderThickness="1"
-                                                                        CornerRadius="4">
-                                                                    <ScrollViewer>
-                                                                        <StackPanel IsItemsHost="True"/>
-                                                                    </ScrollViewer>
-                                                                </Border>
-                                                            </Popup>
-                                                        </Grid>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </ComboBox.Style>
-                                </ComboBox>
-                            </Border>
-                        </Grid>
-                    </Expander.Header>
-                    
-                    <TextBlock Text="{Binding Value.Description}" 
-                              Foreground="#94a3b8" 
-                              FontSize="11" 
-                              TextWrapping="Wrap"
-                              LineHeight="16"
-                              Margin="0,12,0,4"/>
-                </Expander>
-            </Border>
-        </DataTemplate>
+							<Border Grid.Column="2"
+									Background="{StaticResource TertiaryDarkBrush}"
+									CornerRadius="4"
+									BorderBrush="{StaticResource BorderBrush}"
+									BorderThickness="1">
+								<TextBox Text="{Binding Value.DefaultValue, StringFormat=F2}"
+										 Background="Transparent"
+										 Foreground="{StaticResource TextPrimaryBrush}"
+										 BorderThickness="0"
+										 Padding="8,4"
+										 TextAlignment="Center"
+										 FontFamily="Consolas"
+										 FontSize="12"/>
+							</Border>
+						</Grid>
+					</Expander.Header>
 
-        <!-- Parameter Template Selector -->
-        <local:ParameterTemplateSelector x:Key="ParameterTemplateSelector"
-                                        FloatTemplate="{StaticResource FloatParameterTemplate}"
-                                        IntTemplate="{StaticResource IntParameterTemplate}"
-                                        BoolTemplate="{StaticResource BoolParameterTemplate}"
-                                        DropdownTemplate="{StaticResource DropdownParameterTemplate}"/>
+					<StackPanel Margin="0,12,0,4">
+						<TextBlock Text="{Binding Value.Description}"
+								   Style="{StaticResource CaptionTextStyle}"
+								   TextWrapping="Wrap"
+								   LineHeight="16"
+								   Margin="0,0,0,12"/>
 
-        <!-- Custom Execute Button Style -->
-        <Style x:Key="ExecuteButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#8b5cf6"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="6"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"
-                                            TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#7c3aed"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#6d28d9"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#4b5563"/>
-                                <Setter Property="Foreground" Value="#9ca3af"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
+						<Slider Value="{Binding Value.DefaultValue}"
+								Minimum="{Binding Value.MinValue}"
+								Maximum="{Binding Value.MaxValue}"
+								TickFrequency="0.01"
+								Foreground="{StaticResource AccentPurpleBrush}"
+								Background="{StaticResource BorderBrush}"
+								Height="20"/>
+					</StackPanel>
+				</Expander>
+			</Border>
+		</DataTemplate>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+		<!-- Integer Parameter Template - A1111 Inspired Section -->
+		<DataTemplate x:Key="IntParameterTemplate">
+			<Border Style="{StaticResource DarkCardStyle}">
+				<Expander Background="Transparent"
+						  BorderThickness="0"
+						  IsExpanded="False">
+					<Expander.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="80"/>
+							</Grid.ColumnDefinitions>
 
-            <!-- Left Column: Model Selection & Dynamic Sampling -->
-            <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                <!-- Model Selection -->
-                <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Model Selection" FontWeight="Bold" Foreground="White" 
-                                   FontSize="16" Margin="0,0,0,12"/>
-                        
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <!-- Dark ComboBox with proper styling -->
-                            <ComboBox ItemsSource="{Binding BaseModels}" 
-                                      SelectedItem="{Binding SelectedModel}" 
-                                      DisplayMemberPath="Name"
-                                      Background="#374151" 
-                                      Foreground="White"
-                                      BorderBrush="#6b7280"
-                                      BorderThickness="1"
-                                      Padding="8,6">
-                                <ComboBox.Style>
-                                    <Style TargetType="ComboBox">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ComboBox">
-                                                    <Border Background="{TemplateBinding Background}"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                            CornerRadius="4">
-                                                        <Grid>
-                                                            <ToggleButton Name="ToggleButton"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                                                        ClickMode="Press">
-                                                                <Grid>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                        <ColumnDefinition Width="20"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <ContentPresenter Grid.Column="0"
-                                                                                    Name="ContentSite"
-                                                                                    Content="{TemplateBinding SelectionBoxItem}"
-                                                                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                                                                    Margin="{TemplateBinding Padding}"
-                                                                                    VerticalAlignment="Center"
-                                                                                    HorizontalAlignment="Left"/>
-                                                                    <Path Grid.Column="1" 
-                                                                          Fill="White"
-                                                                          HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"
-                                                                          Data="M 0 0 L 4 4 L 8 0 Z"/>
-                                                                </Grid>
-                                                            </ToggleButton>
-                                                            <Popup Name="Popup"
-                                                                   Placement="Bottom"
-                                                                   IsOpen="{TemplateBinding IsDropDownOpen}"
-                                                                   AllowsTransparency="True"
-                                                                   Focusable="False">
-                                                                <Border Background="#1f2937"
-                                                                        BorderBrush="#4b5563"
-                                                                        BorderThickness="1"
-                                                                        CornerRadius="4"
-                                                                        MinWidth="{TemplateBinding ActualWidth}">
-                                                                    <ScrollViewer>
-                                                                        <StackPanel IsItemsHost="True"/>
-                                                                    </ScrollViewer>
-                                                                </Border>
-                                                            </Popup>
-                                                        </Grid>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ComboBox.Style>
-                                <ComboBox.Resources>
-                                    <Style TargetType="ComboBoxItem">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                        <Setter Property="Padding" Value="8,6"/>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#8b5cf6"/>
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Background" Value="#7c3aed"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ComboBox.Resources>
-                            </ComboBox>
-                            
-                            <Button Grid.Column="1" Content="Load" 
-                                    Background="#8b5cf6" Foreground="White" 
-                                    BorderThickness="0" Padding="12,8" Margin="8,0,0,0"
-                                    Command="{Binding LoadModelCommand}" 
-                                    CommandParameter="{Binding SelectedModel}"/>
-                        </Grid>
+							<TextBlock Grid.Column="0"
+									   Text="{Binding Value.Name}"
+									   Style="{StaticResource BodyTextStyle}"
+									   VerticalAlignment="Center"
+									   FontWeight="Medium"
+									   FontSize="13"/>
 
-                        <TextBlock Text="{Binding StatusText}" 
-                                   Foreground="#10b981" 
-                                   FontSize="12" Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
+							<Path Grid.Column="1"
+								  Fill="{StaticResource TextMutedBrush}"
+								  Data="M7 10l5 5 5-5z"
+								  Width="12"
+								  Height="12"
+								  VerticalAlignment="Center"
+								  Margin="8,0,8,0"/>
 
-                <!-- Dynamic Sampling Parameters -->
-                <Border Background="#1a1a1a" CornerRadius="8" Padding="16">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Sampling Parameters" FontWeight="Bold" Foreground="White" FontSize="16"/>
-                            
-                            <!-- Loading indicator -->
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" 
-                                       Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="Scanning..." Foreground="#9ca3af" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="#8b5cf6" Width="16" Height="16" CornerRadius="8">
-                                    <Border.RenderTransform>
-                                        <RotateTransform x:Name="LoadingRotation"/>
-                                    </Border.RenderTransform>
-                                    <Border.Triggers>
-                                        <EventTrigger RoutedEvent="Border.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard RepeatBehavior="Forever">
-                                                    <DoubleAnimation Storyboard.TargetName="LoadingRotation"
-                                                                   Storyboard.TargetProperty="Angle"
-                                                                   From="0" To="360" Duration="0:0:1"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Border.Triggers>
-                                </Border>
-                            </StackPanel>
-                        </Grid>
+							<Border Grid.Column="2"
+									Background="{StaticResource TertiaryDarkBrush}"
+									CornerRadius="4"
+									BorderBrush="{StaticResource BorderBrush}"
+									BorderThickness="1">
+								<TextBox Text="{Binding Value.DefaultValue}"
+										 Background="Transparent"
+										 Foreground="{StaticResource TextPrimaryBrush}"
+										 BorderThickness="0"
+										 Padding="8,4"
+										 TextAlignment="Center"
+										 FontFamily="Consolas"
+										 FontSize="12"/>
+							</Border>
+						</Grid>
+					</Expander.Header>
 
-                        <!-- Dynamic parameter controls -->
-                        <ItemsControl ItemsSource="{Binding SupportedParameterSchema}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Visibility="{Binding Value.IsSupported, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <ContentPresenter Content="{Binding}" 
-                                                        ContentTemplateSelector="{StaticResource ParameterTemplateSelector}"/>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+					<StackPanel Margin="0,12,0,4">
+						<TextBlock Text="{Binding Value.Description}"
+								   Style="{StaticResource CaptionTextStyle}"
+								   TextWrapping="Wrap"
+								   LineHeight="16"
+								   Margin="0,0,0,12"/>
 
-                        <!-- Fallback message -->
-                        <TextBlock Text="Load a model to see available parameters..." 
-                                   Foreground="#6b7280" 
-                                   FontStyle="Italic"
-                                   Visibility="{Binding SupportedParameterSchema.Count, Converter={StaticResource ZeroToVisibilityConverter}}"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+						<Slider Value="{Binding Value.DefaultValue}"
+								Minimum="{Binding Value.MinValue}"
+								Maximum="{Binding Value.MaxValue}"
+								TickFrequency="1"
+								IsSnapToTickEnabled="True"
+								Foreground="{StaticResource AccentPurpleBrush}"
+								Background="{StaticResource BorderBrush}"
+								Height="20"/>
+					</StackPanel>
+				</Expander>
+			</Border>
+		</DataTemplate>
 
-            <!-- Right Column: System Prompt, Test Prompt & Model Info -->
-            <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                <!-- System Prompt -->
-                <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="System Prompt" FontWeight="Bold" Foreground="White" 
-                                   FontSize="16" Margin="0,0,0,12"/>
-                        <TextBox Background="#374151" Foreground="White" BorderThickness="0" 
-                                 Padding="12" MinHeight="150" TextWrapping="Wrap" 
-                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                                 Text="You are a helpful, harmless, and honest AI assistant."/>
-                    </StackPanel>
-                </Border>
+		<!-- Boolean Parameter Template - A1111 Inspired Section -->
+		<DataTemplate x:Key="BoolParameterTemplate">
+			<Border Style="{StaticResource DarkCardStyle}">
+				<Expander Background="Transparent"
+						  BorderThickness="0"
+						  IsExpanded="False">
+					<Expander.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
 
-                <!-- Test Prompt Laboratory -->
-                <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Test Prompt" FontWeight="Bold" Foreground="White" 
-                                   FontSize="16" Margin="0,0,0,12"/>
-                        
-                        <TextBox Background="#374151" Foreground="White" BorderThickness="1" 
-                                 BorderBrush="#6b7280" Padding="12" MinHeight="100" TextWrapping="Wrap" 
-                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                                 Text="{Binding TestPromptText, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,12" TabIndex="1"/>
-                        
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <!-- Properly styled Execute Button -->
-                            <Button Content="Execute Test" 
-                                    Style="{StaticResource ExecuteButtonStyle}"
-                                    Command="{Binding TestParametersCommand}"
-                                    IsEnabled="{Binding CanExecuteTest}"/>
-                            
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
-                                <TextBlock Text="{Binding TestStatus}" 
-                                          Foreground="#10b981" FontSize="12" 
-                                          VerticalAlignment="Center"/>
-                                
-                                <!-- Test execution spinner -->
-                                <Border Background="#8b5cf6" Width="12" Height="12" CornerRadius="6" 
-                                        Margin="8,0,0,0"
-                                        Visibility="{Binding IsTestRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Border.RenderTransform>
-                                        <RotateTransform x:Name="TestSpinner"/>
-                                    </Border.RenderTransform>
-                                    <Border.Triggers>
-                                        <EventTrigger RoutedEvent="Border.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard RepeatBehavior="Forever">
-                                                    <DoubleAnimation Storyboard.TargetName="TestSpinner"
-                                                                   Storyboard.TargetProperty="Angle"
-                                                                   From="0" To="360" Duration="0:0:0.8"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Border.Triggers>
-                                </Border>
-                            </StackPanel>
-                        </Grid>
-                        
-                        <!-- Response area with proper visibility logic -->
-                        <Border Background="#0f0f0f" BorderBrush="#374151" BorderThickness="1" 
-                                CornerRadius="4" Padding="12" MinHeight="120">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <StackPanel>
-                                    <!-- Actual response text -->
-                                    <TextBlock Text="{Binding TestResponse}" 
-                                              Foreground="White" TextWrapping="Wrap">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}" Value="True">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    
-                                    <!-- Placeholder text -->
-                                    <TextBlock Text="Craft your dark prompt above and hit Execute Test to watch the model's digital soul respond..." 
-                                              Foreground="#6b7280" FontStyle="Italic" TextWrapping="Wrap">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}" Value="True">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
-                            </ScrollViewer>
-                        </Border>
-                    </StackPanel>
-                </Border>
+							<TextBlock Grid.Column="0"
+									   Text="{Binding Value.Name}"
+									   Style="{StaticResource BodyTextStyle}"
+									   VerticalAlignment="Center"
+									   FontWeight="Medium"
+									   FontSize="13"/>
 
-                <!-- Model Information -->
-                <Border Background="#1a1a1a" CornerRadius="8" Padding="16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Model Information" FontWeight="Bold" Foreground="White" 
-                                   FontSize="16" Margin="0,0,0,12"/>
-                        
-                        <Grid Margin="0,0,0,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Size:" Foreground="#9ca3af" Width="80"/>
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedModel.Size}" Foreground="White"/>
-                        </Grid>
+							<Path Grid.Column="1"
+								  Fill="{StaticResource TextMutedBrush}"
+								  Data="M7 10l5 5 5-5z"
+								  Width="12"
+								  Height="12"
+								  VerticalAlignment="Center"
+								  Margin="8,0,8,0"/>
 
-                        <Grid Margin="0,0,0,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Context:" Foreground="#9ca3af" Width="80"/>
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedModel.ContextLength}" Foreground="White"/>
-                        </Grid>
+							<CheckBox Grid.Column="2"
+									  IsChecked="{Binding Value.DefaultValue}"
+									  Style="{StaticResource DarkCheckBoxStyle}"/>
+						</Grid>
+					</Expander.Header>
 
-                        <Grid Margin="0,0,0,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Arch:" Foreground="#9ca3af" Width="80"/>
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedModel.Architecture}" Foreground="White"/>
-                        </Grid>
+					<TextBlock Text="{Binding Value.Description}"
+							   Style="{StaticResource CaptionTextStyle}"
+							   TextWrapping="Wrap"
+							   LineHeight="16"
+							   Margin="0,12,0,4"/>
+				</Expander>
+			</Border>
+		</DataTemplate>
 
-                        <Grid Margin="0,0,0,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Quant:" Foreground="#9ca3af" Width="80"/>
-                            <TextBlock Grid.Column="1" Text="{Binding SelectedModel.Quantization}" Foreground="White"/>
-                        </Grid>
+		<!-- Dropdown Parameter Template - A1111 Inspired Section -->
+		<DataTemplate x:Key="DropdownParameterTemplate">
+			<Border Style="{StaticResource DarkCardStyle}">
+				<Expander Background="Transparent"
+						  BorderThickness="0"
+						  IsExpanded="False">
+					<Expander.Header>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="120"/>
+							</Grid.ColumnDefinitions>
 
-                        <!-- Parameter Summary -->
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Params:" Foreground="#9ca3af" Width="80"/>
-                            <TextBlock Grid.Column="1" 
-                                      Text="{Binding SupportedParameterSchema.Count, StringFormat={}{0} available}" 
-                                      Foreground="White"/>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </Grid>
-    </ScrollViewer>
+							<TextBlock Grid.Column="0"
+									   Text="{Binding Value.Name}"
+									   Style="{StaticResource BodyTextStyle}"
+									   VerticalAlignment="Center"
+									   FontWeight="Medium"
+									   FontSize="13"/>
+
+							<Path Grid.Column="1"
+								  Fill="{StaticResource TextMutedBrush}"
+								  Data="M7 10l5 5 5-5z"
+								  Width="12"
+								  Height="12"
+								  VerticalAlignment="Center"
+								  Margin="8,0,8,0"/>
+
+							<ComboBox Grid.Column="2"
+									  ItemsSource="{Binding Value.AllowedValues}"
+									  SelectedItem="{Binding Value.DefaultValue}"
+									  Style="{StaticResource DarkComboBoxStyle}">
+								<ComboBox.ItemContainerStyle>
+									<Style TargetType="ComboBoxItem"
+										   BasedOn="{StaticResource DarkComboBoxItemStyle}"/>
+								</ComboBox.ItemContainerStyle>
+							</ComboBox>
+						</Grid>
+					</Expander.Header>
+
+					<TextBlock Text="{Binding Value.Description}"
+							   Style="{StaticResource CaptionTextStyle}"
+							   TextWrapping="Wrap"
+							   LineHeight="16"
+							   Margin="0,12,0,4"/>
+				</Expander>
+			</Border>
+		</DataTemplate>
+
+		<!-- Parameter Template Selector -->
+		<local:ParameterTemplateSelector x:Key="ParameterTemplateSelector"
+										 FloatTemplate="{StaticResource FloatParameterTemplate}"
+										 IntTemplate="{StaticResource IntParameterTemplate}"
+										 BoolTemplate="{StaticResource BoolParameterTemplate}"
+										 DropdownTemplate="{StaticResource DropdownParameterTemplate}"/>
+	</UserControl.Resources>
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+
+			<!-- Left Column: Model Selection & Dynamic Sampling -->
+			<StackPanel Grid.Column="0"
+						Margin="0,0,8,0">
+				<!-- Model Selection -->
+				<Border Style="{StaticResource DarkBorderStyle}"
+						Margin="0,0,0,16">
+					<StackPanel>
+						<TextBlock Text="Model Selection"
+								   Style="{StaticResource HeadingMediumStyle}"
+								   Margin="0,0,0,12"/>
+
+						<Grid Margin="0,0,0,12">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+
+							<ComboBox ItemsSource="{Binding BaseModels}"
+									  SelectedItem="{Binding SelectedModel}"
+									  DisplayMemberPath="Name"
+									  Background="#374151"
+									  Foreground="White"
+									  BorderBrush="#4b5563"
+									  BorderThickness="1"
+									  Padding="8,6">
+								<ComboBox.Style>
+									<Style TargetType="ComboBox">
+										<Setter Property="Template">
+											<Setter.Value>
+												<ControlTemplate TargetType="ComboBox">
+													<Grid>
+														<ToggleButton Name="ToggleButton"
+																	  Background="{TemplateBinding Background}"
+																	  BorderBrush="{TemplateBinding BorderBrush}"
+																	  BorderThickness="{TemplateBinding BorderThickness}"
+																	  IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+																	  ClickMode="Press">
+															<ToggleButton.Template>
+																<ControlTemplate TargetType="ToggleButton">
+																	<Border Background="{TemplateBinding Background}"
+																			BorderBrush="{TemplateBinding BorderBrush}"
+																			BorderThickness="{TemplateBinding BorderThickness}"
+																			CornerRadius="4">
+																		<Grid>
+																			<Grid.ColumnDefinitions>
+																				<ColumnDefinition Width="*"/>
+																				<ColumnDefinition Width="20"/>
+																			</Grid.ColumnDefinitions>
+																			<ContentPresenter Grid.Column="0"
+																							  Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+																							  Margin="8,6"
+																							  VerticalAlignment="Center"/>
+																			<Path Grid.Column="1"
+																				  Fill="White"
+																				  Data="M 0 0 L 4 4 L 8 0 Z"
+																				  HorizontalAlignment="Center"
+																				  VerticalAlignment="Center"/>
+																		</Grid>
+																	</Border>
+																</ControlTemplate>
+															</ToggleButton.Template>
+														</ToggleButton>
+
+														<Popup Name="Popup"
+															   Placement="Bottom"
+															   IsOpen="{TemplateBinding IsDropDownOpen}"
+															   AllowsTransparency="True"
+															   Focusable="False"
+															   PopupAnimation="Slide">
+															<Border Background="#1f2937"
+																	BorderBrush="#4b5563"
+																	BorderThickness="1"
+																	CornerRadius="4"
+																	MinWidth="{TemplateBinding ActualWidth}"
+																	MaxHeight="200">
+																<ScrollViewer>
+																	<StackPanel IsItemsHost="True"
+																				KeyboardNavigation.DirectionalNavigation="Contained"/>
+																</ScrollViewer>
+															</Border>
+														</Popup>
+													</Grid>
+												</ControlTemplate>
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</ComboBox.Style>
+								<ComboBox.ItemContainerStyle>
+									<Style TargetType="ComboBoxItem">
+										<Setter Property="Background"
+												Value="Transparent"/>
+										<Setter Property="Foreground"
+												Value="White"/>
+										<Setter Property="Padding"
+												Value="8,6"/>
+										<Setter Property="Template">
+											<Setter.Value>
+												<ControlTemplate TargetType="ComboBoxItem">
+													<Border Name="Border"
+															Background="{TemplateBinding Background}"
+															Padding="{TemplateBinding Padding}">
+														<ContentPresenter/>
+													</Border>
+													<ControlTemplate.Triggers>
+														<Trigger Property="IsMouseOver"
+																 Value="True">
+															<Setter TargetName="Border"
+																	Property="Background"
+																	Value="#8b5cf6"/>
+														</Trigger>
+														<Trigger Property="IsSelected"
+																 Value="True">
+															<Setter TargetName="Border"
+																	Property="Background"
+																	Value="#7c3aed"/>
+														</Trigger>
+													</ControlTemplate.Triggers>
+												</ControlTemplate>
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</ComboBox.ItemContainerStyle>
+							</ComboBox>
+
+							<Button Grid.Column="1"
+									Content="Load"
+									Style="{StaticResource PrimaryButtonStyle}"
+									Margin="8,0,0,0"
+									Command="{Binding LoadModelCommand}"
+									CommandParameter="{Binding SelectedModel}"/>
+						</Grid>
+
+						<TextBlock Text="{Binding StatusText}"
+								   Foreground="{StaticResource SuccessBrush}"
+								   FontSize="12"
+								   Margin="0,4,0,0"/>
+					</StackPanel>
+				</Border>
+
+				<!-- Dynamic Sampling Parameters -->
+				<Border Style="{StaticResource DarkBorderStyle}">
+					<StackPanel>
+						<Grid Margin="0,0,0,16">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Sampling Parameters"
+									   Style="{StaticResource HeadingMediumStyle}"/>
+
+							<!-- Loading indicator -->
+							<StackPanel Grid.Column="1"
+										Orientation="Horizontal"
+										Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+								<TextBlock Text="Scanning..."
+										   Style="{StaticResource CaptionTextStyle}"
+										   Margin="0,0,8,0"/>
+								<Border Background="{StaticResource AccentPurpleBrush}"
+										Width="16"
+										Height="16"
+										CornerRadius="8">
+									<Border.RenderTransform>
+										<RotateTransform x:Name="LoadingRotation"/>
+									</Border.RenderTransform>
+									<Border.Triggers>
+										<EventTrigger RoutedEvent="Border.Loaded">
+											<BeginStoryboard>
+												<Storyboard RepeatBehavior="Forever">
+													<DoubleAnimation Storyboard.TargetName="LoadingRotation"
+																	 Storyboard.TargetProperty="Angle"
+																	 From="0"
+																	 To="360"
+																	 Duration="0:0:1"/>
+												</Storyboard>
+											</BeginStoryboard>
+										</EventTrigger>
+									</Border.Triggers>
+								</Border>
+							</StackPanel>
+						</Grid>
+
+						<!-- Dynamic parameter controls -->
+						<ItemsControl ItemsSource="{Binding SupportedParameterSchema}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border Visibility="{Binding Value.IsSupported, Converter={StaticResource BooleanToVisibilityConverter}}">
+										<ContentPresenter Content="{Binding}"
+														  ContentTemplateSelector="{StaticResource ParameterTemplateSelector}"/>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+
+						<!-- Fallback message -->
+						<TextBlock Text="Load a model to see available parameters..."
+								   Style="{StaticResource CaptionTextStyle}"
+								   FontStyle="Italic"
+								   Visibility="{Binding SupportedParameterSchema.Count, Converter={StaticResource ZeroToVisibilityConverter}}"
+								   Margin="0,8,0,0"/>
+					</StackPanel>
+				</Border>
+			</StackPanel>
+
+			<!-- Right Column: System Prompt, Test Prompt & Model Info -->
+			<StackPanel Grid.Column="1"
+						Margin="8,0,0,0">
+				<!-- System Prompt -->
+				<Border Style="{StaticResource DarkBorderStyle}"
+						Margin="0,0,0,16">
+					<StackPanel>
+						<TextBlock Text="System Prompt"
+								   Style="{StaticResource HeadingMediumStyle}"
+								   Margin="0,0,0,12"/>
+						<TextBox Style="{StaticResource DarkTextBoxMultilineStyle}"
+								 MinHeight="150"
+								 Text="You are a helpful, harmless, and honest AI assistant."/>
+					</StackPanel>
+				</Border>
+
+				<!-- Test Prompt Laboratory -->
+				<Border Style="{StaticResource DarkBorderStyle}"
+						Margin="0,0,0,16">
+					<StackPanel>
+						<TextBlock Text="Test Prompt"
+								   Style="{StaticResource HeadingMediumStyle}"
+								   Margin="0,0,0,12"/>
+
+						<TextBox Style="{StaticResource DarkTextBoxMultilineStyle}"
+								 MinHeight="100"
+								 Text="{Binding TestPromptText, UpdateSourceTrigger=PropertyChanged}"
+								 Margin="0,0,0,12"
+								 TabIndex="1"/>
+
+						<Grid Margin="0,0,0,12">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+
+							<Button Content="Execute Test"
+									Style="{StaticResource PrimaryButtonStyle}"
+									Command="{Binding TestParametersCommand}"
+									IsEnabled="{Binding CanExecuteTest}"/>
+
+							<StackPanel Grid.Column="1"
+										Orientation="Horizontal"
+										Margin="12,0,0,0">
+								<TextBlock Text="{Binding TestStatus}"
+										   Foreground="{StaticResource SuccessBrush}"
+										   FontSize="12"
+										   VerticalAlignment="Center"/>
+
+								<!-- Test execution spinner -->
+								<Border Background="{StaticResource AccentPurpleBrush}"
+										Width="12"
+										Height="12"
+										CornerRadius="6"
+										Margin="8,0,0,0"
+										Visibility="{Binding IsTestRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
+									<Border.RenderTransform>
+										<RotateTransform x:Name="TestSpinner"/>
+									</Border.RenderTransform>
+									<Border.Triggers>
+										<EventTrigger RoutedEvent="Border.Loaded">
+											<BeginStoryboard>
+												<Storyboard RepeatBehavior="Forever">
+													<DoubleAnimation Storyboard.TargetName="TestSpinner"
+																	 Storyboard.TargetProperty="Angle"
+																	 From="0"
+																	 To="360"
+																	 Duration="0:0:0.8"/>
+												</Storyboard>
+											</BeginStoryboard>
+										</EventTrigger>
+									</Border.Triggers>
+								</Border>
+							</StackPanel>
+						</Grid>
+
+						<!-- Response area with proper visibility logic -->
+						<Border Background="{StaticResource PrimaryDarkBrush}"
+								BorderBrush="{StaticResource BorderBrush}"
+								BorderThickness="1"
+								CornerRadius="4"
+								Padding="12"
+								MinHeight="120">
+							<ScrollViewer VerticalScrollBarVisibility="Auto">
+								<StackPanel>
+									<!-- Actual response text -->
+									<TextBlock Text="{Binding TestResponse}"
+											   Foreground="{StaticResource TextPrimaryBrush}"
+											   TextWrapping="Wrap">
+										<TextBlock.Style>
+											<Style TargetType="TextBlock">
+												<Setter Property="Visibility"
+														Value="Collapsed"/>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}"
+																 Value="True">
+														<Setter Property="Visibility"
+																Value="Visible"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+									</TextBlock>
+
+									<!-- Placeholder text -->
+									<TextBlock Text="Craft your dark prompt above and hit Execute Test to watch the model's digital soul respond..."
+											   FontStyle="Italic"
+											   TextWrapping="Wrap">
+										<TextBlock.Style>
+											<Style TargetType="TextBlock"
+												   BasedOn="{StaticResource CaptionTextStyle}">
+												<Setter Property="Visibility"
+														Value="Visible"/>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}"
+																 Value="True">
+														<Setter Property="Visibility"
+																Value="Collapsed"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+									</TextBlock>
+								</StackPanel>
+							</ScrollViewer>
+						</Border>
+					</StackPanel>
+				</Border>
+
+				<!-- Model Information -->
+				<Border Style="{StaticResource DarkBorderStyle}"
+						Margin="0,0,0,16">
+					<StackPanel>
+						<TextBlock Text="Model Information"
+								   Style="{StaticResource HeadingMediumStyle}"
+								   Margin="0,0,0,12"/>
+
+						<Grid Margin="0,0,0,6">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Size:"
+									   Style="{StaticResource CaptionTextStyle}"
+									   Width="80"/>
+							<TextBlock Grid.Column="1"
+									   Text="{Binding SelectedModel.Size}"
+									   Style="{StaticResource BodyTextStyle}"/>
+						</Grid>
+
+						<Grid Margin="0,0,0,6">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Context:"
+									   Style="{StaticResource CaptionTextStyle}"
+									   Width="80"/>
+							<TextBlock Grid.Column="1"
+									   Text="{Binding SelectedModel.ContextLength}"
+									   Style="{StaticResource BodyTextStyle}"/>
+						</Grid>
+
+						<Grid Margin="0,0,0,6">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Arch:"
+									   Style="{StaticResource CaptionTextStyle}"
+									   Width="80"/>
+							<TextBlock Grid.Column="1"
+									   Text="{Binding SelectedModel.Architecture}"
+									   Style="{StaticResource BodyTextStyle}"/>
+						</Grid>
+
+						<Grid Margin="0,0,0,6">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Quant:"
+									   Style="{StaticResource CaptionTextStyle}"
+									   Width="80"/>
+							<TextBlock Grid.Column="1"
+									   Text="{Binding SelectedModel.Quantization}"
+									   Style="{StaticResource BodyTextStyle}"/>
+						</Grid>
+
+						<!-- Parameter Summary -->
+						<Grid Margin="0,6,0,0">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Params:"
+									   Style="{StaticResource CaptionTextStyle}"
+									   Width="80"/>
+							<TextBlock Grid.Column="1"
+									   Text="{Binding SupportedParameterSchema.Count, StringFormat={}{0} available}"
+									   Style="{StaticResource BodyTextStyle}"/>
+						</Grid>
+					</StackPanel>
+				</Border>
+			</StackPanel>
+		</Grid>
+	</ScrollViewer>
 </UserControl>

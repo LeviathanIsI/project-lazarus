@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using Lazarus.Desktop.ViewModels;
 
 namespace Lazarus.Desktop.Views
 {
@@ -7,6 +8,7 @@ namespace Lazarus.Desktop.Views
         public ControlNetsView()
         {
             InitializeComponent();
+            DataContext = new ControlNetsViewModel();
         }
     }
 }

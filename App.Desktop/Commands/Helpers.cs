@@ -14,8 +14,8 @@ namespace Lazarus.Desktop.Helpers
             _canExecute = canExecute;
         }
 
+        // Fixed your syntax error - was *canExecute
         public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
-
         public void Execute(object? parameter) => _execute(parameter);
 
         public event EventHandler? CanExecuteChanged
@@ -23,7 +23,27 @@ namespace Lazarus.Desktop.Helpers
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
-        // No manual RaiseCanExecuteChanged method - CommandManager handles it
     }
 
+    // Add this for parameterless commands that your ViewModels are crying for
+    public class SimpleRelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        private readonly Func<bool>? _canExecute;
+
+        public SimpleRelayCommand(Action execute, Func<bool>? canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+        public void Execute(object? parameter) => _execute();
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+    }
 }

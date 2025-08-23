@@ -4,26 +4,22 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="#0f0f0f">
+			 Background="{StaticResource PrimaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- LoRA Card Template -->
 		<DataTemplate x:Key="LoRACardTemplate">
-			<Border Background="#1e1e1e"
-					CornerRadius="8"
-					Padding="12"
-					Margin="0,0,12,12"
-					BorderBrush="#333333"
-					BorderThickness="1"
-					MinWidth="200"
-					MaxWidth="250">
+			<Border MinWidth="200"
+					MaxWidth="250"
+					Margin="0,0,12,12">
 				<Border.Style>
-					<Style TargetType="Border">
+					<Style TargetType="Border"
+						   BasedOn="{StaticResource DarkCardStyle}">
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding IsLoaded}"
 										 Value="True">
 								<Setter Property="BorderBrush"
-										Value="#8b5cf6"/>
+										Value="{StaticResource AccentPurpleBrush}"/>
 								<Setter Property="BorderThickness"
 										Value="2"/>
 							</DataTrigger>
@@ -43,7 +39,7 @@
 					<!-- Preview Image -->
 					<Border Grid.Row="0"
 							Height="120"
-							Background="#2d3748"
+							Background="{StaticResource TertiaryDarkBrush}"
 							CornerRadius="4"
 							Margin="0,0,0,8">
 						<Grid>
@@ -52,7 +48,7 @@
 								   Visibility="{Binding PreviewImagePath, Converter={StaticResource StringToVisibilityConverter}}"/>
 							<TextBlock Text="📷"
 									   FontSize="32"
-									   Foreground="#64748b"
+									   Foreground="{StaticResource TextDisabledBrush}"
 									   HorizontalAlignment="Center"
 									   VerticalAlignment="Center"
 									   Visibility="{Binding PreviewImagePath, Converter={StaticResource InverseStringToVisibilityConverter}}"/>
@@ -63,17 +59,17 @@
 					<StackPanel Grid.Row="1"
 								Margin="0,0,0,8">
 						<TextBlock Text="{Binding Name}"
-								   Foreground="#e2e8f0"
+								   Style="{StaticResource BodyTextStyle}"
 								   FontWeight="SemiBold"
 								   FontSize="13"
 								   TextTrimming="CharacterEllipsis"/>
-						<Border Background="#374151"
+						<Border Background="{StaticResource BorderBrush}"
 								CornerRadius="12"
 								Padding="6,2"
 								HorizontalAlignment="Left"
 								Margin="0,4,0,0">
 							<TextBlock Text="{Binding Category}"
-									   Foreground="#94a3b8"
+									   Style="{StaticResource CaptionTextStyle}"
 									   FontSize="10"/>
 						</Border>
 					</StackPanel>
@@ -81,7 +77,7 @@
 					<!-- Description -->
 					<TextBlock Grid.Row="2"
 							   Text="{Binding ShortDescription}"
-							   Foreground="#94a3b8"
+							   Style="{StaticResource CaptionTextStyle}"
 							   FontSize="11"
 							   TextWrapping="Wrap"
 							   MaxHeight="40"
@@ -97,11 +93,11 @@
 							</Grid.ColumnDefinitions>
 							<TextBlock Grid.Column="0"
 									   Text="{Binding FormattedFileSize}"
-									   Foreground="#64748b"
+									   Style="{StaticResource CaptionTextStyle}"
 									   FontSize="10"/>
 							<TextBlock Grid.Column="1"
 									   Text="{Binding RecommendedWeight, StringFormat=w: {0:F1}}"
-									   Foreground="#64748b"
+									   Style="{StaticResource CaptionTextStyle}"
 									   FontSize="10"
 									   HorizontalAlignment="Right"/>
 						</Grid>
@@ -112,18 +108,16 @@
 							Content="{Binding IsLoaded, Converter={StaticResource BoolToApplyTextConverter}}"
 							Command="{Binding DataContext.ApplyLoRACommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 							CommandParameter="{Binding}"
-							Background="#8b5cf6"
-							Foreground="White"
-							BorderThickness="0"
 							Padding="0,6"
 							FontSize="11">
 						<Button.Style>
-							<Style TargetType="Button">
+							<Style TargetType="Button"
+								   BasedOn="{StaticResource PrimaryButtonStyle}">
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding IsLoaded}"
 												 Value="True">
 										<Setter Property="Background"
-												Value="#4ade80"/>
+												Value="{StaticResource SuccessBrush}"/>
 										<Setter Property="Content"
 												Value="✓ Applied"/>
 									</DataTrigger>
@@ -137,11 +131,10 @@
 
 		<!-- Applied LoRA Template -->
 		<DataTemplate x:Key="AppliedLoRATemplate">
-			<Border Background="#1e1e1e"
-					CornerRadius="6"
+			<Border Style="{StaticResource DarkCardStyle}"
 					Padding="12,8"
 					Margin="0,0,0,8"
-					BorderBrush="#8b5cf6"
+					BorderBrush="{StaticResource AccentPurpleBrush}"
 					BorderThickness="1">
 				<Grid>
 					<Grid.ColumnDefinitions>
@@ -156,7 +149,7 @@
 					<!-- Order -->
 					<TextBlock Grid.Column="0"
 							   Text="{Binding Order}"
-							   Foreground="#64748b"
+							   Style="{StaticResource CaptionTextStyle}"
 							   FontSize="12"
 							   VerticalAlignment="Center"
 							   Width="20"
@@ -165,29 +158,18 @@
 					<!-- Name -->
 					<TextBlock Grid.Column="1"
 							   Text="{Binding Name}"
-							   Foreground="#e2e8f0"
+							   Style="{StaticResource BodyTextStyle}"
 							   FontWeight="Medium"
 							   FontSize="13"
 							   VerticalAlignment="Center"
 							   Margin="8,0"/>
 
-					<!-- Enable/Disable Toggle - Fixed with proper rounded border -->
-					<Border Grid.Column="2"
-							Background="#374151"
-							CornerRadius="4"
-							BorderBrush="#6b7280"
-							BorderThickness="1"
-							Width="18"
-							Height="18"
-							VerticalAlignment="Center"
-							Margin="0,0,8,0">
-						<CheckBox IsChecked="{Binding IsEnabled}"
-								  Background="Transparent"
-								  BorderThickness="0"
-								  Foreground="#8b5cf6"
-								  HorizontalAlignment="Center"
-								  VerticalAlignment="Center"/>
-					</Border>
+					<!-- Enable/Disable Toggle -->
+					<CheckBox Grid.Column="2"
+							  IsChecked="{Binding IsEnabled}"
+							  Style="{StaticResource DarkCheckBoxStyle}"
+							  VerticalAlignment="Center"
+							  Margin="0,0,8,0"/>
 
 					<!-- Weight Slider -->
 					<Grid Grid.Column="3"
@@ -198,7 +180,7 @@
 						</Grid.RowDefinitions>
 						<TextBlock Grid.Row="0"
 								   Text="{Binding Weight, StringFormat=F2}"
-								   Foreground="#94a3b8"
+								   Style="{StaticResource CaptionTextStyle}"
 								   FontSize="10"
 								   HorizontalAlignment="Center"/>
 						<Slider Grid.Row="1"
@@ -207,7 +189,7 @@
 								Maximum="2.0"
 								TickFrequency="0.1"
 								Height="16"
-								Foreground="#8b5cf6"/>
+								Foreground="{StaticResource AccentPurpleBrush}"/>
 					</Grid>
 
 					<!-- Move Buttons -->
@@ -215,18 +197,14 @@
 								Orientation="Horizontal"
 								Margin="8,0">
 						<Button Content="↑"
+								Style="{StaticResource SecondaryButtonStyle}"
 								Padding="4,2"
 								FontSize="10"
-								Background="#374151"
-								Foreground="#94a3b8"
-								BorderThickness="0"
 								Margin="0,0,2,0"/>
 						<Button Content="↓"
+								Style="{StaticResource SecondaryButtonStyle}"
 								Padding="4,2"
-								FontSize="10"
-								Background="#374151"
-								Foreground="#94a3b8"
-								BorderThickness="0"/>
+								FontSize="10"/>
 					</StackPanel>
 
 					<!-- Remove Button -->
@@ -234,9 +212,7 @@
 							Content="✕"
 							Command="{Binding DataContext.RemoveLoRACommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 							CommandParameter="{Binding}"
-							Background="#ef4444"
-							Foreground="White"
-							BorderThickness="0"
+							Style="{StaticResource DangerButtonStyle}"
 							Padding="6,4"
 							FontSize="11"/>
 				</Grid>
@@ -252,9 +228,7 @@
 
 		<!-- Left: Available LoRAs -->
 		<Border Grid.Column="0"
-				Background="#1a1a1a"
-				CornerRadius="8"
-				Padding="16"
+				Style="{StaticResource DarkBorderStyle}"
 				Margin="0,0,8,0">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -273,33 +247,21 @@
 					</Grid.ColumnDefinitions>
 
 					<TextBlock Text="LoRA Collection"
-							   FontWeight="Bold"
-							   Foreground="White"
-							   FontSize="16"/>
+							   Style="{StaticResource HeadingMediumStyle}"/>
 
 					<StackPanel Grid.Column="1"
 								Orientation="Horizontal">
-						<Border Background="#374151"
-								CornerRadius="4"
-								Margin="0,0,8,0">
-							<Button Content="📁"
-									Command="{Binding ImportLoRACommand}"
-									Background="Transparent"
-									Foreground="White"
-									BorderThickness="0"
-									Padding="8,4"
-									ToolTip="Import LoRA"/>
-						</Border>
-						<Border Background="#374151"
-								CornerRadius="4">
-							<Button Content="🔄"
-									Command="{Binding RefreshCommand}"
-									Background="Transparent"
-									Foreground="White"
-									BorderThickness="0"
-									Padding="8,4"
-									ToolTip="Refresh"/>
-						</Border>
+						<Button Content="📁"
+								Command="{Binding ImportLoRACommand}"
+								Style="{StaticResource SecondaryButtonStyle}"
+								Margin="0,0,8,0"
+								Padding="8,4"
+								ToolTip="Import LoRA"/>
+						<Button Content="🔄"
+								Command="{Binding RefreshCommand}"
+								Style="{StaticResource SecondaryButtonStyle}"
+								Padding="8,4"
+								ToolTip="Refresh"/>
 					</StackPanel>
 				</Grid>
 
@@ -312,35 +274,32 @@
 						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
 
-					<Border Background="#374151"
-							CornerRadius="4"
-							Margin="0,0,8,0">
-						<TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}"
-								 Background="Transparent"
-								 Foreground="White"
-								 BorderThickness="0"
-								 Padding="12,8"
-								 VerticalAlignment="Center"/>
-					</Border>
+					<TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}"
+							 Style="{StaticResource DarkTextBoxStyle}"
+							 Margin="0,0,8,0"/>
 
 					<ComboBox Grid.Column="1"
 							  ItemsSource="{Binding Categories}"
 							  SelectedItem="{Binding SelectedCategory}"
-							  Background="#374151"
-							  Foreground="White"
-							  BorderBrush="#6b7280"
-							  Padding="8,6"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,8,0"
-							  MinWidth="100"/>
+							  MinWidth="100">
+						<ComboBox.ItemContainerStyle>
+							<Style TargetType="ComboBoxItem"
+								   BasedOn="{StaticResource DarkComboBoxItemStyle}"/>
+						</ComboBox.ItemContainerStyle>
+					</ComboBox>
 
 					<ComboBox Grid.Column="2"
 							  ItemsSource="{Binding SortOrders}"
 							  SelectedItem="{Binding SortOrder}"
-							  Background="#374151"
-							  Foreground="White"
-							  BorderBrush="#6b7280"
-							  Padding="8,6"
-							  MinWidth="100"/>
+							  Style="{StaticResource DarkComboBoxStyle}"
+							  MinWidth="100">
+						<ComboBox.ItemContainerStyle>
+							<Style TargetType="ComboBoxItem"
+								   BasedOn="{StaticResource DarkComboBoxItemStyle}"/>
+						</ComboBox.ItemContainerStyle>
+					</ComboBox>
 				</Grid>
 
 				<!-- LoRA Grid -->
@@ -366,13 +325,13 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="#10b981"
+							   Foreground="{StaticResource SuccessBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
 					<TextBlock Grid.Column="1"
 							   Text="{Binding TotalLoRAsCount, StringFormat={}{0} LoRAs}"
-							   Foreground="#64748b"
+							   Style="{StaticResource CaptionTextStyle}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 				</Grid>
@@ -381,9 +340,7 @@
 
 		<!-- Right: Applied LoRAs Stack -->
 		<Border Grid.Column="1"
-				Background="#1a1a1a"
-				CornerRadius="8"
-				Padding="16"
+				Style="{StaticResource DarkBorderStyle}"
 				Margin="8,0,0,0">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -401,20 +358,13 @@
 					</Grid.ColumnDefinitions>
 
 					<TextBlock Text="Applied Stack"
-							   FontWeight="Bold"
-							   Foreground="White"
-							   FontSize="16"/>
+							   Style="{StaticResource HeadingMediumStyle}"/>
 
-					<Border Background="#ef4444"
-							CornerRadius="4">
-						<Button Content="Clear All"
-								Command="{Binding ClearAllLoRAsCommand}"
-								Background="Transparent"
-								Foreground="White"
-								BorderThickness="0"
-								Padding="8,4"
-								FontSize="11"/>
-					</Border>
+					<Button Content="Clear All"
+							Command="{Binding ClearAllLoRAsCommand}"
+							Style="{StaticResource DangerButtonStyle}"
+							Padding="8,4"
+							FontSize="11"/>
 				</Grid>
 
 				<!-- Applied LoRAs List -->
@@ -425,7 +375,7 @@
 									  ItemTemplate="{StaticResource AppliedLoRATemplate}"/>
 
 						<!-- Empty State -->
-						<Border Background="#2d3748"
+						<Border Background="{StaticResource TertiaryDarkBrush}"
 								CornerRadius="6"
 								Padding="20"
 								Visibility="{Binding AppliedLoRAsCount, Converter={StaticResource ZeroToVisibilityConverter}}">
@@ -433,16 +383,16 @@
 								<TextBlock Text="🎨"
 										   FontSize="32"
 										   HorizontalAlignment="Center"
-										   Foreground="#64748b"
+										   Foreground="{StaticResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
 								<TextBlock Text="No LoRAs Applied"
 										   HorizontalAlignment="Center"
-										   Foreground="#94a3b8"
+										   Style="{StaticResource BodyTextStyle}"
 										   FontSize="13"
 										   FontWeight="Medium"/>
 								<TextBlock Text="Select LoRAs from the collection to start blending"
 										   HorizontalAlignment="Center"
-										   Foreground="#64748b"
+										   Style="{StaticResource CaptionTextStyle}"
 										   FontSize="11"
 										   TextWrapping="Wrap"
 										   TextAlignment="Center"
@@ -454,7 +404,7 @@
 
 				<!-- Summary -->
 				<Border Grid.Row="2"
-						Background="#2d3748"
+						Background="{StaticResource TertiaryDarkBrush}"
 						CornerRadius="6"
 						Padding="12,8"
 						Margin="0,16,0,0">
@@ -466,22 +416,20 @@
 
 						<StackPanel Grid.Column="0">
 							<TextBlock Text="Active LoRAs"
-									   Foreground="#94a3b8"
+									   Style="{StaticResource CaptionTextStyle}"
 									   FontSize="10"/>
 							<TextBlock Text="{Binding AppliedLoRAsCount}"
-									   Foreground="#e2e8f0"
-									   FontSize="16"
-									   FontWeight="SemiBold"/>
+									   Style="{StaticResource HeadingMediumStyle}"
+									   FontSize="16"/>
 						</StackPanel>
 
 						<StackPanel Grid.Column="1">
 							<TextBlock Text="Total Weight"
-									   Foreground="#94a3b8"
+									   Style="{StaticResource CaptionTextStyle}"
 									   FontSize="10"/>
 							<TextBlock Text="{Binding TotalWeight, StringFormat=F2}"
-									   Foreground="#e2e8f0"
-									   FontSize="16"
-									   FontWeight="SemiBold"/>
+									   Style="{StaticResource HeadingMediumStyle}"
+									   FontSize="16"/>
 						</StackPanel>
 					</Grid>
 				</Border>

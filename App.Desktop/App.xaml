@@ -12,6 +12,11 @@
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 		<conv:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
 
+		<!-- BoolToTextConverter for status display - moved from VAEsView -->
+		<conv:BoolToTextConverter x:Key="BoolToStatusConverter"
+								  TrueText="Loaded"
+								  FalseText="Default"/>
+
 		<!-- === PRIMARY DARK COLOR PALETTE === -->
 		<SolidColorBrush x:Key="PrimaryDarkBrush"
 						 Color="#0f0f0f"/>
