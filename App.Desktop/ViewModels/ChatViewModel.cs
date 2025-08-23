@@ -28,8 +28,6 @@ namespace Lazarus.Desktop.ViewModels
                 {
                     _input = value;
                     OnPropertyChanged();
-                    // force WPF to re-check CanExecute
-                    (SendCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 }
             }
         }

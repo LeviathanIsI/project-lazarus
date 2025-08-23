@@ -62,12 +62,10 @@ namespace Lazarus.Desktop
         private void ConfigureServices(IServiceCollection services)
         {
             // Register ViewModels
-            services.AddTransient<BaseModelViewModel>();
+            services.AddSingleton<BaseModelViewModel>();
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<ChatViewModel>();
-            services.AddTransient<BaseModelViewModel>();
 
-            // Register Views
             services.AddTransient<MainWindow>();
             services.AddTransient<BaseModelView>();
 

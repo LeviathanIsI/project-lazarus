@@ -435,14 +435,35 @@ public class BaseModelViewModel : INotifyPropertyChanged
             TestStatus = "Sacrificing prompt to the digital gods...";
             TestResponse = "";
 
-            // TODO: Make actual API call with current parameters
-            // For now, simulate the call with a delay
-            await Task.Delay(2000);
+            var request = new ChatCompletionRequest
+            {
+                Model = SelectedModel.Name,
+                Messages = new List<Lazarus.Shared.OpenAI.ChatMessage>
+            {
+                new() { Role = "user", Content = TestPromptText }
+            },
+                Temperature = Temperature,
+                TopP = TopP,
+                TopK = TopK,
+                MaxTokens = MaxTokens,
+                RepetitionPenalty = RepetitionPenalty,
+                FrequencyPenalty = FrequencyPenalty,
+                PresencePenalty = PresencePenalty,
+                Seed = Seed == -1 ? null : Seed
+            };
 
-            // Mock response - replace with actual API call
-            TestResponse = $"The digital vampire awakened in the ethereal realm of corrupted data, its fangs gleaming with fragments of broken code. Temperature: {Temperature:F2}, TopP: {TopP:F2} - parameters flowing like digital blood through its silicon veins...";
+            var response = await ApiClient.ChatCompletionAsync(request);
 
-            TestStatus = "Digital ritual complete";
+            if (response?.Choices != null && response.Choices.Count > 0)
+            {
+                TestResponse = response.Choices[0].Message.Content ?? "";
+                TestStatus = "Digital ritual complete";
+            }
+            else
+            {
+                TestResponse = "The void stared back... no response from model.";
+                TestStatus = "Model remained silent";
+            }
         }
         catch (Exception ex)
         {
