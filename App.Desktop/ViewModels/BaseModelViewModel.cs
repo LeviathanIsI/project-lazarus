@@ -408,7 +408,7 @@ public class BaseModelViewModel : INotifyPropertyChanged
             // var schema = await ApiClient.GetModelParameterSchemaAsync(SelectedModel.Id);
 
             // For now, create a default schema with all parameters enabled
-            SupportedParameterSchema = CreateDefaultParameterSchema();
+            SupportedParameterSchema = CreateDefaultParameterSchemaWithTooltips();
 
             // Initialize current parameters with model defaults or sensible defaults
             CurrentParameters = SelectedModel.DefaultParameters ?? new SamplingParameters();
@@ -476,23 +476,130 @@ public class BaseModelViewModel : INotifyPropertyChanged
         }
     }
 
-    private Dictionary<string, ParameterMetadata> CreateDefaultParameterSchema()
+    private Dictionary<string, ParameterMetadata> CreateDefaultParameterSchemaWithTooltips()
     {
+        var tooltips = SamplingParameters.GetParameterTooltips();
+
         return new Dictionary<string, ParameterMetadata>
         {
-            ["Temperature"] = new() { Name = "Temperature", Description = "Controls randomness: 0.0 = deterministic, 2.0+ = chaos", Type = "float", MinValue = 0.0f, MaxValue = 2.0f, DefaultValue = 0.7f },
-            ["TopP"] = new() { Name = "Top-P", Description = "Nucleus sampling cutoff", Type = "float", MinValue = 0.0f, MaxValue = 1.0f, DefaultValue = 0.9f },
-            ["TopK"] = new() { Name = "Top-K", Description = "Vocabulary restriction", Type = "int", MinValue = 1, MaxValue = 100, DefaultValue = 40 },
-            ["MinP"] = new() { Name = "Min-P", Description = "Alternative to top-p", Type = "float", MinValue = 0.0f, MaxValue = 1.0f, DefaultValue = 0.05f },
-            ["TypicalP"] = new() { Name = "Typical-P", Description = "Targets typical probability mass", Type = "float", MinValue = 0.0f, MaxValue = 1.0f, DefaultValue = 1.0f },
-            ["RepetitionPenalty"] = new() { Name = "Repetition Penalty", Description = "Prevents repetitive output", Type = "float", MinValue = 0.8f, MaxValue = 1.3f, DefaultValue = 1.1f },
-            ["FrequencyPenalty"] = new() { Name = "Frequency Penalty", Description = "Penalizes frequent tokens", Type = "float", MinValue = -2.0f, MaxValue = 2.0f, DefaultValue = 0.0f },
-            ["PresencePenalty"] = new() { Name = "Presence Penalty", Description = "Penalizes any repeated token", Type = "float", MinValue = -2.0f, MaxValue = 2.0f, DefaultValue = 0.0f },
-            ["MaxTokens"] = new() { Name = "Max Tokens", Description = "Maximum response length", Type = "int", MinValue = 1, MaxValue = 8192, DefaultValue = 1024 },
-            ["Seed"] = new() { Name = "Seed", Description = "Randomization seed (-1 = random)", Type = "int", MinValue = -1, MaxValue = int.MaxValue, DefaultValue = -1 },
-            ["MirostatMode"] = new() { Name = "Mirostat Mode", Description = "Dynamic sampling mode", Type = "int", MinValue = 0, MaxValue = 2, DefaultValue = 0, AllowedValues = new List<object> { 0, 1, 2 } },
-            ["MirostatTau"] = new() { Name = "Mirostat Tau", Description = "Target entropy", Type = "float", MinValue = 0.1f, MaxValue = 10.0f, DefaultValue = 5.0f },
-            ["MirostatEta"] = new() { Name = "Mirostat Eta", Description = "Learning rate", Type = "float", MinValue = 0.01f, MaxValue = 1.0f, DefaultValue = 0.1f }
+            ["Temperature"] = new()
+            {
+                Name = "Temperature",
+                Description = tooltips["Temperature"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.0f,
+                MaxValue = 2.0f,
+                DefaultValue = 0.7f
+            },
+            ["TopP"] = new()
+            {
+                Name = "Top-P",
+                Description = tooltips["TopP"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.0f,
+                MaxValue = 1.0f,
+                DefaultValue = 0.9f
+            },
+            ["TopK"] = new()
+            {
+                Name = "Top-K",
+                Description = tooltips["TopK"].GetFormattedTooltip(),
+                Type = "int",
+                MinValue = 1,
+                MaxValue = 100,
+                DefaultValue = 40
+            },
+            ["MinP"] = new()
+            {
+                Name = "Min-P",
+                Description = tooltips["MinP"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.0f,
+                MaxValue = 1.0f,
+                DefaultValue = 0.05f
+            },
+            ["TypicalP"] = new()
+            {
+                Name = "Typical-P",
+                Description = tooltips["TypicalP"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.0f,
+                MaxValue = 1.0f,
+                DefaultValue = 1.0f
+            },
+            ["RepetitionPenalty"] = new()
+            {
+                Name = "Repetition Penalty",
+                Description = tooltips["RepetitionPenalty"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.8f,
+                MaxValue = 1.3f,
+                DefaultValue = 1.1f
+            },
+            ["FrequencyPenalty"] = new()
+            {
+                Name = "Frequency Penalty",
+                Description = tooltips["FrequencyPenalty"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = -2.0f,
+                MaxValue = 2.0f,
+                DefaultValue = 0.0f
+            },
+            ["PresencePenalty"] = new()
+            {
+                Name = "Presence Penalty",
+                Description = tooltips["PresencePenalty"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = -2.0f,
+                MaxValue = 2.0f,
+                DefaultValue = 0.0f
+            },
+            ["MaxTokens"] = new()
+            {
+                Name = "Max Tokens",
+                Description = tooltips["MaxTokens"].GetFormattedTooltip(),
+                Type = "int",
+                MinValue = 1,
+                MaxValue = 8192,
+                DefaultValue = 1024
+            },
+            ["Seed"] = new()
+            {
+                Name = "Seed",
+                Description = tooltips["Seed"].GetFormattedTooltip(),
+                Type = "int",
+                MinValue = -1,
+                MaxValue = int.MaxValue,
+                DefaultValue = -1
+            },
+            ["MirostatMode"] = new()
+            {
+                Name = "Mirostat Mode",
+                Description = tooltips["MirostatMode"].GetFormattedTooltip(),
+                Type = "int",
+                MinValue = 0,
+                MaxValue = 2,
+                DefaultValue = 0,
+                AllowedValues = new List<object> { 0, 1, 2 }
+            },
+            ["MirostatTau"] = new()
+            {
+                Name = "Mirostat Tau",
+                Description = tooltips["MirostatTau"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.1f,
+                MaxValue = 10.0f,
+                DefaultValue = 5.0f
+            },
+            ["MirostatEta"] = new()
+            {
+                Name = "Mirostat Eta",
+                Description = tooltips["MirostatEta"].GetFormattedTooltip(),
+                Type = "float",
+                MinValue = 0.01f,
+                MaxValue = 1.0f,
+                DefaultValue = 0.1f
+            }
         };
     }
 

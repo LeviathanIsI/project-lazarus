@@ -39,12 +39,11 @@
 
         <!-- Content Panels -->
         <Grid Grid.Row="1">
-            <!-- BaseModel now loads the actual UserControl -->
+            <!-- BaseModel loads the actual UserControl -->
             <local:BaseModelView x:Name="BaseModelContent" Visibility="Visible"/>
 
-            <Grid x:Name="LoRAsContent" Visibility="Collapsed">
-                <TextBlock Text="LoRAs Section" Foreground="White"/>
-            </Grid>
+            <!-- LoRAs now loads the actual LorAsView instead of pathetic placeholder -->
+            <local:LorAsView x:Name="LoRAsContent" Visibility="Collapsed"/>
 
             <Grid x:Name="ControlNetsContent" Visibility="Collapsed">
                 <TextBlock Text="ControlNets Section" Foreground="White"/>

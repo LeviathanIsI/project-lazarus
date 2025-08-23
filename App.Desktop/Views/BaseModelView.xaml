@@ -8,122 +8,279 @@
              Background="#0f0f0f">
 
     <UserControl.Resources>
-        <!-- Float Parameter Template -->
+        <!-- Float Parameter Template - A1111 Inspired Section -->
         <DataTemplate x:Key="FloatParameterTemplate">
-            <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="80"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Grid.Column="0" 
-                          Text="{Binding Value.Name}" 
-                          Foreground="#d1d5db" 
-                          VerticalAlignment="Center"
-                          ToolTip="{Binding Value.Description}"/>
-                
-                <TextBox Grid.Row="0" Grid.Column="1" 
-                        Text="{Binding Value.DefaultValue, StringFormat=F2}" 
-                        Background="#374151" 
-                        Foreground="White" 
-                        BorderThickness="0" 
-                        Padding="8,4" 
-                        TextAlignment="Center"/>
-                
-                <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                       Value="{Binding Value.DefaultValue}"
-                       Minimum="{Binding Value.MinValue}"
-                       Maximum="{Binding Value.MaxValue}"
-                       TickFrequency="0.1" 
-                       Margin="0,4,0,0" 
-                       Foreground="#8b5cf6"/>
-            </Grid>
+            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
+                    BorderBrush="#333333" BorderThickness="1">
+                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
+                    <Expander.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" 
+                                      Text="{Binding Value.Name}" 
+                                      Foreground="#e2e8f0" 
+                                      VerticalAlignment="Center"
+                                      FontWeight="Medium"
+                                      FontSize="13"/>
+                            
+                            <!-- Dropdown indicator on the right -->
+                            <Path Grid.Column="1" 
+                                  Fill="#94a3b8" 
+                                  Data="M7 10l5 5 5-5z" 
+                                  Width="12" Height="12" 
+                                  VerticalAlignment="Center" 
+                                  Margin="8,0,8,0"
+                                  RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="0"/>
+                                </Path.RenderTransform>
+                            </Path>
+                            
+                            <Border Grid.Column="2" 
+                                   Background="#2d3748" 
+                                   CornerRadius="4" 
+                                   BorderBrush="#4a5568" 
+                                   BorderThickness="1">
+                                <TextBox Text="{Binding Value.DefaultValue, StringFormat=F2}" 
+                                        Background="Transparent"
+                                        Foreground="#f7fafc" 
+                                        BorderThickness="0" 
+                                        Padding="8,4" 
+                                        TextAlignment="Center"
+                                        FontFamily="Consolas"
+                                        FontSize="12"/>
+                            </Border>
+                        </Grid>
+                    </Expander.Header>
+                    
+                    <StackPanel Margin="0,12,0,4">
+                        <TextBlock Text="{Binding Value.Description}" 
+                                  Foreground="#94a3b8" 
+                                  FontSize="11" 
+                                  TextWrapping="Wrap"
+                                  LineHeight="16"
+                                  Margin="0,0,0,12"/>
+                        
+                        <Slider Value="{Binding Value.DefaultValue}"
+                               Minimum="{Binding Value.MinValue}"
+                               Maximum="{Binding Value.MaxValue}"
+                               TickFrequency="0.01" 
+                               Foreground="#8b5cf6"
+                               Background="#374151"
+                               Height="20"/>
+                    </StackPanel>
+                </Expander>
+            </Border>
         </DataTemplate>
 
-        <!-- Integer Parameter Template -->
+        <!-- Integer Parameter Template - A1111 Inspired Section -->
         <DataTemplate x:Key="IntParameterTemplate">
-            <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="80"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Grid.Column="0" 
-                          Text="{Binding Value.Name}" 
-                          Foreground="#d1d5db" 
-                          VerticalAlignment="Center"
-                          ToolTip="{Binding Value.Description}"/>
-                
-                <TextBox Grid.Row="0" Grid.Column="1" 
-                        Text="{Binding Value.DefaultValue}" 
-                        Background="#374151" 
-                        Foreground="White" 
-                        BorderThickness="0" 
-                        Padding="8,4" 
-                        TextAlignment="Center"/>
-                
-                <Slider Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                       Value="{Binding Value.DefaultValue}"
-                       Minimum="{Binding Value.MinValue}"
-                       Maximum="{Binding Value.MaxValue}"
-                       TickFrequency="1" 
-                       Margin="0,4,0,0" 
-                       Foreground="#8b5cf6"
-                       IsSnapToTickEnabled="True"/>
-            </Grid>
+            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
+                    BorderBrush="#333333" BorderThickness="1">
+                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
+                    <Expander.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" 
+                                      Text="{Binding Value.Name}" 
+                                      Foreground="#e2e8f0" 
+                                      VerticalAlignment="Center"
+                                      FontWeight="Medium"
+                                      FontSize="13"/>
+                            
+                            <Path Grid.Column="1" 
+                                  Fill="#94a3b8" 
+                                  Data="M7 10l5 5 5-5z" 
+                                  Width="12" Height="12" 
+                                  VerticalAlignment="Center" 
+                                  Margin="8,0,8,0"/>
+                            
+                            <Border Grid.Column="2" 
+                                   Background="#2d3748" 
+                                   CornerRadius="4" 
+                                   BorderBrush="#4a5568" 
+                                   BorderThickness="1">
+                                <TextBox Text="{Binding Value.DefaultValue}" 
+                                        Background="Transparent"
+                                        Foreground="#f7fafc" 
+                                        BorderThickness="0" 
+                                        Padding="8,4" 
+                                        TextAlignment="Center"
+                                        FontFamily="Consolas"
+                                        FontSize="12"/>
+                            </Border>
+                        </Grid>
+                    </Expander.Header>
+                    
+                    <StackPanel Margin="0,12,0,4">
+                        <TextBlock Text="{Binding Value.Description}" 
+                                  Foreground="#94a3b8" 
+                                  FontSize="11" 
+                                  TextWrapping="Wrap"
+                                  LineHeight="16"
+                                  Margin="0,0,0,12"/>
+                        
+                        <Slider Value="{Binding Value.DefaultValue}"
+                               Minimum="{Binding Value.MinValue}"
+                               Maximum="{Binding Value.MaxValue}"
+                               TickFrequency="1" 
+                               IsSnapToTickEnabled="True"
+                               Foreground="#8b5cf6"
+                               Background="#374151"
+                               Height="20"/>
+                    </StackPanel>
+                </Expander>
+            </Border>
         </DataTemplate>
 
-        <!-- Boolean Parameter Template -->
+        <!-- Boolean Parameter Template - A1111 Inspired Section -->
         <DataTemplate x:Key="BoolParameterTemplate">
-            <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Grid.Column="0" 
-                          Text="{Binding Value.Name}" 
-                          Foreground="#d1d5db" 
-                          VerticalAlignment="Center"
-                          ToolTip="{Binding Value.Description}"/>
-                
-                <CheckBox Grid.Column="1" 
-                         IsChecked="{Binding Value.DefaultValue}"
-                         Background="#374151"
-                         BorderBrush="#6b7280"
-                         Foreground="#8b5cf6"/>
-            </Grid>
+            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
+                    BorderBrush="#333333" BorderThickness="1">
+                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
+                    <Expander.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" 
+                                      Text="{Binding Value.Name}" 
+                                      Foreground="#e2e8f0" 
+                                      VerticalAlignment="Center"
+                                      FontWeight="Medium"
+                                      FontSize="13"/>
+                            
+                            <Path Grid.Column="1" 
+                                  Fill="#94a3b8" 
+                                  Data="M7 10l5 5 5-5z" 
+                                  Width="12" Height="12" 
+                                  VerticalAlignment="Center" 
+                                  Margin="8,0,8,0"/>
+                            
+                            <CheckBox Grid.Column="2" 
+                                     IsChecked="{Binding Value.DefaultValue}"
+                                     Background="#2d3748"
+                                     BorderBrush="#4a5568"
+                                     Foreground="#8b5cf6"/>
+                        </Grid>
+                    </Expander.Header>
+                    
+                    <TextBlock Text="{Binding Value.Description}" 
+                              Foreground="#94a3b8" 
+                              FontSize="11" 
+                              TextWrapping="Wrap"
+                              LineHeight="16"
+                              Margin="0,12,0,4"/>
+                </Expander>
+            </Border>
         </DataTemplate>
 
-        <!-- Dropdown Parameter Template -->
+        <!-- Dropdown Parameter Template - A1111 Inspired Section -->
         <DataTemplate x:Key="DropdownParameterTemplate">
-            <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="120"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Grid.Column="0" 
-                          Text="{Binding Value.Name}" 
-                          Foreground="#d1d5db" 
-                          VerticalAlignment="Center"
-                          ToolTip="{Binding Value.Description}"/>
-                
-                <ComboBox Grid.Column="1"
-                         ItemsSource="{Binding Value.AllowedValues}"
-                         SelectedItem="{Binding Value.DefaultValue}"
-                         Background="#374151" 
-                         Foreground="White"
-                         BorderBrush="#6b7280"/>
-            </Grid>
+            <Border Background="#1e1e1e" CornerRadius="8" Padding="16,12" Margin="0,0,0,12" 
+                    BorderBrush="#333333" BorderThickness="1">
+                <Expander Background="Transparent" BorderThickness="0" IsExpanded="False">
+                    <Expander.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" 
+                                      Text="{Binding Value.Name}" 
+                                      Foreground="#e2e8f0" 
+                                      VerticalAlignment="Center"
+                                      FontWeight="Medium"
+                                      FontSize="13"/>
+                            
+                            <Path Grid.Column="1" 
+                                  Fill="#94a3b8" 
+                                  Data="M7 10l5 5 5-5z" 
+                                  Width="12" Height="12" 
+                                  VerticalAlignment="Center" 
+                                  Margin="8,0,8,0"/>
+                            
+                            <Border Grid.Column="2" 
+                                   Background="#2d3748" 
+                                   CornerRadius="4" 
+                                   BorderBrush="#4a5568" 
+                                   BorderThickness="1">
+                                <ComboBox ItemsSource="{Binding Value.AllowedValues}"
+                                         SelectedItem="{Binding Value.DefaultValue}"
+                                         Background="Transparent" 
+                                         Foreground="#f7fafc"
+                                         BorderThickness="0"
+                                         Padding="8,4">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ComboBox">
+                                                        <Grid>
+                                                            <ToggleButton Background="Transparent"
+                                                                        BorderThickness="0"
+                                                                        IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="20"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <ContentPresenter Grid.Column="0"
+                                                                                    Content="{TemplateBinding SelectionBoxItem}"
+                                                                                    Margin="{TemplateBinding Padding}"
+                                                                                    VerticalAlignment="Center"/>
+                                                                    <Path Grid.Column="1" 
+                                                                          Fill="#94a3b8"
+                                                                          Data="M 0 0 L 4 4 L 8 0 Z"
+                                                                          VerticalAlignment="Center"
+                                                                          HorizontalAlignment="Center"/>
+                                                                </Grid>
+                                                            </ToggleButton>
+                                                            <Popup IsOpen="{TemplateBinding IsDropDownOpen}"
+                                                                   Placement="Bottom">
+                                                                <Border Background="#1f2937"
+                                                                        BorderBrush="#374151"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="4">
+                                                                    <ScrollViewer>
+                                                                        <StackPanel IsItemsHost="True"/>
+                                                                    </ScrollViewer>
+                                                                </Border>
+                                                            </Popup>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ComboBox.Style>
+                                </ComboBox>
+                            </Border>
+                        </Grid>
+                    </Expander.Header>
+                    
+                    <TextBlock Text="{Binding Value.Description}" 
+                              Foreground="#94a3b8" 
+                              FontSize="11" 
+                              TextWrapping="Wrap"
+                              LineHeight="16"
+                              Margin="0,12,0,4"/>
+                </Expander>
+            </Border>
         </DataTemplate>
 
         <!-- Parameter Template Selector -->
@@ -191,7 +348,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             
-                            <!-- Dark ComboBox -->
+                            <!-- Dark ComboBox with proper styling -->
                             <ComboBox ItemsSource="{Binding BaseModels}" 
                                       SelectedItem="{Binding SelectedModel}" 
                                       DisplayMemberPath="Name"

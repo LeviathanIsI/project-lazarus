@@ -1,18 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>Lazarus.Desktop</RootNamespace>
+		<AssemblyName>Lazarus.Desktop</AssemblyName>
+		<TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
+	</PropertyGroup>
 
-    <RootNamespace>Lazarus.Desktop</RootNamespace>
-    <AssemblyName>Lazarus.Desktop</AssemblyName>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\App.Orchestrator\App.Orchestrator.csproj" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\App.Orchestrator\App.Orchestrator.csproj" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection"
+						  Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting"
+						  Version="8.0.0" />
+	</ItemGroup>
 </Project>
