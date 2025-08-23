@@ -11,6 +11,7 @@
 		<!-- Missing converters that were causing the digital apocalypse -->
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 		<conv:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+		<conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
 
 		<!-- BoolToTextConverter for status display - moved from VAEsView -->
 		<conv:BoolToTextConverter x:Key="BoolToStatusConverter"

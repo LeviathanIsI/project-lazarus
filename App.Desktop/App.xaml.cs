@@ -28,19 +28,23 @@ namespace Lazarus.Desktop
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
-            try
+            // Start orchestrator in background - don't block UI startup
+            _ = Task.Run(async () =>
             {
-                // Ensure Lazarus folders exist
-                DirectoryBootstrap.EnsureDirectories();
+                try
+                {
+                    // Ensure Lazarus folders exist
+                    DirectoryBootstrap.EnsureDirectories();
 
-                Console.WriteLine("App: Starting orchestrator...");
-                await OrchestratorHost.StartAsync("http://127.0.0.1:11711", _cts.Token);
-                Console.WriteLine("App: Orchestrator started successfully");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"App: Orchestrator failed to start - {ex.Message}");
-            }
+                    Console.WriteLine("App: Starting orchestrator...");
+                    await OrchestratorHost.StartAsync("http://127.0.0.1:11711", _cts.Token);
+                    Console.WriteLine("App: Orchestrator started successfully");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"App: Orchestrator failed to start - {ex.Message}");
+                }
+            }, _cts.Token);
 
             try
             {
@@ -65,6 +69,40 @@ namespace Lazarus.Desktop
             services.AddSingleton<BaseModelViewModel>();
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<ChatViewModel>();
+            
+            // Register 3D Model ViewModels
+            services.AddTransient<Lazarus.Desktop.ViewModels.ThreeDModels.ThreeDModelsViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.ThreeDModels.ViewportViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.ThreeDModels.ModelTreeViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.ThreeDModels.ModelPropertiesViewModel>();
+            
+            // Register Images ViewModels
+            services.AddTransient<Lazarus.Desktop.ViewModels.Images.ImagesViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Images.Text2ImageViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Images.Image2ImageViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Images.InpaintingViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Images.UpscalingViewModel>();
+
+            // Register Video ViewModels
+            services.AddTransient<Lazarus.Desktop.ViewModels.Video.VideoViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Video.Text2VideoViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Video.Video2VideoViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Video.MotionControlViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Video.TemporalEffectsViewModel>();
+
+            // Register Voice ViewModels
+            services.AddTransient<Lazarus.Desktop.ViewModels.Voice.VoiceViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Voice.TTSConfigurationViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Voice.VoiceCloningViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Voice.RealTimeSynthesisViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Voice.AudioProcessingViewModel>();
+
+            // Register Entities ViewModels
+            services.AddTransient<Lazarus.Desktop.ViewModels.Entities.EntitiesViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Entities.EntityCreationViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Entities.BehavioralPatternsViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Entities.InteractionTestingViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Entities.EntityManagementViewModel>();
 
             services.AddTransient<MainWindow>();
             services.AddTransient<BaseModelView>();

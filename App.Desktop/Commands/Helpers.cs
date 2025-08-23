@@ -46,4 +46,40 @@ namespace Lazarus.Desktop.Helpers
             remove { CommandManager.RequerySuggested -= value; }
         }
     }
+
+    // Generic version for parameterized commands
+    public class SimpleRelayCommand<T> : ICommand
+    {
+        private readonly Action<T?> _execute;
+        private readonly Func<T?, bool>? _canExecute;
+
+        public SimpleRelayCommand(Action<T?> execute, Func<T?, bool>? canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public bool CanExecute(object? parameter)
+        {
+            if (parameter is T typedParam)
+                return _canExecute?.Invoke(typedParam) ?? true;
+            if (parameter == null && !typeof(T).IsValueType)
+                return _canExecute?.Invoke(default(T)) ?? true;
+            return false;
+        }
+
+        public void Execute(object? parameter)
+        {
+            if (parameter is T typedParam)
+                _execute(typedParam);
+            else if (parameter == null && !typeof(T).IsValueType)
+                _execute(default(T));
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+    }
 }
