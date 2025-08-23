@@ -22,7 +22,7 @@ public static class OrchestratorHost
         if (_app != null) return;
 
         DirectoryBootstrap.EnsureDirectories();
-        RunnerRegistry.InitializeFromEnv();
+        await RunnerRegistry.InitializeAsync();
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = Array.Empty<string>() });
         builder.WebHost.UseUrls(url);
@@ -90,8 +90,8 @@ public static class OrchestratorHost
             return Results.Json(inventory, Json);
         });
 
-        // Available models for current runner - FIXED PROPERTY CASING
-        app.MapGet("/v1/models/available", async () =>
+        // Available models for current runner
+        app.MapGet("/v1/models/available", () =>
         {
             var inventory = ModelScannerService.ScanAll();
             var activeModel = RunnerRegistry.Active?.Name;
@@ -169,14 +169,17 @@ public static class OrchestratorHost
         // Get available runners
         app.MapGet("/v1/runners", () =>
         {
+            var status = RunnerRegistry.GetStatus();
             var body = new
             {
-                Active = RunnerRegistry.Active?.Name,
+                Active = status.RunnerType,
                 Available = new[]
                 {
                     new { Id = "llama-server", Name = "LLaMA Server", Description = "External llama-server process" },
                     new { Id = "llama-cpp", Name = "LLaMA.cpp", Description = "Direct llama.cpp integration" }
-                }
+                },
+                Configured = status.ConfiguredRunners,
+                AvailableRunners = status.AvailableRunners
             };
             return Results.Json(body, Json);
         });
@@ -213,34 +216,20 @@ public static class OrchestratorHost
         {
             if (RunnerRegistry.Active is not null)
             {
-                var resp = await RunnerRegistry.Active.ChatAsync(payload, reqCt);
-                return Results.Json(resp, Json);
+                try
+                {
+                    var resp = await RunnerRegistry.Active.ChatAsync(payload, reqCt);
+                    return Results.Json(resp, Json);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[OrchestratorHost] Chat completion failed: {ex.Message}");
+                    return Results.Problem($"Runner failed: {ex.Message}", statusCode: 500);
+                }
             }
 
-            // Fallback echo if no runner configured
-            var userText = payload?.Messages?.LastOrDefault(m => m.Role == "user")?.Content?.Trim() ?? "";
-            var content = userText.Equals("ping", StringComparison.OrdinalIgnoreCase) ? "pong" : $"echo: {userText}";
-
-            var respFallback = new ChatCompletionResponse
-            {
-                Model = payload?.Model ?? "local-dev",
-                Choices =
-                [
-                    new Choice
-                    {
-                        Index = 0,
-                        Message = new ChatMessage { Role = "assistant", Content = content },
-                        FinishReason = "stop"
-                    }
-                ],
-                Usage = new Usage
-                {
-                    PromptTokens = userText.Length / 4,
-                    CompletionTokens = content.Length / 4,
-                    TotalTokens = (userText.Length + content.Length) / 4
-                }
-            };
-            return Results.Json(respFallback, Json);
+            // No fallback echo - force proper runner configuration
+            return Results.Problem("No active runner configured", statusCode: 503);
         });
 
         _app = app;
@@ -251,6 +240,7 @@ public static class OrchestratorHost
     public static async Task StopAsync(CancellationToken ct = default)
     {
         if (_app is null) return;
+        RunnerRegistry.Shutdown();
         await _app.StopAsync(ct);
         _app = null;
         _runTask = null;
