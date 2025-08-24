@@ -54,7 +54,7 @@
 										<DataTrigger Binding="{Binding WarningLevel}"
 													 Value="Experimental">
 											<Setter Property="Background"
-													Value="{StaticResource AccentPurpleBrush}"/>
+													Value="{StaticResource AccentRedBrush}"/>
 										</DataTrigger>
 										<DataTrigger Binding="{Binding WarningLevel}"
 													 Value="Dangerous">
@@ -219,7 +219,7 @@
 							Content="Apply Changes"
 							Command="{Binding ApplyChangesCommand}"
 							Style="{StaticResource PrimaryButtonStyle}"
-							Padding="12,6"
+							Padding="16,8"
 							FontSize="11"
 							Margin="8,0,0,0"/>
 
@@ -227,7 +227,7 @@
 							Content="Export Config"
 							Command="{Binding ExportConfigCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Padding="8,6"
+							Padding="12,8"
 							FontSize="10"
 							Margin="4,0,0,0"/>
 
@@ -235,7 +235,7 @@
 							Content="Import Config"
 							Command="{Binding ImportConfigCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Padding="8,6"
+							Padding="12,8"
 							FontSize="10"
 							Margin="4,0,0,0"/>
 
@@ -243,7 +243,7 @@
 							Content="Reset Defaults"
 							Command="{Binding ResetToDefaultsCommand}"
 							Style="{StaticResource DangerButtonStyle}"
-							Padding="8,6"
+							Padding="12,8"
 							FontSize="10"
 							Margin="4,0,0,0"/>
 				</Grid>
@@ -416,7 +416,7 @@
 					<TextBlock Text="Processing..."
 							   Style="{StaticResource CaptionTextStyle}"
 							   Margin="0,0,8,0"/>
-					<Border Background="{StaticResource AccentPurpleBrush}"
+					<Border Background="{StaticResource AccentRedBrush}"
 							Width="12"
 							Height="12"
 							CornerRadius="6">

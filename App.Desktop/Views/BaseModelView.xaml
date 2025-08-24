@@ -71,7 +71,7 @@
 								Minimum="{Binding Value.MinValue}"
 								Maximum="{Binding Value.MaxValue}"
 								TickFrequency="0.01"
-								Foreground="{StaticResource AccentPurpleBrush}"
+								Foreground="{StaticResource AccentRedBrush}"
 								Background="{StaticResource BorderBrush}"
 								Height="20"/>
 					</StackPanel>
@@ -137,7 +137,7 @@
 								Maximum="{Binding Value.MaxValue}"
 								TickFrequency="1"
 								IsSnapToTickEnabled="True"
-								Foreground="{StaticResource AccentPurpleBrush}"
+								Foreground="{StaticResource AccentRedBrush}"
 								Background="{StaticResource BorderBrush}"
 								Height="20"/>
 					</StackPanel>
@@ -274,109 +274,7 @@
 							<ComboBox ItemsSource="{Binding BaseModels}"
 									  SelectedItem="{Binding SelectedModel}"
 									  DisplayMemberPath="Name"
-									  Background="#374151"
-									  Foreground="White"
-									  BorderBrush="#4b5563"
-									  BorderThickness="1"
-									  Padding="8,6">
-								<ComboBox.Style>
-									<Style TargetType="ComboBox">
-										<Setter Property="Template">
-											<Setter.Value>
-												<ControlTemplate TargetType="ComboBox">
-													<Grid>
-														<ToggleButton Name="ToggleButton"
-																	  Background="{TemplateBinding Background}"
-																	  BorderBrush="{TemplateBinding BorderBrush}"
-																	  BorderThickness="{TemplateBinding BorderThickness}"
-																	  IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-																	  ClickMode="Press">
-															<ToggleButton.Template>
-																<ControlTemplate TargetType="ToggleButton">
-																	<Border Background="{TemplateBinding Background}"
-																			BorderBrush="{TemplateBinding BorderBrush}"
-																			BorderThickness="{TemplateBinding BorderThickness}"
-																			CornerRadius="4">
-																		<Grid>
-																			<Grid.ColumnDefinitions>
-																				<ColumnDefinition Width="*"/>
-																				<ColumnDefinition Width="20"/>
-																			</Grid.ColumnDefinitions>
-																			<ContentPresenter Grid.Column="0"
-																							  Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-																							  Margin="8,6"
-																							  VerticalAlignment="Center"/>
-																			<Path Grid.Column="1"
-																				  Fill="White"
-																				  Data="M 0 0 L 4 4 L 8 0 Z"
-																				  HorizontalAlignment="Center"
-																				  VerticalAlignment="Center"/>
-																		</Grid>
-																	</Border>
-																</ControlTemplate>
-															</ToggleButton.Template>
-														</ToggleButton>
-
-														<Popup Name="Popup"
-															   Placement="Bottom"
-															   IsOpen="{TemplateBinding IsDropDownOpen}"
-															   AllowsTransparency="True"
-															   Focusable="False"
-															   PopupAnimation="Slide">
-															<Border Background="#1f2937"
-																	BorderBrush="#4b5563"
-																	BorderThickness="1"
-																	CornerRadius="4"
-																	MinWidth="{TemplateBinding ActualWidth}"
-																	MaxHeight="200">
-																<ScrollViewer>
-																	<StackPanel IsItemsHost="True"
-																				KeyboardNavigation.DirectionalNavigation="Contained"/>
-																</ScrollViewer>
-															</Border>
-														</Popup>
-													</Grid>
-												</ControlTemplate>
-											</Setter.Value>
-										</Setter>
-									</Style>
-								</ComboBox.Style>
-								<ComboBox.ItemContainerStyle>
-									<Style TargetType="ComboBoxItem">
-										<Setter Property="Background"
-												Value="Transparent"/>
-										<Setter Property="Foreground"
-												Value="White"/>
-										<Setter Property="Padding"
-												Value="8,6"/>
-										<Setter Property="Template">
-											<Setter.Value>
-												<ControlTemplate TargetType="ComboBoxItem">
-													<Border Name="Border"
-															Background="{TemplateBinding Background}"
-															Padding="{TemplateBinding Padding}">
-														<ContentPresenter/>
-													</Border>
-													<ControlTemplate.Triggers>
-														<Trigger Property="IsMouseOver"
-																 Value="True">
-															<Setter TargetName="Border"
-																	Property="Background"
-																	Value="#8b5cf6"/>
-														</Trigger>
-														<Trigger Property="IsSelected"
-																 Value="True">
-															<Setter TargetName="Border"
-																	Property="Background"
-																	Value="#7c3aed"/>
-														</Trigger>
-													</ControlTemplate.Triggers>
-												</ControlTemplate>
-											</Setter.Value>
-										</Setter>
-									</Style>
-								</ComboBox.ItemContainerStyle>
-							</ComboBox>
+									  Style="{StaticResource DarkComboBoxStyle}"/>
 
 							<Button Grid.Column="1"
 									Content="Load"
@@ -411,7 +309,7 @@
 								<TextBlock Text="Scanning..."
 										   Style="{StaticResource CaptionTextStyle}"
 										   Margin="0,0,8,0"/>
-								<Border Background="{StaticResource AccentPurpleBrush}"
+								<Border Background="{StaticResource AccentRedBrush}"
 										Width="16"
 										Height="16"
 										CornerRadius="8">
@@ -507,7 +405,7 @@
 										   VerticalAlignment="Center"/>
 
 								<!-- Test execution spinner -->
-								<Border Background="{StaticResource AccentPurpleBrush}"
+								<Border Background="{StaticResource AccentRedBrush}"
 										Width="12"
 										Height="12"
 										CornerRadius="6"

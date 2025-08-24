@@ -28,23 +28,34 @@ namespace Lazarus.Desktop
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
-            // Start orchestrator in background - don't block UI startup
-            _ = Task.Run(async () =>
+            try
             {
-                try
-                {
-                    // Ensure Lazarus folders exist
-                    DirectoryBootstrap.EnsureDirectories();
+                // Start orchestrator and wait for it to be ready
+                Console.WriteLine("App: Starting orchestrator...");
+                
+                // Ensure Lazarus folders exist
+                DirectoryBootstrap.EnsureDirectories();
+                
+                // Start orchestrator
+                await OrchestratorHost.StartAsync("http://127.0.0.1:11711", _cts.Token);
+                Console.WriteLine("App: Orchestrator started successfully");
 
-                    Console.WriteLine("App: Starting orchestrator...");
-                    await OrchestratorHost.StartAsync("http://127.0.0.1:11711", _cts.Token);
-                    Console.WriteLine("App: Orchestrator started successfully");
-                }
-                catch (Exception ex)
+                // Wait for API to be ready with timeout
+                var apiReady = await WaitForApiReadyAsync(TimeSpan.FromSeconds(10));
+                if (apiReady)
                 {
-                    Console.WriteLine($"App: Orchestrator failed to start - {ex.Message}");
+                    Console.WriteLine("App: API is ready");
                 }
-            }, _cts.Token);
+                else
+                {
+                    Console.WriteLine("App: Warning - API not ready after timeout, continuing anyway");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"App: Orchestrator failed to start - {ex.Message}");
+                // Continue with UI startup even if orchestrator fails
+            }
 
             try
             {
@@ -63,12 +74,45 @@ namespace Lazarus.Desktop
             }
         }
 
+        private async Task<bool> WaitForApiReadyAsync(TimeSpan timeout)
+        {
+            var endTime = DateTime.UtcNow.Add(timeout);
+            var delay = TimeSpan.FromMilliseconds(100);
+
+            while (DateTime.UtcNow < endTime)
+            {
+                try
+                {
+                    var isReady = await ApiClient.HealthAsync();
+                    if (isReady)
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // API not ready yet, continue waiting
+                }
+
+                await Task.Delay(delay, _cts?.Token ?? CancellationToken.None);
+                delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 1.5, 1000));
+            }
+
+            return false;
+        }
+
         private void ConfigureServices(IServiceCollection services)
         {
             // Register ViewModels
             services.AddSingleton<BaseModelViewModel>();
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<ChatViewModel>();
+            services.AddTransient<LorAsViewModel>();
+            services.AddTransient<ControlNetsViewModel>();
+            services.AddTransient<VAEsViewModel>();
+            services.AddTransient<EmbeddingsViewModel>();
+            services.AddTransient<HypernetworksViewModel>();
+            services.AddTransient<AdvancedViewModel>();
             
             // Register 3D Model ViewModels
             services.AddTransient<Lazarus.Desktop.ViewModels.ThreeDModels.ThreeDModelsViewModel>();

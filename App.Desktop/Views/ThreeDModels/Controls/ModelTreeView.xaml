@@ -127,7 +127,7 @@
 																		 Value="True">
 																	<Setter TargetName="ExpanderIcon"
 																			Property="Foreground"
-																			Value="{StaticResource AccentPurpleBrush}"/>
+																			Value="{StaticResource AccentRedBrush}"/>
 																</Trigger>
 															</ControlTemplate.Triggers>
 														</ControlTemplate>
@@ -164,7 +164,7 @@
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 							<Trigger Property="IsMouseOver"
 									 Value="True">
@@ -181,7 +181,7 @@
 								</MultiTrigger.Conditions>
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{StaticResource AccentPurpleHoverBrush}"/>
+										Value="{StaticResource AccentRedHoverBrush}"/>
 							</MultiTrigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -299,7 +299,7 @@
 			<StackPanel Grid.Column="1"
 						Orientation="Horizontal"
 						Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-				<Border Background="{StaticResource AccentPurpleBrush}"
+				<Border Background="{StaticResource AccentRedBrush}"
 						Width="10"
 						Height="10"
 						CornerRadius="5"

@@ -112,6 +112,7 @@ namespace Lazarus.Desktop.ViewModels.Entities
             set => SetProperty(ref _creationStatus, value);
         }
 
+
         public ObservableCollection<EntityTemplate> EntityTemplates { get; }
 
         public ICommand Browse3DModelCommand { get; }

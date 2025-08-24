@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ namespace Lazarus.Desktop
             // Set DataContext for Entities view
             EntitiesView.DataContext = _serviceProvider.GetRequiredService<Lazarus.Desktop.ViewModels.Entities.EntitiesViewModel>();
 
-            // Wire BaseModelView directly - the critical fix
+            // Wire BaseModelView and other sub-ViewModels directly - the critical fix
             var baseModelViewModel = _serviceProvider.GetRequiredService<BaseModelViewModel>();
             var modelsView = ModelsView as ModelsView;
             if (modelsView?.BaseModelContent != null)
@@ -46,16 +47,85 @@ namespace Lazarus.Desktop
                 Console.WriteLine("MainWindow: BaseModelView DataContext bound");
             }
 
+            // Wire other Models sub-tabs
+            if (modelsView != null)
+            {
+                if (modelsView.LoRAsContent != null)
+                    modelsView.LoRAsContent.DataContext = _serviceProvider.GetRequiredService<LorAsViewModel>();
+                if (modelsView.ControlNetsContent != null)
+                    modelsView.ControlNetsContent.DataContext = _serviceProvider.GetRequiredService<ControlNetsViewModel>();
+                if (modelsView.VAEsContent != null)
+                    modelsView.VAEsContent.DataContext = _serviceProvider.GetRequiredService<VAEsViewModel>();
+                if (modelsView.EmbeddingsContent != null)
+                    modelsView.EmbeddingsContent.DataContext = _serviceProvider.GetRequiredService<EmbeddingsViewModel>();
+                if (modelsView.HypernetworksContent != null)
+                    modelsView.HypernetworksContent.DataContext = _serviceProvider.GetRequiredService<HypernetworksViewModel>();
+                if (modelsView.AdvancedContent != null)
+                    modelsView.AdvancedContent.DataContext = _serviceProvider.GetRequiredService<AdvancedViewModel>();
+                Console.WriteLine("MainWindow: All Models sub-view DataContexts bound");
+            }
+
             Console.WriteLine("MainWindow: DataContexts bound");
-            _ = RefreshStatusAsync();
-            Console.WriteLine("MainWindow: RefreshStatusAsync fired");
+            
+            // Initialize BaseModelViewModel after orchestrator is ready
+            _ = InitializeViewModelsAsync();
+            Console.WriteLine("MainWindow: ViewModel initialization started");
+        }
+
+        private async Task InitializeViewModelsAsync()
+        {
+            try
+            {
+                // Wait a moment for orchestrator to fully initialize
+                await Task.Delay(500);
+                
+                // Update status first
+                await RefreshStatusAsync();
+                
+                // Initialize BaseModelViewModel with models
+                var baseModelViewModel = _serviceProvider.GetRequiredService<BaseModelViewModel>();
+                await baseModelViewModel.InitializeAsync();
+                
+                Console.WriteLine("MainWindow: ViewModels initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"MainWindow: ViewModel initialization failed - {ex.Message}");
+            }
         }
 
         private async Task RefreshStatusAsync()
         {
             ApiStatus.Text = "API: checking...";
-            var ok = await ApiClient.HealthAsync();
-            ApiStatus.Text = ok ? "API: online (127.0.0.1:11711)" : "API: offline";
+            
+            // Retry logic for API health check
+            var maxRetries = 5;
+            var delay = TimeSpan.FromMilliseconds(500);
+            
+            for (int retry = 0; retry < maxRetries; retry++)
+            {
+                try
+                {
+                    var ok = await ApiClient.HealthAsync();
+                    if (ok)
+                    {
+                        ApiStatus.Text = "API: online (127.0.0.1:11711)";
+                        return;
+                    }
+                }
+                catch
+                {
+                    // API not ready yet
+                }
+                
+                if (retry < maxRetries - 1)
+                {
+                    await Task.Delay(delay);
+                    delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 1.5, 2000));
+                }
+            }
+            
+            ApiStatus.Text = "API: offline";
         }
 
         private async void PingApi_Click(object sender, RoutedEventArgs e)
@@ -147,8 +217,8 @@ namespace Lazarus.Desktop
 
         private void ResetTabButtonStyles()
         {
-            var inactiveBrush = new SolidColorBrush(Color.FromRgb(55, 65, 81));
-            var inactiveTextBrush = new SolidColorBrush(Color.FromRgb(156, 163, 175));
+            var inactiveBrush = FindResource("BorderBrush") as SolidColorBrush;
+            var inactiveTextBrush = FindResource("TextMutedBrush") as SolidColorBrush;
 
             ConversationsTabButton.Background = inactiveBrush;
             ConversationsTabButton.Foreground = inactiveTextBrush;
@@ -168,8 +238,8 @@ namespace Lazarus.Desktop
 
         private void SetActiveTabStyle(System.Windows.Controls.Button button)
         {
-            var activeBrush = new SolidColorBrush(Color.FromRgb(139, 92, 246));
-            var activeTextBrush = new SolidColorBrush(Colors.White);
+            var activeBrush = FindResource("AccentRedBrush") as SolidColorBrush;
+            var activeTextBrush = FindResource("TextPrimaryBrush") as SolidColorBrush;
 
             button.Background = activeBrush;
             button.Foreground = activeTextBrush;

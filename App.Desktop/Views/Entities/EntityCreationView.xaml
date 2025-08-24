@@ -7,7 +7,7 @@
 			 Background="{StaticResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="300" MinWidth="200"/>
+			<ColumnDefinition Width="320" MinWidth="220"/>
 			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="300" MinWidth="200"/>
 		</Grid.ColumnDefinitions>
@@ -40,9 +40,7 @@
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding EntityType}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,12">
 						<ComboBoxItem Content="Virtual Assistant" IsSelected="True"/>
 						<ComboBoxItem Content="Conversation Partner"/>
@@ -74,9 +72,7 @@
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding Selected3DModel}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,8">
 						<ComboBoxItem Content="Female Professional"/>
 						<ComboBoxItem Content="Male Casual"/>
@@ -88,7 +84,9 @@
 					<Button Content="Browse 3D Model..."
 							Command="{Binding Browse3DModelCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Height="30"
+							Height="36"
+							MinWidth="140"
+							Padding="12,4"
 							Margin="0,0,0,12"/>
 
 					<!-- Voice Selection -->
@@ -96,9 +94,7 @@
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding SelectedVoiceModel}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,12">
 						<ComboBoxItem Content="Sarah (Professional)" IsSelected="True"/>
 						<ComboBoxItem Content="David (Friendly)"/>
@@ -253,27 +249,35 @@
 					<Button Content="🔄 Rotate"
 							Command="{Binding RotateModelCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="70"
-							Height="30"
-							Margin="4"/>
+							MinWidth="80"
+							Height="36"
+							Padding="8,4"
+							Margin="4"
+							ToolTip="Rotate the 3D avatar model"/>
 					<Button Content="🎭 Animate"
 							Command="{Binding AnimateModelCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="70"
-							Height="30"
-							Margin="4"/>
+							MinWidth="80"
+							Height="36"
+							Padding="8,4"
+							Margin="4"
+							ToolTip="Preview avatar animations"/>
 					<Button Content="🎤 Test Voice"
 							Command="{Binding TestVoiceCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="70"
-							Height="30"
-							Margin="4"/>
+							MinWidth="80"
+							Height="36"
+							Padding="8,4"
+							Margin="4"
+							ToolTip="Test the selected voice model"/>
 					<Button Content="💾 Export"
 							Command="{Binding ExportEntityCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="70"
-							Height="30"
-							Margin="4"/>
+							MinWidth="80"
+							Height="36"
+							Padding="8,4"
+							Margin="4"
+							ToolTip="Export entity configuration"/>
 				</StackPanel>
 
 				<!-- Creation Progress -->
@@ -285,7 +289,7 @@
 								 Height="4"
 								 Width="300"
 								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentPurpleBrush}"/>
+								 Foreground="{StaticResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding CreationStatus}"
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
@@ -355,21 +359,27 @@
 											   Margin="0,0,0,4"/>
 									
 									<StackPanel Orientation="Horizontal">
-										<Button Content="Apply"
+										<Button Content="📥 Load"
 												Command="{Binding DataContext.ApplyTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 												CommandParameter="{Binding}"
 												Style="{StaticResource SecondaryButtonStyle}"
-												Height="22"
-												Width="50"
-												FontSize="9"/>
-										<Button Content="Preview"
+												Height="26"
+												MinWidth="60"
+												Padding="8,2"
+												FontSize="9"
+												ToolTip="Load this template into the form"/>
+										<Button Content="👁️ View"
 												Command="{Binding DataContext.PreviewTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 												CommandParameter="{Binding}"
 												Style="{StaticResource SecondaryButtonStyle}"
-												Height="22"
-												Width="50"
+												Height="26"
+												MinWidth="60"
+												Padding="8,2"
 												FontSize="9"
-												Margin="4,0,0,0"/>
+												Margin="4,0,0,0"
+												ToolTip="Preview template details"
+												IsEnabled="False"
+												Opacity="0.5"/>
 									</StackPanel>
 								</StackPanel>
 							</Border>
@@ -382,19 +392,27 @@
 							Orientation="Horizontal"
 							HorizontalAlignment="Center"
 							Margin="12">
-					<Button Content="Save Template"
+					<Button Content="💾 Save Current"
 							Command="{Binding SaveTemplateCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Height="25"
-							Width="90"
-							FontSize="10"/>
-					<Button Content="Import"
+							Height="28"
+							MinWidth="100"
+							Padding="8,4"
+							FontSize="10"
+							ToolTip="Save current configuration as template"
+							IsEnabled="False"
+							Opacity="0.5"/>
+					<Button Content="📁 Import File"
 							Command="{Binding ImportTemplateCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Height="25"
-							Width="60"
+							Height="28"
+							MinWidth="80"
+							Padding="8,4"
 							FontSize="10"
-							Margin="4,0,0,0"/>
+							Margin="8,0,0,0"
+							ToolTip="Import template from file"
+							IsEnabled="False"
+							Opacity="0.5"/>
 				</StackPanel>
 			</Grid>
 		</Border>

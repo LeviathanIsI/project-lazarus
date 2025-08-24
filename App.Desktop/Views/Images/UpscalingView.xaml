@@ -33,6 +33,8 @@
 							Command="{Binding LoadImageCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
 							Height="32"
+							MinWidth="100"
+							Padding="12,4"
 							Margin="0,0,0,8"/>
 					
 					<Border Background="{StaticResource TertiaryDarkBrush}"
@@ -49,9 +51,7 @@
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding UpscaleFactor}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,12">
 						<ComboBoxItem Content="2x" Tag="2"/>
 						<ComboBoxItem Content="4x" Tag="4"/>
@@ -64,9 +64,7 @@
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding UpscalerModel}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,12">
 						<ComboBoxItem Content="Real-ESRGAN x4" Tag="RealESRGAN_x4plus"/>
 						<ComboBoxItem Content="Real-ESRGAN x2" Tag="RealESRGAN_x2plus"/>
@@ -93,7 +91,7 @@
 								 Maximum="100"
 								 Height="4"
 								 Background="{StaticResource TertiaryDarkBrush}"
-								 Foreground="{StaticResource AccentPurpleBrush}"
+								 Foreground="{StaticResource AccentRedBrush}"
 								 Visibility="{Binding IsUpscaling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 				</StackPanel>
 			</ScrollViewer>

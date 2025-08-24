@@ -20,7 +20,7 @@
 							<DataTrigger Binding="{Binding IsActive}"
 										 Value="True">
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 								<Setter Property="BorderThickness"
 										Value="2"/>
 							</DataTrigger>
@@ -49,11 +49,11 @@
 						<TextBlock Grid.Column="0"
 								   Text="🧠"
 								   FontSize="24"
-								   Foreground="{StaticResource AccentPurpleBrush}"
+								   Foreground="{StaticResource AccentRedBrush}"
 								   VerticalAlignment="Center"/>
 
 						<Border Grid.Column="1"
-								Background="{StaticResource AccentPurpleBrush}"
+								Background="{StaticResource AccentRedBrush}"
 								CornerRadius="8"
 								Padding="6,2">
 							<TextBlock Text="{Binding Category}"
@@ -75,7 +75,7 @@
 								   Style="{StaticResource CaptionTextStyle}"
 								   FontSize="10"
 								   Margin="0,2,0,0"
-								   Foreground="{StaticResource AccentPurpleBrush}"/>
+								   Foreground="{StaticResource AccentRedBrush}"/>
 					</StackPanel>
 
 					<!-- Description -->
@@ -159,7 +159,7 @@
 								CommandParameter="{Binding}"
 								Content="Activate"
 								Style="{StaticResource PrimaryButtonStyle}"
-								Padding="0,6"
+								Padding="8,8"
 								FontSize="11"
 								Margin="0,0,4,0"/>
 
@@ -209,7 +209,7 @@
 						<TextBlock Text="{Binding Architecture}"
 								   Style="{StaticResource CaptionTextStyle}"
 								   FontSize="10"
-								   Foreground="{StaticResource AccentPurpleBrush}"/>
+								   Foreground="{StaticResource AccentRedBrush}"/>
 					</StackPanel>
 
 					<StackPanel Grid.Column="1"
@@ -344,7 +344,7 @@
 						<TextBlock Text="Processing..."
 								   Style="{StaticResource CaptionTextStyle}"
 								   Margin="0,0,8,0"/>
-						<Border Background="{StaticResource AccentPurpleBrush}"
+						<Border Background="{StaticResource AccentRedBrush}"
 								Width="12"
 								Height="12"
 								CornerRadius="6">
@@ -464,7 +464,7 @@
 							<TextBlock Text="{Binding ActiveHypernetworksCount}"
 									   Style="{StaticResource HeadingMediumStyle}"
 									   FontSize="16"
-									   Foreground="{StaticResource AccentPurpleBrush}"/>
+									   Foreground="{StaticResource AccentRedBrush}"/>
 						</StackPanel>
 					</Grid>
 				</Border>

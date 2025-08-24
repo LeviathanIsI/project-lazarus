@@ -68,32 +68,34 @@
 							   Margin="0,0,0,8"/>
 
 					<!-- Duration -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Duration:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<Slider x:Name="DurationSlider"
 								Value="{Binding DurationSeconds}"
 								Minimum="1"
 								Maximum="30"
-								Width="130"
-								VerticalAlignment="Center"/>
+								Width="140"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding DurationSeconds, StringFormat='F1s'}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Frame Rate -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="FPS:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<ComboBox SelectedValue="{Binding FrameRate}"
-								  Width="130"
-								  Background="{StaticResource TertiaryDarkBrush}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
-								  BorderBrush="{StaticResource BorderBrush}">
+								  Width="140"
+								  Style="{StaticResource DarkComboBoxStyle}"
+								  Margin="8,0,0,0">
 							<ComboBoxItem Content="12" />
 							<ComboBoxItem Content="24" IsSelected="True"/>
 							<ComboBoxItem Content="30" />
@@ -102,14 +104,13 @@
 					</StackPanel>
 
 					<!-- Resolution -->
-					<StackPanel Margin="0,0,0,8">
+					<StackPanel Margin="0,0,0,12">
 						<TextBlock Text="Resolution:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Margin="0,0,0,4"/>
+								   Margin="0,0,0,6"/>
 						<ComboBox SelectedValue="{Binding Resolution}"
-								  Background="{StaticResource TertiaryDarkBrush}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
-								  BorderBrush="{StaticResource BorderBrush}">
+								  Style="{StaticResource DarkComboBoxStyle}"
+								  Height="32">
 							<ComboBoxItem Content="512x512" IsSelected="True"/>
 							<ComboBoxItem Content="768x768"/>
 							<ComboBoxItem Content="1024x1024"/>
@@ -119,37 +120,41 @@
 					</StackPanel>
 
 					<!-- Steps -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Steps:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<Slider x:Name="StepsSlider"
 								Value="{Binding Steps}"
 								Minimum="10"
 								Maximum="50"
-								Width="130"
-								VerticalAlignment="Center"/>
+								Width="140"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding Steps}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- CFG Scale -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="CFG:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<Slider x:Name="CfgSlider"
 								Value="{Binding CfgScale}"
 								Minimum="1"
 								Maximum="20"
-								Width="130"
-								VerticalAlignment="Center"/>
+								Width="140"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding CfgScale, StringFormat=F1}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Motion Control -->
@@ -160,15 +165,16 @@
 							   Margin="0,12,0,8"/>
 
 					<!-- Camera Movement -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Camera:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<ComboBox SelectedValue="{Binding CameraMovement}"
-								  Width="130"
-								  Background="{StaticResource TertiaryDarkBrush}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
-								  BorderBrush="{StaticResource BorderBrush}">
+								  Width="140"
+								  Style="{StaticResource DarkComboBoxStyle}"
+								  Margin="8,0,0,0"
+								  Height="32">
 							<ComboBoxItem Content="Static" IsSelected="True"/>
 							<ComboBoxItem Content="Pan Left"/>
 							<ComboBoxItem Content="Pan Right"/>
@@ -179,20 +185,22 @@
 					</StackPanel>
 
 					<!-- Motion Intensity -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Intensity:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<Slider x:Name="MotionSlider"
 								Value="{Binding MotionIntensity}"
 								Minimum="0"
 								Maximum="1"
-								Width="130"
-								VerticalAlignment="Center"/>
+								Width="140"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding MotionIntensity, StringFormat=F2}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 				</StackPanel>
 			</ScrollViewer>
@@ -271,7 +279,7 @@
 								 Height="4"
 								 Width="300"
 								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentPurpleBrush}"/>
+								 Foreground="{StaticResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding GenerationStatus}"
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"

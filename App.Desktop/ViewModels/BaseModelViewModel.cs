@@ -33,8 +33,8 @@ public class BaseModelViewModel : INotifyPropertyChanged
         LoadParametersCommand = new RelayCommand(async _ => await LoadModelParametersAsync(), _ => !IsLoading && SelectedModel != null);
         TestParametersCommand = new RelayCommand(async _ => await ExecuteTestAsync(), _ => CanExecuteTest);
 
-        // Load models on the UI thread like a civilized human being
-        _ = LoadModelsAsync();
+        // Don't load models in constructor - wait for proper initialization
+        // This prevents race condition with orchestrator startup
     }
 
     #region Properties
@@ -360,6 +360,12 @@ public class BaseModelViewModel : INotifyPropertyChanged
         {
             IsLoading = false;
         }
+    }
+
+    public async Task InitializeAsync()
+    {
+        // Initialize the ViewModel after orchestrator is ready
+        await LoadModelsAsync();
     }
 
     private async Task LoadModelAsync(BaseModelDto model)

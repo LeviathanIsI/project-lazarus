@@ -28,12 +28,11 @@
 					<!-- Effect Type -->
 					<TextBlock Text="Effect Type:"
 							   Foreground="{StaticResource TextPrimaryBrush}"
-							   Margin="0,0,0,4"/>
+							   Margin="0,0,0,6"/>
 					<ComboBox SelectedValue="{Binding SelectedEffectType}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
-							  Margin="0,0,0,12">
+							  Style="{StaticResource DarkComboBoxStyle}"
+							  Height="32"
+							  Margin="0,0,0,16">
 						<ComboBoxItem Content="Time Stretch" IsSelected="True"/>
 						<ComboBoxItem Content="Frame Interpolation"/>
 						<ComboBoxItem Content="Temporal Smoothing"/>
@@ -47,16 +46,17 @@
 						<TextBlock Text="Speed Multiplier:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
-						<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding SpeedMultiplier}"
 									Minimum="0.1"
 									Maximum="5.0"
-									Width="180"
+									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding SpeedMultiplier, StringFormat='F1x'}"
 									   Foreground="{StaticResource TextPrimaryBrush}"
-									   Width="40"
-									   Margin="8,0,0,0"/>
+									   Width="50"
+									   Margin="8,0,0,0"
+									   VerticalAlignment="Center"/>
 						</StackPanel>
 					</StackPanel>
 
@@ -64,12 +64,11 @@
 					<StackPanel Visibility="{Binding IsFrameInterpolationSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
 						<TextBlock Text="Target Frame Rate:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Margin="0,0,0,4"/>
+								   Margin="0,0,0,6"/>
 						<ComboBox SelectedValue="{Binding TargetFrameRate}"
-								  Background="{StaticResource TertiaryDarkBrush}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
-								  BorderBrush="{StaticResource BorderBrush}"
-								  Margin="0,0,0,8">
+								  Style="{StaticResource DarkComboBoxStyle}"
+								  Height="32"
+								  Margin="0,0,0,12">
 							<ComboBoxItem Content="60" />
 							<ComboBoxItem Content="120" />
 							<ComboBoxItem Content="240" IsSelected="True"/>
@@ -78,16 +77,17 @@
 						<TextBlock Text="Interpolation Quality:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
-						<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding InterpolationQuality}"
 									Minimum="1"
 									Maximum="10"
-									Width="180"
+									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding InterpolationQuality}"
 									   Foreground="{StaticResource TextPrimaryBrush}"
-									   Width="40"
-									   Margin="8,0,0,0"/>
+									   Width="50"
+									   Margin="8,0,0,0"
+									   VerticalAlignment="Center"/>
 						</StackPanel>
 					</StackPanel>
 
@@ -96,22 +96,23 @@
 						<TextBlock Text="Blur Intensity:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
-						<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding BlurIntensity}"
 									Minimum="0"
 									Maximum="1"
-									Width="180"
+									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding BlurIntensity, StringFormat=F2}"
 									   Foreground="{StaticResource TextPrimaryBrush}"
-									   Width="40"
-									   Margin="8,0,0,0"/>
+									   Width="50"
+									   Margin="8,0,0,0"
+									   VerticalAlignment="Center"/>
 						</StackPanel>
 						
 						<CheckBox Content="Adaptive Blur"
 								  IsChecked="{Binding UseAdaptiveBlur}"
 								  Foreground="{StaticResource TextPrimaryBrush}"
-								  Margin="0,0,0,8"/>
+								  Margin="0,4,0,12"/>
 					</StackPanel>
 
 					<!-- Stabilization Settings -->
@@ -119,22 +120,23 @@
 						<TextBlock Text="Stabilization Strength:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
-						<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding StabilizationStrength}"
 									Minimum="0"
 									Maximum="1"
-									Width="180"
+									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding StabilizationStrength, StringFormat=F2}"
 									   Foreground="{StaticResource TextPrimaryBrush}"
-									   Width="40"
-									   Margin="8,0,0,0"/>
+									   Width="50"
+									   Margin="8,0,0,0"
+									   VerticalAlignment="Center"/>
 						</StackPanel>
 						
 						<CheckBox Content="Crop to Fit"
 								  IsChecked="{Binding CropToFit}"
 								  Foreground="{StaticResource TextPrimaryBrush}"
-								  Margin="0,0,0,8"/>
+								  Margin="0,4,0,12"/>
 					</StackPanel>
 
 					<!-- Common Settings -->
@@ -147,20 +149,18 @@
 					<CheckBox Content="Preserve Original Duration"
 							  IsChecked="{Binding PreserveOriginalDuration}"
 							  Foreground="{StaticResource TextPrimaryBrush}"
-							  Margin="0,0,0,8"/>
+							  Margin="0,0,0,10"/>
 
 					<CheckBox Content="High Quality Mode"
 							  IsChecked="{Binding HighQualityMode}"
 							  Foreground="{StaticResource TextPrimaryBrush}"
-							  Margin="0,0,0,8"/>
+							  Margin="0,0,0,10"/>
 
 					<TextBlock Text="Processing Priority:"
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,8,0,4"/>
 					<ComboBox SelectedValue="{Binding ProcessingPriority}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,16">
 						<ComboBoxItem Content="Low" />
 						<ComboBoxItem Content="Normal" IsSelected="True"/>
@@ -245,7 +245,7 @@
 											VerticalAlignment="Center"
 											Visibility="{Binding HasPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
 									<TextBlock Text="✨"
-											   Foreground="{StaticResource AccentPurpleBrush}"
+											   Foreground="{StaticResource AccentRedBrush}"
 											   FontSize="32"
 											   HorizontalAlignment="Center"/>
 									<TextBlock Text="Effect Applied"
@@ -271,20 +271,20 @@
 					<Button Content="Preview"
 							Command="{Binding PreviewEffectCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="80"
-							Height="30"
+							Width="85"
+							Height="32"
 							Margin="4"/>
 					<Button Content="Reset"
 							Command="{Binding ResetEffectCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="80"
-							Height="30"
+							Width="85"
+							Height="32"
 							Margin="4"/>
 					<Button Content="Export"
 							Command="{Binding ExportEffectCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="80"
-							Height="30"
+							Width="85"
+							Height="32"
 							Margin="4"/>
 				</StackPanel>
 
@@ -299,7 +299,7 @@
 								 Height="6"
 								 Width="350"
 								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentPurpleBrush}"/>
+								 Foreground="{StaticResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding ProcessingStatus}"
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
@@ -366,15 +366,15 @@
 												Command="{Binding DataContext.ApplyTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 												CommandParameter="{Binding}"
 												Style="{StaticResource SecondaryButtonStyle}"
-												Height="22"
-												Width="50"
+												Height="24"
+												Width="55"
 												FontSize="9"/>
 										<Button Content="Preview"
 												Command="{Binding DataContext.PreviewTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 												CommandParameter="{Binding}"
 												Style="{StaticResource SecondaryButtonStyle}"
-												Height="22"
-												Width="50"
+												Height="24"
+												Width="55"
 												FontSize="9"
 												Margin="4,0,0,0"/>
 									</StackPanel>

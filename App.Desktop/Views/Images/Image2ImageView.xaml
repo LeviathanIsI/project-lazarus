@@ -33,6 +33,8 @@
 							Command="{Binding LoadImageCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
 							Height="32"
+							MinWidth="100"
+							Padding="12,4"
 							Margin="0,0,0,8"/>
 					
 					<Border Background="{StaticResource TertiaryDarkBrush}"

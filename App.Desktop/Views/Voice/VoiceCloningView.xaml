@@ -41,7 +41,9 @@
 									Command="{Binding BrowseAudioCommand}"
 									Style="{StaticResource SecondaryButtonStyle}"
 									Margin="0,8,0,0"
-									Height="30"/>
+									Height="36"
+									MinWidth="120"
+									Padding="12,4"/>
 						</StackPanel>
 					</Border>
 
@@ -68,9 +70,7 @@
 								   Foreground="{StaticResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<ComboBox SelectedValue="{Binding QualityLevel}"
-								  Background="{StaticResource TertiaryDarkBrush}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
-								  BorderBrush="{StaticResource BorderBrush}">
+								  Style="{StaticResource DarkComboBoxStyle}">
 							<ComboBoxItem Content="Fast (Low Quality)" />
 							<ComboBoxItem Content="Balanced" IsSelected="True"/>
 							<ComboBoxItem Content="High Quality (Slow)"/>
@@ -127,7 +127,7 @@
 							 Height="8"
 							 Width="400"
 							 Background="{StaticResource SecondaryDarkBrush}"
-							 Foreground="{StaticResource AccentPurpleBrush}"
+							 Foreground="{StaticResource AccentRedBrush}"
 							 Visibility="{Binding IsTraining, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 				
 				<TextBlock Text="{Binding TrainingStatus}"

@@ -12,6 +12,7 @@
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 		<conv:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
 		<conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+		<conv:StringEqualsVisibilityConverter x:Key="StringEqualsVisibilityConverter"/>
 
 		<!-- BoolToTextConverter for status display - moved from VAEsView -->
 		<conv:BoolToTextConverter x:Key="BoolToStatusConverter"
@@ -25,12 +26,12 @@
 						 Color="#1a1a1a"/>
 		<SolidColorBrush x:Key="TertiaryDarkBrush"
 						 Color="#1e1e1e"/>
-		<SolidColorBrush x:Key="AccentPurpleBrush"
-						 Color="#8b5cf6"/>
-		<SolidColorBrush x:Key="AccentPurpleHoverBrush"
-						 Color="#7c3aed"/>
-		<SolidColorBrush x:Key="AccentPurplePressedBrush"
-						 Color="#6d28d9"/>
+		<SolidColorBrush x:Key="AccentRedBrush"
+						 Color="#c44536"/>
+		<SolidColorBrush x:Key="AccentRedHoverBrush"
+						 Color="#a63429"/>
+		<SolidColorBrush x:Key="AccentRedPressedBrush"
+						 Color="#8b2a1f"/>
 		<SolidColorBrush x:Key="BorderBrush"
 						 Color="#374151"/>
 		<SolidColorBrush x:Key="BorderHoverBrush"
@@ -128,7 +129,7 @@
 			   TargetType="Button"
 			   BasedOn="{StaticResource SubTabButtonStyle}">
 			<Setter Property="Background"
-					Value="#8b5cf6"/>
+					Value="#c44536"/>
 			<Setter Property="Foreground"
 					Value="White"/>
 			<Setter Property="Opacity"
@@ -141,13 +142,13 @@
 		<Style x:Key="PrimaryButtonStyle"
 			   TargetType="Button">
 			<Setter Property="Background"
-					Value="{StaticResource AccentPurpleBrush}"/>
+					Value="{StaticResource AccentRedBrush}"/>
 			<Setter Property="Foreground"
 					Value="{StaticResource TextPrimaryBrush}"/>
 			<Setter Property="BorderThickness"
 					Value="0"/>
 			<Setter Property="Padding"
-					Value="16,10"/>
+					Value="20,12"/>
 			<Setter Property="FontWeight"
 					Value="SemiBold"/>
 			<Setter Property="FontSize"
@@ -168,12 +169,12 @@
 							<Trigger Property="IsMouseOver"
 									 Value="True">
 								<Setter Property="Background"
-										Value="{StaticResource AccentPurpleHoverBrush}"/>
+										Value="{StaticResource AccentRedHoverBrush}"/>
 							</Trigger>
 							<Trigger Property="IsPressed"
 									 Value="True">
 								<Setter Property="Background"
-										Value="{StaticResource AccentPurplePressedBrush}"/>
+										Value="{StaticResource AccentRedPressedBrush}"/>
 							</Trigger>
 							<Trigger Property="IsEnabled"
 									 Value="False">
@@ -198,7 +199,7 @@
 			<Setter Property="BorderThickness"
 					Value="0"/>
 			<Setter Property="Padding"
-					Value="16,10"/>
+					Value="18,10"/>
 			<Setter Property="FontWeight"
 					Value="Medium"/>
 			<Setter Property="FontSize"
@@ -288,7 +289,7 @@
 			<Setter Property="BorderThickness"
 					Value="1"/>
 			<Setter Property="Padding"
-					Value="16,10"/>
+					Value="18,10"/>
 			<Setter Property="FontWeight"
 					Value="Medium"/>
 			<Setter Property="FontSize"
@@ -313,7 +314,7 @@
 								<Setter Property="Background"
 										Value="#1a1a1a"/>
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 								<Setter Property="Foreground"
 										Value="{StaticResource TextPrimaryBrush}"/>
 							</Trigger>
@@ -348,9 +349,9 @@
 			<Setter Property="FontSize"
 					Value="14"/>
 			<Setter Property="CaretBrush"
-					Value="{StaticResource AccentPurpleBrush}"/>
+					Value="{StaticResource AccentRedBrush}"/>
 			<Setter Property="SelectionBrush"
-					Value="{StaticResource AccentPurpleBrush}"/>
+					Value="{StaticResource AccentRedBrush}"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="TextBox">
@@ -373,7 +374,7 @@
 							<Trigger Property="IsFocused"
 									 Value="True">
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 							<Trigger Property="IsEnabled"
 									 Value="False">
@@ -406,107 +407,13 @@
 
 		<!-- === DROPDOWN STYLES === -->
 
-		<!-- Dark ComboBox Style -->
-		<Style x:Key="DarkComboBoxStyle"
-			   TargetType="ComboBox">
-			<Setter Property="Background"
-					Value="#374151"/>
-			<Setter Property="Foreground"
-					Value="White"/>
-			<Setter Property="BorderBrush"
-					Value="#4b5563"/>
-			<Setter Property="BorderThickness"
-					Value="1"/>
-			<Setter Property="Padding"
-					Value="8,6"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="ComboBox">
-						<Grid>
-							<Border Name="Border"
-									Background="{TemplateBinding Background}"
-									BorderBrush="{TemplateBinding BorderBrush}"
-									BorderThickness="{TemplateBinding BorderThickness}"
-									CornerRadius="4">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="20"/>
-									</Grid.ColumnDefinitions>
-
-									<!-- Content Presenter for selected item -->
-									<ContentPresenter Grid.Column="0"
-													  Name="ContentSite"
-													  IsHitTestVisible="False"
-													  Content="{TemplateBinding SelectionBoxItem}"
-													  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-													  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-													  Margin="{TemplateBinding Padding}"
-													  VerticalAlignment="Center"
-													  HorizontalAlignment="Left"/>
-
-									<!-- Dropdown arrow -->
-									<Path Grid.Column="1"
-										  Name="Arrow"
-										  Fill="White"
-										  HorizontalAlignment="Center"
-										  VerticalAlignment="Center"
-										  Data="M 0 0 L 4 4 L 8 0 Z"/>
-								</Grid>
-							</Border>
-
-							<!-- Popup for dropdown items -->
-							<Popup Name="Popup"
-								   Placement="Bottom"
-								   IsOpen="{TemplateBinding IsDropDownOpen}"
-								   AllowsTransparency="True"
-								   Focusable="False"
-								   PopupAnimation="Slide">
-								<Grid Name="DropDown"
-									  SnapsToDevicePixels="True"
-									  MinWidth="{TemplateBinding ActualWidth}"
-									  MaxHeight="{TemplateBinding MaxDropDownHeight}">
-									<Border Name="DropDownBorder"
-											Background="#1f2937"
-											BorderBrush="#4b5563"
-											BorderThickness="1"
-											CornerRadius="4">
-										<ScrollViewer Margin="2"
-													  SnapsToDevicePixels="True">
-											<StackPanel IsItemsHost="True"
-														KeyboardNavigation.DirectionalNavigation="Contained"/>
-										</ScrollViewer>
-									</Border>
-								</Grid>
-							</Popup>
-						</Grid>
-
-						<ControlTemplate.Triggers>
-							<Trigger Property="IsMouseOver"
-									 Value="True">
-								<Setter TargetName="Border"
-										Property="BorderBrush"
-										Value="#8b5cf6"/>
-							</Trigger>
-							<Trigger Property="IsDropDownOpen"
-									 Value="True">
-								<Setter TargetName="Border"
-										Property="BorderBrush"
-										Value="#8b5cf6"/>
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-
-		<!-- Dark ComboBoxItem Style -->
+		<!-- Dark ComboBoxItem Style (must come before DarkComboBoxStyle) -->
 		<Style x:Key="DarkComboBoxItemStyle"
 			   TargetType="ComboBoxItem">
 			<Setter Property="Background"
 					Value="Transparent"/>
 			<Setter Property="Foreground"
-					Value="White"/>
+					Value="{StaticResource TextPrimaryBrush}"/>
 			<Setter Property="Padding"
 					Value="8,6"/>
 			<Setter Property="Template">
@@ -522,19 +429,138 @@
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="#8b5cf6"/>
+										Value="#c44536"/>
 							</Trigger>
 							<Trigger Property="IsSelected"
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="#7c3aed"/>
+										Value="#a63429"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
 		</Style>
+
+		<!-- Dark ComboBox Style -->
+		<Style x:Key="DarkComboBoxStyle"
+			   TargetType="ComboBox">
+			<Setter Property="Background"
+					Value="{StaticResource TertiaryDarkBrush}"/>
+			<Setter Property="Foreground"
+					Value="{StaticResource TextPrimaryBrush}"/>
+			<Setter Property="BorderBrush"
+					Value="{StaticResource BorderBrush}"/>
+			<Setter Property="BorderThickness"
+					Value="1"/>
+			<Setter Property="Padding"
+					Value="12,8"/>
+			<Setter Property="ItemContainerStyle"
+					Value="{StaticResource DarkComboBoxItemStyle}"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="ComboBox">
+						<Grid>
+							<!-- ToggleButton to handle clicks and dropdown opening -->
+							<ToggleButton Name="ToggleButton"
+										  Background="{TemplateBinding Background}"
+										  BorderBrush="{TemplateBinding BorderBrush}"
+										  BorderThickness="{TemplateBinding BorderThickness}"
+										  IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+										  ClickMode="Press">
+								<ToggleButton.Template>
+									<ControlTemplate TargetType="ToggleButton">
+										<Border Name="Border"
+												Background="{TemplateBinding Background}"
+												BorderBrush="{TemplateBinding BorderBrush}"
+												BorderThickness="{TemplateBinding BorderThickness}"
+												CornerRadius="6">
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="*"/>
+													<ColumnDefinition Width="20"/>
+												</Grid.ColumnDefinitions>
+
+												<!-- Dropdown arrow -->
+												<Path Grid.Column="1"
+													  Name="Arrow"
+													  Fill="{StaticResource TextSecondaryBrush}"
+													  HorizontalAlignment="Center"
+													  VerticalAlignment="Center"
+													  Data="M 0 0 L 4 4 L 8 0 Z"/>
+											</Grid>
+										</Border>
+										<ControlTemplate.Triggers>
+											<Trigger Property="IsMouseOver" Value="True">
+												<Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentRedBrush}"/>
+												<Setter TargetName="Arrow" Property="Fill" Value="{StaticResource AccentRedBrush}"/>
+											</Trigger>
+											<Trigger Property="IsChecked" Value="True">
+												<Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentRedBrush}"/>
+												<Setter TargetName="Arrow" Property="Fill" Value="{StaticResource AccentRedBrush}"/>
+											</Trigger>
+										</ControlTemplate.Triggers>
+									</ControlTemplate>
+								</ToggleButton.Template>
+							</ToggleButton>
+
+							<!-- Content Presenter for selected item -->
+							<ContentPresenter Name="ContentSite"
+											  IsHitTestVisible="False"
+											  Content="{TemplateBinding SelectionBoxItem}"
+											  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+											  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+											  Margin="{TemplateBinding Padding}"
+											  VerticalAlignment="Center"
+											  HorizontalAlignment="Left"/>
+
+							<!-- Popup for dropdown items -->
+							<Popup Name="Popup"
+								   Placement="Bottom"
+								   IsOpen="{TemplateBinding IsDropDownOpen}"
+								   AllowsTransparency="True"
+								   Focusable="False"
+								   PopupAnimation="Slide">
+								<Grid Name="DropDown"
+									  SnapsToDevicePixels="True"
+									  MinWidth="{TemplateBinding ActualWidth}"
+									  MaxHeight="{TemplateBinding MaxDropDownHeight}">
+									<Border Name="DropDownBorder"
+											Background="{StaticResource SecondaryDarkBrush}"
+											BorderBrush="{StaticResource AccentRedBrush}"
+											BorderThickness="1"
+											CornerRadius="6">
+										<ScrollViewer Margin="4"
+													  SnapsToDevicePixels="True">
+											<StackPanel IsItemsHost="True"
+														KeyboardNavigation.DirectionalNavigation="Contained"/>
+										</ScrollViewer>
+									</Border>
+								</Grid>
+							</Popup>
+						</Grid>
+
+						<ControlTemplate.Triggers>
+							<Trigger Property="HasItems" Value="False">
+								<Setter TargetName="DropDownBorder" Property="MinHeight" Value="95"/>
+							</Trigger>
+							<Trigger Property="IsEnabled" Value="False">
+								<Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}"/>
+							</Trigger>
+							<Trigger Property="IsGrouping" Value="True">
+								<Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+							</Trigger>
+							<Trigger SourceName="Popup" Property="Popup.AllowsTransparency" Value="True">
+								<Setter TargetName="DropDownBorder" Property="CornerRadius" Value="6"/>
+								<Setter TargetName="DropDownBorder" Property="Margin" Value="0,2,0,0"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
 
 		<!-- === FORM CONTROL STYLES === -->
 
@@ -562,7 +588,7 @@
 									Width="18"
 									Height="18">
 								<Path x:Name="CheckMark"
-									  Fill="{StaticResource AccentPurpleBrush}"
+									  Fill="{StaticResource AccentRedBrush}"
 									  Data="M 0 5 L 3 8 L 8 0"
 									  Stretch="Uniform"
 									  Margin="2"
@@ -581,13 +607,13 @@
 										Value="Visible"/>
 								<Setter TargetName="CheckBorder"
 										Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 							<Trigger Property="IsMouseOver"
 									 Value="True">
 								<Setter TargetName="CheckBorder"
 										Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -619,7 +645,7 @@
 									Width="18"
 									Height="18">
 								<Ellipse x:Name="RadioDot"
-										 Fill="{StaticResource AccentPurpleBrush}"
+										 Fill="{StaticResource AccentRedBrush}"
 										 Width="8"
 										 Height="8"
 										 Visibility="Collapsed"/>
@@ -637,13 +663,13 @@
 										Value="Visible"/>
 								<Setter TargetName="RadioBorder"
 										Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 							<Trigger Property="IsMouseOver"
 									 Value="True">
 								<Setter TargetName="RadioBorder"
 										Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -741,7 +767,7 @@
 							<Trigger Property="IsSelected"
 									 Value="True">
 								<Setter Property="Background"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -757,7 +783,7 @@
 			<Setter Property="Background"
 					Value="{StaticResource TertiaryDarkBrush}"/>
 			<Setter Property="Foreground"
-					Value="{StaticResource AccentPurpleBrush}"/>
+					Value="{StaticResource AccentRedBrush}"/>
 			<Setter Property="BorderBrush"
 					Value="{StaticResource BorderBrush}"/>
 			<Setter Property="BorderThickness"

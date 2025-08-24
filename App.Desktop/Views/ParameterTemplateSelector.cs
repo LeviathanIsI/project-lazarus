@@ -10,11 +10,11 @@ namespace Lazarus.Desktop.Views;
 /// </summary>
 public class ParameterTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate FloatTemplate { get; set; }
-    public DataTemplate IntTemplate { get; set; }
-    public DataTemplate BoolTemplate { get; set; }
-    public DataTemplate DropdownTemplate { get; set; }
-    public DataTemplate StringTemplate { get; set; }
+    public DataTemplate FloatTemplate { get; set; } = null!;
+    public DataTemplate IntTemplate { get; set; } = null!;
+    public DataTemplate BoolTemplate { get; set; } = null!;
+    public DataTemplate DropdownTemplate { get; set; } = null!;
+    public DataTemplate StringTemplate { get; set; } = null!;
 
     public override DataTemplate SelectTemplate(object item, DependencyObject container)
     {

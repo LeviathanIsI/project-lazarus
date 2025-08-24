@@ -21,7 +21,7 @@
 							<DataTrigger Binding="{Binding IsLoaded}"
 										 Value="True">
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentPurpleBrush}"/>
+										Value="{StaticResource AccentRedBrush}"/>
 								<Setter Property="BorderThickness"
 										Value="2"/>
 							</DataTrigger>
@@ -50,11 +50,11 @@
 						<TextBlock Grid.Column="0"
 								   Text="⚡"
 								   FontSize="24"
-								   Foreground="{StaticResource AccentPurpleBrush}"
+								   Foreground="{StaticResource AccentRedBrush}"
 								   VerticalAlignment="Center"/>
 
 						<Border Grid.Column="1"
-								Background="{StaticResource AccentPurpleBrush}"
+								Background="{StaticResource AccentRedBrush}"
 								CornerRadius="8"
 								Padding="6,2">
 							<TextBlock Text="{Binding Category}"
@@ -144,7 +144,7 @@
 						<Button Grid.Column="0"
 								Command="{Binding DataContext.LoadVAECommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 								CommandParameter="{Binding}"
-								Padding="0,6"
+								Padding="8,8"
 								FontSize="11"
 								Margin="0,0,4,0">
 							<Button.Style>
@@ -275,7 +275,7 @@
 						<TextBlock Text="Encoding..."
 								   Style="{StaticResource CaptionTextStyle}"
 								   Margin="0,0,8,0"/>
-						<Border Background="{StaticResource AccentPurpleBrush}"
+						<Border Background="{StaticResource AccentRedBrush}"
 								Width="12"
 								Height="12"
 								CornerRadius="6">
@@ -353,7 +353,7 @@
 											   FontSize="14"/>
 
 									<Border Grid.Column="1"
-											Background="{StaticResource AccentPurpleBrush}"
+											Background="{StaticResource AccentRedBrush}"
 											CornerRadius="8"
 											Padding="6,2">
 										<TextBlock Text="{Binding ActiveVAE.Category}"

@@ -33,67 +33,75 @@
 							   Margin="0,0,0,8"/>
 
 					<!-- Pan X -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Pan X:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="60"/>
+								   Width="70"
+								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding PanX}"
 								Minimum="-1"
 								Maximum="1"
-								Width="140"
-								VerticalAlignment="Center"/>
+								Width="150"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding PanX, StringFormat=F2}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Pan Y -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Pan Y:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="60"/>
+								   Width="70"
+								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding PanY}"
 								Minimum="-1"
 								Maximum="1"
-								Width="140"
-								VerticalAlignment="Center"/>
+								Width="150"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding PanY, StringFormat=F2}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Zoom -->
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Zoom:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="60"/>
+								   Width="70"
+								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding Zoom}"
 								Minimum="0.5"
 								Maximum="2.0"
-								Width="140"
-								VerticalAlignment="Center"/>
+								Width="150"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding Zoom, StringFormat='F2x'}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Rotation -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,16">
 						<TextBlock Text="Rotate:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="60"/>
+								   Width="70"
+								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding Rotation}"
 								Minimum="-180"
 								Maximum="180"
-								Width="140"
-								VerticalAlignment="Center"/>
+								Width="150"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding Rotation, StringFormat='F0°'}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Object Tracking -->
@@ -106,7 +114,7 @@
 					<CheckBox Content="Enable Object Tracking"
 							  IsChecked="{Binding EnableObjectTracking}"
 							  Foreground="{StaticResource TextPrimaryBrush}"
-							  Margin="0,0,0,8"/>
+							  Margin="0,0,0,10"/>
 
 					<TextBox Text="{Binding TrackingPrompt}"
 							 Height="60"
@@ -125,19 +133,21 @@
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
 
-					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Smoothing:"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="70"/>
+								   Width="80"
+								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding MotionSmoothing}"
 								Minimum="0"
 								Maximum="1"
-								Width="130"
-								VerticalAlignment="Center"/>
+								Width="140"
+								VerticalAlignment="Center"
+								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding MotionSmoothing, StringFormat=F2}"
 								   Foreground="{StaticResource TextPrimaryBrush}"
-								   Width="40"
-								   Margin="8,0,0,0"/>
+								   Width="50"
+								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Generate Button -->
@@ -223,8 +233,8 @@
 					<Button Content="▶"
 							Command="{Binding PreviewMotionCommand}"
 							Style="{StaticResource SecondaryButtonStyle}"
-							Width="30"
-							Height="25"
+							Width="32"
+							Height="28"
 							Margin="8,0,0,0"/>
 				</StackPanel>
 

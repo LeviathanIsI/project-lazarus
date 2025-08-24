@@ -30,9 +30,7 @@
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding SelectedVoiceModel}"
-							  Background="{StaticResource TertiaryDarkBrush}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
-							  BorderBrush="{StaticResource BorderBrush}"
+							  Style="{StaticResource DarkComboBoxStyle}"
 							  Margin="0,0,0,12">
 						<ComboBoxItem Content="Female - Sarah (EN)" IsSelected="True"/>
 						<ComboBoxItem Content="Male - David (EN)"/>
@@ -46,7 +44,7 @@
 					<TextBlock Text="Text to Synthesize:"
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
-					<TextBox x:Name="TextInput"
+					<TextBox x:Name="SynthesisTextInput"
 							 Text="{Binding TextToSynthesize, UpdateSourceTrigger=PropertyChanged}"
 							 Height="100"
 							 TextWrapping="Wrap"
@@ -117,9 +115,7 @@
 								   Foreground="{StaticResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<ComboBox SelectedValue="{Binding SelectedEmotion}"
-								  Background="{StaticResource TertiaryDarkBrush}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
-								  BorderBrush="{StaticResource BorderBrush}">
+								  Style="{StaticResource DarkComboBoxStyle}">
 							<ComboBoxItem Content="Neutral" IsSelected="True"/>
 							<ComboBoxItem Content="Happy"/>
 							<ComboBoxItem Content="Sad"/>
@@ -276,7 +272,7 @@
 								 Height="4"
 								 Width="300"
 								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentPurpleBrush}"/>
+								 Foreground="{StaticResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding SynthesisStatus}"
 							   Foreground="{StaticResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
