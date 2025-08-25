@@ -1,0 +1,1051 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- NOVICE TIER: "Contextual Guidance Without Condescension" -->
+    
+    <!-- Model Selection Template - Clear, Friendly Guidance -->
+    <DataTemplate x:Key="ModelSelectionTemplate">
+        <Border Margin="0,4" Padding="16" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                MinHeight="80">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Model Icon/Indicator -->
+                <Border Grid.Column="0" Width="48" Height="48" 
+                        Background="{DynamicResource AccentPurpleBrush}"
+                        CornerRadius="24" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock Text="🧠" FontSize="24" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                
+                <!-- Model Info -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DisplayName}" 
+                               Style="{DynamicResource HeadingSmallStyle}"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                    <TextBlock Text="AI Brain - Powers your conversations" 
+                               Style="{DynamicResource BodyTextStyle}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" MaxHeight="40" Margin="0,0,0,6"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Features: " 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Text="Chat, Questions, Creative Writing" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource AccentPurpleBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <!-- Selection Button -->
+                <Button Grid.Column="2" Content="Use This Brain" 
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        Padding="16,8" VerticalAlignment="Center"
+                        Command="{Binding SelectCommand}"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+    
+    <!-- Parameter Control Template - Friendly Sliders with Context -->
+    <DataTemplate x:Key="ParameterControlTemplate">
+        <Border Margin="0,8" Padding="12" 
+                Background="{DynamicResource TertiaryDarkBrush}"
+                CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <StackPanel>
+                <!-- Parameter Header -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding FriendlyName}" 
+                               Style="{DynamicResource BodyTextStyle}"
+                               FontWeight="SemiBold" 
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Value, StringFormat=F2}" 
+                               Style="{DynamicResource CodeTextStyle}"
+                               Foreground="{DynamicResource AccentRedBrush}"/>
+                </Grid>
+                
+                <!-- Description -->
+                <TextBlock Text="{Binding FriendlyDescription}" 
+                           Style="{DynamicResource CaptionTextStyle}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" Margin="0,0,0,8"/>
+                
+                <!-- Slider with Friendly Labels -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Slider Grid.Row="0" 
+                            Value="{Binding Value}" 
+                            Minimum="{Binding Minimum}" 
+                            Maximum="{Binding Maximum}"
+                            TickFrequency="{Binding TickFrequency}"
+                            TickPlacement="BottomRight"
+                            Margin="0,0,0,4"/>
+                    
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Less" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource TextMutedBrush}" FontSize="10"/>
+                        <TextBlock Grid.Column="1" Text="Sweet Spot" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource AccentPurpleBrush}" 
+                                   HorizontalAlignment="Center" FontSize="10"/>
+                        <TextBlock Grid.Column="2" Text="More" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource TextMutedBrush}" 
+                                   HorizontalAlignment="Right" FontSize="10"/>
+                    </Grid>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    
+    <!-- Status Display Template - Reassuring Progress -->
+    <DataTemplate x:Key="StatusDisplayTemplate">
+        <Border Padding="16" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <StackPanel>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Status Icon -->
+                    <Border Grid.Column="0" Width="32" Height="32" 
+                            Background="{DynamicResource AccentGreenBrush}"
+                            CornerRadius="16" Margin="0,0,12,0">
+                        <TextBlock Text="✓" FontSize="16" 
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Border>
+                    
+                    <!-- Friendly Status Text -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Everything is working great!" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,2"/>
+                        <TextBlock Text="{Binding StatusMessage}" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Progress Bar (if applicable) -->
+                <ProgressBar Value="{Binding Progress}" Maximum="100" 
+                             Height="8" Background="{DynamicResource TertiaryDarkBrush}"
+                             Foreground="{DynamicResource AccentPurpleBrush}"
+                             Visibility="{Binding ShowProgress, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    
+    <!-- Error Display Template - Gentle Problem Solving -->
+    <DataTemplate x:Key="ErrorDisplayTemplate">
+        <Border Padding="16" 
+                Background="{DynamicResource ErrorBackgroundBrush}"
+                CornerRadius="6" BorderBrush="{DynamicResource ErrorBrush}" BorderThickness="2">
+            <StackPanel>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Error Icon -->
+                    <Border Grid.Column="0" Width="32" Height="32" 
+                            Background="{DynamicResource ErrorBrush}"
+                            CornerRadius="16" Margin="0,0,12,0">
+                        <TextBlock Text="⚠" FontSize="16" 
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Border>
+                    
+                    <!-- Gentle Error Message -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Something needs attention" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource ErrorBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding FriendlyMessage}" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Helpful Actions -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Try Again" 
+                            Style="{DynamicResource PrimaryButtonStyle}"
+                            Padding="12,6" Margin="0,0,8,0"
+                            Command="{Binding RetryCommand}"/>
+                    <Expander Header="More Details" Style="{DynamicResource SubtleExpanderStyle}">
+                        <TextBlock Text="{Binding TechnicalDetails}" 
+                                   Style="{DynamicResource CodeTextStyle}"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   TextWrapping="Wrap" Margin="0,8,0,0"/>
+                    </Expander>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    
+    <!-- Chat Message Template - Conversational Style -->
+    <DataTemplate x:Key="ChatMessageTemplate">
+        <Border Margin="8,4" Padding="12" MaxWidth="600"
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12,12,12,3"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                HorizontalAlignment="{Binding IsUser, Converter={StaticResource BooleanToAlignmentConverter}}">
+            
+            <StackPanel>
+                <!-- Sender Info -->
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0" Text="{Binding SenderName}" 
+                               Style="{DynamicResource CaptionTextStyle}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AccentPurpleBrush}"/>
+                    
+                    <TextBlock Grid.Column="2" Text="{Binding Timestamp, StringFormat=HH:mm}" 
+                               Style="{DynamicResource CaptionTextStyle}"
+                               Foreground="{DynamicResource TextMutedBrush}" FontSize="10"/>
+                </Grid>
+                
+                <!-- Message Content -->
+                <TextBlock Text="{Binding Content}" 
+                           Style="{DynamicResource BodyTextStyle}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    
+    <!-- LoRA Card Template - Maximum Context and Guidance -->
+    <DataTemplate x:Key="LoRACardTemplate">
+        <Border Margin="0,0,12,12"
+                MinWidth="280" MaxWidth="320"
+                Padding="16"
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="8"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1">
+            
+            <StackPanel>
+                <!-- Header -->
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="{Binding Name}" 
+                               Style="{DynamicResource HeadingMediumStyle}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="AI Behavior Adaptation"
+                               Style="{DynamicResource CaptionTextStyle}"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               FontStyle="Italic"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <!-- Description -->
+                <Border Background="{DynamicResource TertiaryDarkBrush}"
+                        Padding="12"
+                        CornerRadius="4"
+                        Margin="0,0,0,12">
+                    <TextBlock TextWrapping="Wrap"
+                               Style="{DynamicResource BodyTextStyle}"
+                               Foreground="{DynamicResource TextSecondaryBrush}">
+                        <Run Text="This adaptation modifies how your AI responds. "/>
+                        <Run Text="Higher values create more noticeable changes in personality and style."
+                             Foreground="{DynamicResource TextMutedBrush}"/>
+                    </TextBlock>
+                </Border>
+                
+                <!-- Weight Control -->
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Influence Strength"
+                               Style="{DynamicResource BodyTextStyle}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Controls how much this adaptation affects your model's behavior"
+                               Style="{DynamicResource CaptionTextStyle}"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               Margin="0,2,0,6"/>
+                    
+                    <Slider Value="{Binding Weight}" 
+                            Minimum="0" Maximum="2" 
+                            TickFrequency="0.1"
+                            TickPlacement="BottomRight"
+                            IsSnapToTickEnabled="True"/>
+                    
+                    <!-- Context Labels -->
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" Text="Subtle" 
+                                   Style="{DynamicResource CaptionTextStyle}" 
+                                   FontSize="10" 
+                                   HorizontalAlignment="Left"
+                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Grid.Column="1" Text="Recommended" 
+                                   Style="{DynamicResource CaptionTextStyle}" 
+                                   FontSize="10" 
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource AccentRedBrush}"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="2" Text="Strong" 
+                                   Style="{DynamicResource CaptionTextStyle}" 
+                                   FontSize="10" 
+                                   HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                    </Grid>
+                </StackPanel>
+                
+                <!-- Status Display -->
+                <Border Background="{DynamicResource PrimaryDarkBrush}"
+                        Padding="10"
+                        CornerRadius="4"
+                        BorderBrush="{DynamicResource AccentRedBrush}"
+                        BorderThickness="1"
+                        Margin="0,0,0,12">
+                    <TextBlock TextWrapping="Wrap"
+                               Style="{DynamicResource BodyTextStyle}"
+                               Foreground="{DynamicResource TextPrimaryBrush}">
+                        <Run Text="Current Setting: "/>
+                        <Run Text="{Binding Weight, StringFormat=F1}" 
+                             FontWeight="Bold" 
+                             Foreground="{DynamicResource AccentRedBrush}"/>
+                        <Run Text=" - Strong influence on responses"/>
+                    </TextBlock>
+                </Border>
+                
+                <!-- Actions -->
+                <Button Content="Apply This Adaptation"
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        Command="{Binding ApplyCommand}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Chat Status Template - Maximum Encouragement and Guidance -->
+    <DataTemplate x:Key="ChatStatusTemplate">
+        <Border Padding="32" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="8">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="500">
+                <TextBlock Text="🤖 Welcome to Your AI Assistant!"
+                           Style="{DynamicResource HeadingSmallStyle}"
+                           FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentPurpleBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <TextBlock Text="To start chatting with AI, you'll need to load a language model first. Think of it like choosing which AI personality you want to talk to!"
+                           Style="{DynamicResource BodyTextStyle}"
+                           FontSize="14" TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,24"/>
+                           
+                <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                        CornerRadius="8" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="✨ Getting Started Guide"
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontSize="16" FontWeight="SemiBold"
+                                   Margin="0,0,0,12"/>
+                        <TextBlock Text="1. Go to the 'Models' tab above"
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="2. Choose a model that matches what you want to do"
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="3. Come back here to start your conversation!"
+                                   Style="{DynamicResource BodyTextStyle}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Float Parameter Template - Beginner Friendly Controls -->
+    <DataTemplate x:Key="FloatParameterTemplate">
+        <Border Margin="0,8" Padding="16" 
+                Background="{DynamicResource TertiaryDarkBrush}"
+                CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Friendly Parameter Name & Description -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="{Binding FriendlyName}" 
+                               Style="{DynamicResource BodyTextStyle}"
+                               FontWeight="SemiBold" FontSize="14"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="{Binding Description}" 
+                               Style="{DynamicResource CaptionTextStyle}"
+                               TextWrapping="Wrap" FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <!-- User-Friendly Slider with Labels -->
+                <Grid Grid.Row="1" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Slider Grid.Column="0"
+                            Value="{Binding Value}" 
+                            Minimum="{Binding Minimum}" 
+                            Maximum="{Binding Maximum}"
+                            TickFrequency="{Binding TickFrequency}"
+                            IsSnapToTickEnabled="False"
+                            Height="40"/>
+                            
+                    <Border Grid.Column="1" 
+                            Background="{DynamicResource AccentPurpleBrush}"
+                            CornerRadius="4" Padding="8,4" Margin="12,0,0,0">
+                        <TextBlock Text="{Binding Value, StringFormat=F2}" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontWeight="Bold"/>
+                    </Border>
+                </Grid>
+                
+                <!-- Impact Explanation -->
+                <TextBlock Grid.Row="2" 
+                           Text="{Binding ImpactExplanation}" 
+                           Style="{DynamicResource CaptionTextStyle}"
+                           FontSize="11" FontStyle="Italic"
+                           Foreground="{DynamicResource AccentGreenBrush}"
+                           TextWrapping="Wrap"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- Integer Parameter Template - Beginner Friendly -->
+    <DataTemplate x:Key="IntParameterTemplate">
+        <Border Margin="0,8" Padding="16" 
+                Background="{DynamicResource TertiaryDarkBrush}"
+                CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="{Binding FriendlyName}" 
+                               Style="{DynamicResource BodyTextStyle}"
+                               FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="{Binding Description}" 
+                               Style="{DynamicResource CaptionTextStyle}"
+                               TextWrapping="Wrap" FontSize="12"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Slider Grid.Column="0"
+                            Value="{Binding Value}" 
+                            Minimum="{Binding Minimum}" 
+                            Maximum="{Binding Maximum}"
+                            IsSnapToTickEnabled="True"
+                            TickFrequency="1"
+                            Height="40"/>
+                            
+                    <Border Grid.Column="1" 
+                            Background="{DynamicResource AccentGreenBrush}"
+                            CornerRadius="4" Padding="8,4" Margin="12,0,0,0">
+                        <TextBlock Text="{Binding Value}" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontWeight="Bold"/>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- Boolean Parameter Template - Toggle Switch Style -->
+    <DataTemplate x:Key="BoolParameterTemplate">
+        <Border Margin="0,8" Padding="16" 
+                Background="{DynamicResource TertiaryDarkBrush}"
+                CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding FriendlyName}" 
+                               Style="{DynamicResource BodyTextStyle}"
+                               FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="{Binding Description}" 
+                               Style="{DynamicResource CaptionTextStyle}"
+                               TextWrapping="Wrap" FontSize="12"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <ToggleButton Grid.Column="1"
+                              IsChecked="{Binding Value}"
+                              Style="{DynamicResource ToggleButtonStyle}"
+                              Width="60" Height="30"
+                              Content="{Binding Value, Converter={StaticResource BoolToText}}"
+                              Margin="12,0,0,0"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- Generation Progress Template - Encouraging Progress Display -->
+    <DataTemplate x:Key="GenerationProgressTemplate">
+        <Border Padding="20" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12" BorderBrush="{DynamicResource AccentPurpleBrush}" BorderThickness="2">
+            <StackPanel>
+                <TextBlock Text="🎨 Creating something amazing for you..."
+                           Style="{DynamicResource HeadingSmallStyle}"
+                           FontSize="18" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentPurpleBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <ProgressBar Value="{Binding Progress}" 
+                             Height="20" 
+                             Background="{DynamicResource TertiaryDarkBrush}"
+                             Foreground="{DynamicResource AccentPurpleBrush}"
+                             Margin="0,0,0,12"/>
+                             
+                <TextBlock Text="{Binding StatusMessage}" 
+                           Style="{DynamicResource BodyTextStyle}"
+                           HorizontalAlignment="Center"
+                           FontSize="14"/>
+                           
+                <TextBlock Text="{Binding EstimatedTimeRemaining, StringFormat='About {0} remaining'}" 
+                           Style="{DynamicResource CaptionTextStyle}"
+                           HorizontalAlignment="Center"
+                           FontSize="12"
+                           Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- ===== IMAGES TAB TEMPLATES ===== -->
+    
+    <!-- Image Generation Template - Text2Image Novice -->
+    <DataTemplate x:Key="Text2ImageTemplate">
+        <Border Padding="24" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12">
+            <StackPanel>
+                <TextBlock Text="🎨 Create Art with Words"
+                           Style="{DynamicResource HeadingLargeStyle}"
+                           FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentPurpleBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <TextBlock Text="Describe what you want to see and AI will create a unique image just for you!"
+                           Style="{DynamicResource BodyTextStyle}"
+                           FontSize="16" TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,24"/>
+                           
+                <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                        CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="✨ Your Creative Prompt"
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBox Text="{Binding Prompt}" 
+                                 Style="{DynamicResource CodeTextBoxStyle}"
+                                 MinHeight="80" TextWrapping="Wrap"
+                                 AcceptsReturn="True"/>
+                        <TextBlock Text="Try: 'A magical forest with glowing mushrooms and fireflies dancing in the moonlight'"
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   FontStyle="Italic" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <Button Content="🚀 Generate My Image" 
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        FontSize="16" Padding="24,12"
+                        HorizontalAlignment="Center"
+                        Command="{Binding GenerateCommand}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    
+    <!-- Image2Image Template - Transform Existing Images -->
+    <DataTemplate x:Key="Image2ImageTemplate">
+        <Border Padding="24" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12">
+            <StackPanel>
+                <TextBlock Text="🖼️ Transform Your Images"
+                           Style="{DynamicResource HeadingLargeStyle}"
+                           FontSize="22" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentGreenBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <TextBlock Text="Upload an image and describe how you want it changed!"
+                           Style="{DynamicResource BodyTextStyle}"
+                           FontSize="14" TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
+                           
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Upload Area -->
+                    <Border Grid.Column="0" 
+                            Background="{DynamicResource TertiaryDarkBrush}"
+                            BorderBrush="{DynamicResource AccentPurpleBrush}"
+                            BorderThickness="2"
+                            CornerRadius="8" Padding="16" Margin="0,0,8,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📷" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="Drop your image here" 
+                                       Style="{DynamicResource BodyTextStyle}"
+                                       HorizontalAlignment="Center"/>
+                            <Button Content="Browse Files" 
+                                    Style="{DynamicResource SecondaryButtonStyle}"
+                                    Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Transform Controls -->
+                    <Border Grid.Column="1" 
+                            Background="{DynamicResource TertiaryDarkBrush}"
+                            CornerRadius="8" Padding="16" Margin="8,0,0,0">
+                        <StackPanel>
+                            <TextBlock Text="✨ How to transform it"
+                                       Style="{DynamicResource BodyTextStyle}"
+                                       FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding TransformPrompt}" 
+                                     Style="{DynamicResource CodeTextBoxStyle}"
+                                     MinHeight="60"/>
+                            <TextBlock Text="Transformation Strength"
+                                       Style="{DynamicResource CaptionTextStyle}"
+                                       Margin="0,12,0,4"/>
+                            <Slider Value="{Binding Strength}" 
+                                    Minimum="0.1" Maximum="1.0"
+                                    TickFrequency="0.1"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- ===== VIDEO TAB TEMPLATES ===== -->
+    
+    <!-- Text2Video Template - Video Generation -->
+    <DataTemplate x:Key="Text2VideoTemplate">
+        <Border Padding="24" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12">
+            <StackPanel>
+                <TextBlock Text="🎬 Create Moving Magic"
+                           Style="{DynamicResource HeadingLargeStyle}"
+                           FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentRedBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <TextBlock Text="Describe a scene and watch it come to life as a video!"
+                           Style="{DynamicResource BodyTextStyle}"
+                           FontSize="16" TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,24"/>
+                           
+                <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                        CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="🎞️ Your Video Vision"
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,12"/>
+                        <TextBox Text="{Binding VideoPrompt}" 
+                                 Style="{DynamicResource CodeTextBoxStyle}"
+                                 MinHeight="100" TextWrapping="Wrap"/>
+                        <TextBlock Text="Example: 'A peaceful ocean sunset with waves gently lapping the shore'"
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   FontStyle="Italic" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="⏱️ Video Length" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedItem="{Binding Duration}"
+                                  Style="{DynamicResource DarkComboBoxStyle}">
+                            <ComboBoxItem>Short (3 seconds)</ComboBoxItem>
+                            <ComboBoxItem>Medium (5 seconds)</ComboBoxItem>
+                            <ComboBoxItem>Long (8 seconds)</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="🎯 Quality Level" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedItem="{Binding Quality}"
+                                  Style="{DynamicResource DarkComboBoxStyle}">
+                            <ComboBoxItem>Draft (Fast)</ComboBoxItem>
+                            <ComboBoxItem>Good (Balanced)</ComboBoxItem>
+                            <ComboBoxItem>Excellent (Slow)</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+                
+                <Button Content="🎬 Create My Video" 
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        FontSize="16" Padding="24,12"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0"
+                        Command="{Binding GenerateVideoCommand}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- ===== VOICE TAB TEMPLATES ===== -->
+    
+    <!-- TTS Configuration Template - Text-to-Speech Setup -->
+    <DataTemplate x:Key="TTSConfigurationTemplate">
+        <Border Padding="24" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12">
+            <StackPanel>
+                <TextBlock Text="🎙️ Give Voice to Your Words"
+                           Style="{DynamicResource HeadingLargeStyle}"
+                           FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentYellowBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <TextBlock Text="Turn any text into natural-sounding speech!"
+                           Style="{DynamicResource BodyTextStyle}"
+                           FontSize="16" TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,24"/>
+                           
+                <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                        CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="📝 Text to Speak"
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,12"/>
+                        <TextBox Text="{Binding TextToSpeak}" 
+                                 Style="{DynamicResource CodeTextBoxStyle}"
+                                 MinHeight="100" TextWrapping="Wrap"/>
+                        <TextBlock Text="Type anything you want the AI to say out loud!"
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   FontStyle="Italic" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="🗣️ Voice Style" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ComboBox SelectedItem="{Binding VoiceStyle}"
+                                  Style="{DynamicResource DarkComboBoxStyle}">
+                            <ComboBoxItem>Friendly &amp; Warm</ComboBoxItem>
+                            <ComboBoxItem>Professional</ComboBoxItem>
+                            <ComboBoxItem>Storyteller</ComboBoxItem>
+                            <ComboBoxItem>News Anchor</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="⚡ Speaking Speed" 
+                                   Style="{DynamicResource BodyTextStyle}"
+                                   FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <Slider Value="{Binding Speed}" 
+                                Minimum="0.5" Maximum="2.0"
+                                TickFrequency="0.1"
+                                Margin="0,0,0,8"/>
+                        <TextBlock Text="Slower ← → Faster"
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                
+                <Button Content="🎵 Generate Speech" 
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        FontSize="16" Padding="24,12"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0"
+                        Command="{Binding GenerateSpeechCommand}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- ===== ENTITIES TAB TEMPLATES ===== -->
+    
+    <!-- Entity Creation Template - Character Building -->
+    <DataTemplate x:Key="EntityCreationTemplate">
+        <Border Padding="24" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12">
+            <StackPanel>
+                <TextBlock Text="🧙‍♂️ Create Your AI Character"
+                           Style="{DynamicResource HeadingLargeStyle}"
+                           FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentPurpleBrush}"
+                           Margin="0,0,0,16"/>
+                           
+                <TextBlock Text="Design a unique AI personality with their own traits, voice, and appearance!"
+                           Style="{DynamicResource BodyTextStyle}"
+                           FontSize="16" TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,24"/>
+                           
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Character Details -->
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                                CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="✨ Character Basics"
+                                           Style="{DynamicResource BodyTextStyle}"
+                                           FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                           
+                                <TextBlock Text="Character Name" 
+                                           Style="{DynamicResource CaptionTextStyle}" 
+                                           Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding EntityName}" 
+                                         Style="{DynamicResource DarkTextBoxStyle}"/>
+                                         
+                                <TextBlock Text="Personality Type" 
+                                           Style="{DynamicResource CaptionTextStyle}" 
+                                           Margin="0,12,0,4"/>
+                                <ComboBox SelectedItem="{Binding PersonalityType}"
+                                          Style="{DynamicResource DarkComboBoxStyle}">
+                                    <ComboBoxItem>Helpful Assistant</ComboBoxItem>
+                                    <ComboBoxItem>Creative Storyteller</ComboBoxItem>
+                                    <ComboBoxItem>Wise Teacher</ComboBoxItem>
+                                    <ComboBoxItem>Playful Friend</ComboBoxItem>
+                                    <ComboBoxItem>Professional Expert</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                                CornerRadius="8" Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="🎭 Character Traits"
+                                           Style="{DynamicResource BodyTextStyle}"
+                                           FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                           
+                                <TextBlock Text="How should they talk and act?"
+                                           Style="{DynamicResource CaptionTextStyle}"
+                                           Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding CharacterTraits}" 
+                                         Style="{DynamicResource CodeTextBoxStyle}"
+                                         MinHeight="80" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    
+                    <!-- 3D Appearance -->
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                                CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="👤 3D Appearance"
+                                           Style="{DynamicResource BodyTextStyle}"
+                                           FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                           
+                                <!-- 3D Preview Area -->
+                                <Border Background="{DynamicResource PrimaryDarkBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="2" CornerRadius="6"
+                                        Height="120" Margin="0,0,0,12">
+                                    <TextBlock Text="🎨 3D Preview\nComing Soon!"
+                                               Style="{DynamicResource BodyTextStyle}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               TextAlignment="Center"/>
+                                </Border>
+                                
+                                <Button Content="Choose Appearance" 
+                                        Style="{DynamicResource SecondaryButtonStyle}"
+                                        HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                                CornerRadius="8" Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="🎵 Voice Settings"
+                                           Style="{DynamicResource BodyTextStyle}"
+                                           FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                           
+                                <TextBlock Text="Voice Type" 
+                                           Style="{DynamicResource CaptionTextStyle}" 
+                                           Margin="0,0,0,4"/>
+                                <ComboBox SelectedItem="{Binding VoiceType}"
+                                          Style="{DynamicResource DarkComboBoxStyle}">
+                                    <ComboBoxItem>Warm &amp; Friendly</ComboBoxItem>
+                                    <ComboBoxItem>Professional</ComboBoxItem>
+                                    <ComboBoxItem>Wise &amp; Calm</ComboBoxItem>
+                                    <ComboBoxItem>Energetic</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+                
+                <Button Content="🌟 Create My Character" 
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        FontSize="16" Padding="24,12"
+                        HorizontalAlignment="Center"
+                        Margin="0,24,0,0"
+                        Command="{Binding CreateEntityCommand}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- ===== 3D MODELS TAB TEMPLATES ===== -->
+    
+    <!-- 3D Model Viewer Template - Model Exploration -->
+    <DataTemplate x:Key="ThreeDModelViewerTemplate">
+        <Border Padding="20" 
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 3D Viewport -->
+                <Border Grid.Column="0" 
+                        Background="{DynamicResource PrimaryDarkBrush}"
+                        BorderBrush="{DynamicResource AccentPurpleBrush}"
+                        BorderThickness="2" CornerRadius="8"
+                        Margin="0,0,16,0">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="🎯" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="3D Model Viewer"
+                                   Style="{DynamicResource HeadingMediumStyle}"
+                                   FontSize="18" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="Click and drag to rotate • Scroll to zoom"
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Model Controls -->
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="🎛️ Model Controls"
+                               Style="{DynamicResource HeadingSmallStyle}"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,16"/>
+                               
+                    <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                            CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="🔄 View Options"
+                                       Style="{DynamicResource BodyTextStyle}"
+                                       FontWeight="SemiBold" Margin="0,0,0,12"/>
+                            <CheckBox Content="Show wireframe" 
+                                      IsChecked="{Binding ShowWireframe}"
+                                      Style="{DynamicResource DarkCheckBoxStyle}"
+                                      Margin="0,4"/>
+                            <CheckBox Content="Show lighting" 
+                                      IsChecked="{Binding ShowLighting}"
+                                      Style="{DynamicResource DarkCheckBoxStyle}"
+                                      Margin="0,4"/>
+                            <CheckBox Content="Auto-rotate" 
+                                      IsChecked="{Binding AutoRotate}"
+                                      Style="{DynamicResource DarkCheckBoxStyle}"
+                                      Margin="0,4"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                            CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="📊 Model Info"
+                                       Style="{DynamicResource BodyTextStyle}"
+                                       FontWeight="SemiBold" Margin="0,0,0,12"/>
+                            <TextBlock Text="{Binding ModelName}" 
+                                       Style="{DynamicResource BodyTextStyle}"
+                                       Margin="0,4"/>
+                            <TextBlock Text="{Binding PolygonCount, StringFormat='Polygons: {0:N0}'}" 
+                                       Style="{DynamicResource CaptionTextStyle}"
+                                       Margin="0,4"/>
+                            <TextBlock Text="{Binding FileSize}" 
+                                       Style="{DynamicResource CaptionTextStyle}"
+                                       Margin="0,4"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+    
+</ResourceDictionary>

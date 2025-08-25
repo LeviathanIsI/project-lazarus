@@ -10,6 +10,7 @@ public sealed class LlamaServerRunner : IChatRunner
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     public string Name { get; }
     public Uri BaseAddress { get; }
+    public string? CurrentModel => _defaultModel;
     private readonly string _defaultModel;
 
     public LlamaServerRunner(string name, Uri baseUrl, string? defaultModel = null, HttpMessageHandler? handler = null)

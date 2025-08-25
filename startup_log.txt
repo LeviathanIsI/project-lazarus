@@ -1,0 +1,139 @@
+App: OnStartup called
+App: Beginning startup sequence...
+App: Configuring dependency injection...
+App: ConfigureServices - Starting DI registration...
+App: Registering core ViewModels...
+App: Registering Entities ViewModels...
+App: Entities ViewModels registered successfully
+App: Registering UI components...
+App: ConfigureServices completed successfully
+App: Building service provider...
+App: Service provider built successfully
+App: Starting orchestrator...
+App: Ensuring directories exist...
+App: Starting orchestrator host...
+info: RunnerRegistry[0]
+      Initializing Runner Registry...
+info: RunnerRegistry[0]
+      Loaded configuration with 3 runner definitions
+info: RunnerRegistry[0]
+      Initializing runner: qwen-32b-q5km (llama-server)
+[LlamaServerRunner] Initialized with base URL: http://127.0.0.1:8080/v1, default model: Qwen2.5-32B-Instruct-Q5_K_M.gguf
+info: RunnerRegistry[0]
+      Runner initialized: qwen-32b-q5km
+info: RunnerRegistry[0]
+      Initializing runner: Local LLaMA Server (llama-server)
+[LlamaServerRunner] Initialized with base URL: http://127.0.0.1:8080/, default model: Qwen2.5-32B-Instruct-Q5_K_M.gguf
+info: RunnerRegistry[0]
+      Runner initialized: Local LLaMA Server
+info: RunnerRegistry[0]
+      Initializing runner: Local LLaMA.cpp (llama-cpp)
+info: RunnerRegistry[0]
+      Runner initialized: Local LLaMA.cpp
+dbug: RunnerRegistry[0]
+      Testing health for runner: Local LLaMA Server
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080//health
+[LlamaServerRunner] Health check exception via /health: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080//v1/models
+[LlamaServerRunner] Health check exception via /v1/models: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080/../health
+[LlamaServerRunner] Health check exception via ../health: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080/v1/health
+dbug: RunnerRegistry[0]
+      Testing health for runner: qwen-32b-q5km
+[LlamaServerRunner] Health check exception via /health: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080/v1/v1/models
+[LlamaServerRunner] Health check exception via /v1/models: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080/v1../health
+[LlamaServerRunner] Health check exception via ../health: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080//health
+dbug: RunnerRegistry[0]
+      Testing health for runner: Local LLaMA Server
+[LlamaServerRunner] Health check exception via /health: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080//v1/models
+[LlamaServerRunner] Health check exception via /v1/models: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+[LlamaServerRunner] Health check attempt: http://127.0.0.1:8080/../health
+[LlamaServerRunner] Health check exception via ../health: No connection could be made because the target machine actively refused it. (127.0.0.1:8080)
+dbug: RunnerRegistry[0]
+      Testing health for runner: llama.cpp
+[LlamaCppRunner] Health check to http://127.0.0.1:8081//v1/models
+[LlamaCppRunner] Health check failed: No connection could be made because the target machine actively refused it. (127.0.0.1:8081)
+fail: RunnerRegistry[0]
+      No healthy runners found - system operating in degraded mode
+info: RunnerRegistry[0]
+      Health monitoring started
+info: RunnerRegistry[0]
+      Runner Registry initialized with 3 runners. Active: none
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:11711
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\project-lazarus
+App: Orchestrator started successfully
+App: Waiting for API to be ready...
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:11711/status - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /status'
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+      Writing value of type '<>f__AnonymousType0`5' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /status'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:11711/status - 200 - application/json;+charset=utf-8 42.2612ms
+App: API is ready
+App: Creating MainWindow...
+MainWindow: Starting initialization...
+Unhandled exception. System.Windows.Markup.XamlParseException: 'Provide value on 'System.Windows.StaticResourceExtension' threw an exception.' Line number '452' and line position '8'.
+ ---> System.Exception: Cannot find resource named 'ToggleButtonStyle'. Resource names are case sensitive.
+   at System.Windows.StaticResourceExtension.ProvideValueInternal(IServiceProvider serviceProvider, Boolean allowDeferredReference)
+   at MS.Internal.Xaml.Runtime.ClrObjectRuntime.CallProvideValue(MarkupExtension me, IServiceProvider serviceProvider)
+   --- End of inner exception stack trace ---
+   at System.Windows.Markup.XamlReader.RewrapException(Exception e, IXamlLineInfo lineInfo, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.Load(XamlReader xamlReader, IXamlObjectWriterFactory writerFactory, Boolean skipJournaledProperties, Object rootObject, XamlObjectWriterSettings settings, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.LoadBaml(XamlReader xamlReader, Boolean skipJournaledProperties, Object rootObject, XamlAccessLevel accessLevel, Uri baseUri)
+   at System.Windows.Markup.XamlReader.LoadBaml(Stream stream, ParserContext parserContext, Object parent, Boolean closeStream)
+   at System.Windows.Application.LoadComponent(Object component, Uri resourceLocator)
+   at Lazarus.Desktop.MainWindow.InitializeComponent() in D:\project-lazarus\App.Desktop\MainWindow.xaml:line 1
+   at Lazarus.Desktop.MainWindow..ctor(IServiceProvider serviceProvider) in D:\project-lazarus\App.Desktop\MainWindow.xaml.cs:line 19
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitDisposeCache(ServiceCallSite transientCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Lazarus.Desktop.App.OnStartup(StartupEventArgs e) in D:\project-lazarus\App.Desktop\App.xaml.cs:line 69
+   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__128_0(Object state)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   at MS.Internal.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at MS.Internal.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Threading.DispatcherOperation.Invoke()
+   at System.Windows.Threading.Dispatcher.ProcessQueue()
+   at System.Windows.Threading.Dispatcher.WndProcHook(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+   at System.Windows.Threading.Dispatcher.LegacyInvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Int32 numArgs)
+   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)
+   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG& msg)
+   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)
+   at System.Windows.Application.RunDispatcher(Object ignore)
+   at System.Windows.Application.RunInternal(Window window)
+   at Lazarus.Desktop.App.Main()

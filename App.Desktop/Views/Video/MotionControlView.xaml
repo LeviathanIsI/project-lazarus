@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,20 +14,20 @@
 
 		<!-- Left Panel: Motion Controls -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Motion Control"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Camera Controls -->
 					<TextBlock Text="Camera Movement"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
@@ -35,7 +35,7 @@
 					<!-- Pan X -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Pan X:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"
 								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding PanX}"
@@ -45,7 +45,7 @@
 								VerticalAlignment="Center"
 								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding PanX, StringFormat=F2}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="50"
 								   VerticalAlignment="Center"/>
 					</StackPanel>
@@ -53,7 +53,7 @@
 					<!-- Pan Y -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Pan Y:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"
 								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding PanY}"
@@ -63,7 +63,7 @@
 								VerticalAlignment="Center"
 								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding PanY, StringFormat=F2}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="50"
 								   VerticalAlignment="Center"/>
 					</StackPanel>
@@ -71,7 +71,7 @@
 					<!-- Zoom -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Zoom:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"
 								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding Zoom}"
@@ -81,7 +81,7 @@
 								VerticalAlignment="Center"
 								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding Zoom, StringFormat='F2x'}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="50"
 								   VerticalAlignment="Center"/>
 					</StackPanel>
@@ -89,7 +89,7 @@
 					<!-- Rotation -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,16">
 						<TextBlock Text="Rotate:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"
 								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding Rotation}"
@@ -99,43 +99,43 @@
 								VerticalAlignment="Center"
 								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding Rotation, StringFormat='F0°'}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="50"
 								   VerticalAlignment="Center"/>
 					</StackPanel>
 
 					<!-- Object Tracking -->
 					<TextBlock Text="Object Tracking"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
 
 					<CheckBox Content="Enable Object Tracking"
 							  IsChecked="{Binding EnableObjectTracking}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
+							  Foreground="{DynamicResource TextPrimaryBrush}"
 							  Margin="0,0,0,10"/>
 
 					<TextBox Text="{Binding TrackingPrompt}"
 							 Height="60"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,16"
 							 IsEnabled="{Binding EnableObjectTracking}"/>
 
 					<!-- Motion Smoothing -->
 					<TextBlock Text="Motion Smoothing"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
 
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Smoothing:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="80"
 								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding MotionSmoothing}"
@@ -145,7 +145,7 @@
 								VerticalAlignment="Center"
 								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding MotionSmoothing, StringFormat=F2}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="50"
 								   VerticalAlignment="Center"/>
 					</StackPanel>
@@ -163,13 +163,13 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Motion Preview -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -180,7 +180,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Motion Preview"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="16"
 						   FontWeight="Bold"
 						   HorizontalAlignment="Center"
@@ -188,7 +188,7 @@
 
 				<!-- Motion Visualization -->
 				<Border Grid.Row="1"
-						Background="#2a2a2a"
+						Background="{DynamicResource SecondaryDarkBrush}"
 						Margin="20"
 						CornerRadius="8">
 					<Canvas x:Name="MotionCanvas"
@@ -207,7 +207,7 @@
 								 Canvas.Top="150"/>
 						
 						<TextBlock Text="Motion visualization will appear here"
-								   Foreground="{StaticResource TextSecondaryBrush}"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
 								   HorizontalAlignment="Center"
 								   VerticalAlignment="Center"
 								   Canvas.Left="100"
@@ -222,7 +222,7 @@
 							HorizontalAlignment="Center"
 							Margin="0,0,0,12">
 					<TextBlock Text="Timeline:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   VerticalAlignment="Center"
 							   Margin="0,0,8,0"/>
 					<Slider Value="{Binding TimelinePosition}"
@@ -247,7 +247,7 @@
 								 Height="4"
 								 Width="300"/>
 					<TextBlock Text="{Binding ProcessingStatus}"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
 							   Margin="0,8,0,0"/>
 				</StackPanel>
@@ -257,13 +257,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Motion Presets -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -274,7 +274,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Motion Presets"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -286,17 +286,17 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
 								<StackPanel>
 									<TextBlock Text="{Binding Name}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   FontSize="12"
 											   FontWeight="Bold"/>
 									<TextBlock Text="{Binding Description}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="10"
 											   Margin="0,2,0,0"/>

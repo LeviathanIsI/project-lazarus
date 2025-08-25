@@ -5,7 +5,7 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- Float Parameter Template - A1111 Inspired Section -->
@@ -31,7 +31,7 @@
 
 							<!-- Dropdown indicator on the right -->
 							<Path Grid.Column="1"
-								  Fill="{StaticResource TextMutedBrush}"
+								  Fill="{DynamicResource TextMutedBrush}"
 								  Data="M7 10l5 5 5-5z"
 								  Width="12"
 								  Height="12"
@@ -44,13 +44,13 @@
 							</Path>
 
 							<Border Grid.Column="2"
-									Background="{StaticResource TertiaryDarkBrush}"
+									Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
-									BorderBrush="{StaticResource BorderBrush}"
+									BorderBrush="{DynamicResource BorderBrush}"
 									BorderThickness="1">
 								<TextBox Text="{Binding Value.DefaultValue, StringFormat=F2}"
 										 Background="Transparent"
-										 Foreground="{StaticResource TextPrimaryBrush}"
+										 Foreground="{DynamicResource TextPrimaryBrush}"
 										 BorderThickness="0"
 										 Padding="8,4"
 										 TextAlignment="Center"
@@ -71,8 +71,8 @@
 								Minimum="{Binding Value.MinValue}"
 								Maximum="{Binding Value.MaxValue}"
 								TickFrequency="0.01"
-								Foreground="{StaticResource AccentRedBrush}"
-								Background="{StaticResource BorderBrush}"
+								Foreground="{DynamicResource AccentRedBrush}"
+								Background="{DynamicResource BorderBrush}"
 								Height="20"/>
 					</StackPanel>
 				</Expander>
@@ -101,7 +101,7 @@
 									   FontSize="13"/>
 
 							<Path Grid.Column="1"
-								  Fill="{StaticResource TextMutedBrush}"
+								  Fill="{DynamicResource TextMutedBrush}"
 								  Data="M7 10l5 5 5-5z"
 								  Width="12"
 								  Height="12"
@@ -109,13 +109,13 @@
 								  Margin="8,0,8,0"/>
 
 							<Border Grid.Column="2"
-									Background="{StaticResource TertiaryDarkBrush}"
+									Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
-									BorderBrush="{StaticResource BorderBrush}"
+									BorderBrush="{DynamicResource BorderBrush}"
 									BorderThickness="1">
 								<TextBox Text="{Binding Value.DefaultValue}"
 										 Background="Transparent"
-										 Foreground="{StaticResource TextPrimaryBrush}"
+										 Foreground="{DynamicResource TextPrimaryBrush}"
 										 BorderThickness="0"
 										 Padding="8,4"
 										 TextAlignment="Center"
@@ -137,8 +137,8 @@
 								Maximum="{Binding Value.MaxValue}"
 								TickFrequency="1"
 								IsSnapToTickEnabled="True"
-								Foreground="{StaticResource AccentRedBrush}"
-								Background="{StaticResource BorderBrush}"
+								Foreground="{DynamicResource AccentRedBrush}"
+								Background="{DynamicResource BorderBrush}"
 								Height="20"/>
 					</StackPanel>
 				</Expander>
@@ -167,7 +167,7 @@
 									   FontSize="13"/>
 
 							<Path Grid.Column="1"
-								  Fill="{StaticResource TextMutedBrush}"
+								  Fill="{DynamicResource TextMutedBrush}"
 								  Data="M7 10l5 5 5-5z"
 								  Width="12"
 								  Height="12"
@@ -211,7 +211,7 @@
 									   FontSize="13"/>
 
 							<Path Grid.Column="1"
-								  Fill="{StaticResource TextMutedBrush}"
+								  Fill="{DynamicResource TextMutedBrush}"
 								  Data="M7 10l5 5 5-5z"
 								  Width="12"
 								  Height="12"
@@ -239,12 +239,12 @@
 			</Border>
 		</DataTemplate>
 
-		<!-- Parameter Template Selector -->
+		<!-- Parameter Template Selector - ViewMode Aware -->
 		<local:ParameterTemplateSelector x:Key="ParameterTemplateSelector"
-										 FloatTemplate="{StaticResource FloatParameterTemplate}"
-										 IntTemplate="{StaticResource IntParameterTemplate}"
-										 BoolTemplate="{StaticResource BoolParameterTemplate}"
-										 DropdownTemplate="{StaticResource DropdownParameterTemplate}"/>
+										 FloatTemplate="{DynamicResource FloatParameterTemplate}"
+										 IntTemplate="{DynamicResource IntParameterTemplate}"
+										 BoolTemplate="{DynamicResource BoolParameterTemplate}"
+										 DropdownTemplate="{DynamicResource DropdownParameterTemplate}"/>
 	</UserControl.Resources>
 
 	<ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -285,7 +285,7 @@
 						</Grid>
 
 						<TextBlock Text="{Binding StatusText}"
-								   Foreground="{StaticResource SuccessBrush}"
+								   Foreground="{DynamicResource SuccessBrush}"
 								   FontSize="12"
 								   Margin="0,4,0,0"/>
 					</StackPanel>
@@ -309,7 +309,7 @@
 								<TextBlock Text="Scanning..."
 										   Style="{StaticResource CaptionTextStyle}"
 										   Margin="0,0,8,0"/>
-								<Border Background="{StaticResource AccentRedBrush}"
+								<Border Background="{DynamicResource AccentRedBrush}"
 										Width="16"
 										Height="16"
 										CornerRadius="8">
@@ -339,7 +339,7 @@
 								<DataTemplate>
 									<Border Visibility="{Binding Value.IsSupported, Converter={StaticResource BooleanToVisibilityConverter}}">
 										<ContentPresenter Content="{Binding}"
-														  ContentTemplateSelector="{StaticResource ParameterTemplateSelector}"/>
+														  ContentTemplateSelector="{DynamicResource ParameterTemplateSelector}"/>
 									</Border>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
@@ -400,12 +400,12 @@
 										Orientation="Horizontal"
 										Margin="12,0,0,0">
 								<TextBlock Text="{Binding TestStatus}"
-										   Foreground="{StaticResource SuccessBrush}"
+										   Foreground="{DynamicResource SuccessBrush}"
 										   FontSize="12"
 										   VerticalAlignment="Center"/>
 
 								<!-- Test execution spinner -->
-								<Border Background="{StaticResource AccentRedBrush}"
+								<Border Background="{DynamicResource AccentRedBrush}"
 										Width="12"
 										Height="12"
 										CornerRadius="6"
@@ -432,8 +432,8 @@
 						</Grid>
 
 						<!-- Response area with proper visibility logic -->
-						<Border Background="{StaticResource PrimaryDarkBrush}"
-								BorderBrush="{StaticResource BorderBrush}"
+						<Border Background="{DynamicResource PrimaryDarkBrush}"
+								BorderBrush="{DynamicResource BorderBrush}"
 								BorderThickness="1"
 								CornerRadius="4"
 								Padding="12"
@@ -442,7 +442,7 @@
 								<StackPanel>
 									<!-- Actual response text -->
 									<TextBlock Text="{Binding TestResponse}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   TextWrapping="Wrap">
 										<TextBlock.Style>
 											<Style TargetType="TextBlock">

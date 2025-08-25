@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,20 +14,20 @@
 
 		<!-- Left Panel: Upscaling Controls -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Upscaling"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Source Image -->
 					<TextBlock Text="Source Image:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<Button Content="Load Image"
 							Command="{Binding LoadImageCommand}"
@@ -37,7 +37,7 @@
 							Padding="12,4"
 							Margin="0,0,0,8"/>
 					
-					<Border Background="{StaticResource TertiaryDarkBrush}"
+					<Border Background="{DynamicResource TertiaryDarkBrush}"
 							Height="150"
 							CornerRadius="4"
 							Margin="0,0,0,12">
@@ -48,7 +48,7 @@
 
 					<!-- Upscale Factor -->
 					<TextBlock Text="Upscale Factor:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding UpscaleFactor}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -61,7 +61,7 @@
 
 					<!-- Upscaler Model -->
 					<TextBlock Text="Upscaler Model:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding UpscalerModel}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -75,7 +75,7 @@
 					<!-- Face Enhancement -->
 					<CheckBox Content="Face Enhancement"
 							  IsChecked="{Binding FaceEnhancement}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
+							  Foreground="{DynamicResource TextPrimaryBrush}"
 							  Margin="0,0,0,12"/>
 
 					<!-- Generate Button -->
@@ -90,8 +90,8 @@
 								 Minimum="0"
 								 Maximum="100"
 								 Height="4"
-								 Background="{StaticResource TertiaryDarkBrush}"
-								 Foreground="{StaticResource AccentRedBrush}"
+								 Background="{DynamicResource TertiaryDarkBrush}"
+								 Foreground="{DynamicResource AccentRedBrush}"
 								 Visibility="{Binding IsUpscaling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 				</StackPanel>
 			</ScrollViewer>
@@ -100,17 +100,17 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Result Display -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<TextBlock Text="Upscaled image will appear here"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   HorizontalAlignment="Center"
 						   VerticalAlignment="Center"
 						   Visibility="{Binding HasUpscaledImage, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -127,13 +127,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Upscaling History -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -144,7 +144,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Upscaling History"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -156,20 +156,20 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
 								<StackPanel>
 									<TextBlock Text="{Binding UpscalerModel}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   FontWeight="Bold"
 											   FontSize="12"/>
 									<TextBlock Text="{Binding FactorText}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   FontSize="11"/>
 									<TextBlock Text="{Binding Timestamp}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   FontSize="10"
 											   Margin="0,4,0,0"/>
 								</StackPanel>

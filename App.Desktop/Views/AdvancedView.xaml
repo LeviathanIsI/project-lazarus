@@ -5,12 +5,12 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- Setting Item Template -->
 		<DataTemplate x:Key="SettingTemplate">
-			<Border Background="{StaticResource TertiaryDarkBrush}"
+			<Border Background="{DynamicResource TertiaryDarkBrush}"
 					CornerRadius="6"
 					Padding="16"
 					Margin="0,0,0,8">
@@ -44,22 +44,22 @@
 										<DataTrigger Binding="{Binding WarningLevel}"
 													 Value="Safe">
 											<Setter Property="Background"
-													Value="{StaticResource SuccessBrush}"/>
+													Value="{DynamicResource SuccessBrush}"/>
 										</DataTrigger>
 										<DataTrigger Binding="{Binding WarningLevel}"
 													 Value="Caution">
 											<Setter Property="Background"
-													Value="{StaticResource WarningBrush}"/>
+													Value="{DynamicResource WarningBrush}"/>
 										</DataTrigger>
 										<DataTrigger Binding="{Binding WarningLevel}"
 													 Value="Experimental">
 											<Setter Property="Background"
-													Value="{StaticResource AccentRedBrush}"/>
+													Value="{DynamicResource AccentRedBrush}"/>
 										</DataTrigger>
 										<DataTrigger Binding="{Binding WarningLevel}"
 													 Value="Dangerous">
 											<Setter Property="Background"
-													Value="{StaticResource ErrorBrush}"/>
+													Value="{DynamicResource ErrorBrush}"/>
 										</DataTrigger>
 									</Style.Triggers>
 								</Style>
@@ -71,7 +71,7 @@
 						</Border>
 
 						<!-- Restart Required Badge -->
-						<Border Background="{StaticResource ErrorBrush}"
+						<Border Background="{DynamicResource ErrorBrush}"
 								CornerRadius="4"
 								Padding="4,2"
 								Margin="4,0,0,0"
@@ -195,7 +195,7 @@
 				<ScrollViewer Grid.Row="2"
 							  VerticalScrollBarVisibility="Auto">
 					<ItemsControl ItemsSource="{Binding FilteredSettings}"
-								  ItemTemplate="{StaticResource SettingTemplate}"/>
+								  ItemTemplate="{DynamicResource SettingTemplate}"/>
 				</ScrollViewer>
 
 				<!-- Action Buttons -->
@@ -211,7 +211,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{StaticResource SuccessBrush}"
+							   Foreground="{DynamicResource SuccessBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -270,7 +270,7 @@
 
 				<!-- System Info -->
 				<Border Grid.Row="1"
-						Background="{StaticResource TertiaryDarkBrush}"
+						Background="{DynamicResource TertiaryDarkBrush}"
 						CornerRadius="6"
 						Padding="16"
 						Margin="0,0,0,16">
@@ -374,7 +374,7 @@
 
 				<!-- Warning Section -->
 				<Border Grid.Row="2"
-						Background="{StaticResource ErrorBrush}"
+						Background="{DynamicResource ErrorBrush}"
 						CornerRadius="6"
 						Padding="16"
 						Margin="0,0,0,16"
@@ -416,7 +416,7 @@
 					<TextBlock Text="Processing..."
 							   Style="{StaticResource CaptionTextStyle}"
 							   Margin="0,0,8,0"/>
-					<Border Background="{StaticResource AccentRedBrush}"
+					<Border Background="{DynamicResource AccentRedBrush}"
 							Width="12"
 							Height="12"
 							CornerRadius="6">

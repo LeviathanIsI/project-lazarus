@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,20 +14,20 @@
 
 		<!-- Left Panel: TTS Configuration -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="TTS Configuration"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Voice Model Selection -->
 					<TextBlock Text="Voice Model:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding SelectedVoiceModel}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -42,21 +42,21 @@
 
 					<!-- Text Input -->
 					<TextBlock Text="Text to Synthesize:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<TextBox x:Name="SynthesisTextInput"
 							 Text="{Binding TextToSynthesize, UpdateSourceTrigger=PropertyChanged}"
 							 Height="100"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- Voice Parameters -->
 					<TextBlock Text="Voice Parameters"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
@@ -64,7 +64,7 @@
 					<!-- Speed -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Speed:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"/>
 						<Slider Value="{Binding Speed}"
 								Minimum="0.5"
@@ -72,7 +72,7 @@
 								Width="130"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding Speed, StringFormat='F1x'}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="40"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -80,7 +80,7 @@
 					<!-- Pitch -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Pitch:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"/>
 						<Slider Value="{Binding Pitch}"
 								Minimum="-2.0"
@@ -88,7 +88,7 @@
 								Width="130"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding Pitch, StringFormat=F1}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="40"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -96,7 +96,7 @@
 					<!-- Volume -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Volume:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"/>
 						<Slider Value="{Binding Volume}"
 								Minimum="0"
@@ -104,7 +104,7 @@
 								Width="130"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding Volume, StringFormat=P0}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="40"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -112,7 +112,7 @@
 					<!-- Emotion -->
 					<StackPanel Margin="0,0,0,8">
 						<TextBlock Text="Emotion:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<ComboBox SelectedValue="{Binding SelectedEmotion}"
 								  Style="{StaticResource DarkComboBoxStyle}">
@@ -128,19 +128,19 @@
 
 					<!-- Advanced Settings -->
 					<TextBlock Text="Advanced Settings"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,12,0,8"/>
 
 					<CheckBox Content="Add Breathing Sounds"
 							  IsChecked="{Binding AddBreathingSounds}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
+							  Foreground="{DynamicResource TextPrimaryBrush}"
 							  Margin="0,0,0,8"/>
 
 					<CheckBox Content="Auto Punctuation"
 							  IsChecked="{Binding AutoPunctuation}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
+							  Foreground="{DynamicResource TextPrimaryBrush}"
 							  Margin="0,0,0,8"/>
 
 					<!-- Synthesis Button -->
@@ -156,13 +156,13 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Audio Playback -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -173,7 +173,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Audio Playback"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="16"
 						   FontWeight="Bold"
 						   HorizontalAlignment="Center"
@@ -181,7 +181,7 @@
 
 				<!-- Waveform Visualization -->
 				<Border Grid.Row="1"
-						Background="#2a2a2a"
+						Background="{DynamicResource SecondaryDarkBrush}"
 						Margin="20"
 						CornerRadius="8">
 					<Grid>
@@ -197,7 +197,7 @@
 									   Visibility="{Binding HasAudio, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 							
 							<TextBlock Text="🎵 Audio waveform will appear here"
-									   Foreground="{StaticResource TextSecondaryBrush}"
+									   Foreground="{DynamicResource TextSecondaryBrush}"
 									   HorizontalAlignment="Center"
 									   VerticalAlignment="Center"
 									   Canvas.Left="150"
@@ -211,11 +211,11 @@
 									Margin="0,0,0,20"
 									Visibility="{Binding HasAudio, Converter={StaticResource BooleanToVisibilityConverter}}">
 							<TextBlock Text="{Binding AudioDuration, StringFormat=Duration: {0}s}"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   HorizontalAlignment="Center"
 									   FontSize="12"/>
 							<TextBlock Text="{Binding AudioFileSize, StringFormat=Size: {0} KB}"
-									   Foreground="{StaticResource TextSecondaryBrush}"
+									   Foreground="{DynamicResource TextSecondaryBrush}"
 									   HorizontalAlignment="Center"
 									   FontSize="10"/>
 						</StackPanel>
@@ -271,10 +271,10 @@
 					<ProgressBar IsIndeterminate="True"
 								 Height="4"
 								 Width="300"
-								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentRedBrush}"/>
+								 Background="{DynamicResource SecondaryDarkBrush}"
+								 Foreground="{DynamicResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding SynthesisStatus}"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
 							   Margin="0,12,0,0"/>
 				</StackPanel>
@@ -284,13 +284,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Voice Library -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -302,7 +302,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Voice Library"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -314,7 +314,7 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
@@ -326,11 +326,11 @@
 												   Margin="0,0,8,0"/>
 										<StackPanel>
 											<TextBlock Text="{Binding Name}"
-													   Foreground="{StaticResource TextPrimaryBrush}"
+													   Foreground="{DynamicResource TextPrimaryBrush}"
 													   FontSize="12"
 													   FontWeight="Bold"/>
 											<TextBlock Text="{Binding Language}"
-													   Foreground="{StaticResource TextSecondaryBrush}"
+													   Foreground="{DynamicResource TextSecondaryBrush}"
 													   FontSize="10"/>
 										</StackPanel>
 									</StackPanel>
@@ -354,7 +354,7 @@
 									</StackPanel>
 
 									<TextBlock Text="{Binding Description}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="9"
 											   Margin="0,4,0,0"/>

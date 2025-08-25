@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,20 +14,20 @@
 
 		<!-- Left Panel: Temporal Effects Controls -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Temporal Effects"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Effect Type -->
 					<TextBlock Text="Effect Type:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,6"/>
 					<ComboBox SelectedValue="{Binding SelectedEffectType}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -44,7 +44,7 @@
 					<!-- Time Stretch Settings -->
 					<StackPanel Visibility="{Binding IsTimeStretchSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
 						<TextBlock Text="Speed Multiplier:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding SpeedMultiplier}"
@@ -53,7 +53,7 @@
 									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding SpeedMultiplier, StringFormat='F1x'}"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   Width="50"
 									   Margin="8,0,0,0"
 									   VerticalAlignment="Center"/>
@@ -63,7 +63,7 @@
 					<!-- Frame Interpolation Settings -->
 					<StackPanel Visibility="{Binding IsFrameInterpolationSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
 						<TextBlock Text="Target Frame Rate:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,6"/>
 						<ComboBox SelectedValue="{Binding TargetFrameRate}"
 								  Style="{StaticResource DarkComboBoxStyle}"
@@ -75,7 +75,7 @@
 						</ComboBox>
 						
 						<TextBlock Text="Interpolation Quality:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding InterpolationQuality}"
@@ -84,7 +84,7 @@
 									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding InterpolationQuality}"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   Width="50"
 									   Margin="8,0,0,0"
 									   VerticalAlignment="Center"/>
@@ -94,7 +94,7 @@
 					<!-- Motion Blur Settings -->
 					<StackPanel Visibility="{Binding IsMotionBlurSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
 						<TextBlock Text="Blur Intensity:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding BlurIntensity}"
@@ -103,7 +103,7 @@
 									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding BlurIntensity, StringFormat=F2}"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   Width="50"
 									   Margin="8,0,0,0"
 									   VerticalAlignment="Center"/>
@@ -111,14 +111,14 @@
 						
 						<CheckBox Content="Adaptive Blur"
 								  IsChecked="{Binding UseAdaptiveBlur}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
+								  Foreground="{DynamicResource TextPrimaryBrush}"
 								  Margin="0,4,0,12"/>
 					</StackPanel>
 
 					<!-- Stabilization Settings -->
 					<StackPanel Visibility="{Binding IsStabilizationSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
 						<TextBlock Text="Stabilization Strength:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 							<Slider Value="{Binding StabilizationStrength}"
@@ -127,7 +127,7 @@
 									Width="190"
 									VerticalAlignment="Center"/>
 							<TextBlock Text="{Binding StabilizationStrength, StringFormat=F2}"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   Width="50"
 									   Margin="8,0,0,0"
 									   VerticalAlignment="Center"/>
@@ -135,29 +135,29 @@
 						
 						<CheckBox Content="Crop to Fit"
 								  IsChecked="{Binding CropToFit}"
-								  Foreground="{StaticResource TextPrimaryBrush}"
+								  Foreground="{DynamicResource TextPrimaryBrush}"
 								  Margin="0,4,0,12"/>
 					</StackPanel>
 
 					<!-- Common Settings -->
 					<TextBlock Text="Processing Options"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,16,0,8"/>
 
 					<CheckBox Content="Preserve Original Duration"
 							  IsChecked="{Binding PreserveOriginalDuration}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
+							  Foreground="{DynamicResource TextPrimaryBrush}"
 							  Margin="0,0,0,10"/>
 
 					<CheckBox Content="High Quality Mode"
 							  IsChecked="{Binding HighQualityMode}"
-							  Foreground="{StaticResource TextPrimaryBrush}"
+							  Foreground="{DynamicResource TextPrimaryBrush}"
 							  Margin="0,0,0,10"/>
 
 					<TextBlock Text="Processing Priority:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,8,0,4"/>
 					<ComboBox SelectedValue="{Binding ProcessingPriority}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -180,13 +180,13 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Effect Preview -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -197,7 +197,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Effect Preview"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="16"
 						   FontWeight="Bold"
 						   HorizontalAlignment="Center"
@@ -212,19 +212,19 @@
 					<!-- Before -->
 					<StackPanel Grid.Column="0" Margin="8">
 						<TextBlock Text="Before"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   HorizontalAlignment="Center"
 								   Margin="0,0,0,8"/>
-						<Border Background="#2a2a2a"
+						<Border Background="{DynamicResource SecondaryDarkBrush}"
 								Height="200"
 								CornerRadius="8">
 							<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 								<TextBlock Text="🎬"
-										   Foreground="{StaticResource TextPrimaryBrush}"
+										   Foreground="{DynamicResource TextPrimaryBrush}"
 										   FontSize="32"
 										   HorizontalAlignment="Center"/>
 								<TextBlock Text="Original Video"
-										   Foreground="{StaticResource TextSecondaryBrush}"
+										   Foreground="{DynamicResource TextSecondaryBrush}"
 										   HorizontalAlignment="Center"
 										   Margin="0,8,0,0"/>
 							</StackPanel>
@@ -234,10 +234,10 @@
 					<!-- After -->
 					<StackPanel Grid.Column="1" Margin="8">
 						<TextBlock Text="After"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   HorizontalAlignment="Center"
 								   Margin="0,0,0,8"/>
-						<Border Background="#2a2a2a"
+						<Border Background="{DynamicResource SecondaryDarkBrush}"
 								Height="200"
 								CornerRadius="8">
 							<Grid>
@@ -245,16 +245,16 @@
 											VerticalAlignment="Center"
 											Visibility="{Binding HasPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
 									<TextBlock Text="✨"
-											   Foreground="{StaticResource AccentRedBrush}"
+											   Foreground="{DynamicResource AccentRedBrush}"
 											   FontSize="32"
 											   HorizontalAlignment="Center"/>
 									<TextBlock Text="Effect Applied"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   HorizontalAlignment="Center"
 											   Margin="0,8,0,0"/>
 								</StackPanel>
 								<TextBlock Text="Effect preview will appear here"
-										   Foreground="{StaticResource TextSecondaryBrush}"
+										   Foreground="{DynamicResource TextSecondaryBrush}"
 										   HorizontalAlignment="Center"
 										   VerticalAlignment="Center"
 										   Visibility="{Binding HasPreview, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -298,10 +298,10 @@
 								 Maximum="100"
 								 Height="6"
 								 Width="350"
-								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentRedBrush}"/>
+								 Background="{DynamicResource SecondaryDarkBrush}"
+								 Foreground="{DynamicResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding ProcessingStatus}"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
 							   Margin="0,8,0,0"/>
 				</StackPanel>
@@ -311,13 +311,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Effect Templates -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -328,7 +328,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Effect Templates"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -340,7 +340,7 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
@@ -351,13 +351,13 @@
 												   VerticalAlignment="Center"
 												   Margin="0,0,8,0"/>
 										<TextBlock Text="{Binding Name}"
-												   Foreground="{StaticResource TextPrimaryBrush}"
+												   Foreground="{DynamicResource TextPrimaryBrush}"
 												   FontSize="12"
 												   FontWeight="Bold"
 												   VerticalAlignment="Center"/>
 									</StackPanel>
 									<TextBlock Text="{Binding Description}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="10"
 											   Margin="0,4,0,0"/>

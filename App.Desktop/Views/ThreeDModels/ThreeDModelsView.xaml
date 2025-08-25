@@ -5,7 +5,7 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views.ThreeDModels.Controls"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 
 	<Grid>
 		<Grid.ColumnDefinitions>
@@ -18,7 +18,7 @@
 
 		<!-- Left Panel: Model Tree -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<local:ModelTreeView x:Name="ModelTreeControl"/>
@@ -27,13 +27,13 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: 3D Viewport -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<local:ViewportControl x:Name="ViewportControl"/>
 		</Border>
@@ -41,13 +41,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Model Properties -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<local:ModelPropertiesPanel x:Name="PropertiesPanel"/>

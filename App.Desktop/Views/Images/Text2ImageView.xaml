@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,43 +14,43 @@
 
 		<!-- Left Panel: Text2Image Controls -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Text to Image"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Prompt -->
 					<TextBlock Text="Prompt:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<TextBox x:Name="PromptTextBox"
 							 Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"
 							 Height="80"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- Negative Prompt -->
 					<TextBlock Text="Negative Prompt:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<TextBox x:Name="NegativePromptTextBox"
 							 Text="{Binding NegativePrompt, UpdateSourceTrigger=PropertyChanged}"
 							 Height="60"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- Generate Button -->
@@ -62,7 +62,7 @@
 
 					<!-- Generation Settings -->
 					<TextBlock Text="Settings"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
@@ -70,7 +70,7 @@
 					<!-- Steps -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Steps:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="60"/>
 						<Slider x:Name="StepsSlider"
 								Value="{Binding Steps}"
@@ -79,7 +79,7 @@
 								Width="150"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding Steps}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="30"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -87,7 +87,7 @@
 					<!-- CFG Scale -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="CFG:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="60"/>
 						<Slider x:Name="CfgSlider"
 								Value="{Binding CfgScale}"
@@ -96,7 +96,7 @@
 								Width="150"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding CfgScale, StringFormat=F1}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="30"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -104,22 +104,22 @@
 					<!-- Size -->
 					<StackPanel Margin="0,0,0,8">
 						<TextBlock Text="Size:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,4"/>
 						<StackPanel Orientation="Horizontal">
 							<TextBox Text="{Binding Width}"
 									 Width="60"
-									 Background="{StaticResource TertiaryDarkBrush}"
-									 Foreground="{StaticResource TextPrimaryBrush}"
-									 BorderBrush="{StaticResource BorderBrush}"/>
+									 Background="{DynamicResource TertiaryDarkBrush}"
+									 Foreground="{DynamicResource TextPrimaryBrush}"
+									 BorderBrush="{DynamicResource BorderBrush}"/>
 							<TextBlock Text="x"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   Margin="8,0"/>
 							<TextBox Text="{Binding Height}"
 									 Width="60"
-									 Background="{StaticResource TertiaryDarkBrush}"
-									 Foreground="{StaticResource TextPrimaryBrush}"
-									 BorderBrush="{StaticResource BorderBrush}"/>
+									 Background="{DynamicResource TertiaryDarkBrush}"
+									 Foreground="{DynamicResource TextPrimaryBrush}"
+									 BorderBrush="{DynamicResource BorderBrush}"/>
 						</StackPanel>
 					</StackPanel>
 				</StackPanel>
@@ -129,17 +129,17 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Generated Image Display -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<TextBlock Text="Generated images will appear here"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   HorizontalAlignment="Center"
 						   VerticalAlignment="Center"
 						   Visibility="{Binding HasGeneratedImage, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -154,13 +154,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Generation History -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -171,7 +171,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Generation History"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -183,17 +183,17 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
 								<StackPanel>
 									<TextBlock Text="{Binding Prompt}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="12"/>
 									<TextBlock Text="{Binding Timestamp}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   FontSize="10"
 											   Margin="0,4,0,0"/>
 								</StackPanel>

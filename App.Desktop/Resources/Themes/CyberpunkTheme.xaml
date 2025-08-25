@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- CYBERPUNK THEME: Neon rebellion - electric purples, matrix greens, neon pinks -->
+    
+    <!-- Primary Background Colors - Deep Black with Neon Hints -->
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#0a0a0f"/>          <!-- Deep space black -->
+    <SolidColorBrush x:Key="SecondaryDarkBrush" Color="#1a0f1f"/>        <!-- Purple-tinted dark -->
+    <SolidColorBrush x:Key="TertiaryDarkBrush" Color="#2a1a2f"/>         <!-- Purple input backgrounds -->
+    
+    <!-- Accent Colors - Electric Purple/Pink Theme -->
+    <SolidColorBrush x:Key="AccentRedBrush" Color="#ff00ff"/>            <!-- Electric magenta -->
+    <SolidColorBrush x:Key="AccentRedHoverBrush" Color="#e600e6"/>       <!-- Hover magenta -->
+    <SolidColorBrush x:Key="AccentRedPressedBrush" Color="#cc00cc"/>     <!-- Pressed magenta -->
+    
+    <!-- Border Colors - Neon Glow -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#7c3aed"/>               <!-- Electric purple borders -->
+    <SolidColorBrush x:Key="BorderHoverBrush" Color="#8b5cf6"/>          <!-- Bright purple hover -->
+    
+    <!-- Text Colors - Neon on Dark -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#00ffff"/>          <!-- Cyan primary text -->
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#00ff00"/>        <!-- Matrix green secondary -->
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#a855f7"/>            <!-- Purple muted -->
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="#6b46c1"/>         <!-- Dim purple disabled -->
+    
+    <!-- Status Colors - Neon Variants -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#00ff00"/>              <!-- Matrix green success -->
+    <SolidColorBrush x:Key="ErrorBrush" Color="#ff1493"/>                <!-- Hot pink error -->
+    <SolidColorBrush x:Key="WarningBrush" Color="#ffff00"/>              <!-- Electric yellow warning -->
+
+</ResourceDictionary>

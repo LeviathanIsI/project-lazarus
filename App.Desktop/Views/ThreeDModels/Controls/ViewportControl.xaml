@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="#2a2a2a">
+			 Background="{DynamicResource SecondaryDarkBrush}">
 
 	<Grid>
 		<!-- Native WPF 3D Viewport -->
@@ -83,7 +83,7 @@
 						<Setter Property="FontSize"
 								Value="11"/>
 						<Setter Property="Background"
-								Value="#80000000"/>
+								Value="{DynamicResource TertiaryDarkBrush}"/>
 						<Setter Property="Opacity"
 								Value="0.8"/>
 						<Style.Triggers>
@@ -121,7 +121,7 @@
 						<Setter Property="FontSize"
 								Value="11"/>
 						<Setter Property="Background"
-								Value="#80000000"/>
+								Value="{DynamicResource TertiaryDarkBrush}"/>
 						<Setter Property="Opacity"
 								Value="0.8"/>
 						<Style.Triggers>
@@ -142,11 +142,11 @@
 			<Border HorizontalAlignment="Left"
 					VerticalAlignment="Bottom"
 					Margin="12"
-					Background="#80000000"
+					Background="{DynamicResource TertiaryDarkBrush}"
 					Padding="8,4"
 					CornerRadius="4"
 					Opacity="0.7">
-				<TextBlock Foreground="White"
+				<TextBlock Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="10"
 						   Text="Left: Orbit | Right: Pan | Wheel: Zoom"/>
 			</Border>
@@ -158,18 +158,18 @@
 				<TextBlock Text="🎯"
 						   FontSize="48"
 						   HorizontalAlignment="Center"
-						   Foreground="#555"
+						   Foreground="{DynamicResource TextMutedBrush}"
 						   TextAlignment="Center"/>
 				<TextBlock Text="No Model Selected"
 						   Style="{StaticResource HeadingMediumStyle}"
 						   HorizontalAlignment="Center"
-						   Foreground="#666"
+						   Foreground="{DynamicResource TextMutedBrush}"
 						   Margin="0,12,0,4"
 						   TextAlignment="Center"/>
 				<TextBlock Text="Select a model from the library to preview"
 						   Style="{StaticResource CaptionTextStyle}"
 						   HorizontalAlignment="Center"
-						   Foreground="#666"
+						   Foreground="{DynamicResource TextMutedBrush}"
 						   TextAlignment="Center"/>
 			</StackPanel>
 		</Grid>

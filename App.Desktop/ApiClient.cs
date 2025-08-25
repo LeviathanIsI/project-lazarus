@@ -2,6 +2,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Lazarus.Shared.OpenAI;
+using Lazarus.Shared.Models;
+using System.Diagnostics;
 
 namespace Lazarus.Desktop;
 
@@ -31,11 +33,30 @@ public static class ApiClient
     {
         try
         {
+            Console.WriteLine($"[ApiClient] Sending chat request to {BaseUrl}/v1/chat/completions");
+            Console.WriteLine($"[ApiClient] Request model: {request.Model}");
+            Console.WriteLine($"[ApiClient] Request messages count: {request.Messages?.Count ?? 0}");
+            
             using var resp = await Http.PostAsJsonAsync("/v1/chat/completions", request, Json);
-            resp.EnsureSuccessStatusCode();
-            return await resp.Content.ReadFromJsonAsync<ChatCompletionResponse>(Json);
+            Console.WriteLine($"[ApiClient] Response status: {resp.StatusCode}");
+            
+            if (!resp.IsSuccessStatusCode)
+            {
+                var errorContent = await resp.Content.ReadAsStringAsync();
+                Console.WriteLine($"[ApiClient] Error response: {errorContent}");
+                resp.EnsureSuccessStatusCode();
+            }
+            
+            var response = await resp.Content.ReadFromJsonAsync<ChatCompletionResponse>(Json);
+            Console.WriteLine($"[ApiClient] Response received, choices count: {response?.Choices?.Count ?? 0}");
+            return response;
         }
-        catch { return null; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] ChatCompletionAsync exception: {ex.GetType().Name}: {ex.Message}");
+            Console.WriteLine($"[ApiClient] Stack trace: {ex.StackTrace}");
+            return null;
+        }
     }
 
 
@@ -92,6 +113,123 @@ public static class ApiClient
             return resp.IsSuccessStatusCode;
         }
         catch { return false; }
+    }
+
+    public static async Task<ModelCapabilities?> GetModelCapabilitiesAsync(string modelName = "current")
+    {
+        try
+        {
+            Console.WriteLine($"[ApiClient] Fetching capabilities for model: {modelName}");
+            using var resp = await Http.GetAsync($"/v1/models/{modelName}/capabilities");
+            resp.EnsureSuccessStatusCode();
+            
+            var capabilities = await resp.Content.ReadFromJsonAsync<ModelCapabilities>(Json);
+            Console.WriteLine($"[ApiClient] Capabilities received: {capabilities?.AvailableParameters.Count ?? 0} parameters");
+            return capabilities;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] GetModelCapabilities failed: {ex.GetType().Name}: {ex.Message}");
+            return null;
+        }
+    }
+    
+    /// <summary>
+    /// Get model capabilities with LoRA modifications applied
+    /// </summary>
+    public static async Task<ModelCapabilities?> GetModelCapabilitiesWithLoRAsAsync(string modelName = "current", List<AppliedLoRAInfo>? appliedLoRAs = null)
+    {
+        try
+        {
+            appliedLoRAs ??= new List<AppliedLoRAInfo>();
+            Console.WriteLine($"[ApiClient] Fetching LoRA-aware capabilities for model: {modelName} with {appliedLoRAs.Count} LoRAs");
+            
+            using var resp = await Http.PostAsJsonAsync($"/v1/models/{modelName}/capabilities/with-loras", appliedLoRAs, Json);
+            resp.EnsureSuccessStatusCode();
+            
+            var capabilities = await resp.Content.ReadFromJsonAsync<ModelCapabilities>(Json);
+            Console.WriteLine($"[ApiClient] LoRA-aware capabilities received: {capabilities?.AvailableParameters.Count ?? 0} parameters, {capabilities?.AppliedLoRAs.Count ?? 0} LoRAs");
+            return capabilities;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] GetModelCapabilitiesWithLoRAs failed: {ex.GetType().Name}: {ex.Message}");
+            // Fallback to basic capabilities
+            return await GetModelCapabilitiesAsync(modelName);
+        }
+    }
+    
+    /// <summary>
+    /// Apply a LoRA to the model
+    /// </summary>
+    public static async Task<bool> ApplyLoRAAsync(AppliedLoRAInfo loraInfo)
+    {
+        try
+        {
+            Console.WriteLine($"[ApiClient] Applying LoRA: {loraInfo.Name}");
+            using var resp = await Http.PostAsJsonAsync("/v1/loras/apply", loraInfo, Json);
+            return resp.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] ApplyLoRA failed: {ex.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Remove a LoRA from the model
+    /// </summary>
+    public static async Task<bool> RemoveLoRAAsync(string loraId)
+    {
+        try
+        {
+            Console.WriteLine($"[ApiClient] Removing LoRA: {loraId}");
+            using var resp = await Http.DeleteAsync($"/v1/loras/{loraId}");
+            return resp.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] RemoveLoRA failed: {ex.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Get currently applied LoRAs
+    /// </summary>
+    public static async Task<List<AppliedLoRAInfo>?> GetAppliedLoRAsAsync()
+    {
+        try
+        {
+            using var resp = await Http.GetAsync("/v1/loras/applied");
+            resp.EnsureSuccessStatusCode();
+            
+            return await resp.Content.ReadFromJsonAsync<List<AppliedLoRAInfo>>(Json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] GetAppliedLoRAs failed: {ex.Message}");
+            return new List<AppliedLoRAInfo>();
+        }
+    }
+    
+    /// <summary>
+    /// Clear all applied LoRAs
+    /// </summary>
+    public static async Task<bool> ClearAllLoRAsAsync()
+    {
+        try
+        {
+            Console.WriteLine($"[ApiClient] Clearing all LoRAs");
+            using var resp = await Http.DeleteAsync("/v1/loras");
+            return resp.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] ClearAllLoRAs failed: {ex.Message}");
+            return false;
+        }
     }
 }
 

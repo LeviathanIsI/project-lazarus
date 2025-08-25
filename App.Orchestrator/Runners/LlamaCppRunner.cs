@@ -11,6 +11,7 @@ public sealed class LlamaCppRunner : IChatRunner
 
     public string Name => "llama.cpp";
     public Uri BaseAddress { get; }
+    public string? CurrentModel => null; // LlamaCppRunner doesn't track specific models
 
     public LlamaCppRunner(Uri baseAddress)
     {

@@ -10,7 +10,7 @@
 		Title="Project Lazarus"
 		Height="700"
 		Width="1200"
-		Background="#0f0f0f">
+		Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid Margin="16">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -25,35 +25,61 @@
 				   VerticalAlignment="Center"
 				   HorizontalAlignment="Center"
 				   FontSize="28"
-				   Foreground="{StaticResource AccentRedBrush}"
+				   Foreground="{DynamicResource AccentRedBrush}"
 				   FontWeight="Bold"
 				   Margin="0,0,0,16"/>
 
-		<!-- API Status -->
+		<!-- API Status & Global Preferences -->
 		<StackPanel Orientation="Horizontal"
 					Grid.Row="1"
 					Margin="0,0,0,12">
 			<TextBlock x:Name="ApiStatus"
 					   Text="API: unknown"
 					   VerticalAlignment="Center"
-					   Foreground="#d1d5db"
+					   Foreground="{DynamicResource TextSecondaryBrush}"
 					   Margin="0,0,12,0"/>
 			<Button Content="Ping API"
 					Click="PingApi_Click"
 					Margin="0,0,8,0"
 					Padding="8,4"
-					Background="#374151"
-					Foreground="White"
+					Background="{DynamicResource BorderBrush}"
+					Foreground="{DynamicResource TextPrimaryBrush}"
 					BorderThickness="0"/>
+			
+			<!-- Global Customization Controls -->
+			<Separator Margin="12,0" Background="{DynamicResource BorderBrush}" Width="1"/>
+			
+			<TextBlock Text="View:"
+					   Style="{StaticResource CaptionTextStyle}"
+					   VerticalAlignment="Center"
+					   Margin="0,0,4,0"/>
+			<ComboBox x:Name="ViewModeSelector"
+					  ItemsSource="{Binding ViewModes}"
+					  SelectedItem="{Binding CurrentViewMode}"
+					  Style="{StaticResource DarkComboBoxStyle}"
+					  MinWidth="120"
+					  Margin="0,0,12,0"
+					  ToolTip="Change UI complexity: Novice (simple) → Enthusiast (balanced) → Developer (full chaos)"/>
+			
+			<TextBlock Text="Theme:"
+					   Style="{StaticResource CaptionTextStyle}"
+					   VerticalAlignment="Center" 
+					   Margin="0,0,4,0"/>
+			<ComboBox x:Name="ThemeSelector"
+					  ItemsSource="{Binding Themes}"
+					  SelectedItem="{Binding CurrentTheme}"
+					  Style="{StaticResource DarkComboBoxStyle}"
+					  MinWidth="120"
+					  ToolTip="Switch visual theme: Dark Gothic → Light Clean → Cyberpunk Neon → Minimal"/>
 		</StackPanel>
 
 		<!-- Tab Navigation -->
 		<Border Grid.Row="2"
-				Background="#1a1a1a"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,8,0,0"
 				Margin="0,0,0,0">
 			<StackPanel Orientation="Horizontal"
-						Background="#1f2937"
+						Background="{DynamicResource TertiaryDarkBrush}"
 						Margin="8">
 				<Button x:Name="ConversationsTabButton"
 						Content="Conversations"
@@ -88,7 +114,7 @@
 
 		<!-- Tab Content -->
 		<Border Grid.Row="3"
-				Background="#1a1a1a"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,0,8,8"
 				Padding="0">
 			<Grid>

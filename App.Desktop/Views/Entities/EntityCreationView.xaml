@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="320" MinWidth="220"/>
@@ -14,30 +14,30 @@
 
 		<!-- Left Panel: Entity Configuration -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Entity Creation"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Entity Name -->
 					<TextBlock Text="Entity Name:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<TextBox Text="{Binding EntityName}"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- Entity Type -->
 					<TextBlock Text="Entity Type:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding EntityType}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -52,7 +52,7 @@
 
 					<!-- Personality Profile -->
 					<TextBlock Text="Personality Profile"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,8,0,8"/>
@@ -62,14 +62,14 @@
 							 Height="80"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- 3D Model Selection -->
 					<TextBlock Text="3D Avatar:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding Selected3DModel}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -91,7 +91,7 @@
 
 					<!-- Voice Selection -->
 					<TextBlock Text="Voice Model:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<ComboBox SelectedValue="{Binding SelectedVoiceModel}"
 							  Style="{StaticResource DarkComboBoxStyle}"
@@ -104,7 +104,7 @@
 
 					<!-- Behavioral Parameters -->
 					<TextBlock Text="Behavioral Parameters"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,8,0,8"/>
@@ -112,7 +112,7 @@
 					<!-- Response Style -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Formality:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"/>
 						<Slider Value="{Binding FormalityLevel}"
 								Minimum="0"
@@ -120,7 +120,7 @@
 								Width="130"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding FormalityLevel, StringFormat=F0}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="30"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -128,7 +128,7 @@
 					<!-- Empathy Level -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Empathy:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"/>
 						<Slider Value="{Binding EmpathyLevel}"
 								Minimum="0"
@@ -136,7 +136,7 @@
 								Width="130"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding EmpathyLevel, StringFormat=F0}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="30"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -144,7 +144,7 @@
 					<!-- Creativity -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Creativity:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="70"/>
 						<Slider Value="{Binding CreativityLevel}"
 								Minimum="0"
@@ -152,7 +152,7 @@
 								Width="130"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding CreativityLevel, StringFormat=F0}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="30"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -170,13 +170,13 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: 3D Preview -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -187,7 +187,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Entity Preview"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="16"
 						   FontWeight="Bold"
 						   HorizontalAlignment="Center"
@@ -195,7 +195,7 @@
 
 				<!-- 3D Viewport -->
 				<Border Grid.Row="1"
-						Background="#1a1a1a"
+						Background="{DynamicResource PrimaryDarkBrush}"
 						Margin="20"
 						CornerRadius="8">
 					<Grid>
@@ -233,7 +233,7 @@
 						
 						<!-- Overlay text when no model -->
 						<TextBlock Text="🤖 3D Avatar Preview"
-								   Foreground="{StaticResource TextSecondaryBrush}"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
 								   FontSize="20"
 								   HorizontalAlignment="Center"
 								   VerticalAlignment="Center"
@@ -288,10 +288,10 @@
 					<ProgressBar IsIndeterminate="True"
 								 Height="4"
 								 Width="300"
-								 Background="{StaticResource SecondaryDarkBrush}"
-								 Foreground="{StaticResource AccentRedBrush}"/>
+								 Background="{DynamicResource SecondaryDarkBrush}"
+								 Foreground="{DynamicResource AccentRedBrush}"/>
 					<TextBlock Text="{Binding CreationStatus}"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
 							   Margin="0,8,0,0"/>
 				</StackPanel>
@@ -301,13 +301,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Entity Templates -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -319,7 +319,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Entity Templates"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -331,7 +331,7 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
@@ -343,17 +343,17 @@
 												   Margin="0,0,8,0"/>
 										<StackPanel>
 											<TextBlock Text="{Binding Name}"
-													   Foreground="{StaticResource TextPrimaryBrush}"
+													   Foreground="{DynamicResource TextPrimaryBrush}"
 													   FontSize="12"
 													   FontWeight="Bold"/>
 											<TextBlock Text="{Binding Type}"
-													   Foreground="{StaticResource TextSecondaryBrush}"
+													   Foreground="{DynamicResource TextSecondaryBrush}"
 													   FontSize="10"/>
 										</StackPanel>
 									</StackPanel>
 									
 									<TextBlock Text="{Binding Description}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="10"
 											   Margin="0,0,0,4"/>

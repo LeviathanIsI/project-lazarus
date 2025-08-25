@@ -15,4 +15,12 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 	</ItemGroup>
+
+	<!-- Copy llama-cpp binaries to output directory -->
+	<ItemGroup>
+		<None Include="..\binaries\llama-cpp\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>binaries\llama-cpp\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</None>
+	</ItemGroup>
 </Project>

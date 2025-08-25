@@ -14,6 +14,7 @@ public sealed class LlamaCppEmbeddedRunner : IChatRunner, IDisposable
 
     public string Name { get; }
     public Uri BaseAddress { get; }
+    public string? CurrentModel => Path.GetFileNameWithoutExtension(_modelPath);
     public bool IsProcessRunning => _processRunner.IsRunning;
 
     private readonly string _executablePath;
@@ -41,7 +42,7 @@ public sealed class LlamaCppEmbeddedRunner : IChatRunner, IDisposable
     private static string GetLlamaCppExecutable()
     {
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var binariesPath = Path.Combine(baseDir, "binaries");
+        var binariesPath = Path.Combine(baseDir, "binaries", "llama-cpp");
 
         var executable = Environment.OSVersion.Platform switch
         {
@@ -77,10 +78,23 @@ public sealed class LlamaCppEmbeddedRunner : IChatRunner, IDisposable
 
     public async Task<bool> StartAsync()
     {
+        _logger.LogInformation($"=== Starting LlamaCppEmbeddedRunner for {Name} ===");
+        
         if (_processRunner.IsRunning)
         {
             _logger.LogInformation($"llama.cpp server already running on port {_config.Port}");
             return true;
+        }
+
+        _logger.LogInformation($"Executable path: {_executablePath}");
+        _logger.LogInformation($"Model path: {_modelPath}");
+        _logger.LogInformation($"Target port: {_config.Port}");
+        _logger.LogInformation($"Working directory: {Environment.CurrentDirectory}");
+
+        if (!File.Exists(_executablePath))
+        {
+            _logger.LogError($"Executable not found: {_executablePath}");
+            return false;
         }
 
         if (!File.Exists(_modelPath))
@@ -90,13 +104,33 @@ public sealed class LlamaCppEmbeddedRunner : IChatRunner, IDisposable
         }
 
         var arguments = BuildLlamaServerArguments();
-        _logger.LogInformation($"Starting embedded llama.cpp: {arguments}");
+        _logger.LogInformation($"Command line arguments: {arguments}");
+        _logger.LogInformation($"Full command: \"{_executablePath}\" {arguments}");
 
+        _logger.LogInformation($"Attempting to start process...");
         var started = await _processRunner.StartAsync(_executablePath, arguments);
-        if (!started) return false;
+        
+        if (!started)
+        {
+            _logger.LogError($"Failed to start llama-server process");
+            return false;
+        }
 
+        _logger.LogInformation($"Process started successfully, waiting for server to be ready...");
+        
         // Wait for server to be ready
-        return await WaitForServerReady(TimeSpan.FromMinutes(2));
+        var isReady = await WaitForServerReady(TimeSpan.FromMinutes(2));
+        
+        if (isReady)
+        {
+            _logger.LogInformation($"=== LlamaCppEmbeddedRunner for {Name} READY ===");
+        }
+        else
+        {
+            _logger.LogError($"=== LlamaCppEmbeddedRunner for {Name} FAILED TO INITIALIZE ===");
+        }
+        
+        return isReady;
     }
 
     private string BuildLlamaServerArguments()
@@ -133,28 +167,41 @@ public sealed class LlamaCppEmbeddedRunner : IChatRunner, IDisposable
     private async Task<bool> WaitForServerReady(TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow.Add(timeout);
+        var attemptCount = 0;
 
-        _logger.LogInformation($"Waiting for llama.cpp server to be ready on {BaseAddress}");
+        _logger.LogInformation($"Waiting for llama.cpp server to be ready on {BaseAddress} (timeout: {timeout})");
 
         while (DateTime.UtcNow < deadline)
         {
+            attemptCount++;
+            var remainingTime = deadline - DateTime.UtcNow;
+            
             try
             {
+                _logger.LogDebug($"Health check attempt #{attemptCount} (remaining: {remainingTime.TotalSeconds:F1}s)");
+                
                 if (await HealthAsync())
                 {
-                    _logger.LogInformation("llama.cpp server is ready");
+                    _logger.LogInformation($"llama.cpp server is ready after {attemptCount} attempts");
                     return true;
                 }
+                
+                _logger.LogDebug($"Health check #{attemptCount} failed - server not ready yet");
             }
-            catch
+            catch (Exception ex)
             {
-                // Expected during startup
+                _logger.LogDebug($"Health check #{attemptCount} exception: {ex.Message}");
+            }
+
+            if (attemptCount % 10 == 0)
+            {
+                _logger.LogInformation($"Still waiting for server (attempt #{attemptCount}, remaining: {remainingTime.TotalSeconds:F1}s)");
             }
 
             await Task.Delay(1000);
         }
 
-        _logger.LogError("llama.cpp server failed to become ready within timeout");
+        _logger.LogError($"llama.cpp server failed to become ready within {timeout} after {attemptCount} attempts");
         return false;
     }
 

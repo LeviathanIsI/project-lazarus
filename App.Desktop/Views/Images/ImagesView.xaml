@@ -15,7 +15,7 @@
 		<!-- SubTab Buttons -->
 		<StackPanel Grid.Row="0"
 					Orientation="Horizontal"
-					Background="#1f2937"
+					Background="{DynamicResource TertiaryDarkBrush}"
 					Margin="8">
 			<Button x:Name="Text2ImageTab"
 					Content="Text2Image"

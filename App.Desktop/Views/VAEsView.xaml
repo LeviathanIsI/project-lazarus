@@ -6,7 +6,7 @@
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 xmlns:conv="clr-namespace:Lazarus.Desktop.Converters"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- VAE Card Template -->
@@ -21,7 +21,7 @@
 							<DataTrigger Binding="{Binding IsLoaded}"
 										 Value="True">
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentRedBrush}"/>
+										Value="{DynamicResource AccentRedBrush}"/>
 								<Setter Property="BorderThickness"
 										Value="2"/>
 							</DataTrigger>
@@ -50,11 +50,11 @@
 						<TextBlock Grid.Column="0"
 								   Text="⚡"
 								   FontSize="24"
-								   Foreground="{StaticResource AccentRedBrush}"
+								   Foreground="{DynamicResource AccentRedBrush}"
 								   VerticalAlignment="Center"/>
 
 						<Border Grid.Column="1"
-								Background="{StaticResource AccentRedBrush}"
+								Background="{DynamicResource AccentRedBrush}"
 								CornerRadius="8"
 								Padding="6,2">
 							<TextBlock Text="{Binding Category}"
@@ -156,7 +156,7 @@
 										<DataTrigger Binding="{Binding IsLoaded}"
 													 Value="True">
 											<Setter Property="Background"
-													Value="{StaticResource SuccessBrush}"/>
+													Value="{DynamicResource SuccessBrush}"/>
 											<Setter Property="Content"
 													Value="✓ Active"/>
 										</DataTrigger>
@@ -245,7 +245,7 @@
 				<ScrollViewer Grid.Row="2"
 							  VerticalScrollBarVisibility="Auto">
 					<ItemsControl ItemsSource="{Binding AvailableVAEs}"
-								  ItemTemplate="{StaticResource VAECardTemplate}">
+								  ItemTemplate="{DynamicResource VAECardTemplate}">
 						<ItemsControl.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel Orientation="Horizontal"/>
@@ -264,7 +264,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{StaticResource SuccessBrush}"
+							   Foreground="{DynamicResource SuccessBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -275,7 +275,7 @@
 						<TextBlock Text="Encoding..."
 								   Style="{StaticResource CaptionTextStyle}"
 								   Margin="0,0,8,0"/>
-						<Border Background="{StaticResource AccentRedBrush}"
+						<Border Background="{DynamicResource AccentRedBrush}"
 								Width="12"
 								Height="12"
 								CornerRadius="6">
@@ -335,7 +335,7 @@
 							  VerticalScrollBarVisibility="Auto">
 					<StackPanel>
 						<!-- Active VAE Card -->
-						<Border Background="{StaticResource TertiaryDarkBrush}"
+						<Border Background="{DynamicResource TertiaryDarkBrush}"
 								CornerRadius="6"
 								Padding="16"
 								Margin="0,0,0,16"
@@ -353,7 +353,7 @@
 											   FontSize="14"/>
 
 									<Border Grid.Column="1"
-											Background="{StaticResource AccentRedBrush}"
+											Background="{DynamicResource AccentRedBrush}"
 											CornerRadius="8"
 											Padding="6,2">
 										<TextBlock Text="{Binding ActiveVAE.Category}"
@@ -442,7 +442,7 @@
 						</Border>
 
 						<!-- Empty State -->
-						<Border Background="{StaticResource TertiaryDarkBrush}"
+						<Border Background="{DynamicResource TertiaryDarkBrush}"
 								CornerRadius="6"
 								Padding="20"
 								Visibility="{Binding HasActiveVAE, Converter={StaticResource InvertBool}}">
@@ -450,7 +450,7 @@
 								<TextBlock Text="⚡"
 										   FontSize="32"
 										   HorizontalAlignment="Center"
-										   Foreground="{StaticResource TextDisabledBrush}"
+										   Foreground="{DynamicResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
 								<TextBlock Text="No VAE Loaded"
 										   HorizontalAlignment="Center"
@@ -471,7 +471,7 @@
 
 				<!-- VAE Stats -->
 				<Border Grid.Row="2"
-						Background="{StaticResource TertiaryDarkBrush}"
+						Background="{DynamicResource TertiaryDarkBrush}"
 						CornerRadius="6"
 						Padding="12,8"
 						Margin="0,16,0,0">

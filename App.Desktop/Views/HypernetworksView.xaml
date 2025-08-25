@@ -5,7 +5,7 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- Hypernetwork Card Template -->
@@ -20,7 +20,7 @@
 							<DataTrigger Binding="{Binding IsActive}"
 										 Value="True">
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentRedBrush}"/>
+										Value="{DynamicResource AccentRedBrush}"/>
 								<Setter Property="BorderThickness"
 										Value="2"/>
 							</DataTrigger>
@@ -49,11 +49,11 @@
 						<TextBlock Grid.Column="0"
 								   Text="🧠"
 								   FontSize="24"
-								   Foreground="{StaticResource AccentRedBrush}"
+								   Foreground="{DynamicResource AccentRedBrush}"
 								   VerticalAlignment="Center"/>
 
 						<Border Grid.Column="1"
-								Background="{StaticResource AccentRedBrush}"
+								Background="{DynamicResource AccentRedBrush}"
 								CornerRadius="8"
 								Padding="6,2">
 							<TextBlock Text="{Binding Category}"
@@ -75,7 +75,7 @@
 								   Style="{StaticResource CaptionTextStyle}"
 								   FontSize="10"
 								   Margin="0,2,0,0"
-								   Foreground="{StaticResource AccentRedBrush}"/>
+								   Foreground="{DynamicResource AccentRedBrush}"/>
 					</StackPanel>
 
 					<!-- Description -->
@@ -185,7 +185,7 @@
 
 		<!-- Active Hypernetwork Template -->
 		<DataTemplate x:Key="ActiveHypernetworkTemplate">
-			<Border Background="{StaticResource TertiaryDarkBrush}"
+			<Border Background="{DynamicResource TertiaryDarkBrush}"
 					CornerRadius="6"
 					Padding="12"
 					Margin="0,0,0,8">
@@ -209,7 +209,7 @@
 						<TextBlock Text="{Binding Architecture}"
 								   Style="{StaticResource CaptionTextStyle}"
 								   FontSize="10"
-								   Foreground="{StaticResource AccentRedBrush}"/>
+								   Foreground="{DynamicResource AccentRedBrush}"/>
 					</StackPanel>
 
 					<StackPanel Grid.Column="1"
@@ -314,7 +314,7 @@
 				<ScrollViewer Grid.Row="2"
 							  VerticalScrollBarVisibility="Auto">
 					<ItemsControl ItemsSource="{Binding AvailableHypernetworks}"
-								  ItemTemplate="{StaticResource HypernetworkCardTemplate}">
+								  ItemTemplate="{DynamicResource HypernetworkCardTemplate}">
 						<ItemsControl.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel Orientation="Horizontal"/>
@@ -333,7 +333,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{StaticResource SuccessBrush}"
+							   Foreground="{DynamicResource SuccessBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -344,7 +344,7 @@
 						<TextBlock Text="Processing..."
 								   Style="{StaticResource CaptionTextStyle}"
 								   Margin="0,0,8,0"/>
-						<Border Background="{StaticResource AccentRedBrush}"
+						<Border Background="{DynamicResource AccentRedBrush}"
 								Width="12"
 								Height="12"
 								CornerRadius="6">
@@ -405,11 +405,11 @@
 					<StackPanel>
 						<!-- Active Hypernetworks -->
 						<ItemsControl ItemsSource="{Binding ActiveHypernetworks}"
-									  ItemTemplate="{StaticResource ActiveHypernetworkTemplate}"
+									  ItemTemplate="{DynamicResource ActiveHypernetworkTemplate}"
 									  Visibility="{Binding HasActiveHypernetworks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
 						<!-- Empty State -->
-						<Border Background="{StaticResource TertiaryDarkBrush}"
+						<Border Background="{DynamicResource TertiaryDarkBrush}"
 								CornerRadius="6"
 								Padding="20"
 								Visibility="{Binding HasActiveHypernetworks, Converter={StaticResource InvertBool}}">
@@ -417,7 +417,7 @@
 								<TextBlock Text="🧠"
 										   FontSize="32"
 										   HorizontalAlignment="Center"
-										   Foreground="{StaticResource TextDisabledBrush}"
+										   Foreground="{DynamicResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
 								<TextBlock Text="No Active Networks"
 										   HorizontalAlignment="Center"
@@ -438,7 +438,7 @@
 
 				<!-- Stats -->
 				<Border Grid.Row="2"
-						Background="{StaticResource TertiaryDarkBrush}"
+						Background="{DynamicResource TertiaryDarkBrush}"
 						CornerRadius="6"
 						Padding="12,8"
 						Margin="0,16,0,0">
@@ -464,7 +464,7 @@
 							<TextBlock Text="{Binding ActiveHypernetworksCount}"
 									   Style="{StaticResource HeadingMediumStyle}"
 									   FontSize="16"
-									   Foreground="{StaticResource AccentRedBrush}"/>
+									   Foreground="{DynamicResource AccentRedBrush}"/>
 						</StackPanel>
 					</Grid>
 				</Border>

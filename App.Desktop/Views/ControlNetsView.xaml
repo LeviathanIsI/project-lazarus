@@ -5,7 +5,7 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- ControlNet Card Template -->
@@ -20,7 +20,7 @@
 							<DataTrigger Binding="{Binding IsLoaded}"
 										 Value="True">
 								<Setter Property="BorderBrush"
-										Value="{StaticResource AccentRedBrush}"/>
+										Value="{DynamicResource AccentRedBrush}"/>
 								<Setter Property="BorderThickness"
 										Value="2"/>
 							</DataTrigger>
@@ -40,7 +40,7 @@
 					<!-- Type Icon and Badge -->
 					<Border Grid.Row="0"
 							Height="80"
-							Background="{StaticResource TertiaryDarkBrush}"
+							Background="{DynamicResource TertiaryDarkBrush}"
 							CornerRadius="4"
 							Margin="0,0,0,8">
 						<Grid>
@@ -48,8 +48,8 @@
 									   FontSize="32"
 									   HorizontalAlignment="Center"
 									   VerticalAlignment="Center"
-									   Foreground="{StaticResource AccentRedBrush}"/>
-							<Border Background="{StaticResource AccentRedBrush}"
+									   Foreground="{DynamicResource AccentRedBrush}"/>
+							<Border Background="{DynamicResource AccentRedBrush}"
 									CornerRadius="8"
 									Padding="4,2"
 									HorizontalAlignment="Right"
@@ -121,7 +121,7 @@
 									<DataTrigger Binding="{Binding IsLoaded}"
 												 Value="True">
 										<Setter Property="Background"
-												Value="{StaticResource SuccessBrush}"/>
+												Value="{DynamicResource SuccessBrush}"/>
 										<Setter Property="Content"
 												Value="✓ Applied"/>
 									</DataTrigger>
@@ -138,7 +138,7 @@
 			<Border Style="{StaticResource DarkCardStyle}"
 					Padding="16,12"
 					Margin="0,0,0,8"
-					BorderBrush="{StaticResource AccentRedBrush}"
+					BorderBrush="{DynamicResource AccentRedBrush}"
 					BorderThickness="1">
 				<Grid>
 					<Grid.RowDefinitions>
@@ -159,7 +159,7 @@
 
 						<!-- Order Badge -->
 						<Border Grid.Column="0"
-								Background="{StaticResource BorderBrush}"
+								Background="{DynamicResource BorderBrush}"
 								CornerRadius="12"
 								Width="24"
 								Height="24"
@@ -234,7 +234,7 @@
 										Maximum="2.0"
 										TickFrequency="0.1"
 										Height="16"
-										Foreground="{StaticResource AccentRedBrush}"/>
+										Foreground="{DynamicResource AccentRedBrush}"/>
 							</Grid>
 						</StackPanel>
 
@@ -261,7 +261,7 @@
 										Maximum="1.0"
 										TickFrequency="0.05"
 										Height="16"
-										Foreground="{StaticResource AccentRedBrush}"/>
+										Foreground="{DynamicResource AccentRedBrush}"/>
 							</Grid>
 						</StackPanel>
 
@@ -288,7 +288,7 @@
 										Maximum="1.0"
 										TickFrequency="0.05"
 										Height="16"
-										Foreground="{StaticResource AccentRedBrush}"/>
+										Foreground="{DynamicResource AccentRedBrush}"/>
 							</Grid>
 						</StackPanel>
 					</Grid>
@@ -317,7 +317,7 @@
 									VerticalAlignment="Center">
 							<TextBlock Text="📷"
 									   FontSize="16"
-									   Foreground="{StaticResource AccentRedBrush}"
+									   Foreground="{DynamicResource AccentRedBrush}"
 									   HorizontalAlignment="Center"
 									   Visibility="{Binding InputImagePath, Converter={StaticResource StringToBoolConverter}}"/>
 						</StackPanel>
@@ -364,7 +364,7 @@
 
 				<!-- Configuration Panel -->
 				<Border Grid.Row="1"
-						Background="{StaticResource TertiaryDarkBrush}"
+						Background="{DynamicResource TertiaryDarkBrush}"
 						CornerRadius="6"
 						Padding="16,12"
 						Margin="0,0,0,16">
@@ -425,12 +425,12 @@
 												<Trigger Property="IsMouseOver"
 														 Value="True">
 													<Setter Property="Background"
-															Value="{StaticResource AccentRedBrush}"/>
+															Value="{DynamicResource AccentRedBrush}"/>
 												</Trigger>
 												<Trigger Property="IsSelected"
 														 Value="True">
 													<Setter Property="Background"
-															Value="{StaticResource AccentRedHoverBrush}"/>
+															Value="{DynamicResource AccentRedHoverBrush}"/>
 												</Trigger>
 											</Style.Triggers>
 										</Style>
@@ -461,7 +461,7 @@
 											Maximum="2.0"
 											TickFrequency="0.1"
 											Height="16"
-											Foreground="{StaticResource AccentRedBrush}"/>
+											Foreground="{DynamicResource AccentRedBrush}"/>
 								</Grid>
 							</StackPanel>
 						</Grid>
@@ -497,7 +497,7 @@
 											Maximum="1.0"
 											TickFrequency="0.05"
 											Height="16"
-											Foreground="{StaticResource AccentRedBrush}"/>
+											Foreground="{DynamicResource AccentRedBrush}"/>
 								</Grid>
 							</StackPanel>
 
@@ -524,7 +524,7 @@
 											Maximum="1.0"
 											TickFrequency="0.05"
 											Height="16"
-											Foreground="{StaticResource AccentRedBrush}"/>
+											Foreground="{DynamicResource AccentRedBrush}"/>
 								</Grid>
 							</StackPanel>
 
@@ -543,7 +543,7 @@
 				<ScrollViewer Grid.Row="2"
 							  VerticalScrollBarVisibility="Auto">
 					<ItemsControl ItemsSource="{Binding AvailableControlNets}"
-								  ItemTemplate="{StaticResource ControlNetCardTemplate}">
+								  ItemTemplate="{DynamicResource ControlNetCardTemplate}">
 						<ItemsControl.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel Orientation="Horizontal"/>
@@ -562,7 +562,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{StaticResource SuccessBrush}"
+							   Foreground="{DynamicResource SuccessBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -573,7 +573,7 @@
 						<TextBlock Text="Loading..."
 								   Style="{StaticResource CaptionTextStyle}"
 								   Margin="0,0,8,0"/>
-						<Border Background="{StaticResource AccentRedBrush}"
+						<Border Background="{DynamicResource AccentRedBrush}"
 								Width="12"
 								Height="12"
 								CornerRadius="6">
@@ -632,10 +632,10 @@
 							  VerticalScrollBarVisibility="Auto">
 					<StackPanel>
 						<ItemsControl ItemsSource="{Binding AppliedControlNets}"
-									  ItemTemplate="{StaticResource AppliedControlNetTemplate}"/>
+									  ItemTemplate="{DynamicResource AppliedControlNetTemplate}"/>
 
 						<!-- Empty State -->
-						<Border Background="{StaticResource TertiaryDarkBrush}"
+						<Border Background="{DynamicResource TertiaryDarkBrush}"
 								CornerRadius="6"
 								Padding="20"
 								Visibility="{Binding AppliedControlNetsCount, Converter={StaticResource ZeroToVisibilityConverter}}">
@@ -643,7 +643,7 @@
 								<TextBlock Text="🎛️"
 										   FontSize="32"
 										   HorizontalAlignment="Center"
-										   Foreground="{StaticResource TextDisabledBrush}"
+										   Foreground="{DynamicResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
 								<TextBlock Text="No ControlNets Applied"
 										   HorizontalAlignment="Center"
@@ -664,7 +664,7 @@
 
 				<!-- Summary -->
 				<Border Grid.Row="2"
-						Background="{StaticResource TertiaryDarkBrush}"
+						Background="{DynamicResource TertiaryDarkBrush}"
 						CornerRadius="6"
 						Padding="12,8"
 						Margin="0,16,0,0">

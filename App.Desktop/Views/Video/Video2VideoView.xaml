@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,28 +14,28 @@
 
 		<!-- Left Panel: Video2Video Controls -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Video to Video"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Source Video -->
 					<TextBlock Text="Source Video:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
-					<Border Background="{StaticResource TertiaryDarkBrush}"
+					<Border Background="{DynamicResource TertiaryDarkBrush}"
 							Height="100"
 							CornerRadius="4"
 							Margin="0,0,0,8">
 						<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 							<TextBlock Text="🎬 Drop video here"
-									   Foreground="{StaticResource TextSecondaryBrush}"
+									   Foreground="{DynamicResource TextSecondaryBrush}"
 									   HorizontalAlignment="Center"/>
 							<Button Content="Browse..."
 									Command="{Binding BrowseVideoCommand}"
@@ -49,15 +49,15 @@
 
 					<!-- Prompt -->
 					<TextBlock Text="Transformation Prompt:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<TextBox Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"
 							 Height="80"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- Generate Button -->
@@ -69,7 +69,7 @@
 
 					<!-- Transformation Settings -->
 					<TextBlock Text="Settings"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="14"
 							   FontWeight="Bold"
 							   Margin="0,0,0,8"/>
@@ -77,7 +77,7 @@
 					<!-- Strength -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
 						<TextBlock Text="Strength:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="80"
 								   VerticalAlignment="Center"/>
 						<Slider Value="{Binding Strength}"
@@ -87,7 +87,7 @@
 								VerticalAlignment="Center"
 								Margin="8,0,8,0"/>
 						<TextBlock Text="{Binding Strength, StringFormat=F2}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="50"
 								   VerticalAlignment="Center"/>
 					</StackPanel>
@@ -95,7 +95,7 @@
 					<!-- Style Transfer -->
 					<StackPanel Margin="0,0,0,12">
 						<TextBlock Text="Style Transfer:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Margin="0,0,0,6"/>
 						<ComboBox SelectedValue="{Binding StyleMode}"
 								  Style="{StaticResource DarkComboBoxStyle}"
@@ -114,13 +114,13 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Video Comparison -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -131,7 +131,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Video Transformation"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="16"
 						   FontWeight="Bold"
 						   HorizontalAlignment="Center"
@@ -146,14 +146,14 @@
 					<!-- Original Video -->
 					<StackPanel Grid.Column="0" Margin="8">
 						<TextBlock Text="Original"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   HorizontalAlignment="Center"
 								   Margin="0,0,0,8"/>
-						<Border Background="#2a2a2a"
+						<Border Background="{DynamicResource SecondaryDarkBrush}"
 								Height="200"
 								CornerRadius="8">
 							<TextBlock Text="🎬 Source Video"
-									   Foreground="{StaticResource TextPrimaryBrush}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
 									   HorizontalAlignment="Center"
 									   VerticalAlignment="Center"/>
 						</Border>
@@ -162,20 +162,20 @@
 					<!-- Transformed Video -->
 					<StackPanel Grid.Column="1" Margin="8">
 						<TextBlock Text="Transformed"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   HorizontalAlignment="Center"
 								   Margin="0,0,0,8"/>
-						<Border Background="#2a2a2a"
+						<Border Background="{DynamicResource SecondaryDarkBrush}"
 								Height="200"
 								CornerRadius="8">
 							<Grid>
 								<TextBlock Text="🎬 Result"
-										   Foreground="{StaticResource TextPrimaryBrush}"
+										   Foreground="{DynamicResource TextPrimaryBrush}"
 										   HorizontalAlignment="Center"
 										   VerticalAlignment="Center"
 										   Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 								<TextBlock Text="Transformed video will appear here"
-										   Foreground="{StaticResource TextSecondaryBrush}"
+										   Foreground="{DynamicResource TextSecondaryBrush}"
 										   HorizontalAlignment="Center"
 										   VerticalAlignment="Center"
 										   Visibility="{Binding HasResult, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -193,7 +193,7 @@
 								 Height="4"
 								 Width="300"/>
 					<TextBlock Text="{Binding GenerationStatus}"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   HorizontalAlignment="Center"
 							   Margin="0,8,0,0"/>
 				</StackPanel>
@@ -203,13 +203,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: History -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -220,7 +220,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Transformation History"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -232,17 +232,17 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
 								<StackPanel>
 									<TextBlock Text="{Binding Prompt}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="11"/>
 									<TextBlock Text="{Binding Timestamp}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   FontSize="10"
 											   Margin="0,4,0,0"/>
 								</StackPanel>

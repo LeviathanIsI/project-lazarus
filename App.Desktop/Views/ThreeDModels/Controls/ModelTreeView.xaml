@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource SecondaryDarkBrush}">
+			 Background="{DynamicResource SecondaryDarkBrush}">
 
 	<UserControl.Resources>
 		<!-- [All the TreeView templates stay exactly the same] -->
@@ -44,7 +44,7 @@
 			<Setter Property="Background"
 					Value="Transparent"/>
 			<Setter Property="Foreground"
-					Value="{StaticResource TextPrimaryBrush}"/>
+					Value="{DynamicResource TextPrimaryBrush}"/>
 			<Setter Property="Padding"
 					Value="4,2"/>
 			<Setter Property="Margin"
@@ -90,7 +90,7 @@
 																<TextBlock x:Name="ExpanderIcon"
 																		   Text="▶"
 																		   FontSize="10"
-																		   Foreground="{StaticResource TextMutedBrush}"
+																		   Foreground="{DynamicResource TextMutedBrush}"
 																		   HorizontalAlignment="Center"
 																		   VerticalAlignment="Center"
 																		   RenderTransformOrigin="0.5,0.5">
@@ -127,7 +127,7 @@
 																		 Value="True">
 																	<Setter TargetName="ExpanderIcon"
 																			Property="Foreground"
-																			Value="{StaticResource AccentRedBrush}"/>
+																			Value="{DynamicResource AccentRedBrush}"/>
 																</Trigger>
 															</ControlTemplate.Triggers>
 														</ControlTemplate>
@@ -164,13 +164,13 @@
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{StaticResource AccentRedBrush}"/>
+										Value="{DynamicResource AccentRedBrush}"/>
 							</Trigger>
 							<Trigger Property="IsMouseOver"
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{StaticResource TertiaryDarkBrush}"/>
+										Value="{DynamicResource TertiaryDarkBrush}"/>
 							</Trigger>
 							<MultiTrigger>
 								<MultiTrigger.Conditions>
@@ -181,7 +181,7 @@
 								</MultiTrigger.Conditions>
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{StaticResource AccentRedHoverBrush}"/>
+										Value="{DynamicResource AccentRedHoverBrush}"/>
 							</MultiTrigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -247,12 +247,12 @@
 
 		<!-- Tree View (now directly follows path selection) -->
 		<Border Grid.Row="2"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				CornerRadius="6"
 				Margin="12,0,12,8">
 			<TreeView x:Name="ModelsTreeView"
 					  ItemsSource="{Binding RootNodes}"
-					  ItemTemplate="{StaticResource NodeTemplate}"
+					  ItemTemplate="{DynamicResource NodeTemplate}"
 					  ItemContainerStyle="{StaticResource DarkTreeViewItemStyle}"
 					  Background="Transparent"
 					  BorderThickness="0"
@@ -299,7 +299,7 @@
 			<StackPanel Grid.Column="1"
 						Orientation="Horizontal"
 						Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-				<Border Background="{StaticResource AccentRedBrush}"
+				<Border Background="{DynamicResource AccentRedBrush}"
 						Width="10"
 						Height="10"
 						CornerRadius="5"

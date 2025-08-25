@@ -4,7 +4,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d"
-			 Background="{StaticResource PrimaryDarkBrush}">
+			 Background="{DynamicResource PrimaryDarkBrush}">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="300" MinWidth="200"/>
@@ -14,20 +14,20 @@
 
 		<!-- Left Panel: Inpainting Controls -->
 		<Border Grid.Column="0"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="8,0,0,8"
 				Margin="8,8,4,8">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="12">
 					<TextBlock Text="Inpainting"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   FontSize="18"
 							   FontWeight="Bold"
 							   Margin="0,0,0,16"/>
 
 					<!-- Source Image -->
 					<TextBlock Text="Source Image:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<Button Content="Load Image"
 							Command="{Binding LoadImageCommand}"
@@ -37,7 +37,7 @@
 							Padding="12,4"
 							Margin="0,0,0,8"/>
 					
-					<Border Background="{StaticResource TertiaryDarkBrush}"
+					<Border Background="{DynamicResource TertiaryDarkBrush}"
 							Height="100"
 							CornerRadius="4"
 							Margin="0,0,0,8">
@@ -48,7 +48,7 @@
 
 					<!-- Mask Image -->
 					<TextBlock Text="Mask Image:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<Button Content="Load Mask"
 							Command="{Binding LoadMaskCommand}"
@@ -58,7 +58,7 @@
 							Padding="12,4"
 							Margin="0,0,0,8"/>
 					
-					<Border Background="{StaticResource TertiaryDarkBrush}"
+					<Border Background="{DynamicResource TertiaryDarkBrush}"
 							Height="100"
 							CornerRadius="4"
 							Margin="0,0,0,12">
@@ -69,21 +69,21 @@
 
 					<!-- Prompt -->
 					<TextBlock Text="Prompt:"
-							   Foreground="{StaticResource TextPrimaryBrush}"
+							   Foreground="{DynamicResource TextPrimaryBrush}"
 							   Margin="0,0,0,4"/>
 					<TextBox Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"
 							 Height="60"
 							 TextWrapping="Wrap"
 							 AcceptsReturn="True"
-							 Background="{StaticResource TertiaryDarkBrush}"
-							 Foreground="{StaticResource TextPrimaryBrush}"
-							 BorderBrush="{StaticResource BorderBrush}"
+							 Background="{DynamicResource TertiaryDarkBrush}"
+							 Foreground="{DynamicResource TextPrimaryBrush}"
+							 BorderBrush="{DynamicResource BorderBrush}"
 							 Margin="0,0,0,12"/>
 
 					<!-- Mask Blur -->
 					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
 						<TextBlock Text="Blur:"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="60"/>
 						<Slider Value="{Binding MaskBlur}"
 								Minimum="0"
@@ -91,7 +91,7 @@
 								Width="150"
 								VerticalAlignment="Center"/>
 						<TextBlock Text="{Binding MaskBlur}"
-								   Foreground="{StaticResource TextPrimaryBrush}"
+								   Foreground="{DynamicResource TextPrimaryBrush}"
 								   Width="30"
 								   Margin="8,0,0,0"/>
 					</StackPanel>
@@ -109,17 +109,17 @@
 		<!-- Left Splitter -->
 		<GridSplitter Grid.Column="0"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Center: Result Display -->
 		<Border Grid.Column="1"
-				Background="{StaticResource TertiaryDarkBrush}"
+				Background="{DynamicResource TertiaryDarkBrush}"
 				Margin="0,8">
 			<Grid>
 				<TextBlock Text="Inpainted image will appear here"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   HorizontalAlignment="Center"
 						   VerticalAlignment="Center"
 						   Visibility="{Binding HasGeneratedImage, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -133,13 +133,13 @@
 		<!-- Right Splitter -->
 		<GridSplitter Grid.Column="1"
 					  Width="4"
-					  Background="{StaticResource BorderBrush}"
+					  Background="{DynamicResource BorderBrush}"
 					  HorizontalAlignment="Right"
 					  VerticalAlignment="Stretch"/>
 
 		<!-- Right Panel: Generation History -->
 		<Border Grid.Column="2"
-				Background="{StaticResource SecondaryDarkBrush}"
+				Background="{DynamicResource SecondaryDarkBrush}"
 				CornerRadius="0,8,8,0"
 				Margin="4,8,8,8">
 			<Grid>
@@ -150,7 +150,7 @@
 
 				<TextBlock Grid.Row="0"
 						   Text="Generation History"
-						   Foreground="{StaticResource TextPrimaryBrush}"
+						   Foreground="{DynamicResource TextPrimaryBrush}"
 						   FontSize="14"
 						   FontWeight="Bold"
 						   Margin="12,12,12,8"/>
@@ -162,17 +162,17 @@
 						 Margin="12,0">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Border Background="{StaticResource TertiaryDarkBrush}"
+							<Border Background="{DynamicResource TertiaryDarkBrush}"
 									CornerRadius="4"
 									Margin="0,2"
 									Padding="8">
 								<StackPanel>
 									<TextBlock Text="{Binding Prompt}"
-											   Foreground="{StaticResource TextPrimaryBrush}"
+											   Foreground="{DynamicResource TextPrimaryBrush}"
 											   TextWrapping="Wrap"
 											   FontSize="12"/>
 									<TextBlock Text="{Binding Timestamp}"
-											   Foreground="{StaticResource TextSecondaryBrush}"
+											   Foreground="{DynamicResource TextSecondaryBrush}"
 											   FontSize="10"
 											   Margin="0,4,0,0"/>
 								</StackPanel>

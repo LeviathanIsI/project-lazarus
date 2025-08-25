@@ -6,9 +6,22 @@
       "Bash(grep:*)",
       "Bash(timeout:*)",
       "Bash(mkdir:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(./llama-server.exe --help)",
+      "Bash(wmic:*)",
+      "Bash(tasklist)",
+      "Bash(powershell:*)",
+      "Bash(sed:*)",
+      "Bash(dotnet list package:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet nuget locals:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\Users\\Josh\\.local",
+      "D:\\"
+    ]
   }
 }

@@ -19,7 +19,11 @@ namespace Lazarus.Desktop
             InitializeComponent();
             Console.WriteLine("MainWindow: InitializeComponent done");
 
-            // Set ViewModels for existing views
+            // Set MainWindow DataContext for global preferences
+            DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+            Console.WriteLine("MainWindow: Global preferences DataContext bound");
+
+            // Set ViewModels for all existing views
             ConversationsView.DataContext = _serviceProvider.GetRequiredService<ChatViewModel>();
             ModelsView.DataContext = _serviceProvider.GetRequiredService<ModelsViewModel>();
             
@@ -85,6 +89,10 @@ namespace Lazarus.Desktop
                 // Initialize BaseModelViewModel with models
                 var baseModelViewModel = _serviceProvider.GetRequiredService<BaseModelViewModel>();
                 await baseModelViewModel.InitializeAsync();
+                
+                // Initialize LorAsViewModel after UI is stable
+                var lorasViewModel = _serviceProvider.GetRequiredService<LorAsViewModel>();
+                await lorasViewModel.InitializeAsync();
                 
                 Console.WriteLine("MainWindow: ViewModels initialized successfully");
             }
@@ -169,7 +177,7 @@ namespace Lazarus.Desktop
             ShowTab("Entities");
         }
 
-        private void ShowTab(string tabName)
+        public void ShowTab(string tabName)
         {
             // Hide all views
             ConversationsView.Visibility = Visibility.Collapsed;
@@ -213,6 +221,8 @@ namespace Lazarus.Desktop
                     SetActiveTabStyle(EntitiesTabButton);
                     break;
             }
+            
+            Console.WriteLine($"MainWindow: Tab switched to {tabName} - View now visible");
         }
 
         private void ResetTabButtonStyles()

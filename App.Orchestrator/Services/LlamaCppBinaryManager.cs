@@ -30,8 +30,18 @@ public static class LlamaCppBinaryManager
 
     public static string GetBinariesPath()
     {
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var binariesPath = Path.Combine(baseDir, "binaries");
+        // Start from current directory and walk up to find project root
+        var currentDir = AppDomain.CurrentDomain.BaseDirectory;
+        
+        // Walk up directory tree to find the project root (where ProjectLazarus.sln exists)
+        var projectRoot = FindProjectRoot(currentDir);
+        if (projectRoot == null)
+        {
+            Logger.LogWarning($"Could not find project root, using AppDomain base: {currentDir}");
+            projectRoot = currentDir;
+        }
+        
+        var binariesPath = Path.Combine(projectRoot, "binaries", "llama-cpp");
 
         if (!Directory.Exists(binariesPath))
         {
@@ -39,7 +49,37 @@ public static class LlamaCppBinaryManager
             Logger.LogInformation($"Created binaries directory: {binariesPath}");
         }
 
+        Logger.LogDebug($"Using binaries path: {binariesPath}");
         return binariesPath;
+    }
+
+    private static string? FindProjectRoot(string startPath)
+    {
+        var current = new DirectoryInfo(startPath);
+        Logger.LogDebug($"Starting project root search from: {startPath}");
+        
+        while (current != null)
+        {
+            Logger.LogDebug($"Checking directory: {current.FullName}");
+            var solutionPath = Path.Combine(current.FullName, "ProjectLazarus.sln");
+            var binariesPath = Path.Combine(current.FullName, "binaries");
+            
+            Logger.LogDebug($"Looking for solution: {solutionPath} (exists: {File.Exists(solutionPath)})");
+            Logger.LogDebug($"Looking for binaries: {binariesPath} (exists: {Directory.Exists(binariesPath)})");
+            
+            // Look for solution file or binaries directory as markers of project root
+            var binariesRootPath = Path.Combine(current.FullName, "binaries");
+            if (File.Exists(solutionPath) || Directory.Exists(binariesRootPath))
+            {
+                Logger.LogInformation($"Found project root: {current.FullName}");
+                return current.FullName;
+            }
+            
+            current = current.Parent;
+        }
+        
+        Logger.LogWarning("Could not find project root by walking up directory tree");
+        return null;
     }
 
     public static string GetExpectedExecutableName()
@@ -69,8 +109,13 @@ public static class LlamaCppBinaryManager
             var output = await process.StandardOutput.ReadToEndAsync();
             await process.WaitForExitAsync();
 
-            var isValid = output.Contains("llama.cpp") || output.Contains("usage:");
-            Logger.LogInformation($"Binary validation: {(isValid ? "PASSED" : "FAILED")}");
+            Logger.LogDebug($"Binary validation output: {output}");
+            var hasLlamaCpp = output.Contains("llama.cpp");
+            var hasUsage = output.Contains("usage:");
+            
+            var isValid = hasLlamaCpp || hasUsage;
+            Logger.LogInformation($"Binary validation: {(isValid ? "PASSED" : "FAILED")} (llama.cpp: {hasLlamaCpp}, usage: {hasUsage})");
+            Logger.LogDebug($"Exit code: {process.ExitCode}");
 
             return isValid;
         }

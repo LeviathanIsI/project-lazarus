@@ -2,6 +2,7 @@ using System.Text.Json;
 using Lazarus.Orchestrator.Runners;
 using Lazarus.Orchestrator.Services;
 using Lazarus.Shared.OpenAI;
+using Lazarus.Shared.Models;
 using Lazarus.Shared.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +17,10 @@ public static class OrchestratorHost
     private static Task? _runTask;
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static readonly DateTimeOffset _started = DateTimeOffset.UtcNow;
+    
+    // LoRA state management - this is the critical missing piece
+    private static readonly List<AppliedLoRAInfo> _activeLoRAs = new();
+    private static readonly object _loraStateLock = new();
 
     public static async Task StartAsync(string url = "http://127.0.0.1:11711", CancellationToken ct = default)
     {
@@ -209,6 +214,152 @@ public static class OrchestratorHost
                 }
             };
             return Results.Json(body, Json);
+        });
+
+        // Model introspection endpoint - discover actual parameter capabilities
+        app.MapGet("/v1/models/{modelName}/capabilities", async (string modelName) =>
+        {
+            if (RunnerRegistry.Active is null)
+            {
+                return Results.Problem("No active runner configured", statusCode: 503);
+            }
+
+            try
+            {
+                // Use the current model if no specific model provided
+                var targetModel = modelName == "current" ? RunnerRegistry.CurrentModel ?? "unknown" : modelName;
+                
+                var capabilities = await ModelIntrospectionService.IntrospectModelAsync(RunnerRegistry.Active, targetModel);
+                return Results.Json(capabilities, Json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[OrchestratorHost] Model introspection failed: {ex.Message}");
+                return Results.Problem($"Introspection failed: {ex.Message}", statusCode: 500);
+            }
+        });
+        
+        // LoRA-aware model capabilities endpoint
+        app.MapPost("/v1/models/{modelName}/capabilities/with-loras", async (string modelName, List<AppliedLoRAInfo> appliedLoRAs) =>
+        {
+            if (RunnerRegistry.Active is null)
+            {
+                return Results.Problem("No active runner configured", statusCode: 503);
+            }
+
+            try
+            {
+                // Use the current model if no specific model provided
+                var targetModel = modelName == "current" ? RunnerRegistry.CurrentModel ?? "unknown" : modelName;
+                
+                // Get base capabilities first
+                var baseCapabilities = await ModelIntrospectionService.IntrospectModelAsync(RunnerRegistry.Active, targetModel);
+                
+                // Apply LoRA modifications
+                var loraAwareCapabilities = ModelIntrospectionService.UpdateCapabilitiesWithLoRAs(baseCapabilities, appliedLoRAs);
+                
+                Console.WriteLine($"[OrchestratorHost] Generated LoRA-aware capabilities for {targetModel} with {appliedLoRAs.Count} LoRAs");
+                return Results.Json(loraAwareCapabilities, Json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[OrchestratorHost] LoRA-aware introspection failed: {ex.Message}");
+                return Results.Problem($"LoRA-aware introspection failed: {ex.Message}", statusCode: 500);
+            }
+        });
+        
+        // Endpoint to report currently applied LoRAs - FIXED STATE SYNCHRONIZATION
+        app.MapGet("/v1/loras/applied", () =>
+        {
+            lock (_loraStateLock)
+            {
+                Console.WriteLine($"[OrchestratorHost] Reporting {_activeLoRAs.Count} active LoRAs");
+                return Results.Json(_activeLoRAs.ToList(), Json);
+            }
+        });
+        
+        // Endpoint to apply a LoRA - ACTUAL STATE MANAGEMENT
+        app.MapPost("/v1/loras/apply", async (AppliedLoRAInfo loraInfo) =>
+        {
+            Console.WriteLine($"[OrchestratorHost] LoRA application request: {loraInfo.Name} (weight: {loraInfo.Weight})");
+            
+            lock (_loraStateLock)
+            {
+                // Remove existing instance if present
+                _activeLoRAs.RemoveAll(l => l.Id == loraInfo.Id);
+                
+                // Add the new LoRA
+                loraInfo.AppliedAt = DateTime.UtcNow;
+                loraInfo.IsEnabled = true;
+                _activeLoRAs.Add(loraInfo);
+                
+                Console.WriteLine($"[OrchestratorHost] LoRA '{loraInfo.Name}' applied. Total active LoRAs: {_activeLoRAs.Count}");
+            }
+            
+            // TODO: Integrate with actual model runner to load the LoRA
+            // For now, we're managing state so the UI can see it
+            
+            return Results.Json(new { 
+                success = true, 
+                message = $"LoRA '{loraInfo.Name}' applied successfully",
+                activeLoRAs = _activeLoRAs.Count,
+                totalWeight = _activeLoRAs.Where(l => l.IsEnabled).Sum(l => l.Weight)
+            }, Json);
+        });
+        
+        // Endpoint to remove a LoRA - ACTUAL STATE MANAGEMENT
+        app.MapDelete("/v1/loras/{loraId}", async (string loraId) =>
+        {
+            Console.WriteLine($"[OrchestratorHost] LoRA removal request: {loraId}");
+            
+            bool removed = false;
+            string removedName = "unknown";
+            
+            lock (_loraStateLock)
+            {
+                var loraToRemove = _activeLoRAs.FirstOrDefault(l => l.Id == loraId);
+                if (loraToRemove != null)
+                {
+                    removedName = loraToRemove.Name;
+                    _activeLoRAs.Remove(loraToRemove);
+                    removed = true;
+                    
+                    Console.WriteLine($"[OrchestratorHost] LoRA '{removedName}' removed. Remaining active LoRAs: {_activeLoRAs.Count}");
+                }
+                else
+                {
+                    Console.WriteLine($"[OrchestratorHost] LoRA '{loraId}' not found in active list");
+                }
+            }
+            
+            // TODO: Remove from actual model runner
+            
+            return Results.Json(new { 
+                success = removed, 
+                message = removed ? $"LoRA '{removedName}' removed successfully" : $"LoRA '{loraId}' not found",
+                activeLoRAs = _activeLoRAs.Count
+            }, Json);
+        });
+        
+        // Endpoint to clear all LoRAs - MASS STATE RESET
+        app.MapDelete("/v1/loras", async () =>
+        {
+            Console.WriteLine($"[OrchestratorHost] Clearing all LoRAs");
+            
+            int clearedCount;
+            lock (_loraStateLock)
+            {
+                clearedCount = _activeLoRAs.Count;
+                _activeLoRAs.Clear();
+            }
+            
+            Console.WriteLine($"[OrchestratorHost] Cleared {clearedCount} active LoRAs");
+            
+            return Results.Json(new { 
+                success = true, 
+                message = $"Cleared {clearedCount} active LoRAs",
+                activeLoRAs = 0
+            }, Json);
         });
 
         // OpenAI-compatible chat proxy

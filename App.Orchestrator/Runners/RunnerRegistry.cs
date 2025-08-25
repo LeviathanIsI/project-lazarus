@@ -17,7 +17,7 @@ public static class RunnerRegistry
     private static Timer? _healthCheckTimer;
 
     public static IChatRunner? Active => _activeRunner;
-    public static string? CurrentModel { get; private set; }
+    public static string? CurrentModel => _activeRunner?.CurrentModel;
 
     public static async Task<bool> InitializeAsync()
     {
@@ -28,14 +28,19 @@ public static class RunnerRegistry
             await LoadConfigurationAsync();
             await InitializeRunnersAsync();
 
-            // Try embedded runners if external ones fail
-            if (_runners.Count == 0)
+            // Try to select a healthy external runner first
+            await SelectDefaultRunnerAsync();
+
+            // If no healthy external runners, try embedded runners
+            if (_activeRunner == null)
             {
-                Logger.LogInformation("No external runners available - attempting embedded runners");
+                Logger.LogInformation("No healthy external runners found - attempting embedded runners");
                 await InitializeEmbeddedRunnersAsync();
+                
+                // Try selecting again after embedded runners are added
+                await SelectDefaultRunnerAsync();
             }
 
-            await SelectDefaultRunnerAsync();
             StartHealthMonitoring();
 
             Logger.LogInformation($"Runner Registry initialized with {_runners.Count} runners. Active: {_activeRunner?.Name ?? "none"}");
@@ -205,13 +210,23 @@ public static class RunnerRegistry
                 return false;
             }
 
-            // Auto-discover available models
-            var modelsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "models");
+            // Auto-discover available models in user's AppData
+            var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lazarus");
+            var modelsPath = Path.Combine(appDataPath, "models", "main");
+            
+            Logger.LogInformation($"Scanning for models in: {modelsPath}");
+            
             if (!Directory.Exists(modelsPath))
             {
-                Logger.LogInformation("No models directory found - creating it");
-                Directory.CreateDirectory(modelsPath);
-                return false;
+                Logger.LogInformation($"Models directory not found at: {modelsPath}");
+                // Try alternative path without 'main' subdirectory
+                modelsPath = Path.Combine(appDataPath, "models");
+                if (!Directory.Exists(modelsPath))
+                {
+                    Logger.LogInformation("No models directory found - creating it");
+                    Directory.CreateDirectory(modelsPath);
+                    return false;
+                }
             }
 
             var modelFiles = Directory.GetFiles(modelsPath, "*.gguf", SearchOption.TopDirectoryOnly);
@@ -362,7 +377,6 @@ public static class RunnerRegistry
         {
             Logger.LogInformation($"Loading model from path: {modelPath}");
             var modelName = Path.GetFileNameWithoutExtension(modelPath);
-            CurrentModel = modelName;
             Logger.LogInformation($"Model loaded: {modelName}");
             return true;
         }
@@ -387,7 +401,6 @@ public static class RunnerRegistry
             _ => throw new ArgumentException($"Unknown runner type: {runnerType}")
         };
 
-        CurrentModel = model;
         Logger.LogInformation($"Switched to: {_activeRunner.Name} at {_activeRunner.BaseAddress}");
     }
 
