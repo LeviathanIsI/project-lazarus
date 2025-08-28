@@ -9,6 +9,7 @@ using System.Linq;
 using Lazarus.Desktop.Helpers;
 using Lazarus.Shared.OpenAI;
 using Lazarus.Shared.Models;
+using Lazarus.Desktop.Services;
 
 namespace Lazarus.Desktop.ViewModels
 {
@@ -83,6 +84,7 @@ namespace Lazarus.Desktop.ViewModels
     /// </summary>
     public sealed class ChatViewModel : INotifyPropertyChanged, IDisposable
     {
+        private readonly DynamicParameterViewModel _parameterViewModel;
         private string _userInput = "";
         private bool _isStreaming = false;
         private double _tokensPerSecond = 0;
@@ -94,8 +96,12 @@ namespace Lazarus.Desktop.ViewModels
         private string _systemPrompt = "";
         private CancellationTokenSource? _cancellationTokenSource;
 
-        public ChatViewModel()
+        private readonly GlobalModelStateService _globalState;
+
+        public ChatViewModel(DynamicParameterViewModel parameterViewModel, GlobalModelStateService globalState)
         {
+            _parameterViewModel = parameterViewModel;
+            _globalState = globalState;
             Messages = new ObservableCollection<ChatMessageVm>();
             SendCommand = new RelayCommand(async _ => await SendAsync(), _ => CanSend);
             StopCommand = new RelayCommand(_ => StopGeneration(), _ => IsStreaming);
@@ -110,9 +116,27 @@ namespace Lazarus.Desktop.ViewModels
                 GenerationTime = 0.1,
                 TokensPerSecond = 80
             });
+
+            // Bind to global model state
+            _globalState.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(GlobalModelStateService.CurrentModel) ||
+                    args.PropertyName == nameof(GlobalModelStateService.LoadStatus))
+                {
+                    var cm = _globalState.CurrentModel;
+                    ModelName = cm?.Name ?? "No Model Loaded";
+                }
+            };
+            // Initialize from persisted state
+            _globalState.Restore();
+            ModelName = _globalState.CurrentModel?.Name ?? "No Model Loaded";
         }
 
         #region Properties
+
+        public DynamicParameterViewModel ParameterViewModel => _parameterViewModel;
+
+        public bool HasBaseModel => !string.IsNullOrWhiteSpace(ModelName) && !string.Equals(ModelName, "No Model Loaded", StringComparison.OrdinalIgnoreCase);
 
         public ObservableCollection<ChatMessageVm> Messages { get; }
 
@@ -149,7 +173,13 @@ namespace Lazarus.Desktop.ViewModels
         public string ModelName
         {
             get => _modelName;
-            set => SetProperty(ref _modelName, value);
+            set
+            {
+                if (SetProperty(ref _modelName, value))
+                {
+                    OnPropertyChanged(nameof(HasBaseModel));
+                }
+            }
         }
 
         // Advanced parameters

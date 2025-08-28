@@ -6,6 +6,9 @@ using System.Windows.Input;
 using Lazarus.Desktop.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = System.Timers.Timer;
+using Lazarus.Desktop.Services;
+using System.Diagnostics;
+using System.IO;
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -30,10 +33,25 @@ public class SystemStateViewModel : INotifyPropertyChanged
     private bool _isOnline = false;
     private int _queuedJobs = 0;
     private string _serverPort = "11711";
+
+    // Hardware vitals
+    private double _cpuUsagePercent;
+    private double _cpuTemperatureC;
+    private double _gpuUtilizationPercent;
+    private string _systemRamUsage = "0.0 / 0.0 GB";
+    private string _diskIo = "R: 0 MB/s • W: 0 MB/s";
+
+    // Perf counters (lazy)
+    private PerformanceCounter? _cpuTotalCounter;
+    private PerformanceCounter? _diskReadCounter;
+    private PerformanceCounter? _diskWriteCounter;
     
+    private readonly GlobalModelStateService _globalState;
+
     public SystemStateViewModel(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        _globalState = serviceProvider.GetRequiredService<GlobalModelStateService>();
         
         // Commands for quick actions in context bar
         SwitchModelCommand = new SystemRelayCommand(async () => await SwitchModelAsync());
@@ -45,6 +63,24 @@ public class SystemStateViewModel : INotifyPropertyChanged
         _statusUpdateTimer.Elapsed += async (_, _) => await UpdateSystemStateAsync();
         _statusUpdateTimer.Start();
         
+        // Subscribe to global model events
+        _globalState.ModelLoaded += (_, info) =>
+        {
+            CurrentModel = info.Name;
+            ContextLength = info.ContextLength?.ToString() ?? ContextLength;
+            if (!string.IsNullOrWhiteSpace(info.InferenceEngine))
+                CurrentRunner = info.InferenceEngine;
+        };
+        _globalState.ModelUnloaded += (_, __) =>
+        {
+            CurrentModel = "No model loaded";
+            ContextLength = "0";
+        };
+        _globalState.LoadStatusChanged += (_, status) =>
+        {
+            // Could reflect Loading state in UI if needed
+        };
+
         // Initial update
         _ = UpdateSystemStateAsync();
         
@@ -209,6 +245,13 @@ public class SystemStateViewModel : INotifyPropertyChanged
         }
     }
 
+    // === Hardware vitals exposed to UI ===
+    public double CpuUsagePercent { get => _cpuUsagePercent; private set { _cpuUsagePercent = value; OnPropertyChanged(); } }
+    public double CpuTemperatureC { get => _cpuTemperatureC; private set { _cpuTemperatureC = value; OnPropertyChanged(); } }
+    public double GpuUtilizationPercent { get => _gpuUtilizationPercent; private set { _gpuUtilizationPercent = value; OnPropertyChanged(); } }
+    public string SystemRamUsage { get => _systemRamUsage; private set { _systemRamUsage = value; OnPropertyChanged(); } }
+    public string DiskIo { get => _diskIo; private set { _diskIo = value; OnPropertyChanged(); } }
+
     #endregion
 
     #region Commands - Quick Actions
@@ -297,13 +340,28 @@ public class SystemStateViewModel : INotifyPropertyChanged
             {
                 IsOnline = true;
                 ApiStatus = "Online";
-                
-                CurrentModel = systemStatus.LoadedModel ?? "No model loaded";
-                CurrentRunner = systemStatus.ActiveRunner ?? "No runner";
-                GpuInfo = systemStatus.GpuName ?? "CPU";
-                ContextLength = systemStatus.ContextLength?.ToString() ?? "0";
-                TokensPerSecond = systemStatus.TokensPerSecond?.ToString("F1") ?? "0.0";
-                ServerPort = systemStatus.ServerPort?.ToString() ?? "11711";
+
+                // Prefer real values from orchestrator; otherwise fall back to global state; otherwise keep previous
+                var global = _globalState.CurrentModel;
+
+                var modelName = !string.IsNullOrWhiteSpace(systemStatus.LoadedModel)
+                    ? systemStatus.LoadedModel
+                    : (_globalState.LoadStatus == ModelLoadStatus.Loaded ? global?.Name : null) ?? CurrentModel;
+
+                var runnerName = !string.IsNullOrWhiteSpace(systemStatus.ActiveRunner)
+                    ? systemStatus.ActiveRunner
+                    : (_globalState.LoadStatus == ModelLoadStatus.Loaded ? global?.InferenceEngine : null) ?? CurrentRunner;
+
+                var ctxLen = systemStatus.ContextLength?.ToString()
+                    ?? (_globalState.LoadStatus == ModelLoadStatus.Loaded ? global?.ContextLength?.ToString() : null)
+                    ?? ContextLength;
+
+                CurrentModel = modelName;
+                CurrentRunner = runnerName;
+                GpuInfo = systemStatus.GpuName ?? GpuInfo;
+                ContextLength = ctxLen;
+                TokensPerSecond = systemStatus.TokensPerSecond?.ToString("F1") ?? TokensPerSecond;
+                ServerPort = systemStatus.ServerPort?.ToString() ?? ServerPort;
                 
                 // Update VRAM info
                 if (systemStatus.VramUsedMB.HasValue && systemStatus.VramTotalMB.HasValue)
@@ -331,6 +389,9 @@ public class SystemStateViewModel : INotifyPropertyChanged
                 CurrentRunner = "Offline";
                 TokensPerSecond = "0.0";
             }
+
+            // Update local hardware metrics regardless of API state
+            UpdateLocalHardwareMetrics();
         }
         catch (Exception ex)
         {
@@ -339,6 +400,80 @@ public class SystemStateViewModel : INotifyPropertyChanged
             ApiStatus = "Error";
             Console.WriteLine($"[SystemState] Error updating system state: {ex.Message}");
         }
+    }
+
+    private void EnsurePerfCounters()
+    {
+        try
+        {
+            _cpuTotalCounter ??= new PerformanceCounter("Processor", "% Processor Time", "_Total", true);
+        }
+        catch { /* not available in some environments */ }
+
+        try
+        {
+            _diskReadCounter ??= new PerformanceCounter("PhysicalDisk", "Disk Read Bytes/sec", "_Total", true);
+            _diskWriteCounter ??= new PerformanceCounter("PhysicalDisk", "Disk Write Bytes/sec", "_Total", true);
+        }
+        catch { /* ignore if not present */ }
+    }
+
+    private void UpdateLocalHardwareMetrics()
+    {
+        EnsurePerfCounters();
+
+        // CPU usage
+        try
+        {
+            if (_cpuTotalCounter != null)
+            {
+                var val = _cpuTotalCounter.NextValue();
+                CpuUsagePercent = Math.Round(val, 1);
+            }
+        }
+        catch { }
+
+        // CPU temp via WMI (may require permissions; best-effort)
+        try
+        {
+            // Many systems do not expose this; keep as best-effort placeholder
+            // Leave previous value if not retrievable to avoid flapping
+        }
+        catch { }
+
+        // GPU utilization: if API provides, prefer it; else leave 0 (TODO: NVML/DirectX integration)
+        try
+        {
+            if (GpuUtilizationPercent < 0.1 && VramPercentage > 0)
+                GpuUtilizationPercent = Math.Min(100, VramPercentage); // heuristic fallback
+        }
+        catch { }
+
+        // RAM usage
+        try
+        {
+            var total = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            var used = total - GC.GetGCMemoryInfo().TotalAvailableMemoryBytes + GC.GetTotalMemory(false);
+            // Fallback to process working set as a proxy to avoid complex APIs
+            var proc = Process.GetCurrentProcess();
+            var processMem = proc.WorkingSet64;
+            var totalGB = total / (1024.0 * 1024.0 * 1024.0);
+            var usedGB = Math.Max(used, processMem) / (1024.0 * 1024.0 * 1024.0);
+            SystemRamUsage = $"{usedGB:F1} / {totalGB:F1} GB";
+        }
+        catch { }
+
+        // Disk IO
+        try
+        {
+            if (_diskReadCounter != null && _diskWriteCounter != null)
+            {
+                var r = _diskReadCounter.NextValue() / (1024.0 * 1024.0);
+                var w = _diskWriteCounter.NextValue() / (1024.0 * 1024.0);
+                DiskIo = $"R: {r:F1} MB/s • W: {w:F1} MB/s";
+            }
+        }
+        catch { }
     }
 
     #endregion

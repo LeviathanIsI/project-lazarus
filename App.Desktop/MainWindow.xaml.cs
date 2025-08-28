@@ -69,29 +69,6 @@ namespace Lazarus.Desktop
             }
         }
 
-        private async void PingApi_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var status = await ApiClient.GetSystemStatusAsync();
-                if (status != null)
-                {
-                    ApiStatus.Text = $"API: {status.ActiveRunner} ({status.LoadedModel})";
-                    ApiStatus.Foreground = new SolidColorBrush(Colors.Green);
-                }
-                else
-                {
-                    ApiStatus.Text = "API: Unknown";
-                    ApiStatus.Foreground = new SolidColorBrush(Colors.Orange);
-                }
-            }
-            catch (Exception ex)
-            {
-                ApiStatus.Text = $"API: Error - {ex.Message}";
-                ApiStatus.Foreground = new SolidColorBrush(Colors.Red);
-            }
-        }
-
         /// <summary>
         /// Diagnostic method to verify exactly one view is visible at all times
         /// </summary>

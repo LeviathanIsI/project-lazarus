@@ -33,12 +33,14 @@
 		<conv:StringEqualsVisibilityConverter x:Key="StringEqualsVisibilityConverter"/>
 		<conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 		<conv:NullToInverseVisibilityConverter x:Key="NullToInverseVisibilityConverter"/>
+		<conv:NullToBooleanConverter x:Key="NullToBooleanConverter"/>
 		<conv:BooleanToAlignmentConverter x:Key="BooleanToAlignmentConverter"/>
 		<conv:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
 
 		<!-- Voice UI converters -->
 		<conv:SpeakingToText x:Key="SpeakingToText"/>
 		<conv:SpeakingToBrush x:Key="SpeakingToBrush"/>
+		<conv:StringToColor x:Key="StringToColor"/>
 
 		<!-- BoolToTextConverter for status display - moved from VAEsView -->
 		<conv:BoolToTextConverter x:Key="BoolToStatusConverter"

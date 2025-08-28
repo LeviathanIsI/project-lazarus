@@ -362,8 +362,9 @@ public static class ApiClient
             
             return new SystemStatusResponse
             {
-                LoadedModel = runnerHealthy ? runnerName : "No model loaded",
-                ActiveRunner = runnerName ?? "No runner",
+                // Do NOT guess the loaded model from runner name. Leave null to allow UI fallback to global state.
+                LoadedModel = null,
+                ActiveRunner = runnerName,
                 ServerPort = 11711,
                 GpuName = gpuName,
                 VramUsedMB = vramUsedMB,

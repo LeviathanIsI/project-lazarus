@@ -5968,6 +5968,37 @@
     
     <!-- 3D MODELS SECTION TEMPLATES -->
     
+    <!-- BaseModel Template - Developer Mode: technical view -->
+    <DataTemplate x:Key="BaseModelTemplate">
+        <StackPanel Margin="12">
+            <TextBlock Text="Select Base Model" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding FilteredModels}" SelectedItem="{Binding SelectedModel}" Style="{DynamicResource DarkComboBoxStyle}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding Name}"/>
+                            <Run Text=" ("/>
+                            <Run Text="{Binding Size}"/>
+                            <Run Text=")"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBlock Text="Inference Engine" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4"/>
+            <ComboBox SelectedItem="{Binding SelectedRunner}" Style="{DynamicResource DarkComboBoxStyle}">
+                <ComboBoxItem>llama.cpp</ComboBoxItem>
+                <ComboBoxItem>vLLM</ComboBoxItem>
+                <ComboBoxItem>ExLlamaV2</ComboBoxItem>
+            </ComboBox>
+            
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Load" Command="{Binding LoadModelCommand}" CommandParameter="{Binding SelectedModel}" Style="{StaticResource PrimaryButtonStyle}"/>
+                <Button Content="Unload" Command="{Binding UnloadModelCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+    
     <!-- 3D Models Template - Developer Mode -->
     <DataTemplate x:Key="ThreeDModelsTemplate">
         <StackPanel>
@@ -6310,6 +6341,64 @@
                 </StackPanel>
             </ScrollViewer>
         </Border>
+    </Grid>
+</DataTemplate>
+
+<!-- Developer Chat Toolbar Template -->
+<DataTemplate x:Key="ChatToolbarTemplate">
+    <DockPanel LastChildFill="True" Margin="0,0,0,8">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+            <TextBlock Text="Conversations" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+            <TextBlock Text="Endpoint" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+            <TextBox Width="260" Margin="6,0,12,0" Style="{StaticResource DarkTextBoxStyle}" Text="http://localhost:11711/v1/chat"/>
+            <TextBlock Text="Headers" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+            <Button Content="Edit" Style="{StaticResource SecondaryButtonStyle}" Margin="6,0,0,0"/>
+            <TextBlock Text="Logs" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <Button Content="Open" Style="{StaticResource SecondaryButtonStyle}" Margin="6,0,0,0"/>
+        </StackPanel>
+    </DockPanel>
+</DataTemplate>
+
+<!-- Developer Chat Input Template -->
+<DataTemplate x:Key="ChatInputTemplate">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!-- Request Builder -->
+        <Expander Grid.Row="0" Header="Request Payload (JSON)" Background="{DynamicResource SecondaryDarkBrush}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8">
+            <TextBox Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBoxMultilineStyle}" MinHeight="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+        </Expander>
+        <!-- Input/Controls -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0"
+                     Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource DarkTextBoxMultilineStyle}"
+                     MinHeight="60"
+                     MaxHeight="220"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="0,0,8,0"/>
+            <Button Grid.Column="1"
+                    Content="Send"
+                    Command="{Binding SendCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding CanSend}"/>
+            <Button Grid.Column="2"
+                    Content="Stop"
+                    Command="{Binding StopCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="8,0,0,0"
+                    IsEnabled="{Binding IsStreaming}"/>
+        </Grid>
     </Grid>
 </DataTemplate>
 

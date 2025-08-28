@@ -3069,33 +3069,33 @@
     
     <!-- BaseModel Template - Professional Model Selection -->
     <DataTemplate x:Key="BaseModelTemplate">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Model Selection Panel -->
-            <Border Grid.Column="0" Background="{DynamicResource SecondaryDarkBrush}" CornerRadius="6,0,0,6" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="Model Selection" Style="{DynamicResource HeadingSmallStyle}" Foreground="{DynamicResource AccentPurpleBrush}" Margin="0,0,0,16"/>
-                    <ComboBox Style="{DynamicResource DarkComboBoxStyle}" Margin="0,0,0,12">
-                        <ComboBoxItem>Select Model...</ComboBoxItem>
-                    </ComboBox>
-                    <Button Content="Load Selected Model" Style="{DynamicResource PrimaryButtonStyle}" Padding="0,8"/>
-                </StackPanel>
-            </Border>
-            
-            <!-- Model Info Panel -->
-            <Border Grid.Column="1" Background="{DynamicResource TertiaryDarkBrush}" CornerRadius="0,6,6,0" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="Model Information" Style="{DynamicResource HeadingSmallStyle}" Foreground="{DynamicResource AccentRedBrush}" Margin="0,0,0,12"/>
-                    <TextBlock Text="Parameters: N/A" Style="{DynamicResource CaptionTextStyle}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Context Length: N/A" Style="{DynamicResource CaptionTextStyle}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Architecture: N/A" Style="{DynamicResource CaptionTextStyle}"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+        <StackPanel Margin="12">
+            <TextBlock Text="Select Base Model" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding FilteredModels}" SelectedItem="{Binding SelectedModel}" Style="{DynamicResource DarkComboBoxStyle}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding Name}"/>
+                            <Run Text=" ("/>
+                            <Run Text="{Binding Size}"/>
+                            <Run Text=")"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBlock Text="Inference Engine" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4"/>
+            <ComboBox SelectedItem="{Binding SelectedRunner}" Style="{DynamicResource DarkComboBoxStyle}">
+                <ComboBoxItem>llama.cpp</ComboBoxItem>
+                <ComboBoxItem>vLLM</ComboBoxItem>
+                <ComboBoxItem>ExLlamaV2</ComboBoxItem>
+            </ComboBox>
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Load" Command="{Binding LoadModelCommand}" CommandParameter="{Binding SelectedModel}" Style="{StaticResource PrimaryButtonStyle}"/>
+                <Button Content="Unload" Command="{Binding UnloadModelCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </StackPanel>
     </DataTemplate>
     
     <!-- Advanced Template - Configuration Controls -->
@@ -4723,4 +4723,62 @@
         </ScrollViewer>
     </DataTemplate>
     
+    <!-- Enthusiast Chat Toolbar Template -->
+    <DataTemplate x:Key="ChatToolbarTemplate">
+        <DockPanel LastChildFill="True" Margin="0,0,0,8">
+            <!-- Left: Tabs/Title placeholder -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <TextBlock Text="Conversations" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <!-- Right: Controls -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <TextBlock Text="Temp" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <TextBox Width="60" Margin="6,0,12,0" Text="{Binding Temperature, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" Style="{StaticResource DarkTextBoxStyle}"/>
+                <TextBlock Text="top_p" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <TextBox Width="60" Margin="6,0,12,0" Text="{Binding TopP, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" Style="{StaticResource DarkTextBoxStyle}"/>
+                <TextBlock Text="max_tokens" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <TextBox Width="70" Margin="6,0,12,0" Text="{Binding MaxTokens, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBoxStyle}"/>
+                <TextBlock Text="T/s:" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding TokensPerSecond, StringFormat=F1}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+            </StackPanel>
+        </DockPanel>
+    </DataTemplate>
+
+    <!-- Enthusiast Chat Input Template -->
+    <DataTemplate x:Key="ChatInputTemplate">
+        <StackPanel>
+            <!-- System Prompt Editor -->
+            <Expander Header="System Prompt" Background="{DynamicResource SecondaryDarkBrush}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8">
+                <TextBox Text="{Binding SystemPrompt, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBoxMultilineStyle}" TextWrapping="Wrap" MinHeight="60"/>
+            </Expander>
+            <!-- Input + Send/Stop -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DarkTextBoxMultilineStyle}"
+                         MinHeight="60"
+                         MaxHeight="200"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         Margin="0,0,8,0"/>
+                <Button Grid.Column="1"
+                        Content="Send"
+                        Command="{Binding SendCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding CanSend}"/>
+                <Button Grid.Column="2"
+                        Content="Stop"
+                        Command="{Binding StopCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="8,0,0,0"
+                        IsEnabled="{Binding IsStreaming}"/>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
 </ResourceDictionary>

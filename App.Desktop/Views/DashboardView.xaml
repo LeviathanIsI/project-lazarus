@@ -7,22 +7,152 @@
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1200">
 
-    <!-- REMOVED ViewModeTemplateSelector for debugging -->
-
-    <!-- SIMPLE DASHBOARD CONTENT -->
+    <!-- Professional card-based dashboard -->
     <Grid Background="{DynamicResource PrimaryDarkBrush}">
-        <Border Background="{DynamicResource AccentRedBrush}" Margin="40" CornerRadius="8">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="🏠 DASHBOARD" 
-                           Foreground="White" FontSize="24" FontWeight="Bold"
-                           HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <TextBlock Text="Welcome to Project Lazarus" 
-                           Foreground="White" FontSize="16"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="Navigation is now working correctly!" 
-                           Foreground="White" FontSize="14" FontStyle="Italic"
-                           HorizontalAlignment="Center" Margin="0,10,0,0"/>
-            </StackPanel>
-        </Border>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Status Cards Row -->
+        <Grid Grid.Row="0" Margin="16,16,16,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Hardware Vitals Card -->
+            <Border Grid.Column="0" Background="{DynamicResource SecondaryDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Hardware Vitals" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <Separator Margin="0,8,0,8" Background="{DynamicResource BorderBrush}"/>
+                    <UniformGrid Columns="2" Rows="2" Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="CPU:" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding SystemState.CpuUsagePercent, StringFormat={}{0:F0}%}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="GPU:" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding SystemState.GpuUtilizationPercent, StringFormat={}{0:F0}%}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="VRAM:" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding SystemState.VramUsage}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="RAM:" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding SystemState.SystemRamUsage}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+
+            <!-- Runner Status Card -->
+            <Border Grid.Column="1" Background="{DynamicResource SecondaryDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Runner Status" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <Separator Margin="0,8,0,8" Background="{DynamicResource BorderBrush}"/>
+                    <StackPanel>
+                        <TextBlock Text="Active: {Binding SystemState.CurrentRunner}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <!-- Removed placeholders: show only actual bound data -->
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Current Model Card -->
+            <Border Grid.Column="2" Background="{DynamicResource SecondaryDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Current Model" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <Separator Margin="0,8,0,8" Background="{DynamicResource BorderBrush}"/>
+                    <TextBlock Text="{Binding SystemState.CurrentModel}" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <TextBlock Text="Ctx: {Binding SystemState.ContextLength}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="T/s: {Binding SystemState.TokensPerSecond}" Foreground="{DynamicResource TextMutedBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- API Status Card -->
+            <Border Grid.Column="3" Background="{DynamicResource SecondaryDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="API" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <Separator Margin="0,8,0,8" Background="{DynamicResource BorderBrush}"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse Width="10" Height="10" Margin="0,0,6,0">
+                            <Ellipse.Fill>
+                                <SolidColorBrush Color="{Binding SystemState.ApiStatusColor, Converter={StaticResource StringToColor}}"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Text="{Binding SystemState.ApiStatus}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Text="  :" Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Text="{Binding SystemState.ServerPort}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Main Row: Quick Actions + Activity Feed -->
+        <Grid Grid.Row="1" Margin="16,0,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Quick Actions Hub -->
+            <Border Grid.Column="0" Background="{DynamicResource SecondaryDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Quick Actions" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <Separator Margin="0,8,0,12" Background="{DynamicResource BorderBrush}"/>
+                    <WrapPanel>
+                        <Button Content="Load Model" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,8" Command="{Binding DataContext.NavigateToBaseModelCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        <Button Content="New Chat" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8"/>
+                        <Button Content="Start Training Job" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8"/>
+                    </WrapPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock Text="Model:" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                        <ComboBox Width="260" Margin="8,0,0,0">
+                            <ComboBoxItem Content="Recent: Llama-3-8B-Instruct"/>
+                            <ComboBoxItem Content="Recent: Mistral-7B-Instruct"/>
+                            <ComboBoxItem Content="Browse..."/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <TextBlock Foreground="{DynamicResource AccentRedBrush}">
+                            <Hyperlink Command="{Binding DataContext.NavigateToModelsCommand, RelativeSource={RelativeSource AncestorType=Window}}">Model Configuration</Hyperlink>
+                        </TextBlock>
+                        <TextBlock Text="  •  " Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Foreground="{DynamicResource AccentRedBrush}">
+                            <Hyperlink Command="{Binding DataContext.NavigateToRunnerManagerCommand, RelativeSource={RelativeSource AncestorType=Window}}">Runner Manager</Hyperlink>
+                        </TextBlock>
+                        <TextBlock Text="  •  " Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Foreground="{DynamicResource AccentRedBrush}">
+                            <Hyperlink Command="{Binding DataContext.NavigateToDatasetsCommand, RelativeSource={RelativeSource AncestorType=Window}}">Datasets</Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Recent Activity Feed -->
+            <Border Grid.Column="1" Background="{DynamicResource SecondaryDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="Recent Activity" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                    <Separator Margin="0,8,0,12" Background="{DynamicResource BorderBrush}"/>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentRedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="  Loaded model Llama-3-8B-Instruct" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentRedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="  Training job finished: SDXL finetune" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentRedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="  Chat session started with LLaMA" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

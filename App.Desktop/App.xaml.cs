@@ -123,6 +123,18 @@ namespace Lazarus.Desktop
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
             Console.WriteLine("App: MainWindow created successfully");
 
+            // Restore global model state after DI is ready, before UI interaction
+            try
+            {
+                var globalState = _serviceProvider.GetRequiredService<GlobalModelStateService>();
+                globalState.Restore();
+                Console.WriteLine("App: Restored global model state");
+            }
+            catch (Exception gsEx)
+            {
+                Console.WriteLine($"App: Global state restore failed: {gsEx.Message}");
+            }
+
             Console.WriteLine("App: Showing MainWindow...");
             mainWindow.Show();
             Console.WriteLine("App: MainWindow.Show() called successfully");
@@ -162,6 +174,7 @@ namespace Lazarus.Desktop
             // Register Global Services
             Console.WriteLine("App: Registering global services...");
             services.AddSingleton<UserPreferencesService>();
+            services.AddSingleton<GlobalModelStateService>();
             services.AddSingleton<INavigationService, NavigationService>();
             
             // Register ViewModels with proper lifetimes

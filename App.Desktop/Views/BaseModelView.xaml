@@ -107,71 +107,43 @@
 							MinHeight="300"
 							Margin="0,0,0,16">
 						<ScrollViewer VerticalScrollBarVisibility="Auto">
-							<ItemsControl ItemsSource="{Binding FilteredModels}">
-								<ItemsControl.ItemTemplate>
+							<ListBox x:Name="ModelList" ItemsSource="{Binding FilteredModels}" SelectedItem="{Binding SelectedModel, Mode=TwoWay}" SelectedIndex="-1" BorderThickness="0" Background="Transparent">
+								<ListBox.ItemTemplate>
 									<DataTemplate>
-										<Border Background="Transparent" 
-												Padding="12,8" 
-												Margin="0,0,0,1"
-												Cursor="Hand">
+										<Border Background="Transparent" Padding="12,8" Margin="0,0,0,1">
 											<Border.Style>
 												<Style TargetType="Border">
 													<Style.Triggers>
 														<Trigger Property="IsMouseOver" Value="True">
 															<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
 														</Trigger>
-														<DataTrigger Binding="{Binding IsSelected}" Value="True">
+														<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
 															<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
 														</DataTrigger>
 													</Style.Triggers>
 												</Style>
 											</Border.Style>
-											<Border.InputBindings>
-												<MouseBinding MouseAction="LeftClick" 
-															  Command="{Binding DataContext.SelectModelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-															  CommandParameter="{Binding}"/>
-											</Border.InputBindings>
-											
 											<Grid>
 												<Grid.RowDefinitions>
 													<RowDefinition Height="Auto"/>
 													<RowDefinition Height="Auto"/>
 													<RowDefinition Height="Auto"/>
 												</Grid.RowDefinitions>
-												
-												<TextBlock Text="{Binding Name}" 
-														   FontWeight="SemiBold"
-														   Foreground="{DynamicResource TextPrimaryBrush}"
-														   TextTrimming="CharacterEllipsis"/>
-												
+												<TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
 												<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,2,0,0">
-													<Border Background="{DynamicResource AccentRedBrush}" 
-															CornerRadius="8" 
-															Padding="4,1">
-														<TextBlock Text="{Binding Size}" 
-																   FontSize="10" 
-																   Foreground="White"/>
+													<Border Background="{DynamicResource AccentRedBrush}" CornerRadius="8" Padding="4,1">
+														<TextBlock Text="{Binding Size}" FontSize="10" Foreground="White"/>
 													</Border>
-													<Border Background="{DynamicResource TertiaryDarkBrush}" 
-															CornerRadius="8" 
-															Padding="4,1" 
-															Margin="4,0,0,0">
-														<TextBlock Text="{Binding Quantization}" 
-																   FontSize="10" 
-																   Foreground="{DynamicResource TextSecondaryBrush}"/>
+													<Border Background="{DynamicResource TertiaryDarkBrush}" CornerRadius="8" Padding="4,1" Margin="4,0,0,0">
+														<TextBlock Text="{Binding Quantization}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
 													</Border>
 												</StackPanel>
-												
-												<TextBlock Grid.Row="2" 
-														   Text="{Binding Architecture}" 
-														   FontSize="11"
-														   Foreground="{DynamicResource TextMutedBrush}"
-														   Margin="0,4,0,0"/>
+												<TextBlock Grid.Row="2" Text="{Binding Architecture}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
 											</Grid>
 										</Border>
 									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
+								</ListBox.ItemTemplate>
+							</ListBox>
 						</ScrollViewer>
 					</Border>
 
@@ -185,7 +157,8 @@
 						<Button Content="Load Model" 
 								Style="{DynamicResource PrimaryButtonStyle}"
 								Command="{Binding LoadModelCommand}"
-								IsEnabled="{Binding CanLoadModel}"
+								CommandParameter="{Binding SelectedModel}"
+								IsEnabled="{Binding SelectedModel, Converter={StaticResource NullToBooleanConverter}}"
 								Margin="0,0,4,0"/>
 						
 						<Button Grid.Column="1" 

@@ -43,23 +43,7 @@
 							   Foreground="{DynamicResource AccentRedBrush}"
 							   HorizontalAlignment="Center"
 							   Margin="0,0,0,16"/>
-							   
-					<!-- API Status -->
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-						<TextBlock x:Name="ApiStatus"
-								   Text="API: unknown"
-								   FontSize="12"
-								   Foreground="{DynamicResource TextSecondaryBrush}"
-								   Margin="0,0,8,0"/>
-						<Button Content="Ping"
-								Click="PingApi_Click"
-								Padding="6,2"
-								FontSize="10"
-								Background="{DynamicResource BorderBrush}"
-								Foreground="{DynamicResource TextPrimaryBrush}"
-								BorderThickness="0"/>
-					</StackPanel>
-				</StackPanel>
+ 				</StackPanel>
 				
 				<!-- HIERARCHICAL NAVIGATION MENU -->
 				<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -297,10 +281,65 @@
 			<!-- SYSTEM CONTEXT BAR -->
 			<Border Grid.Row="0" Background="{DynamicResource TertiaryDarkBrush}"
 					BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
-					Padding="16,12">
-				<TextBlock Text="System Context Bar - TODO: Add system status, breadcrumbs, etc."
-						   Foreground="{DynamicResource TextSecondaryBrush}"
-						   FontSize="12"/>
+					Padding="24,16" MinHeight="56">
+				<DockPanel LastChildFill="True">
+					<!-- Left: Hardware Vitals -->
+					<StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+						<TextBlock Text="CPU:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.CpuUsagePercent, StringFormat={}{0:F0}%}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+
+						<TextBlock Text="VRAM:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.VramUsage}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+
+						<TextBlock Text="GPU:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.GpuUtilizationPercent, StringFormat={}{0:F0}%}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+
+						<TextBlock Text="RAM:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.SystemRamUsage}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+
+						<TextBlock Text="Disk:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14" Margin="24,0,0,0"/>
+						<TextBlock Text="{Binding SystemState.DiskIo}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+					</StackPanel>
+
+					<!-- Center: Application State -->
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="24,0,24,0">
+						<TextBlock Text="Runner:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.CurrentRunner}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+						<TextBlock Text="Model:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.CurrentModel}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+						<TextBlock Text="Ctx:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.ContextLength}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+						<TextBlock Text="T/s:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.TokensPerSecond}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,24,0"/>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,24,0"/>
+						<TextBlock Text="Queue:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding SystemState.QueuedJobs}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14"/>
+					</StackPanel>
+
+					<!-- Right: API Status -->
+					<StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+						<Ellipse Width="12" Height="12">
+							<Ellipse.Fill>
+								<SolidColorBrush Color="{Binding SystemState.ApiStatusColor, Converter={StaticResource StringToColor}}"/>
+							</Ellipse.Fill>
+						</Ellipse>
+						<TextBlock Text="{Binding SystemState.ApiStatus}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14" Margin="8,0,0,0"/>
+						<TextBlock Foreground="{DynamicResource TextMutedBrush}" FontSize="14" Margin="6,0,0,0">
+							<Run Text=":"/>
+							<Run Text="{Binding SystemState.ServerPort, Mode=OneWay}"/>
+						</TextBlock>
+						<TextBlock Text="•" Foreground="{DynamicResource TextMutedBrush}" Margin="12,0,12,0"/>
+						<TextBlock Text="Mode:" Foreground="{DynamicResource TextMutedBrush}" FontSize="14"/>
+						<TextBlock Text="{Binding CurrentViewModeDisplay}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" Margin="6,0,0,0"/>
+					</StackPanel>
+				</DockPanel>
 			</Border>
 			
 			<!-- Content Area -->

@@ -142,66 +142,9 @@ public class DashboardViewModel : INotifyPropertyChanged
 
     private void InitializeRecentActivity()
     {
-        // Add some mock recent activities
-        RecentActivities.Add(new RecentActivityItem
-        {
-            Type = "Chat",
-            Title = "Conversation with Llama-3.1",
-            Timestamp = DateTime.Now.AddMinutes(-15),
-            Description = "Discussed code optimization strategies",
-            Icon = "💬"
-        });
-
-        RecentActivities.Add(new RecentActivityItem
-        {
-            Type = "Image",
-            Title = "Cyberpunk Portrait Generated",
-            Timestamp = DateTime.Now.AddHours(-2),
-            Description = "1024x1024, 20 steps, DPM++ SDE",
-            Icon = "🖼️"
-        });
-
-        RecentActivities.Add(new RecentActivityItem
-        {
-            Type = "Model",
-            Title = "Loaded Llama-3.1-8B-Instruct",
-            Timestamp = DateTime.Now.AddHours(-4),
-            Description = "Q4_K_M quantization, 8.2GB",
-            Icon = "🧠"
-        });
-
-        // Initialize system stats
-        SystemStats.Add(new SystemStatItem
-        {
-            Label = "Models Available",
-            Value = "12",
-            Icon = "📚",
-            Trend = "↑"
-        });
-
-        SystemStats.Add(new SystemStatItem
-        {
-            Label = "Total Generations",
-            Value = "247",
-            Icon = "⚡",
-            Trend = "↑"
-        });
-
-        SystemStats.Add(new SystemStatItem
-        {
-            Label = "Uptime",
-            Value = "2h 34m",
-            Icon = "⏱️",
-            Trend = "→"
-        });
-
-        SystemStats.Add(new SystemStatItem
-        {
-            Label = "Active Sessions",
-            Value = "1",
-            Icon = "🔗",
-            Trend = "→"
-        });
+        // Start with empty, real data will populate later
+        RecentActivities.Clear();
+        SystemStats.Clear();
     }
 
     public void RefreshDashboard()

@@ -6,6 +6,9 @@ using Lazarus.Desktop.Helpers;
 using Lazarus.Shared.OpenAI;
 using Lazarus.Shared.Models;
 using System.IO;
+using System.Linq;
+using System.Timers;
+using Lazarus.Desktop.Services;
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -17,24 +20,54 @@ public class BaseModelViewModel : INotifyPropertyChanged
     private SamplingParameters _currentParameters = new();
     private Dictionary<string, ParameterMetadata> _supportedParameterSchema = new();
 
+    // New: filtering/sorting
+    private string _searchFilter = string.Empty;
+    private string _selectedSortOption = "A–Z";
+    public ObservableCollection<BaseModelDto> FilteredModels { get; } = new();
+
+    // Runner selection
+    private string _selectedRunner = "llama.cpp";
+    public string SelectedRunner
+    {
+        get => _selectedRunner;
+        set => SetProperty(ref _selectedRunner, value);
+    }
+
+    // FS watcher
+    private FileSystemWatcher? _watcher;
+    private readonly System.Timers.Timer _debounceTimer = new System.Timers.Timer(300) { AutoReset = false };
+
     // Test Prompt Properties - The blood ritual components
     private string _testPromptText = "Write a short story about a digital vampire who feeds on corrupted data...";
     private string _testResponse = "";
     private string _testStatus = "Ready to test";
     private bool _isTestRunning = false;
 
-    public BaseModelViewModel()
+    private readonly GlobalModelStateService _globalState;
+
+    public BaseModelViewModel(GlobalModelStateService globalState)
     {
+        _globalState = globalState;
         BaseModels = new ObservableCollection<BaseModelDto>();
 
         LoadModelsCommand = new RelayCommand(async _ => await LoadModelsAsync(), _ => !IsLoading);
-        LoadModelCommand = new RelayCommand(async model => await LoadModelAsync((BaseModelDto)model!),
-            model => !IsLoading && model is BaseModelDto);
+        LoadModelCommand = new RelayCommand(async model =>
+        {
+            var target = model as BaseModelDto ?? SelectedModel;
+            if (target == null) return; // require explicit selection present
+            await LoadModelAsync(target);
+        },
+        _ => !IsLoading && SelectedModel != null);
         LoadParametersCommand = new RelayCommand(async _ => await LoadModelParametersAsync(), _ => !IsLoading && SelectedModel != null);
         TestParametersCommand = new RelayCommand(async _ => await ExecuteTestAsync(), _ => CanExecuteTest);
+        UnloadModelCommand = new RelayCommand(async _ => await UnloadModelAsync(), _ => !IsLoading && IsModelLoaded);
+        SelectModelCommand = new RelayCommand(model => SelectModel(model as BaseModelDto));
 
-        // Don't load models in constructor - wait for proper initialization
-        // This prevents race condition with orchestrator startup
+        _debounceTimer.Elapsed += (_, __) => _ = LoadModelsAsync();
+
+        // React to global state changes (e.g., model loaded elsewhere)
+        _globalState.ModelLoaded += (_, info) => UpdateActiveFromGlobal(info);
+        _globalState.ModelUnloaded += (_, __) => ClearActiveSelection();
     }
 
     #region Properties
@@ -42,13 +75,47 @@ public class BaseModelViewModel : INotifyPropertyChanged
     public bool IsLoading
     {
         get => _isLoading;
-        set => SetProperty(ref _isLoading, value);
+        set
+        {
+            if (SetProperty(ref _isLoading, value))
+            {
+                OnPropertyChanged(nameof(CanLoadModel));
+                try { System.Windows.Input.CommandManager.InvalidateRequerySuggested(); } catch { }
+            }
+        }
     }
 
     public string StatusText
     {
         get => _statusText;
-        set => SetProperty(ref _statusText, value);
+        set
+        {
+            if (SetProperty(ref _statusText, value))
+                OnPropertyChanged(nameof(LoadingStatus));
+        }
+    }
+
+    // Alias for XAML binding
+    public string LoadingStatus => StatusText;
+
+    public string SearchFilter
+    {
+        get => _searchFilter;
+        set
+        {
+            if (SetProperty(ref _searchFilter, value))
+                ApplyFilterAndSort();
+        }
+    }
+
+    public string SelectedSortOption
+    {
+        get => _selectedSortOption;
+        set
+        {
+            if (SetProperty(ref _selectedSortOption, value))
+                ApplyFilterAndSort();
+        }
     }
 
     public BaseModelDto? SelectedModel
@@ -59,6 +126,12 @@ public class BaseModelViewModel : INotifyPropertyChanged
             if (SetProperty(ref _selectedModel, value))
             {
                 OnPropertyChanged(nameof(CanExecuteTest));
+                OnPropertyChanged(nameof(CanLoadModel));
+                if (value != null)
+                {
+                    foreach (var m in BaseModels) m.IsSelected = ReferenceEquals(m, value);
+                }
+                try { System.Windows.Input.CommandManager.InvalidateRequerySuggested(); } catch { }
             }
         }
     }
@@ -113,6 +186,8 @@ public class BaseModelViewModel : INotifyPropertyChanged
     }
 
     public bool CanExecuteTest => SelectedModel != null && !IsTestRunning && !string.IsNullOrWhiteSpace(TestPromptText);
+    public bool CanLoadModel => SelectedModel != null && !IsLoading;
+    public bool IsModelLoaded => BaseModels.Any(m => m.IsActive);
 
     public ObservableCollection<BaseModelDto> BaseModels { get; }
 
@@ -124,6 +199,12 @@ public class BaseModelViewModel : INotifyPropertyChanged
     public ICommand LoadModelCommand { get; }
     public ICommand LoadParametersCommand { get; }
     public ICommand TestParametersCommand { get; }
+    public ICommand UnloadModelCommand { get; }
+    public ICommand SelectModelCommand { get; }
+
+    // Aliases expected by XAML
+    public ICommand ScanModelsCommand => LoadModelsCommand;
+    public ICommand TestModelCommand => TestParametersCommand;
 
     #endregion
 
@@ -308,65 +389,58 @@ public class BaseModelViewModel : INotifyPropertyChanged
         try
         {
             IsLoading = true;
-            
-            // Update UI on UI thread safely
             await UpdateUIAsync(() => StatusText = "Scanning models...");
 
             var inventory = await ApiClient.GetAvailableModelsAsync();
-
-            // Clear and populate on UI thread
             BaseModels.Clear();
 
             if (inventory?.BaseModels.Any() == true)
             {
                 foreach (var model in inventory.BaseModels)
                     BaseModels.Add(model);
-
+                // Only reflect active selection if a model is already active
                 SelectedModel = BaseModels.FirstOrDefault(m => m.IsActive);
-                // Update UI on UI thread safely
                 await UpdateUIAsync(() => StatusText = $"Found {BaseModels.Count} base models");
             }
             else
             {
-                var modelsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "models");
-                if (Directory.Exists(modelsPath))
+                var baseDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+                var lazarusDir = Path.Combine(baseDir, "Lazarus");
+                var modelsMain = Path.Combine(lazarusDir, "models", "main");
+                Directory.CreateDirectory(modelsMain);
+                var exts = new HashSet<string>(new[] { ".gguf", ".safetensors", ".bin", ".pth" }, System.StringComparer.OrdinalIgnoreCase);
+                foreach (var file in Directory.EnumerateFiles(modelsMain, "*.*", SearchOption.TopDirectoryOnly))
                 {
-                    foreach (var file in Directory.GetFiles(modelsPath, "*.gguf"))
+                    if (!exts.Contains(Path.GetExtension(file))) continue;
+                    var fi = new FileInfo(file);
+                    BaseModels.Add(new BaseModelDto
                     {
-                        var fileInfo = new FileInfo(file);
-                        BaseModels.Add(new BaseModelDto
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Name = Path.GetFileNameWithoutExtension(file),
-                            FileName = fileInfo.FullName,
-                            Size = $"{fileInfo.Length / (1024 * 1024)} MB",
-                            ContextLength = 4096,
-                            Architecture = "LLM",
-                            Quantization = Path.GetExtension(file).Trim('.').ToUpper(),
-                            IsActive = false
-                        });
-                    }
-                    SelectedModel = BaseModels.FirstOrDefault();
-                    // Marshal UI update to UI thread
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
-                    {
-                        StatusText = $"Found {BaseModels.Count} local models";
+                        Id = System.Guid.NewGuid().ToString(),
+                        Name = Path.GetFileNameWithoutExtension(file),
+                        FileName = fi.FullName,
+                        Size = HumanSize(fi.Length),
+                        ContextLength = 4096,
+                        Architecture = InferArchitecture(file),
+                        Quantization = InferQuantization(file),
+                        IsActive = false
                     });
                 }
-                else
-                {
-                    // Marshal UI update to UI thread
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
-                    {
-                        StatusText = "No models found";
-                    });
-                }
+                // Do not auto-select the first model. Require explicit user click.
+                SelectedModel = null;
+                await UpdateUIAsync(() => StatusText = BaseModels.Count > 0 ? $"Found {BaseModels.Count} local models" : "No models found");
             }
-        }
-        catch (Exception ex)
-        {
-            // Update UI on UI thread safely
-            await UpdateUIAsync(() => StatusText = $"Error: {ex.Message}");
+
+            // Reflect into filtered view
+            ApplyFilterAndSort();
+            EnsureWatcher();
+
+            // Sync selection from global state
+            if (_globalState.CurrentModel != null)
+            {
+                UpdateActiveFromGlobal(_globalState.CurrentModel);
+                if (!string.IsNullOrWhiteSpace(_globalState.CurrentModel.InferenceEngine))
+                    SelectedRunner = _globalState.CurrentModel.InferenceEngine;
+            }
         }
         finally
         {
@@ -376,8 +450,36 @@ public class BaseModelViewModel : INotifyPropertyChanged
 
     public async Task InitializeAsync()
     {
-        // Initialize the ViewModel after orchestrator is ready
         await LoadModelsAsync();
+    }
+
+    private void UpdateActiveFromGlobal(GlobalModelInfo info)
+    {
+        try
+        {
+            if (info == null) return;
+            var match = BaseModels.FirstOrDefault(m =>
+                (!string.IsNullOrWhiteSpace(m.FileName) && string.Equals(m.FileName, info.FilePath, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrWhiteSpace(m.Name) && string.Equals(m.Name, info.Name, StringComparison.OrdinalIgnoreCase)));
+            foreach (var m in BaseModels) m.IsActive = false;
+            if (match != null)
+            {
+                match.IsActive = true;
+                SelectedModel = match;
+                StatusText = $"Active: {match.Name}";
+                OnPropertyChanged(nameof(IsModelLoaded));
+            }
+        }
+        catch { }
+    }
+
+    private void ClearActiveSelection()
+    {
+        foreach (var m in BaseModels) m.IsActive = false;
+        // Do not auto-select after unload
+        SelectedModel = null;
+        StatusText = "Ready";
+        OnPropertyChanged(nameof(IsModelLoaded));
     }
 
     private async Task LoadModelAsync(BaseModelDto model)
@@ -389,6 +491,9 @@ public class BaseModelViewModel : INotifyPropertyChanged
             // Update UI on UI thread safely
             await UpdateUIAsync(() => StatusText = $"Loading {model.Name}...");
 
+            // Update global state -> Loading
+            _globalState.SetLoading(model.Name, SelectedRunner);
+
             var success = await ApiClient.LoadModelAsync(model.FileName, model.Name);
             if (success)
             {
@@ -398,20 +503,63 @@ public class BaseModelViewModel : INotifyPropertyChanged
                 SelectedModel = model;
                 // Update UI on UI thread safely
                 await UpdateUIAsync(() => StatusText = $"Loaded {model.Name}");
+                OnPropertyChanged(nameof(IsModelLoaded));
+                try { System.Windows.Input.CommandManager.InvalidateRequerySuggested(); } catch { }
 
                 // Load the model's parameter capabilities
                 await LoadModelParametersAsync();
+
+                // Publish to global state
+                _globalState.SetLoaded(new GlobalModelInfo
+                {
+                    Name = model.Name,
+                    FilePath = model.FileName ?? string.Empty,
+                    Size = model.Size ?? string.Empty,
+                    InferenceEngine = SelectedRunner,
+                    ContextLength = model.ContextLength
+                });
             }
             else
             {
                 // Update UI on UI thread safely
                 await UpdateUIAsync(() => StatusText = $"Failed to load {model.Name}");
+                _globalState.SetError($"Failed to load {model.Name}");
             }
         }
         catch (Exception ex)
         {
             // Update UI on UI thread safely
             await UpdateUIAsync(() => StatusText = $"Error loading model: {ex.Message}");
+            _globalState.SetError(ex.Message);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task UnloadModelAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            await UpdateUIAsync(() => StatusText = "Unloading model...");
+            var result = await ApiClient.UnloadModelAsync();
+            if (result)
+            {
+                _globalState.SetUnloaded();
+                ClearActiveSelection();
+                await UpdateUIAsync(() => StatusText = "Model unloaded");
+                try { System.Windows.Input.CommandManager.InvalidateRequerySuggested(); } catch { }
+            }
+            else
+            {
+                await UpdateUIAsync(() => StatusText = "Failed to unload model");
+            }
+        }
+        catch (Exception ex)
+        {
+            await UpdateUIAsync(() => StatusText = $"Error unloading model: {ex.Message}");
         }
         finally
         {
@@ -648,6 +796,100 @@ public class BaseModelViewModel : INotifyPropertyChanged
         {
             OnPropertyChanged(prop);
         }
+    }
+
+    private void ApplyFilterAndSort()
+    {
+        var q = BaseModels.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(SearchFilter))
+        {
+            var term = SearchFilter.Trim();
+            q = q.Where(m => m.Name?.IndexOf(term, System.StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+        q = SelectedSortOption switch
+        {
+            "Size" => q.OrderByDescending(m => ParseSizeBytes(m.Size)),
+            "Date Added" => q, // TODO: keep arrival time; default unchanged
+            _ => q.OrderBy(m => m.Name)
+        };
+
+        FilteredModels.Clear();
+        foreach (var m in q)
+        {
+            m.IsSelected = SelectedModel != null && ReferenceEquals(m, SelectedModel);
+            FilteredModels.Add(m);
+        }
+    }
+
+    private void SelectModel(BaseModelDto? model)
+    {
+        if (model == null) return;
+        SelectedModel = model;
+    }
+
+    private static string HumanSize(long bytes)
+    {
+        double size = bytes;
+        string[] units = { "B", "KB", "MB", "GB", "TB" };
+        int unit = 0;
+        while (size >= 1024 && unit < units.Length - 1) { size /= 1024; unit++; }
+        return $"{size:F1} {units[unit]}";
+    }
+
+    private static long ParseSizeBytes(string size)
+    {
+        if (string.IsNullOrWhiteSpace(size)) return 0;
+        var parts = size.Split(' ');
+        if (parts.Length != 2) return 0;
+        if (!double.TryParse(parts[0], out var v)) return 0;
+        var unit = parts[1].ToUpperInvariant();
+        return unit switch
+        {
+            "TB" => (long)(v * 1024L * 1024L * 1024L * 1024L),
+            "GB" => (long)(v * 1024L * 1024L * 1024L),
+            "MB" => (long)(v * 1024L * 1024L),
+            "KB" => (long)(v * 1024L),
+            _ => (long)v
+        };
+    }
+
+    private static string InferArchitecture(string file)
+    {
+        var name = Path.GetFileNameWithoutExtension(file).ToLowerInvariant();
+        if (name.Contains("mistral")) return "Mistral";
+        if (name.Contains("llama")) return "Llama";
+        return "LLM";
+    }
+
+    private static string InferQuantization(string file)
+    {
+        var ext = Path.GetExtension(file).Trim('.');
+        if (!string.IsNullOrEmpty(ext)) return ext.ToUpperInvariant();
+        return "";
+    }
+
+    private void EnsureWatcher()
+    {
+        _watcher?.Dispose();
+        try
+        {
+            var baseDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+            var lazarusDir = Path.Combine(baseDir, "Lazarus");
+            var modelsMain = Path.Combine(lazarusDir, "models", "main");
+            Directory.CreateDirectory(modelsMain);
+            _watcher = new FileSystemWatcher(modelsMain)
+            {
+                IncludeSubdirectories = false,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.CreationTime | NotifyFilters.LastWrite,
+                Filter = "*.*",
+                EnableRaisingEvents = true
+            };
+            _watcher.Created += (_, __) => _debounceTimer.Start();
+            _watcher.Deleted += (_, __) => _debounceTimer.Start();
+            _watcher.Renamed += (_, __) => _debounceTimer.Start();
+            _watcher.Changed += (_, __) => _debounceTimer.Start();
+        }
+        catch { }
     }
 
     #endregion

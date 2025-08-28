@@ -123,6 +123,18 @@ namespace Lazarus.Desktop.Converters
             => throw new NotSupportedException();
     }
 
+    // Returns true when value != null, false otherwise (for IsEnabled bindings)
+    public sealed class NullToBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value != null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
     public sealed class BooleanToAlignmentConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -347,6 +359,25 @@ namespace Lazarus.Desktop.Converters
             var isSpeaking = value is bool b && b;
             var resourceKey = isSpeaking ? "ErrorBrush" : "AccentRedBrush";
             return Application.Current.FindResource(resourceKey);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class StringToColor : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            try
+            {
+                if (value is string hex)
+                {
+                    return (Color)ColorConverter.ConvertFromString(hex);
+                }
+            }
+            catch { }
+            return Colors.Gray;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

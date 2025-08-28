@@ -190,7 +190,13 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         // Subscribe to service changes
         _preferencesService.PropertyChanged += OnPreferencesServicePropertyChanged;
         _navigationService.PropertyChanged += OnNavigationPropertyChanged;
-        
+        // Ensure mode label updates regardless of where the change originated
+        UserPreferencesService.ViewModeChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(CurrentViewMode));
+            OnPropertyChanged(nameof(CurrentViewModeDisplay));
+        };
+         
         // Initialize navigation commands
         NavigateToDashboardCommand = new RelayCommand(_ => Navigation.NavigateTo(NavigationTab.Dashboard));
         NavigateToConversationsCommand = new RelayCommand(_ => Navigation.NavigateTo(NavigationTab.Conversations));
@@ -259,6 +265,11 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         get => _preferencesService.CurrentViewMode;
         set => _preferencesService.CurrentViewMode = value;
     }
+
+    /// <summary>
+    /// User-friendly current view mode display
+    /// </summary>
+    public string CurrentViewModeDisplay => _preferencesService.CurrentViewModeDisplay;
 
     /// <summary>
     /// Current visual theme
@@ -361,6 +372,7 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (e.PropertyName == nameof(UserPreferencesService.CurrentViewMode))
         {
             OnPropertyChanged(nameof(CurrentViewMode));
+            OnPropertyChanged(nameof(CurrentViewModeDisplay));
         }
         else if (e.PropertyName == nameof(UserPreferencesService.CurrentTheme))
         {

@@ -2876,4 +2876,105 @@
         </Border>
     </DataTemplate>
     
+    <!-- Novice Chat Toolbar Template -->
+    <DataTemplate x:Key="ChatToolbarTemplate">
+        <DockPanel LastChildFill="True" Margin="0,0,0,8">
+            <!-- Tabs placeholder -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <TextBlock Text="Conversations" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <!-- Search -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <TextBlock Text="Search:" Style="{StaticResource CaptionTextStyle}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <TextBox Width="200" Margin="6,0,0,0" Style="{StaticResource DarkTextBoxStyle}"/>
+            </StackPanel>
+        </DockPanel>
+    </DataTemplate>
+
+    <!-- Novice Chat Input Template -->
+    <DataTemplate x:Key="ChatInputTemplate">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0"
+                     Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource DarkTextBoxMultilineStyle}"
+                     MinHeight="40"
+                     MaxHeight="140"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     Margin="0,0,8,0"/>
+            <Button Grid.Column="1"
+                    Content="Send"
+                    Command="{Binding SendCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding CanSend}"/>
+        </Grid>
+    </DataTemplate>
+
+    <!-- BaseModel Template - Novice Mode: simple large cards -->
+    <DataTemplate x:Key="BaseModelTemplate">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+            <StackPanel>
+                <!-- First Control: Model Selection -->
+                <TextBlock Text="Select Base Model" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                <ComboBox ItemsSource="{Binding FilteredModels}" SelectedItem="{Binding SelectedModel}" Style="{DynamicResource DarkComboBoxStyle}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding Name}"/>
+                                <Run Text=" ("/>
+                                <Run Text="{Binding Size}"/>
+                                <Run Text=")"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                
+                <!-- Second Control: Runner Selection -->
+                <TextBlock Text="Inference Engine" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4"/>
+                <ComboBox SelectedItem="{Binding SelectedRunner}" Style="{DynamicResource DarkComboBoxStyle}">
+                    <ComboBoxItem>llama.cpp</ComboBoxItem>
+                    <ComboBoxItem>vLLM</ComboBoxItem>
+                    <ComboBoxItem>ExLlamaV2</ComboBoxItem>
+                </ComboBox>
+                
+                <!-- Cards Grid (optional, below controls) -->
+                <ItemsControl ItemsSource="{Binding FilteredModels}" Margin="0,16,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel IsItemsHost="True" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource SecondaryDarkBrush}" 
+                                    BorderBrush="{DynamicResource BorderBrush}" 
+                                    BorderThickness="1" CornerRadius="10" 
+                                    Width="260" Height="180" Margin="8">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="16" FontWeight="SemiBold" Margin="12,10,12,4" TextTrimming="CharacterEllipsis"/>
+                                    <StackPanel Grid.Row="1" Margin="12,4,12,4">
+                                        <TextBlock Text="{Binding Size}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="12,0,12,12">
+                                        <Button Content="Load Model" Command="{Binding DataContext.LoadModelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PrimaryButtonStyle}"/>
+                                        <Button Content="Unload" Command="{Binding DataContext.UnloadModelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
 </ResourceDictionary>

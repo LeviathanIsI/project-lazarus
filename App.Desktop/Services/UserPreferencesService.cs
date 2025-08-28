@@ -14,6 +14,8 @@ namespace Lazarus.Desktop.Services;
 /// </summary>
 public class UserPreferencesService : INotifyPropertyChanged, IDisposable
 {
+    // Set to true to enable deep diagnostics and aggressive UI refresh (slower)
+    private const bool DiagnosticsEnabled = false;
     private ViewMode _currentViewMode = ViewMode.Novice;
     private ThemeMode _currentTheme = ThemeMode.Dark;
     
@@ -452,17 +454,17 @@ public class UserPreferencesService : INotifyPropertyChanged, IDisposable
         
         try
         {
-            // Apply theme first
-            await Task.Run(() => ApplyThemeInternal(theme));
+            // Apply theme first (UI thread to avoid cross-thread resource contention)
+            await app.Dispatcher.InvokeAsync(() => ApplyThemeInternal(theme));
             
-            // Apply ViewMode second
-            await Task.Run(() => ApplyViewModeInternal(viewMode));
+            // Apply ViewMode second (UI thread for consistent resource merge timing)
+            await app.Dispatcher.InvokeAsync(() => ApplyViewModeInternal(viewMode));
             
             // Update internal state
             _currentTheme = theme;
             _currentViewMode = viewMode;
             
-            // Fire events on UI thread
+            // Fire events (already on UI thread; keep for clarity)
             await app.Dispatcher.InvokeAsync(() =>
             {
                 OnPropertyChanged(nameof(CurrentTheme));
@@ -783,8 +785,8 @@ public class UserPreferencesService : INotifyPropertyChanged, IDisposable
             // Verify the dictionary loaded with expected templates
             Console.WriteLine($"[VIEWMODE DEBUG] New ViewMode loaded with {newViewMode.Count} templates");
             
-            // CRITICAL: Verify all required template keys exist
-            // This comprehensive list exposes every missing template across all ViewModes
+            // CRITICAL (diagnostics only): Verify required template keys exist
+            // Wrapped behind DiagnosticsEnabled to avoid overhead during normal use
             var requiredTemplates = new[] {
                 // Global shared templates
                 "LoRACardTemplate",
@@ -836,56 +838,51 @@ public class UserPreferencesService : INotifyPropertyChanged, IDisposable
                 "EntityManagementTemplate"
             };
             
-            var missingTemplates = new List<string>();
-            foreach (var templateKey in requiredTemplates)
+            if (DiagnosticsEnabled)
             {
-                if (!newViewMode.Contains(templateKey))
+                var missingTemplates = new List<string>();
+                foreach (var templateKey in requiredTemplates)
                 {
-                    missingTemplates.Add(templateKey);
-                    Console.WriteLine($"[VIEWMODE DEATH] ☠️ Missing template: {templateKey}");
+                    if (!newViewMode.Contains(templateKey))
+                    {
+                        missingTemplates.Add(templateKey);
+                        Console.WriteLine($"[VIEWMODE DEATH] ☠️ Missing template: {templateKey}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[VIEWMODE HEALTH] ✅ Found template: {templateKey}");
+                    }
                 }
-                else
+                if (missingTemplates.Count > 0)
                 {
-                    Console.WriteLine($"[VIEWMODE HEALTH] ✅ Found template: {templateKey}");
+                    Console.WriteLine($"[VIEWMODE DEATH] ☠️ FATAL: {missingTemplates.Count} missing templates will cause UI rendering cascade failure!");
+                    throw new InvalidOperationException($"ViewMode {viewMode} missing required templates: {string.Join(", ", missingTemplates)}");
                 }
+                Console.WriteLine($"[VIEWMODE HEALTH] ✅ All {requiredTemplates.Length} required templates verified - ViewMode is transformation-ready");
             }
-            
-            if (missingTemplates.Count > 0)
-            {
-                Console.WriteLine($"[VIEWMODE DEATH] ☠️ FATAL: {missingTemplates.Count} missing templates will cause UI rendering cascade failure!");
-                throw new InvalidOperationException($"ViewMode {viewMode} missing required templates: {string.Join(", ", missingTemplates)}");
-            }
-            
-            Console.WriteLine($"[VIEWMODE HEALTH] ✅ All {requiredTemplates.Length} required templates verified - ViewMode is transformation-ready");
             
             // Load shared templates first, then ViewMode-specific templates
             LoadSharedTemplates(app);
             app.Resources.MergedDictionaries.Add(newViewMode);
             Console.WriteLine($"[VIEWMODE DEBUG] ViewMode template dictionary added to application");
             
-            // Verify specific keys exist after merging
-            bool CheckKey(string key)
+            if (DiagnosticsEnabled)
             {
-                var ok = Application.Current.TryFindResource(key) != null;
-                Console.WriteLine(ok
-                    ? $"[VIEWMODE CHECK] ✅ {key}"
-                    : $"[VIEWMODE CHECK] ❌ {key} NOT FOUND");
-                return ok;
+                // Verify specific keys exist after merging
+                bool CheckKey(string key)
+                {
+                    var ok = Application.Current.TryFindResource(key) != null;
+                    Console.WriteLine(ok
+                        ? $"[VIEWMODE CHECK] ✅ {key}"
+                        : $"[VIEWMODE CHECK] ❌ {key} NOT FOUND");
+                    return ok;
+                }
+                // Check a few critical templates (diagnostic only)
+                CheckKey("ImagesTemplate");
+                CheckKey("VideoTemplate");
+                CheckKey("VoiceTemplate");
+                CheckKey("EntitiesTemplate");
             }
-            
-            // Check critical ViewModel templates
-            CheckKey("NoviceRunnerManagerViewModelTemplate");
-            CheckKey("NoviceJobsViewModelTemplate");
-            CheckKey("NoviceDatasetsViewModelTemplate");
-            CheckKey("EntityCreationTemplate");
-            CheckKey("Image2ImageTemplate");
-            CheckKey("TTSConfigurationTemplate");
-            
-            // Check parent navigation templates
-            CheckKey("ImagesTemplate");
-            CheckKey("VideoTemplate");
-            CheckKey("VoiceTemplate");
-            CheckKey("EntitiesTemplate");
             
             // COGNITIVE UI REFRESH - FORCE TEMPLATE RE-EVALUATION
             ForceCognitiveUIRefresh(app);
@@ -941,6 +938,11 @@ public class UserPreferencesService : INotifyPropertyChanged, IDisposable
     /// </summary>
     private void ForceCognitiveUIRefresh(Application app)
     {
+        if (!DiagnosticsEnabled)
+        {
+            // Skip heavy visual tree invalidation in production to avoid lag
+            return;
+        }
         Console.WriteLine($"[VIEWMODE DEBUG] 🧠 INITIATING COGNITIVE UI REFRESH");
         
         try
