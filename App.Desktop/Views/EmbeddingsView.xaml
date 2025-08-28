@@ -55,10 +55,10 @@
 						<Border Grid.Column="1"
 								Background="{DynamicResource AccentRedBrush}"
 								CornerRadius="8"
-								Padding="6,2">
+								Padding="8,4">
 							<TextBlock Text="{Binding Category}"
-									   Style="{StaticResource CaptionTextStyle}"
-									   FontSize="9"
+									   Foreground="{DynamicResource ButtonTextBrush}"
+									   FontSize="10"
 									   FontWeight="Bold"/>
 						</Border>
 					</Grid>
@@ -299,7 +299,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{DynamicResource SuccessBrush}"
+							   Foreground="{DynamicResource TextSecondaryBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -385,12 +385,12 @@
 										   HorizontalAlignment="Center"
 										   Foreground="{DynamicResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
-								<TextBlock Text="No Active Embeddings"
+								<TextBlock Text="Embeddings Ready"
 										   HorizontalAlignment="Center"
 										   Style="{StaticResource BodyTextStyle}"
 										   FontSize="13"
 										   FontWeight="Medium"/>
-								<TextBlock Text="Activate embeddings to use them in generation"
+								<TextBlock Text="Click embeddings below to activate them for generation"
 										   HorizontalAlignment="Center"
 										   Style="{StaticResource CaptionTextStyle}"
 										   FontSize="11"

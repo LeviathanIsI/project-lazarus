@@ -192,15 +192,15 @@ namespace Lazarus.Desktop.ViewModels
 
         public EmbeddingsViewModel()
         {
-            RefreshCommand = new Helpers.RelayCommand(_ => _ = Task.Run(async () => await RefreshEmbeddings()));
+            RefreshCommand = new Helpers.RelayCommand(async _ => await RefreshEmbeddings());
             ActivateEmbeddingCommand = new Helpers.RelayCommand(param => ActivateEmbedding(param as EmbeddingItem));
             DeactivateEmbeddingCommand = new Helpers.RelayCommand(param => DeactivateEmbedding(param as EmbeddingItem));
-            TestEmbeddingCommand = new Helpers.RelayCommand(param => _ = Task.Run(async () => await TestEmbedding(param as EmbeddingItem)));
+            TestEmbeddingCommand = new Helpers.RelayCommand(async param => await TestEmbedding(param as EmbeddingItem));
             ClearAllCommand = new Helpers.RelayCommand(_ => ClearAllEmbeddings());
             AdjustStrengthCommand = new Helpers.RelayCommand(param => AdjustStrength(param as EmbeddingItem));
 
             InitializeCategories();
-            _ = Task.Run(LoadSampleData);
+            _ = LoadSampleDataAsync();
         }
 
         private void InitializeCategories()
@@ -215,10 +215,21 @@ namespace Lazarus.Desktop.ViewModels
             Categories.Add("Artist");
         }
 
+        private async Task LoadSampleDataAsync()
+        {
+            // UI updates must happen on UI thread
+            await System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                IsLoading = true;
+                StatusText = "Loading embeddings...";
+            });
+            
+            // Background work
+            await LoadSampleData();
+        }
+        
         private async Task LoadSampleData()
         {
-            IsLoading = true;
-            StatusText = "Loading embeddings...";
 
             try
             {
@@ -294,12 +305,17 @@ namespace Lazarus.Desktop.ViewModels
                     _allEmbeddings.Add(embedding);
                 }
 
+                            // Update UI on UI thread safely
+            await UpdateUIAsync(() =>
+            {
                 FilterEmbeddings();
                 StatusText = $"Loaded {samples.Count} embeddings";
+            });
             }
             finally
             {
-                IsLoading = false;
+                // Update UI on UI thread safely
+                await UpdateUIAsync(() => IsLoading = false);
             }
         }
 
@@ -326,7 +342,6 @@ namespace Lazarus.Desktop.ViewModels
             {
                 AvailableEmbeddings.Add(embedding);
             }
-
             OnPropertyChanged(nameof(TotalEmbeddingsCount));
         }
 
@@ -397,17 +412,24 @@ namespace Lazarus.Desktop.ViewModels
         {
             if (embedding == null) return;
 
-            IsLoading = true;
-            StatusText = $"Testing embedding: {embedding.Name}";
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() =>
+            {
+                IsLoading = true;
+                StatusText = $"Testing embedding: {embedding.Name}";
+            });
 
             try
             {
                 await Task.Delay(2000); // Simulate test
-                StatusText = $"Test completed: {embedding.Name}";
+                
+                // Update UI on UI thread safely
+                await UpdateUIAsync(() => StatusText = $"Test completed: {embedding.Name}");
             }
             finally
             {
-                IsLoading = false;
+                // Update UI on UI thread safely
+                await UpdateUIAsync(() => IsLoading = false);
             }
         }
 
@@ -425,6 +447,35 @@ namespace Lazarus.Desktop.ViewModels
             OnPropertyChanged(propertyName);
             return true;
         }
+
+        #region UI Thread Safety
+
+        /// <summary>
+        /// Safely update UI properties on the UI thread
+        /// </summary>
+        private async Task UpdateUIAsync(Action uiAction)
+        {
+            try
+            {
+                var app = System.Windows.Application.Current;
+                if (app?.Dispatcher == null) return;
+
+                if (app.Dispatcher.CheckAccess())
+                {
+                    uiAction();
+                }
+                else
+                {
+                    await app.Dispatcher.InvokeAsync(uiAction);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EmbeddingsViewModel] UI update failed: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 
 

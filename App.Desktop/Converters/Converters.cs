@@ -34,14 +34,6 @@ namespace Lazarus.Desktop.Converters
             => throw new NotSupportedException();
     }
 
-    public sealed class InvertBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is bool b ? !b : true;
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => value is bool b ? !b : false;
-    }
 
     public sealed class StringToBoolConverter : IValueConverter
     {
@@ -200,6 +192,161 @@ namespace Lazarus.Desktop.Converters
             return value is bool hasActiveLoRAs && hasActiveLoRAs 
                 ? "Model Modified by LoRAs" 
                 : "Base Model Configuration";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    // Additional converters needed for ViewMode templates
+    public sealed class BoolToActiveStatusConverter : IValueConverter
+    {
+        public static readonly BoolToActiveStatusConverter Instance = new();
+        
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool isActive && isActive ? "ACTIVE" : "IDLE";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class BoolToAppliedStatusConverter : IValueConverter
+    {
+        public static readonly BoolToAppliedStatusConverter Instance = new();
+        
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool isApplied && isApplied ? "APPLIED" : "READY";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class BoolToAccentBrushConverter : IValueConverter
+    {
+        public static readonly BoolToAccentBrushConverter Instance = new();
+        
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is bool isActive && isActive 
+                ? Application.Current.FindResource("AccentGreenBrush") 
+                : Application.Current.FindResource("TextMutedBrush");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class RoleToDisplayNameConverter : IValueConverter
+    {
+        public static readonly RoleToDisplayNameConverter Instance = new();
+        
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => (value as string) switch
+            {
+                "user" => "USER",
+                "assistant" => "ASSISTANT", 
+                "system" => "SYSTEM",
+                _ => "UNKNOWN"
+            };
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class RoleToBackgroundBrushConverter : IValueConverter
+    {
+        public static readonly RoleToBackgroundBrushConverter Instance = new();
+        
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => (value as string) switch
+            {
+                "user" => Application.Current.FindResource("TertiaryDarkBrush"),
+                "assistant" => Application.Current.FindResource("SecondaryDarkBrush"),
+                "system" => Application.Current.FindResource("PrimaryDarkBrush"),
+                _ => Application.Current.FindResource("SecondaryDarkBrush")
+            };
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    // Update existing InvertBoolConverter to have Instance property
+    public sealed class InvertBoolConverter : IValueConverter
+    {
+        public static readonly InvertBoolConverter Instance = new();
+        
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is bool b ? !b : true;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is bool b ? !b : false;
+    }
+
+    /// <summary>
+    /// Converts boolean to "Selected" tag for button states
+    /// Used for MVVM navigation button styling
+    /// </summary>
+    public sealed class BoolToSelectedTagConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolValue && boolValue)
+                return "Selected";
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// Forensic visibility converter to track binding changes during navigation debugging
+    /// </summary>
+    public sealed class ForensicVisibilityConverter : IValueConverter
+    {
+        public ForensicVisibilityConverter()
+        {
+            Console.WriteLine("[ForensicVisibilityConverter] FORENSICS: Constructor called - Converter initialized");
+        }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var parameterName = parameter?.ToString() ?? "UNKNOWN";
+            var boolValue = value is bool b && b;
+            var visibility = boolValue ? Visibility.Visible : Visibility.Collapsed;
+            
+            Console.WriteLine($"[ForensicVisibilityConverter] FORENSICS: {parameterName} - Input: {value} ({value?.GetType().Name}) -> Boolean: {boolValue} -> Visibility: {visibility}");
+            
+            return visibility;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class SpeakingToText : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var isSpeaking = value is bool b && b;
+            return isSpeaking ? "Stop Talking" : "Start Talking";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    public sealed class SpeakingToBrush : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var isSpeaking = value is bool b && b;
+            var resourceKey = isSpeaking ? "ErrorBrush" : "AccentRedBrush";
+            return Application.Current.FindResource(resourceKey);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

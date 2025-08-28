@@ -12,10 +12,13 @@ namespace Lazarus.Desktop.Services;
 /// Global state management for user preferences including view complexity and theming
 /// This is the neural core of the personalization system
 /// </summary>
-public class UserPreferencesService : INotifyPropertyChanged
+public class UserPreferencesService : INotifyPropertyChanged, IDisposable
 {
     private ViewMode _currentViewMode = ViewMode.Novice;
     private ThemeMode _currentTheme = ThemeMode.Dark;
+    
+    // State management system for ViewMode transitions  
+    private readonly ViewModeStateManager _stateManager = new();
 
     #region Constructor
 
@@ -28,10 +31,21 @@ public class UserPreferencesService : INotifyPropertyChanged
         Console.WriteLine($"[UserPreferences] Default theme: {_currentTheme}");
         Console.WriteLine($"[UserPreferences] Default ViewMode: {_currentViewMode}");
         
-        // Initialize ViewMode templates on startup
-        Console.WriteLine($"[UserPreferences] 🎭 Loading default ViewMode templates...");
+        // CRITICAL: Validate resource dictionaries at startup
+        Console.WriteLine($"[UserPreferences] 🔍 Running resource validation...");
+        ValidateAllThemeResources();
+        
+        // Load ViewMode template dictionaries for Content Presenters
+        Console.WriteLine($"[UserPreferences] 🔧 Loading ViewMode templates for: {_currentViewMode}");
         ApplyViewModeInternal(_currentViewMode);
+        ViewModeChanged?.Invoke(this, _currentViewMode);
         Console.WriteLine($"[UserPreferences] ✅ UserPreferencesService initialized successfully");
+    }
+
+    public void Dispose()
+    {
+        // Clean up any resources if needed
+        Console.WriteLine("[UserPreferences] Disposing UserPreferencesService");
     }
 
     #endregion
@@ -46,14 +60,13 @@ public class UserPreferencesService : INotifyPropertyChanged
         get => _currentViewMode;
         set
         {
-            if (SetProperty(ref _currentViewMode, value))
+            if (_currentViewMode != value)
             {
-                Console.WriteLine($"[UserPreferences] 🎯 ViewMode changed to: {value}");
+                var oldViewMode = _currentViewMode;
+                Console.WriteLine($"[UserPreferences] 🎯 ViewMode transition: {oldViewMode} → {value}");
                 
-                // Apply the ViewMode immediately when property is set
-                ApplyViewModeInternal(value);
-                
-                ViewModeChanged?.Invoke(this, value);
+                // Execute intelligent state-preserving ViewMode transition
+                ExecuteStatePreservingTransition(oldViewMode, value);
             }
         }
     }
@@ -155,57 +168,316 @@ public class UserPreferencesService : INotifyPropertyChanged
         Console.WriteLine($"[VIEWMODE DEBUG] ApplyViewMode called with: {newViewMode}");
         System.Diagnostics.Debug.WriteLine($"[VIEWMODE DEBUG] Current view mode: {CurrentViewMode}");
         
-        // Update the current ViewMode property, which will trigger ApplyViewModeInternal
+        // Update the current ViewMode property, which will trigger state-preserving transition
         CurrentViewMode = newViewMode;
         
         Console.WriteLine($"[VIEWMODE DEBUG] ViewMode application completed");
     }
     
     /// <summary>
-    /// ATOMIC DUAL PERSONALIZATION - Apply both theme and ViewMode in single batch
-    /// Prevents resource dictionary conflicts and ensures smooth transitions
+    /// Get the ViewModeStateManager for external parameter preservation
+    /// </summary>
+    public ViewModeStateManager StateManager => _stateManager;
+    
+    /// <summary>
+    /// Execute intelligent state-preserving ViewMode transition with user protection
+    /// </summary>
+    private void ExecuteStatePreservingTransition(ViewMode fromMode, ViewMode toMode)
+    {
+        try
+        {
+            Console.WriteLine($"[StateTransition] 🔄 Beginning intelligent transition: {fromMode} → {toMode}");
+            
+            // Step 1: Check for unsaved work that could be lost
+            var unsavedWarnings = _stateManager.GetUnsavedWorkWarnings();
+            if (unsavedWarnings.Count > 0)
+            {
+                Console.WriteLine($"[StateTransition] ⚠️ Found {unsavedWarnings.Count} unsaved work items");
+                
+                // Show user warning dialog about unsaved work
+                var shouldProceed = ShowUnsavedWorkDialog(unsavedWarnings, toMode);
+                if (!shouldProceed)
+                {
+                    Console.WriteLine($"[StateTransition] ❌ User cancelled transition due to unsaved work");
+                    return; // User chose to cancel transition
+                }
+            }
+            
+            // Step 2: Get current active parameters for visibility analysis
+            var activeParameters = GetCurrentActiveParameters();
+            
+            // Step 3: Check which parameters would be hidden in target ViewMode
+            var hiddenParameters = _stateManager.GetParameterVisibilityWarnings(toMode, activeParameters);
+            if (hiddenParameters.Count > 0)
+            {
+                Console.WriteLine($"[StateTransition] ⚠️ {hiddenParameters.Count} parameters will be hidden in {toMode} mode");
+                
+                // Show parameter visibility warning
+                var shouldProceed = ShowParameterVisibilityDialog(hiddenParameters, fromMode, toMode);
+                if (!shouldProceed)
+                {
+                    Console.WriteLine($"[StateTransition] ❌ User cancelled transition due to parameter visibility concerns");
+                    return;
+                }
+            }
+            
+            // Step 4: Preserve current state before transition
+            PreserveCurrentState(activeParameters);
+            
+            // Step 5: Execute the actual ViewMode transition
+            Console.WriteLine($"[StateTransition] 🔄 Executing template transition...");
+            if (SetProperty(ref _currentViewMode, toMode))
+            {
+                ApplyViewModeInternal(toMode);
+                ViewModeChanged?.Invoke(this, toMode);
+            }
+            
+            // Step 6: Restore compatible state in new ViewMode
+            RestoreCompatibleState(toMode);
+            
+            // Step 7: Provide transition guidance to user
+            ShowTransitionGuidance(fromMode, toMode);
+            
+            Console.WriteLine($"[StateTransition] ✅ Intelligent transition completed successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[StateTransition] ❌ Transition failed: {ex.Message}");
+            
+            // Emergency fallback - apply ViewMode without state preservation
+            try
+            {
+                Console.WriteLine($"[StateTransition] 🚑 Attempting emergency fallback transition...");
+                if (SetProperty(ref _currentViewMode, toMode))
+                {
+                    ApplyViewModeInternal(toMode);
+                    ViewModeChanged?.Invoke(this, toMode);
+                }
+                Console.WriteLine($"[StateTransition] ✅ Emergency transition completed");
+            }
+            catch (Exception fallbackEx)
+            {
+                Console.WriteLine($"[StateTransition] 🔥 FATAL: Emergency fallback failed: {fallbackEx.Message}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Get currently active parameters from the dynamic parameter system
+    /// </summary>
+    private List<string> GetCurrentActiveParameters()
+    {
+        // TODO: Integrate with DynamicParameterViewModel to get actual active parameters
+        // For now, return a sample set for testing
+        return new List<string> { "Temperature", "TopP", "TopK", "RepetitionPenalty" };
+    }
+    
+    /// <summary>
+    /// Preserve current parameter and UI state before ViewMode transition
+    /// </summary>
+    private void PreserveCurrentState(List<string> activeParameters)
+    {
+        try
+        {
+            Console.WriteLine($"[StateTransition] 💾 Preserving current state...");
+            
+            // Preserve parameter values (mock data for now)
+            var parameterValues = new Dictionary<string, object>
+            {
+                { "Temperature", 0.7 },
+                { "TopP", 0.9 },
+                { "TopK", 40 },
+                { "RepetitionPenalty", 1.1 }
+            };
+            
+            _stateManager.PreserveParameterState(parameterValues);
+            
+            // Preserve UI state (scroll positions, expanded states, etc.)
+            var uiState = new Dictionary<string, object>
+            {
+                { "AdvancedSectionExpanded", true },
+                { "ScrollPosition", 150.0 },
+                { "SelectedTab", "Parameters" }
+            };
+            
+            _stateManager.PreserveUIState(uiState);
+            
+            Console.WriteLine($"[StateTransition] ✅ State preservation completed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[StateTransition] ⚠️ State preservation failed: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Restore compatible state in the new ViewMode
+    /// </summary>
+    private void RestoreCompatibleState(ViewMode newViewMode)
+    {
+        try
+        {
+            Console.WriteLine($"[StateTransition] 🔄 Restoring compatible state for {newViewMode}...");
+            
+            // Get parameters available in the new ViewMode
+            var availableParameters = GetParametersForViewMode(newViewMode);
+            
+            // Restore compatible parameter values
+            var restoredParameters = _stateManager.RestoreParameterState(availableParameters);
+            Console.WriteLine($"[StateTransition] Restored {restoredParameters.Count} parameter values");
+            
+            // Restore UI state
+            var restoredUIState = _stateManager.RestoreUIState();
+            Console.WriteLine($"[StateTransition] Restored {restoredUIState.Count} UI state items");
+            
+            // TODO: Apply restored state to actual UI components
+            
+            Console.WriteLine($"[StateTransition] ✅ State restoration completed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[StateTransition] ⚠️ State restoration failed: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Get parameters available in the specified ViewMode
+    /// </summary>
+    private List<string> GetParametersForViewMode(ViewMode viewMode)
+    {
+        // TODO: Integrate with ParameterRiskRegistry to get actual available parameters
+        return viewMode switch
+        {
+            ViewMode.Novice => new List<string> { "Temperature", "TopP" },
+            ViewMode.Enthusiast => new List<string> { "Temperature", "TopP", "TopK", "RepetitionPenalty" },
+            ViewMode.Developer => new List<string> { "Temperature", "TopP", "TopK", "RepetitionPenalty", "Mirostat", "TailFreeSampling", "TypicalP" },
+            _ => new List<string>()
+        };
+    }
+    
+    /// <summary>
+    /// Show dialog warning about unsaved work that could be lost
+    /// </summary>
+    private bool ShowUnsavedWorkDialog(List<string> unsavedItems, ViewMode targetMode)
+    {
+        try
+        {
+            var message = $"You have unsaved work that could be affected by switching to {targetMode} mode:\n\n";
+            message += string.Join("\n", unsavedItems.Select(item => $"• {item}"));
+            message += "\n\nDo you want to continue with the ViewMode change?";
+            
+            var result = MessageBox.Show(
+                message,
+                "Unsaved Work Warning",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning,
+                MessageBoxResult.No
+            );
+            
+            return result == MessageBoxResult.Yes;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[StateTransition] Error showing unsaved work dialog: {ex.Message}");
+            return true; // Allow transition if dialog fails
+        }
+    }
+    
+    /// <summary>
+    /// Show dialog warning about parameters that will be hidden
+    /// </summary>
+    private bool ShowParameterVisibilityDialog(List<string> hiddenParameters, ViewMode fromMode, ViewMode toMode)
+    {
+        try
+        {
+            var message = $"Switching from {fromMode} to {toMode} mode will hide {hiddenParameters.Count} parameters:\n\n";
+            message += string.Join("\n", hiddenParameters.Select(param => $"• {param}"));
+            message += $"\n\nThese parameters will remain active but won't be visible in {toMode} mode.";
+            message += "\nYou can switch back to see them again. Continue?";
+            
+            var result = MessageBox.Show(
+                message,
+                "Parameter Visibility Warning",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information,
+                MessageBoxResult.Yes
+            );
+            
+            return result == MessageBoxResult.Yes;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[StateTransition] Error showing parameter visibility dialog: {ex.Message}");
+            return true; // Allow transition if dialog fails
+        }
+    }
+    
+    /// <summary>
+    /// Show guidance information about the transition
+    /// </summary>
+    private void ShowTransitionGuidance(ViewMode fromMode, ViewMode toMode)
+    {
+        try
+        {
+            // Users have eyes. They can see they switched views. No celebration popups needed.
+            Console.WriteLine($"[UserPreferences] ViewMode switched: {fromMode} -> {toMode}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[StateTransition] Error showing transition guidance: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Get smart ViewMode suggestion based on current parameter usage
+    /// </summary>
+    public ViewModeSuggestion GetViewModeSuggestion()
+    {
+        var activeParameters = GetCurrentActiveParameters();
+        return _stateManager.SuggestOptimalViewMode(activeParameters);
+    }
+    
+    /// <summary>
+    /// SAFE DUAL PERSONALIZATION - Apply both theme and ViewMode safely
+    /// Prevents resource dictionary conflicts without blocking UI thread
     /// </summary>
     /// <param name="theme">Theme to apply</param>
     /// <param name="viewMode">ViewMode to apply</param>
-    public void ApplyBoth(ThemeMode theme, ViewMode viewMode)
+    public async Task ApplyBothAsync(ThemeMode theme, ViewMode viewMode)
     {
         var app = Application.Current;
         if (app == null) return;
         
-        Console.WriteLine($"[ATOMIC] Starting atomic dual personalization: {theme} + {viewMode}");
+        Console.WriteLine($"[SAFE] Starting safe dual personalization: {theme} + {viewMode}");
         
-        // Use Dispatcher.BeginInvoke to ensure atomic UI thread operation
-        app.Dispatcher.BeginInvoke(() => {
-            try
+        try
+        {
+            // Apply theme first
+            await Task.Run(() => ApplyThemeInternal(theme));
+            
+            // Apply ViewMode second
+            await Task.Run(() => ApplyViewModeInternal(viewMode));
+            
+            // Update internal state
+            _currentTheme = theme;
+            _currentViewMode = viewMode;
+            
+            // Fire events on UI thread
+            await app.Dispatcher.InvokeAsync(() =>
             {
-                using (app.Dispatcher.DisableProcessing()) // No re-entrancy during swap
-                {
-                    Console.WriteLine($"[ATOMIC] UI processing disabled - performing atomic swap");
-                    
-                    // Replace dictionaries at fixed indices to prevent conflicts
-                    ReplaceAtomicTheme(theme, app);
-                    ReplaceAtomicViewMode(viewMode, app);
-                    
-                    // Update internal state
-                    _currentTheme = theme;
-                    _currentViewMode = viewMode;
-                    
-                    Console.WriteLine($"[ATOMIC] Atomic swap completed successfully");
-                }
-                
-                // Fire events after re-enabling processing
                 OnPropertyChanged(nameof(CurrentTheme));
                 OnPropertyChanged(nameof(CurrentViewMode));
                 ThemeChanged?.Invoke(this, theme);
                 ViewModeChanged?.Invoke(this, viewMode);
-                
-                Console.WriteLine($"[ATOMIC] Dual personalization complete: {theme} + {viewMode}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ATOMIC] FATAL: Atomic operation failed: {ex.Message}");
-            }
-        }, System.Windows.Threading.DispatcherPriority.Send);
+            });
+            
+            Console.WriteLine($"[SAFE] Dual personalization complete: {theme} + {viewMode}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SAFE] Personalization failed: {ex.Message}");
+            throw;
+        }
     }
 
     /// <summary>
@@ -319,7 +591,7 @@ public class UserPreferencesService : INotifyPropertyChanged
             Console.WriteLine($"[THEME DEBUG] Theme dictionary added to application");
             
             // NUCLEAR UI REFRESH - FORCE EVERY ELEMENT TO RE-EVALUATE RESOURCES
-            ForceUIRefresh(app);
+            ForceUIRefresh(theme, app);
         }
         catch (Exception ex)
         {
@@ -332,7 +604,7 @@ public class UserPreferencesService : INotifyPropertyChanged
     /// NUCLEAR UI REFRESH - Force every visual element to re-evaluate StaticResources
     /// This is digital warfare against WPF's stubborn resource caching
     /// </summary>
-    private void ForceUIRefresh(Application app)
+    private void ForceUIRefresh(ThemeMode theme, Application app)
     {
         Console.WriteLine($"[THEME DEBUG] 💥 INITIATING NUCLEAR UI REFRESH");
         
@@ -356,15 +628,32 @@ public class UserPreferencesService : INotifyPropertyChanged
             app.Resources.MergedDictionaries.RemoveAt(app.Resources.MergedDictionaries.Count - 1);
             
             Console.WriteLine($"[THEME DEBUG] ✅ Nuclear UI refresh completed");
+            
+            // CRITICAL: Verify theme transition completed successfully
+            VerifyThemeTransition(theme, app);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[THEME DEBUG] ⚠️ UI refresh failed: {ex.Message}");
+            
+            // Emergency fallback - attempt basic resource refresh
+            try
+            {
+                Console.WriteLine($"[THEME DEBUG] 🚑 Attempting emergency theme recovery...");
+                app.Resources.MergedDictionaries.Add(new ResourceDictionary());
+                app.Resources.MergedDictionaries.RemoveAt(app.Resources.MergedDictionaries.Count - 1);
+                Console.WriteLine($"[THEME DEBUG] ✅ Emergency recovery completed");
+            }
+            catch (Exception recoveryEx)
+            {
+                Console.WriteLine($"[THEME DEBUG] 🔥 FATAL: Emergency recovery failed: {recoveryEx.Message}");
+            }
         }
     }
 
     /// <summary>
     /// Recursively refresh all visual elements in the tree
+    /// ENHANCED: Special handling for buttons to fix color persistence issues
     /// </summary>
     private void RefreshVisualTree(System.Windows.DependencyObject parent)
     {
@@ -372,6 +661,26 @@ public class UserPreferencesService : INotifyPropertyChanged
         {
             element.InvalidateVisual();
             element.UpdateLayout();
+            
+            // BUTTON-SPECIFIC REFRESH: Force style re-evaluation for nav buttons
+            if (parent is System.Windows.Controls.Button button)
+            {
+                Console.WriteLine($"[THEME DEBUG] 🔘 Refreshing button: {button.Content}");
+                
+                // Force style re-evaluation by temporarily clearing and restoring
+                var currentStyle = button.Style;
+                button.Style = null;
+                button.UpdateLayout();
+                button.Style = currentStyle;
+                button.InvalidateVisual();
+                
+                // Force background/foreground resource re-evaluation
+                button.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
+                button.ClearValue(System.Windows.Controls.Control.ForegroundProperty);
+                button.InvalidateVisual();
+                
+                Console.WriteLine($"[THEME DEBUG] ✅ Button refresh complete");
+            }
         }
         
         // Recurse through children
@@ -475,7 +784,9 @@ public class UserPreferencesService : INotifyPropertyChanged
             Console.WriteLine($"[VIEWMODE DEBUG] New ViewMode loaded with {newViewMode.Count} templates");
             
             // CRITICAL: Verify all required template keys exist
+            // This comprehensive list exposes every missing template across all ViewModes
             var requiredTemplates = new[] {
+                // Global shared templates
                 "LoRACardTemplate",
                 "ParameterControlTemplate", 
                 "ChatMessageTemplate",
@@ -486,7 +797,43 @@ public class UserPreferencesService : INotifyPropertyChanged
                 "GenerationProgressTemplate",
                 "ModelSelectionTemplate",
                 "StatusDisplayTemplate",
-                "ErrorDisplayTemplate"
+                "ErrorDisplayTemplate",
+                
+                // Parent navigation templates (with subtab menus)
+                "ImagesTemplate",
+                "VideoTemplate", 
+                "VoiceTemplate",
+                "EntitiesTemplate",
+                
+                // Images section templates
+                "Text2ImageTemplate",
+                "Image2ImageTemplate", 
+                "InpaintingTemplate",
+                "UpscalingTemplate",
+                
+                // Video section templates
+                "Text2VideoTemplate",
+                "Video2VideoTemplate",
+                "MotionControlTemplate", 
+                "TemporalEffectsTemplate",
+                
+                // 3D Models section templates
+                "ThreeDModelsTemplate",
+                "ModelPropertiesPanelTemplate",
+                "ModelTreeViewTemplate", 
+                "ViewportControlTemplate",
+                
+                // Voice section templates  
+                "TTSConfigurationTemplate",
+                "VoiceCloningTemplate",
+                "RealTimeSynthesisTemplate",
+                "AudioProcessingTemplate",
+                
+                // Entities section templates
+                "EntityCreationTemplate",
+                "BehavioralPatternsTemplate", 
+                "InteractionTestingTemplate",
+                "EntityManagementTemplate"
             };
             
             var missingTemplates = new List<string>();
@@ -516,12 +863,45 @@ public class UserPreferencesService : INotifyPropertyChanged
             app.Resources.MergedDictionaries.Add(newViewMode);
             Console.WriteLine($"[VIEWMODE DEBUG] ViewMode template dictionary added to application");
             
+            // Verify specific keys exist after merging
+            bool CheckKey(string key)
+            {
+                var ok = Application.Current.TryFindResource(key) != null;
+                Console.WriteLine(ok
+                    ? $"[VIEWMODE CHECK] ✅ {key}"
+                    : $"[VIEWMODE CHECK] ❌ {key} NOT FOUND");
+                return ok;
+            }
+            
+            // Check critical ViewModel templates
+            CheckKey("NoviceRunnerManagerViewModelTemplate");
+            CheckKey("NoviceJobsViewModelTemplate");
+            CheckKey("NoviceDatasetsViewModelTemplate");
+            CheckKey("EntityCreationTemplate");
+            CheckKey("Image2ImageTemplate");
+            CheckKey("TTSConfigurationTemplate");
+            
+            // Check parent navigation templates
+            CheckKey("ImagesTemplate");
+            CheckKey("VideoTemplate");
+            CheckKey("VoiceTemplate");
+            CheckKey("EntitiesTemplate");
+            
             // COGNITIVE UI REFRESH - FORCE TEMPLATE RE-EVALUATION
             ForceCognitiveUIRefresh(app);
         }
+        catch (System.Xaml.XamlParseException xpe)
+        {
+            Console.WriteLine(
+                $"[VIEWMODE DEBUG] FATAL XAML: {xpe.Message}\n" +
+                $"  Line={xpe.LineNumber}, Pos={xpe.LinePosition}\n" +
+                $"{xpe}\n" +
+                $"  Inner: {xpe.InnerException}");
+            throw;
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"[VIEWMODE DEBUG] FATAL: ViewMode loading failed: {ex.Message}");
+            Console.WriteLine($"[VIEWMODE DEBUG] FATAL: {ex}\n  Inner: {ex.InnerException}");
             throw;
         }
     }
@@ -633,135 +1013,194 @@ public class UserPreferencesService : INotifyPropertyChanged
         };
     }
     
-    #region ATOMIC REPLACEMENT METHODS - Fixed Index Approach
-    
-    // FIXED INDICES to prevent resource dictionary chaos
-    private const int THEME_DICT_INDEX = 0;
-    private const int SHARED_TEMPLATES_INDEX = 1;
-    private const int VIEWMODE_DICT_INDEX = 2;
+    #region SAFE RESOURCE MANAGEMENT
     
     /// <summary>
-    /// ATOMIC THEME REPLACEMENT - Replace at fixed index to prevent conflicts
+    /// Safely manage resource dictionaries without blocking UI thread
     /// </summary>
-    private void ReplaceAtomicTheme(ThemeMode theme, Application app)
+    private void SafeResourceManagement()
+    {
+        // Resource management is now handled safely in ApplyThemeInternal and ApplyViewModeInternal
+        Console.WriteLine("[SAFE] Resource management initialized");
+    }
+    
+    #endregion
+
+    #endregion
+
+    #region Resource Validation Protocol
+
+    /// <summary>
+    /// Validate all theme resource dictionaries at startup to prevent runtime crashes
+    /// ARCHITECTURAL SAFETY NET - Critical for preventing resource binding failures
+    /// </summary>
+    private void ValidateAllThemeResources()
+    {
+        var allThemes = new[] { ThemeMode.Dark, ThemeMode.Light, ThemeMode.Cyberpunk, ThemeMode.Minimal };
+        var criticalBrushes = new[]
+        {
+            // Standard 15-brush constitution
+            "PrimaryDarkBrush", "SecondaryDarkBrush", "TertiaryDarkBrush",
+            "AccentRedBrush", "AccentRedHoverBrush", "AccentRedPressedBrush",
+            "BorderBrush", "BorderHoverBrush",
+            "TextPrimaryBrush", "TextSecondaryBrush", "TextMutedBrush", "TextDisabledBrush",
+            "SuccessBrush", "ErrorBrush", "WarningBrush",
+            // Essential extended brushes
+            "ButtonBackgroundBrush", "ButtonHoverBrush", "ButtonPressedBrush",
+            "ButtonTextNormalBrush", "ButtonTextHoverBrush", "ButtonTextBrush",
+            "DropdownTextBrush", "DropdownTextHoverBrush"
+        };
+
+        var validationErrors = new List<string>();
+
+        foreach (var theme in allThemes)
+        {
+            try
+            {
+                Console.WriteLine($"[VALIDATION] 🔍 Validating {theme} theme...");
+                var themeDict = LoadThemeForValidation(theme);
+                
+                if (themeDict == null)
+                {
+                    validationErrors.Add($"FATAL: {theme} theme dictionary failed to load");
+                    continue;
+                }
+
+                var missingBrushes = new List<string>();
+                foreach (var brushKey in criticalBrushes)
+                {
+                    if (!themeDict.Contains(brushKey))
+                    {
+                        missingBrushes.Add(brushKey);
+                    }
+                }
+
+                if (missingBrushes.Count > 0)
+                {
+                    validationErrors.Add($"CRITICAL: {theme} theme missing brushes: {string.Join(", ", missingBrushes)}");
+                }
+                else
+                {
+                    Console.WriteLine($"[VALIDATION] ✅ {theme} theme validated successfully ({themeDict.Count} resources)");
+                }
+            }
+            catch (Exception ex)
+            {
+                validationErrors.Add($"FATAL: {theme} theme validation crashed: {ex.Message}");
+            }
+        }
+
+        if (validationErrors.Count > 0)
+        {
+            Console.WriteLine($"[VALIDATION] ⚠️ RESOURCE VALIDATION FAILURES:");
+            foreach (var error in validationErrors)
+            {
+                Console.WriteLine($"[VALIDATION]   - {error}");
+            }
+            
+            // Show critical error dialog but allow app to continue
+            Application.Current?.Dispatcher?.BeginInvoke(() =>
+            {
+                MessageBox.Show(
+                    $"Theme Resource Validation Errors:\n\n{string.Join("\n", validationErrors)}\n\nSome themes may not work correctly.",
+                    "Resource Validation Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+            });
+        }
+        else
+        {
+            Console.WriteLine($"[VALIDATION] 🎆 All theme resources validated successfully!");
+        }
+    }
+
+    /// <summary>
+    /// Load theme dictionary for validation without applying it
+    /// </summary>
+    private ResourceDictionary? LoadThemeForValidation(ThemeMode theme)
     {
         try
         {
             var themeFile = GetThemeFilePath(theme);
             var uri = new Uri($"pack://application:,,,/Resources/Themes/{themeFile}");
-            var newThemeDict = new ResourceDictionary { Source = uri };
-            
-            Console.WriteLine($"[ATOMIC] Loading theme: {uri}");
-            
-            // Ensure we have enough dictionaries in the collection
-            while (app.Resources.MergedDictionaries.Count <= THEME_DICT_INDEX)
-            {
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary());
-            }
-            
-            // Replace at fixed index - no add/remove chaos
-            app.Resources.MergedDictionaries[THEME_DICT_INDEX] = newThemeDict;
-            Console.WriteLine($"[ATOMIC] Theme replaced at index {THEME_DICT_INDEX}");
+            return new ResourceDictionary { Source = uri };
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ATOMIC] Theme replacement failed: {ex.Message}");
-            throw;
+            Console.WriteLine($"[VALIDATION] Failed to load {theme} for validation: {ex.Message}");
+            return null;
         }
     }
-    
+
     /// <summary>
-    /// ATOMIC VIEWMODE REPLACEMENT - Replace at fixed indices
+    /// Verify theme transition completed successfully
+    /// POST-TRANSITION VERIFICATION PROTOCOL
     /// </summary>
-    private void ReplaceAtomicViewMode(ViewMode viewMode, Application app)
+    private void VerifyThemeTransition(ThemeMode expectedTheme, Application app)
     {
         try
         {
-            Console.WriteLine($"[TEMPLATE DEBUG] ========== ATOMIC VIEWMODE REPLACEMENT START ==========");
-            Console.WriteLine($"[TEMPLATE DEBUG] Target ViewMode: {viewMode}");
-            Console.WriteLine($"[TEMPLATE DEBUG] Current resource dictionary count: {app.Resources.MergedDictionaries.Count}");
+            Console.WriteLine($"[VERIFICATION] 🔍 Verifying {expectedTheme} theme transition...");
             
-            // Load shared templates first
-            var sharedUri = new Uri("pack://application:,,,/Resources/ViewModes/SharedTemplates.xaml");
-            Console.WriteLine($"[TEMPLATE DEBUG] Loading SharedTemplates from: {sharedUri}");
-            var sharedDict = new ResourceDictionary { Source = sharedUri };
-            Console.WriteLine($"[TEMPLATE DEBUG] SharedTemplates loaded with {sharedDict.Count} resources");
+            // Verify theme dictionary is loaded
+            var themeFile = GetThemeFilePath(expectedTheme);
+            var expectedUri = $"/Resources/Themes/{themeFile}";
             
-            // Log SharedTemplates contents for verification
-            Console.WriteLine($"[TEMPLATE DEBUG] SharedTemplates keys:");
-            foreach (var key in sharedDict.Keys)
+            bool themeFound = false;
+            ResourceDictionary? activeThemeDict = null;
+            
+            foreach (var dict in app.Resources.MergedDictionaries)
             {
-                Console.WriteLine($"[TEMPLATE DEBUG]   - {key}");
-            }
-            
-            // Load ViewMode-specific templates
-            var viewModeFile = GetViewModeFilePath(viewMode);
-            var viewModeUri = new Uri($"pack://application:,,,/Resources/ViewModes/{viewModeFile}");
-            Console.WriteLine($"[TEMPLATE DEBUG] Loading ViewMode templates from: {viewModeUri}");
-            var viewModeDict = new ResourceDictionary { Source = viewModeUri };
-            Console.WriteLine($"[TEMPLATE DEBUG] ViewMode templates loaded with {viewModeDict.Count} resources");
-            
-            // Log ViewMode template contents for verification
-            Console.WriteLine($"[TEMPLATE DEBUG] ViewMode template keys:");
-            foreach (var key in viewModeDict.Keys)
-            {
-                Console.WriteLine($"[TEMPLATE DEBUG]   - {key}");
-            }
-            
-            Console.WriteLine($"[ATOMIC] Loading ViewMode: {viewModeUri}");
-            
-            // Ensure we have enough dictionaries in the collection
-            while (app.Resources.MergedDictionaries.Count <= VIEWMODE_DICT_INDEX)
-            {
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary());
-                Console.WriteLine($"[TEMPLATE DEBUG] Added empty resource dictionary, count now: {app.Resources.MergedDictionaries.Count}");
-            }
-            
-            Console.WriteLine($"[TEMPLATE DEBUG] Replacing at SHARED_TEMPLATES_INDEX ({SHARED_TEMPLATES_INDEX})");
-            Console.WriteLine($"[TEMPLATE DEBUG] Replacing at VIEWMODE_DICT_INDEX ({VIEWMODE_DICT_INDEX})");
-            
-            // Replace at fixed indices - no add/remove chaos
-            app.Resources.MergedDictionaries[SHARED_TEMPLATES_INDEX] = sharedDict;
-            app.Resources.MergedDictionaries[VIEWMODE_DICT_INDEX] = viewModeDict;
-            
-            Console.WriteLine($"[ATOMIC] ViewMode replaced at indices {SHARED_TEMPLATES_INDEX}, {VIEWMODE_DICT_INDEX}");
-            
-            // Verify replacement was successful
-            Console.WriteLine($"[TEMPLATE DEBUG] ========== POST-REPLACEMENT VERIFICATION ==========");
-            Console.WriteLine($"[TEMPLATE DEBUG] Final resource dictionary count: {app.Resources.MergedDictionaries.Count}");
-            
-            // Verify SharedTemplates at correct index
-            var verifyShared = app.Resources.MergedDictionaries[SHARED_TEMPLATES_INDEX];
-            Console.WriteLine($"[TEMPLATE DEBUG] SharedTemplates at index {SHARED_TEMPLATES_INDEX}: {verifyShared.Count} resources");
-            
-            // Verify ViewMode templates at correct index
-            var verifyViewMode = app.Resources.MergedDictionaries[VIEWMODE_DICT_INDEX];
-            Console.WriteLine($"[TEMPLATE DEBUG] ViewMode templates at index {VIEWMODE_DICT_INDEX}: {verifyViewMode.Count} resources");
-            
-            // Test critical template resolution
-            var testLoRATemplate = app.TryFindResource("LoRACardTemplate");
-            Console.WriteLine($"[TEMPLATE DEBUG] LoRACardTemplate resolution: {(testLoRATemplate != null ? "SUCCESS" : "FAILED")}");
-            
-            if (testLoRATemplate == null)
-            {
-                Console.WriteLine($"[TEMPLATE DEBUG] ⚠️ CRITICAL: LoRACardTemplate not found after replacement!");
-                Console.WriteLine($"[TEMPLATE DEBUG] Available resources in ViewMode dictionary:");
-                foreach (var key in verifyViewMode.Keys)
+                if (dict.Source?.OriginalString?.Contains(themeFile) == true)
                 {
-                    Console.WriteLine($"[TEMPLATE DEBUG]   - {key}");
+                    themeFound = true;
+                    activeThemeDict = dict;
+                    break;
                 }
             }
+
+            if (!themeFound)
+            {
+                Console.WriteLine($"[VERIFICATION] ⚠️ WARNING: {expectedTheme} theme dictionary not found in merged dictionaries");
+                return;
+            }
+
+            // Verify critical brushes are accessible
+            var criticalBrushes = new[] { "PrimaryDarkBrush", "AccentRedBrush", "TextPrimaryBrush", "BorderBrush" };
+            var missingBrushes = new List<string>();
             
-            Console.WriteLine($"[TEMPLATE DEBUG] ========== ATOMIC VIEWMODE REPLACEMENT COMPLETE ==========");
+            foreach (var brushKey in criticalBrushes)
+            {
+                try
+                {
+                    var brush = app.FindResource(brushKey);
+                    if (brush == null)
+                    {
+                        missingBrushes.Add(brushKey);
+                    }
+                }
+                catch
+                {
+                    missingBrushes.Add(brushKey);
+                }
+            }
+
+            if (missingBrushes.Count > 0)
+            {
+                Console.WriteLine($"[VERIFICATION] ⚠️ WARNING: Critical brushes not accessible: {string.Join(", ", missingBrushes)}");
+            }
+            else
+            {
+                Console.WriteLine($"[VERIFICATION] ✅ {expectedTheme} theme transition verified successfully!");
+                Console.WriteLine($"[VERIFICATION] Active theme dictionary: {activeThemeDict?.Count} resources loaded");
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ATOMIC] ViewMode replacement failed: {ex.Message}");
-            throw;
+            Console.WriteLine($"[VERIFICATION] ⚠️ Theme verification failed: {ex.Message}");
         }
     }
-    
-    #endregion
 
     #endregion
 

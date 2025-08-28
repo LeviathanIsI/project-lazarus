@@ -19,6 +19,8 @@ namespace Lazarus.Desktop
         private CancellationTokenSource? _cts;
         private ServiceProvider? _serviceProvider;
         
+        public ServiceProvider? ServiceProvider => _serviceProvider;
+        
         // HYDRA PREVENTION - Stop recursive exception dialogs
         private static bool _isHandlingException = false;
 
@@ -111,6 +113,11 @@ namespace Lazarus.Desktop
             }
 
             // Theme already loaded early in startup process
+            
+            // Apply view mode before creating MainWindow to ensure templates are merged
+            var preferencesService2 = _serviceProvider.GetRequiredService<UserPreferencesService>();
+            preferencesService2.ApplyViewMode(preferencesService2.CurrentViewMode);
+            Console.WriteLine("App: ViewMode applied before MainWindow creation");
 
             Console.WriteLine("App: Creating MainWindow...");
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
@@ -130,7 +137,7 @@ namespace Lazarus.Desktop
             {
                 try
                 {
-                    var isReady = await ApiClient.HealthAsync();
+                    var isReady = await ApiClient.HealthAsync().ConfigureAwait(false);
                     if (isReady)
                     {
                         return true;
@@ -141,7 +148,7 @@ namespace Lazarus.Desktop
                     // API not ready yet, continue waiting
                 }
 
-                await Task.Delay(delay, _cts?.Token ?? CancellationToken.None);
+                await Task.Delay(delay, _cts?.Token ?? CancellationToken.None).ConfigureAwait(false);
                 delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 1.5, 1000));
             }
 
@@ -155,15 +162,21 @@ namespace Lazarus.Desktop
             // Register Global Services
             Console.WriteLine("App: Registering global services...");
             services.AddSingleton<UserPreferencesService>();
+            services.AddSingleton<INavigationService, NavigationService>();
             
-            // Register ViewModels
+            // Register ViewModels with proper lifetimes
             Console.WriteLine("App: Registering core ViewModels...");
-            services.AddSingleton<BaseModelViewModel>();
-            services.AddSingleton<DynamicParameterViewModel>();
-            services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<SystemStateViewModel>(); // System brain - always available
+            services.AddTransient<DashboardViewModel>(); // Central command center
+            services.AddTransient<RunnerManagerViewModel>(); // LLM backend control
+            services.AddTransient<JobsViewModel>(); // Job and queue management
+            services.AddTransient<DatasetsViewModel>(); // Datasets and RAG sources
+            services.AddTransient<BaseModelViewModel>(); // Changed from Singleton - user-specific state
+            services.AddTransient<DynamicParameterViewModel>(); // Changed from Singleton - user-specific state
+            services.AddTransient<MainWindowViewModel>(); // Changed from Singleton - window-specific
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<ChatViewModel>();
-            services.AddSingleton<LorAsViewModel>();
+            services.AddTransient<LorAsViewModel>(); // Changed from Singleton - user-specific state
             services.AddTransient<ControlNetsViewModel>();
             services.AddTransient<VAEsViewModel>();
             services.AddTransient<EmbeddingsViewModel>();

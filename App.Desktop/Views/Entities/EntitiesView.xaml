@@ -4,54 +4,8 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views.Entities"
-			 mc:Ignorable="d">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<!-- tabs -->
-			<RowDefinition Height="*"/>
-			<!-- content -->
-		</Grid.RowDefinitions>
-		<!-- SubTab Buttons -->
-		<StackPanel Grid.Row="0"
-					Orientation="Horizontal"
-					Background="{DynamicResource TertiaryDarkBrush}"
-					Margin="8">
-			<Button x:Name="EntityCreationTab"
-					Content="Entity Creation"
-					Tag="EntityCreation"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="BehavioralPatternsTab"
-					Content="Behavioral Patterns"
-					Tag="BehavioralPatterns"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="InteractionTestingTab"
-					Content="Interaction Testing"
-					Tag="InteractionTesting"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="EntityManagementTab"
-					Content="Entity Management"
-					Tag="EntityManagement"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-		</StackPanel>
-		<!-- Content Panels -->
-		<Grid Grid.Row="1">
-			<local:EntityCreationView x:Name="EntityCreationContent"
-								 Visibility="Visible"/>
-			<local:BehavioralPatternsView x:Name="BehavioralPatternsContent"
-							 Visibility="Collapsed"/>
-			<local:InteractionTestingView x:Name="InteractionTestingContent"
-								   Visibility="Collapsed"/>
-			<local:EntityManagementView x:Name="EntityManagementContent"
-							Visibility="Collapsed"/>
-		</Grid>
-	</Grid>
+			 mc:Ignorable="d"
+			 Background="{DynamicResource PrimaryDarkBrush}">
+	<!-- ViewMode Template Content -->
+	<ContentPresenter ContentTemplate="{DynamicResource EntitiesTemplate}" />
 </UserControl>

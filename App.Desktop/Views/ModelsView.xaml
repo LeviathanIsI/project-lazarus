@@ -5,84 +5,9 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 mc:Ignorable="d">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<!-- tabs -->
-			<RowDefinition Height="*"/>
-			<!-- content -->
-		</Grid.RowDefinitions>
-		<!-- SubTab Buttons -->
-		<StackPanel Grid.Row="0"
-					Orientation="Horizontal"
-					Background="{DynamicResource TertiaryDarkBrush}"
-					Margin="8">
-			<Button x:Name="BaseModelTab"
-					Content="Base Model"
-					Tag="BaseModel"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="LoRAsTab"
-					Content="LoRAs"
-					Tag="LoRAs"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="ControlNetsTab"
-					Content="ControlNets"
-					Tag="ControlNets"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="VAEsTab"
-					Content="VAEs"
-					Tag="VAEs"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="EmbeddingsTab"
-					Content="Embeddings"
-					Tag="Embeddings"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="HypernetworksTab"
-					Content="Hypernetworks"
-					Tag="Hypernetworks"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="AdvancedTab"
-					Content="Advanced"
-					Tag="Advanced"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-		</StackPanel>
-		<!-- Content Panels -->
-		<Grid Grid.Row="1">
-			<!-- BaseModel loads the actual UserControl -->
-			<local:BaseModelView x:Name="BaseModelContent"
-								 Visibility="Visible"/>
-			<!-- LoRAs now loads the actual LorAsView instead of pathetic placeholder -->
-			<local:LorAsView x:Name="LoRAsContent"
-							 Visibility="Collapsed"/>
-			<!-- ControlNets now loads the actual ControlNetsView -->
-			<local:ControlNetsView x:Name="ControlNetsContent"
-								   Visibility="Collapsed"/>
-			<!-- VAEs now loads the actual VAEsView -->
-			<local:VAEsView x:Name="VAEsContent"
-							Visibility="Collapsed"/>
-			<!-- Embeddings now loads the actual EmbeddingsView -->
-			<local:EmbeddingsView x:Name="EmbeddingsContent"
-								  Visibility="Collapsed"/>
-			<!-- Hypernetworks now loads the actual HypernetworksView -->
-			<local:HypernetworksView x:Name="HypernetworksContent"
-									 Visibility="Collapsed"/>
-			<!-- Advanced now loads the actual AdvancedView -->
-			<local:AdvancedView x:Name="AdvancedContent"
-								Visibility="Collapsed"/>
-		</Grid>
-	</Grid>
+	
+	<!-- SIMPLIFIED: ModelsView now directly contains BaseModelView -->
+	<!-- Subtab navigation is handled by the main sidebar (Base Model, LoRAs, ControlNets, etc.) -->
+	<local:BaseModelView x:Name="BaseModelContent"/>
+	
 </UserControl>

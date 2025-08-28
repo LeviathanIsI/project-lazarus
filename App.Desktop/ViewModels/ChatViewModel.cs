@@ -2,394 +2,376 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Diagnostics;
-using Lazarus.Desktop.Helpers;        // for RelayCommand
-using Lazarus.Shared.OpenAI;          // for ChatCompletionRequest/Response
-using Lazarus.Shared.Models;          // for AppliedLoRAInfo
+using System.Linq;
+using Lazarus.Desktop.Helpers;
+using Lazarus.Shared.OpenAI;
+using Lazarus.Shared.Models;
 
 namespace Lazarus.Desktop.ViewModels
 {
-    public class UiChatMessage
+    /// <summary>
+    /// Chat message view model with complete technical metrics
+    /// </summary>
+    public class ChatMessageVm : INotifyPropertyChanged
     {
-        public string Role { get; set; } = "";
-        public string Text { get; set; } = "";
-    }
+        private string _role = "";
+        private string _content = "";
+        private DateTime _timestamp = DateTime.Now;
+        private int _tokenCount = 0;
+        private double _generationTime = 0;
+        private double _tokensPerSecond = 0;
 
-    public class ChatViewModel : INotifyPropertyChanged, IDisposable
-    {
-        private readonly DynamicParameterViewModel _parameterViewModel;
-        private readonly BaseModelViewModel _baseModelViewModel;
-        private readonly LorAsViewModel _lorAsViewModel;
-        private string _input = string.Empty;
-
-        public string Input
+        public string Role
         {
-            get => _input;
-            set
-            {
-                if (_input != value)
-                {
-                    _input = value;
-                    OnPropertyChanged();
-                }
-            }
+            get => _role;
+            set => SetProperty(ref _role, value);
         }
 
-        public ObservableCollection<UiChatMessage> Messages { get; } = new();
-
-        public ICommand SendCommand { get; }
-
-        public DynamicParameterViewModel ParameterViewModel => _parameterViewModel;
-        public BaseModelViewModel BaseModelViewModel => _baseModelViewModel;
-        public LorAsViewModel LorAsViewModel => _lorAsViewModel;
-        
-        public bool HasBaseModel => _baseModelViewModel.SelectedModel != null;
-        public bool CanChat => HasBaseModel && !string.IsNullOrWhiteSpace(Input);
-
-        public ChatViewModel(DynamicParameterViewModel parameterViewModel, BaseModelViewModel baseModelViewModel, LorAsViewModel lorAsViewModel)
+        public string Content
         {
-            _parameterViewModel = parameterViewModel;
-            _baseModelViewModel = baseModelViewModel;
-            _lorAsViewModel = lorAsViewModel;
-            
-            SendCommand = new RelayCommand(async _ => await SendAsync(), _ => CanChat);
-            
-            // Subscribe to model changes to update UI state
-            _baseModelViewModel.PropertyChanged += OnBaseModelViewModelPropertyChanged;
-            _lorAsViewModel.PropertyChanged += OnLorAsViewModelPropertyChanged;
-            
-            // Subscribe to cross-tab LoRA state changes
-            LorAsViewModel.LoRAStateChanged += OnCrossTabLoRAStateChanged;
-            
-            _ = InitializeParametersAsync();
-        }
-        
-        private void OnBaseModelViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(BaseModelViewModel.SelectedModel))
-            {
-                OnPropertyChanged(nameof(HasBaseModel));
-                OnPropertyChanged(nameof(CanChat));
-            }
-        }
-        
-        private void OnLorAsViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(LorAsViewModel.AppliedLoRAsCount) || 
-                e.PropertyName == nameof(LorAsViewModel.TotalWeight))
-            {
-                // Trigger UI update for LoRA status in conversation tab
-                OnPropertyChanged(nameof(LorAsViewModel));
-                
-                // Update parameter panel with LoRA-aware capabilities
-                _ = UpdateParameterPanelWithLoRAsAsync();
-            }
-        }
-        
-        /// <summary>
-        /// Handle cross-tab LoRA state changes for real-time synchronization
-        /// </summary>
-        private void OnCrossTabLoRAStateChanged(object? sender, EventArgs e)
-        {
-            try
-            {
-                Console.WriteLine($"[ChatViewModel] 🔔 Cross-tab LoRA state change detected! Applied: {LorAsViewModel.AppliedLoRAsCount}, Total: {LorAsViewModel.TotalAppliedLoRAsCount}");
-                
-                // Simple property notification - no complex async operations
-                OnPropertyChanged(nameof(LorAsViewModel));
-                
-                // Update parameter panel safely
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await UpdateParameterPanelWithLoRAsAsync();
-                    }
-                    catch
-                    {
-                        // Silent fail to prevent crashes
-                    }
-                });
-            }
-            catch
-            {
-                // Silent fail to prevent crashes
-            }
-        }
-        
-        /// <summary>
-        /// Update the parameter panel to reflect active LoRAs from orchestrator truth
-        /// </summary>
-        private async Task UpdateParameterPanelWithLoRAsAsync()
-        {
-            try
-            {
-                Console.WriteLine($"[ChatViewModel] Querying orchestrator for ground truth LoRA state...");
-                
-                // CRITICAL: Query orchestrator for actual LoRA state, not local view model state
-                var orchestratorLoRAs = await ApiClient.GetAppliedLoRAsAsync() ?? new List<AppliedLoRAInfo>();
-                
-                Console.WriteLine($"[ChatViewModel] Found {orchestratorLoRAs.Count} active LoRAs in orchestrator");
-                
-                // Update parameter view model with orchestrator truth
-                _parameterViewModel.UpdateAppliedLoRAs(orchestratorLoRAs);
-                
-                // Force refresh of model capabilities with LoRA-aware introspection
-                await _parameterViewModel.RefreshCapabilitiesAsync();
-                
-                Console.WriteLine($"[ChatViewModel] ✅ Parameter panel synchronized with orchestrator LoRA state ({orchestratorLoRAs.Count} LoRAs)");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ChatViewModel] Failed to sync parameter panel with orchestrator LoRA state: {ex.Message}");
-                
-                // Fallback to empty LoRA state if orchestrator query fails
-                _parameterViewModel.UpdateAppliedLoRAs(new List<AppliedLoRAInfo>());
-            }
-        }
-        
-        /// <summary>
-        /// Determine adapter type from LoRA name for parameter influence calculation
-        /// </summary>
-        private static string DetermineAdapterType(string loraName)
-        {
-            var name = loraName.ToLowerInvariant();
-            
-            if (name.Contains("style") || name.Contains("art")) return "style";
-            if (name.Contains("character") || name.Contains("char") || name.Contains("persona")) return "character";
-            if (name.Contains("concept") || name.Contains("subject")) return "concept";
-            if (name.Contains("pose") || name.Contains("position")) return "pose";
-            if (name.Contains("clothing") || name.Contains("outfit")) return "clothing";
-            if (name.Contains("background") || name.Contains("scene")) return "scene";
-            
-            return "general";
+            get => _content;
+            set => SetProperty(ref _content, value);
         }
 
-        private async Task InitializeParametersAsync()
+        public DateTime Timestamp
         {
-            await _parameterViewModel.LoadModelCapabilitiesAsync("current");
-            
-            // Initial LoRA status update
-            await UpdateParameterPanelWithLoRAsAsync();
-            
-            // Start periodic LoRA state synchronization
-            _ = Task.Run(async () => await PeriodicLoRAStateSyncAsync());
-        }
-        
-        /// <summary>
-        /// Periodically sync LoRA state with orchestrator to catch changes made in LoRA management tab
-        /// </summary>
-        private async Task PeriodicLoRAStateSyncAsync()
-        {
-            while (true)
-            {
-                try
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(3)); // Check every 3 seconds for LoRA state changes
-                    
-                    // Query orchestrator for current LoRA state
-                    var currentLoRAs = await ApiClient.GetAppliedLoRAsAsync() ?? new List<AppliedLoRAInfo>();
-                    var currentCount = currentLoRAs.Count;
-                    var localCount = _parameterViewModel.AppliedLoRAs.Count;
-                    
-                    // Check if LoRA state has changed
-                    if (currentCount != localCount || HasLoRAStateChanged(currentLoRAs, _parameterViewModel.AppliedLoRAs))
-                    {
-                        Console.WriteLine($"[ChatViewModel] LoRA state change detected: {localCount} → {currentCount} LoRAs");
-                        
-                        // Update parameter panel on UI thread
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
-                        {
-                            await UpdateParameterPanelWithLoRAsAsync();
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ChatViewModel] Periodic LoRA sync failed: {ex.Message}");
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Check if the LoRA state has meaningfully changed
-        /// </summary>
-        private static bool HasLoRAStateChanged(List<AppliedLoRAInfo> orchestratorLoRAs, List<AppliedLoRAInfo> localLoRAs)
-        {
-            if (orchestratorLoRAs.Count != localLoRAs.Count) return true;
-            
-            // Check for changes in LoRA IDs, weights, or enabled state
-            var orchestratorState = orchestratorLoRAs.OrderBy(l => l.Id)
-                .Select(l => $"{l.Id}:{l.Weight:F2}:{l.IsEnabled}")
-                .ToList();
-                
-            var localState = localLoRAs.OrderBy(l => l.Id)
-                .Select(l => $"{l.Id}:{l.Weight:F2}:{l.IsEnabled}")
-                .ToList();
-            
-            return !orchestratorState.SequenceEqual(localState);
+            get => _timestamp;
+            set => SetProperty(ref _timestamp, value);
         }
 
-        private async Task SendAsync()
+        public int TokenCount
         {
-            var text = Input.Trim();
-            if (string.IsNullOrEmpty(text)) return;
-
-            Console.WriteLine($"[ChatViewModel] Sending message: {text}");
-            Messages.Add(new UiChatMessage { Role = "user", Text = text });
-            Input = string.Empty;
-
-            try
-            {
-                var request = new ChatCompletionRequest
-                {
-                    Model = "Qwen2.5-32B-Instruct-Q5_K_M.gguf",
-                    Messages = new()
-                    {
-                        new Lazarus.Shared.OpenAI.ChatMessage { Role = "user", Content = text }
-                    }
-                };
-
-                // Inject dynamic parameters - CRITICAL neural pathway wiring
-                var parameters = _parameterViewModel.GetParameterValues();
-                Console.WriteLine($"[ChatViewModel] Injecting {parameters.Count} dynamic parameters:");
-                
-                foreach (var (paramName, value) in parameters)
-                {
-                    Console.WriteLine($"[ChatViewModel] Parameter: {paramName} = {value}");
-                    
-                    switch (paramName.ToLowerInvariant())
-                    {
-                        case "temperature":
-                            if (value is double tempDouble) request.Temperature = tempDouble;
-                            else if (double.TryParse(value.ToString(), out var temp)) request.Temperature = temp;
-                            break;
-                        case "max_tokens":
-                        case "n_predict":
-                            if (value is int maxTokensInt) request.MaxTokens = maxTokensInt;
-                            else if (int.TryParse(value.ToString(), out var maxTokens)) request.MaxTokens = maxTokens;
-                            break;
-                        case "top_p":
-                            if (value is double topPDouble) request.TopP = topPDouble;
-                            else if (double.TryParse(value.ToString(), out var topP)) request.TopP = topP;
-                            break;
-                        case "top_k":
-                            if (value is int topKInt) request.TopK = topKInt;
-                            else if (int.TryParse(value.ToString(), out var topK)) request.TopK = topK;
-                            break;
-                        case "min_p":
-                            if (value is double minPDouble) request.MinP = minPDouble;
-                            else if (double.TryParse(value.ToString(), out var minP)) request.MinP = minP;
-                            break;
-                        case "typical_p":
-                            if (value is double typicalPDouble) request.TypicalP = typicalPDouble;
-                            else if (double.TryParse(value.ToString(), out var typicalP)) request.TypicalP = typicalP;
-                            break;
-                        case "repetition_penalty":
-                        case "repeat_penalty":
-                            if (value is double repPenaltyDouble) request.RepetitionPenalty = repPenaltyDouble;
-                            else if (double.TryParse(value.ToString(), out var repPenalty)) request.RepetitionPenalty = repPenalty;
-                            break;
-                        case "frequency_penalty":
-                            if (value is double freqPenaltyDouble) request.FrequencyPenalty = freqPenaltyDouble;
-                            else if (double.TryParse(value.ToString(), out var freqPenalty)) request.FrequencyPenalty = freqPenalty;
-                            break;
-                        case "presence_penalty":
-                            if (value is double presPenaltyDouble) request.PresencePenalty = presPenaltyDouble;
-                            else if (double.TryParse(value.ToString(), out var presPenalty)) request.PresencePenalty = presPenalty;
-                            break;
-                        case "seed":
-                            if (value is int seedInt) request.Seed = seedInt;
-                            else if (int.TryParse(value.ToString(), out var seed)) request.Seed = seed;
-                            break;
-                        case "mirostat":
-                        case "mirostat_mode":
-                            if (value is int mirostatInt) request.MirostatMode = mirostatInt;
-                            else if (int.TryParse(value.ToString(), out var mirostat)) request.MirostatMode = mirostat;
-                            break;
-                        case "mirostat_tau":
-                            if (value is double mirostatTauDouble) request.MirostatTau = mirostatTauDouble;
-                            else if (double.TryParse(value.ToString(), out var mirostatTau)) request.MirostatTau = mirostatTau;
-                            break;
-                        case "mirostat_eta":
-                            if (value is double mirostatEtaDouble) request.MirostatEta = mirostatEtaDouble;
-                            else if (double.TryParse(value.ToString(), out var mirostatEta)) request.MirostatEta = mirostatEta;
-                            break;
-                        case "tfs_z":
-                            if (value is double tfsZDouble) request.TfsZ = tfsZDouble;
-                            else if (double.TryParse(value.ToString(), out var tfsZ)) request.TfsZ = tfsZ;
-                            break;
-                        case "eta_cutoff":
-                            if (value is double etaCutoffDouble) request.EtaCutoff = etaCutoffDouble;
-                            else if (double.TryParse(value.ToString(), out var etaCutoff)) request.EtaCutoff = etaCutoff;
-                            break;
-                        case "epsilon_cutoff":
-                            if (value is double epsilonCutoffDouble) request.EpsilonCutoff = epsilonCutoffDouble;
-                            else if (double.TryParse(value.ToString(), out var epsilonCutoff)) request.EpsilonCutoff = epsilonCutoff;
-                            break;
-                        default:
-                            Console.WriteLine($"[ChatViewModel] Warning: Unknown parameter '{paramName}' with value '{value}' - skipped");
-                            break;
-                    }
-                }
-
-                Console.WriteLine($"[ChatViewModel] Final request parameters - Temperature: {request.Temperature}, TopP: {request.TopP}, TopK: {request.TopK}");
-
-                Console.WriteLine($"[ChatViewModel] Created request for model: {request.Model}");
-                var response = await ApiClient.ChatCompletionAsync(request);
-                Console.WriteLine($"[ChatViewModel] Received response: {response != null}");
-
-                if (response?.Choices != null && response.Choices.Count > 0)
-                {
-                    var content = response.Choices[0].Message.Content ?? "";
-                    Debug.WriteLine($"[ChatViewModel] Response content length: {content.Length}");
-
-                    Messages.Add(new UiChatMessage
-                    {
-                        Role = "assistant",
-                        Text = content
-                    });
-                }
-                else
-                {
-                    Debug.WriteLine($"[ChatViewModel] No valid response - response null: {response == null}, choices null: {response?.Choices == null}, choices count: {response?.Choices?.Count ?? 0}");
-                    Messages.Add(new UiChatMessage { Role = "system", Text = "[No response from API]" });
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[ChatViewModel] SendAsync exception: {ex.GetType().Name}: {ex.Message}");
-                Messages.Add(new UiChatMessage { Role = "system", Text = $"Error: {ex.Message}" });
-            }
+            get => _tokenCount;
+            set => SetProperty(ref _tokenCount, value);
         }
+
+        public double GenerationTime
+        {
+            get => _generationTime;
+            set => SetProperty(ref _generationTime, value);
+        }
+
+        public double TokensPerSecond
+        {
+            get => _tokensPerSecond;
+            set => SetProperty(ref _tokensPerSecond, value);
+        }
+
+        public bool IsAssistant => Role == "assistant";
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        #region IDisposable
+        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+    }
 
-        private bool _disposed = false;
+    /// <summary>
+    /// Complete ChatViewModel implementation with exact specifications
+    /// </summary>
+    public sealed class ChatViewModel : INotifyPropertyChanged, IDisposable
+    {
+        private string _userInput = "";
+        private bool _isStreaming = false;
+        private double _tokensPerSecond = 0;
+        private string _modelName = "No Model Loaded";
+        private double _temperature = 0.7;
+        private double _topP = 0.95;
+        private int _maxTokens = 512;
+        private double _repetitionPenalty = 1.0;
+        private string _systemPrompt = "";
+        private CancellationTokenSource? _cancellationTokenSource;
+
+        public ChatViewModel()
+        {
+            Messages = new ObservableCollection<ChatMessageVm>();
+            SendCommand = new RelayCommand(async _ => await SendAsync(), _ => CanSend);
+            StopCommand = new RelayCommand(_ => StopGeneration(), _ => IsStreaming);
+            
+            // Initialize with test message for UI validation
+            Messages.Add(new ChatMessageVm
+            {
+                Role = "assistant",
+                Content = "Chat interface initialized. Ready for conversation.",
+                Timestamp = DateTime.Now,
+                TokenCount = 8,
+                GenerationTime = 0.1,
+                TokensPerSecond = 80
+            });
+        }
+
+        #region Properties
+
+        public ObservableCollection<ChatMessageVm> Messages { get; }
+
+        public string UserInput
+        {
+            get => _userInput;
+            set
+            {
+                if (SetProperty(ref _userInput, value))
+                {
+                    OnPropertyChanged(nameof(CanSend));
+                }
+            }
+        }
+
+        public bool IsStreaming
+        {
+            get => _isStreaming;
+            private set
+            {
+                if (SetProperty(ref _isStreaming, value))
+                {
+                    OnPropertyChanged(nameof(CanSend));
+                }
+            }
+        }
+
+        public double TokensPerSecond
+        {
+            get => _tokensPerSecond;
+            private set => SetProperty(ref _tokensPerSecond, value);
+        }
+
+        public string ModelName
+        {
+            get => _modelName;
+            set => SetProperty(ref _modelName, value);
+        }
+
+        // Advanced parameters
+        public double Temperature
+        {
+            get => _temperature;
+            set => SetProperty(ref _temperature, value);
+        }
+
+        public double TopP
+        {
+            get => _topP;
+            set => SetProperty(ref _topP, value);
+        }
+
+        public int MaxTokens
+        {
+            get => _maxTokens;
+            set => SetProperty(ref _maxTokens, value);
+        }
+
+        public double RepetitionPenalty
+        {
+            get => _repetitionPenalty;
+            set => SetProperty(ref _repetitionPenalty, value);
+        }
+
+        public string SystemPrompt
+        {
+            get => _systemPrompt;
+            set => SetProperty(ref _systemPrompt, value);
+        }
+
+        public bool CanSend => !string.IsNullOrWhiteSpace(UserInput) && !IsStreaming;
+
+        #endregion
+
+        #region Commands
+
+        public ICommand SendCommand { get; }
+        public ICommand StopCommand { get; }
+
+        #endregion
+
+        #region Methods
+
+        private async Task SendAsync()
+        {
+            var message = UserInput.Trim();
+            if (string.IsNullOrEmpty(message) || IsStreaming) return;
+
+            // Add user message
+            var userMessage = new ChatMessageVm
+            {
+                Role = "user",
+                Content = message,
+                Timestamp = DateTime.Now,
+                TokenCount = EstimateTokenCount(message)
+            };
+            Messages.Add(userMessage);
+            UserInput = "";
+
+            // Start streaming response
+            IsStreaming = true;
+            _cancellationTokenSource = new CancellationTokenSource();
+            var startTime = DateTime.Now;
+
+            try
+            {
+                var request = CreateChatRequest(message);
+                var assistantMessage = new ChatMessageVm
+                {
+                    Role = "assistant",
+                    Content = "",
+                    Timestamp = DateTime.Now
+                };
+                Messages.Add(assistantMessage);
+
+                // Simulate streaming for now - replace with actual API call
+                await StreamResponseAsync(assistantMessage, _cancellationTokenSource.Token);
+
+                // Update metrics
+                var endTime = DateTime.Now;
+                assistantMessage.GenerationTime = (endTime - startTime).TotalSeconds;
+                assistantMessage.TokenCount = EstimateTokenCount(assistantMessage.Content);
+                
+                if (assistantMessage.GenerationTime > 0)
+                {
+                    assistantMessage.TokensPerSecond = assistantMessage.TokenCount / assistantMessage.GenerationTime;
+                    TokensPerSecond = assistantMessage.TokensPerSecond;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Generation was cancelled
+                if (Messages.LastOrDefault()?.Role == "assistant")
+                {
+                    Messages.Last().Content += " [Generation stopped]";
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = new ChatMessageVm
+                {
+                    Role = "system",
+                    Content = $"Error: {ex.Message}",
+                    Timestamp = DateTime.Now,
+                    TokenCount = EstimateTokenCount(ex.Message)
+                };
+                Messages.Add(errorMessage);
+            }
+            finally
+            {
+                IsStreaming = false;
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = null;
+            }
+        }
+
+        private ChatCompletionRequest CreateChatRequest(string userMessage)
+        {
+            var messages = new List<Lazarus.Shared.OpenAI.ChatMessage>();
+
+            // Add system prompt if provided
+            if (!string.IsNullOrWhiteSpace(SystemPrompt))
+            {
+                messages.Add(new Lazarus.Shared.OpenAI.ChatMessage
+                {
+                    Role = "system",
+                    Content = SystemPrompt
+                });
+            }
+
+            // Add recent conversation history (last 10 messages)
+            var recentMessages = Messages.TakeLast(10).Where(m => m.Role != "system");
+            foreach (var msg in recentMessages)
+            {
+                messages.Add(new Lazarus.Shared.OpenAI.ChatMessage
+                {
+                    Role = msg.Role,
+                    Content = msg.Content
+                });
+            }
+
+            return new ChatCompletionRequest
+            {
+                Model = ModelName,
+                Messages = messages,
+                Temperature = Temperature,
+                TopP = TopP,
+                MaxTokens = MaxTokens,
+                RepetitionPenalty = RepetitionPenalty,
+                Stream = true // Enable streaming
+            };
+        }
+
+        private async Task StreamResponseAsync(ChatMessageVm message, CancellationToken cancellationToken)
+        {
+            // Simulate streaming response - replace with actual SSE implementation
+            var responseText = "This is a simulated streaming response that demonstrates the chat functionality. " +
+                             "In a real implementation, this would connect to the orchestrator's chat completions endpoint " +
+                             "and stream the response token by token. The UI will update in real-time as tokens arrive.";
+
+            var words = responseText.Split(' ');
+            var tokenCount = 0;
+
+            foreach (var word in words)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                message.Content += (message.Content.Length > 0 ? " " : "") + word;
+                tokenCount++;
+                
+                // Update tokens per second in real-time
+                var elapsed = (DateTime.Now - message.Timestamp).TotalSeconds;
+                if (elapsed > 0)
+                {
+                    message.TokensPerSecond = tokenCount / elapsed;
+                    TokensPerSecond = message.TokensPerSecond;
+                }
+
+                // Simulate natural typing speed
+                await Task.Delay(50, cancellationToken);
+            }
+
+            message.TokenCount = tokenCount;
+        }
+
+        private void StopGeneration()
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+
+        private static int EstimateTokenCount(string text)
+        {
+            // Simple token estimation - approximately 4 characters per token
+            return Math.Max(1, text.Length / 4);
+        }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _cancellationTokenSource?.Dispose();
         }
 
-        protected virtual void Dispose(bool disposing)
+        #endregion
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
-            if (!_disposed && disposing)
-            {
-                // Unsubscribe from ViewModels to prevent memory leaks
-                _baseModelViewModel.PropertyChanged -= OnBaseModelViewModelPropertyChanged;
-                _lorAsViewModel.PropertyChanged -= OnLorAsViewModelPropertyChanged;
-                _disposed = true;
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
         }
 
         #endregion

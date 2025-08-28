@@ -8,7 +8,7 @@ namespace Lazarus.Desktop.Views
         public BaseModelView()
         {
             InitializeComponent();
-            DataContext = new BaseModelViewModel();
+            // NO DataContext assignment - let MainWindow handle it via DI
         }
     }
 }

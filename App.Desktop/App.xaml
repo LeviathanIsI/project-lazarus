@@ -1,22 +1,28 @@
 ﻿<Application x:Class="Lazarus.Desktop.App"
 			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:conv="clr-namespace:Lazarus.Desktop.Converters">
+			 xmlns:conv="clr-namespace:Lazarus.Desktop.Converters"
+			 xmlns:local="clr-namespace:Lazarus.Desktop.Views">
 	<Application.Resources>
 		<ResourceDictionary>
 			<!-- === DEFAULT DUAL PERSONALIZATION PRELOAD === -->
-			<!-- Load default theme AND ViewMode templates FIRST to ensure resources exist before any styles -->
+			<!-- Load design tokens FIRST, then theme, then ViewMode templates to ensure proper resource hierarchy -->
 			<ResourceDictionary.MergedDictionaries>
+				<!-- Design Token System: Load architectural constants first -->
+				<ResourceDictionary Source="Resources/Tokens.xaml"/>
+				
 				<!-- Theme System: Load Dark Gothic theme as default -->
 				<ResourceDictionary Source="Resources/Themes/DarkTheme.xaml"/>
 				
-				<!-- ViewMode System: Load default template dictionaries -->
+				<!-- ViewMode System: Load shared styles only - actual templates loaded dynamically by UserPreferencesService -->
 				<ResourceDictionary Source="Resources/ViewModes/SharedTemplates.xaml"/>
-				<ResourceDictionary Source="Resources/ViewModes/NoviceTemplates.xaml"/>
+				<!-- NOTE: ViewMode templates (NoviceTemplates.xaml, etc.) are loaded dynamically by UserPreferencesService to prevent key collisions -->
 			</ResourceDictionary.MergedDictionaries>
 			
 			<conv:RoleToBrushConverter x:Key="RoleToBrush"/>
 		<conv:RoleToAlignmentConverter x:Key="RoleToAlignment"/>
+		<conv:RoleToDisplayNameConverter x:Key="RoleToDisplayName"/>
+		<conv:ForensicVisibilityConverter x:Key="ForensicVisibilityConverter"/>
 		<conv:InvertBoolConverter x:Key="InvertBool"/>
 		<conv:StringToBoolConverter x:Key="StringToBool"/>
 
@@ -30,6 +36,10 @@
 		<conv:BooleanToAlignmentConverter x:Key="BooleanToAlignmentConverter"/>
 		<conv:MessageBackgroundConverter x:Key="MessageBackgroundConverter"/>
 
+		<!-- Voice UI converters -->
+		<conv:SpeakingToText x:Key="SpeakingToText"/>
+		<conv:SpeakingToBrush x:Key="SpeakingToBrush"/>
+
 		<!-- BoolToTextConverter for status display - moved from VAEsView -->
 		<conv:BoolToTextConverter x:Key="BoolToStatusConverter"
 								  TrueText="Loaded"
@@ -41,15 +51,21 @@
 		<conv:BoolToApplyTextConverter x:Key="BoolToApplyTextConverter"/>
 		<conv:BoolToLoRAStatusConverter x:Key="BoolToLoRAStatusConverter"/>
 
+		<!-- MVVM Navigation converter -->
+		<conv:BoolToSelectedTagConverter x:Key="BoolToSelectedTag"/>
+
+		<!-- ViewMode Template Selector - Advanced progressive disclosure architecture -->
+		<local:ViewModeTemplateSelector x:Key="ViewModeTemplateSelector"/>
+
 		<!-- === NAVIGATION BUTTON STYLES === -->
 
-		<!-- Base pill style -->
+		<!-- Base pill style - FIXED FOR PROPER VISIBILITY -->
 		<Style x:Key="BasePillButtonStyle"
 			   TargetType="Button">
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource ButtonTextNormalBrush}"/>
 			<Setter Property="Background"
-					Value="{DynamicResource BorderBrush}"/>
+					Value="{DynamicResource ButtonBackgroundBrush}"/>
 			<Setter Property="Padding"
 					Value="10,6"/>
 			<Setter Property="Margin"
@@ -71,21 +87,33 @@
 								CornerRadius="6"
 								Padding="{TemplateBinding Padding}">
 							<ContentPresenter HorizontalAlignment="Center"
-											  VerticalAlignment="Center"/>
+											  VerticalAlignment="Center"
+											  TextBlock.Foreground="{TemplateBinding Foreground}"/>
 						</Border>
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
 			<Style.Triggers>
-				<Trigger Property="IsMouseOver"
-						 Value="True">
-					<Setter Property="Background"
-							Value="{DynamicResource BorderHoverBrush}"/>
+				<!-- HOVER STATE: Only applies when NOT runtime-selected -->
+				<MultiTrigger>
+					<MultiTrigger.Conditions>
+						<Condition Property="IsMouseOver" Value="True"/>
+						<Condition Property="Tag" Value="{x:Null}"/>  <!-- Not runtime-selected -->
+					</MultiTrigger.Conditions>
+					<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
+					<Setter Property="Foreground" Value="{DynamicResource ButtonTextHoverBrush}"/>
+				</MultiTrigger>
+				
+				<!-- ACTIVE/SELECTED STATE: Use SAME styling as pressed state (user-confirmed target) -->
+				<Trigger Property="Tag" Value="Selected">
+					<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
+					<Setter Property="Foreground" Value="{DynamicResource ButtonTextHoverBrush}"/>
 				</Trigger>
-				<Trigger Property="IsPressed"
-						 Value="True">
-					<Setter Property="Background"
-							Value="{DynamicResource BorderHoverBrush}"/>
+				
+				<!-- PRESSED STATE -->
+				<Trigger Property="IsPressed" Value="True">
+					<Setter Property="Background" Value="{DynamicResource ButtonPressedBrush}"/>
+					<Setter Property="Foreground" Value="{DynamicResource ButtonTextHoverBrush}"/>
 				</Trigger>
 			</Style.Triggers>
 		</Style>
@@ -98,6 +126,107 @@
 					Value="14"/>
 			<Setter Property="Padding"
 					Value="12,8"/>
+		</Style>
+
+		<!-- Sidebar Navigation Button Style -->
+		<Style x:Key="SidebarNavButtonStyle"
+			   TargetType="Button">
+			<Setter Property="Background"
+					Value="Transparent"/>
+			<Setter Property="Foreground"
+					Value="{DynamicResource TextPrimaryBrush}"/>
+			<Setter Property="BorderThickness"
+					Value="0"/>
+			<Setter Property="Padding"
+					Value="12,8"/>
+			<Setter Property="HorizontalAlignment"
+					Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment"
+					Value="Left"/>
+			<Setter Property="FontSize"
+					Value="13"/>
+			<Setter Property="Cursor"
+					Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border Background="{TemplateBinding Background}"
+								CornerRadius="4"
+								Padding="{TemplateBinding Padding}">
+							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+											  VerticalAlignment="Center"
+											  TextBlock.Foreground="{TemplateBinding Foreground}"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver"
+									 Value="True">
+								<Setter Property="Background"
+										Value="{DynamicResource TertiaryDarkBrush}"/>
+							</Trigger>
+							<Trigger Property="IsPressed"
+									 Value="True">
+								<Setter Property="Background"
+										Value="{DynamicResource AccentRedBrush}"/>
+								<Setter Property="Foreground"
+										Value="{DynamicResource TextPrimaryBrush}"/>
+							</Trigger>
+							<MultiTrigger>
+								<MultiTrigger.Conditions>
+									<Condition Property="Tag" Value="Selected"/>
+								</MultiTrigger.Conditions>
+								<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
+								<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+							</MultiTrigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<!-- Subtab Navigation Button Style -->
+		<Style x:Key="SubtabNavButtonStyle" TargetType="Button">
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Left"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding" Value="12,8"/>
+			<Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="FontWeight" Value="Normal"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="border"
+								Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}"
+								CornerRadius="4"
+								Padding="{TemplateBinding Padding}">
+							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+											  VerticalAlignment="Center"
+											  TextBlock.Foreground="{TemplateBinding Foreground}"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter Property="Background" Value="{DynamicResource TertiaryDarkBrush}"/>
+								<Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+							</Trigger>
+							<Trigger Property="IsPressed" Value="True">
+								<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
+								<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+							</Trigger>
+							<MultiTrigger>
+								<MultiTrigger.Conditions>
+									<Condition Property="Tag" Value="Selected"/>
+								</MultiTrigger.Conditions>
+								<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
+								<Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+								<Setter Property="FontWeight" Value="SemiBold"/>
+							</MultiTrigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
 		</Style>
 
 		<!-- Sub tab button -->
@@ -114,27 +243,16 @@
 					Value="0.9"/>
 		</Style>
 
-		<!-- Active sub tab -->
-		<Style x:Key="ActiveSubTabButtonStyle"
-			   TargetType="Button"
-			   BasedOn="{StaticResource SubTabButtonStyle}">
-			<Setter Property="Background"
-					Value="{DynamicResource AccentRedBrush}"/>
-			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
-			<Setter Property="Opacity"
-					Value="1"/>
-		</Style>
 
 		<!-- === PRIMARY BUTTON STYLES === -->
 
-		<!-- Primary Button Style (Purple) -->
+		<!-- Primary Button Style (Accent) -->
 		<Style x:Key="PrimaryButtonStyle"
 			   TargetType="Button">
 			<Setter Property="Background"
 					Value="{DynamicResource AccentRedBrush}"/>
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource ButtonTextBrush}"/>
 			<Setter Property="BorderThickness"
 					Value="0"/>
 			<Setter Property="Padding"
@@ -179,13 +297,13 @@
 			</Setter>
 		</Style>
 
-		<!-- Secondary Button Style (Dark) -->
+		<!-- Secondary Button Style (Light) -->
 		<Style x:Key="SecondaryButtonStyle"
 			   TargetType="Button">
 			<Setter Property="Background"
-					Value="{DynamicResource BorderBrush}"/>
+					Value="{DynamicResource ButtonBackgroundBrush}"/>
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource ButtonTextNormalBrush}"/>
 			<Setter Property="BorderThickness"
 					Value="0"/>
 			<Setter Property="Padding"
@@ -229,7 +347,7 @@
 			<Setter Property="Background"
 					Value="{DynamicResource ErrorBrush}"/>
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource ButtonTextBrush}"/>
 			<Setter Property="BorderThickness"
 					Value="0"/>
 			<Setter Property="Padding"
@@ -306,7 +424,7 @@
 								<Setter Property="BorderBrush"
 										Value="{DynamicResource AccentRedBrush}"/>
 								<Setter Property="Foreground"
-										Value="{DynamicResource TextPrimaryBrush}"/>
+										Value="{DynamicResource ButtonTextHoverBrush}"/>
 							</Trigger>
 							<Trigger Property="IsPressed"
 									 Value="True">
@@ -403,7 +521,7 @@
 			<Setter Property="Background"
 					Value="Transparent"/>
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource DropdownTextBrush}"/>
 			<Setter Property="Padding"
 					Value="8,6"/>
 			<Setter Property="Template">
@@ -419,13 +537,17 @@
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{DynamicResource AccentRedBrush}"/>
+										Value="{DynamicResource ButtonHoverBrush}"/>
+								<Setter Property="Foreground"
+										Value="{DynamicResource ButtonTextHoverBrush}"/>
 							</Trigger>
 							<Trigger Property="IsSelected"
 									 Value="True">
 								<Setter TargetName="Border"
 										Property="Background"
-										Value="{DynamicResource AccentRedHoverBrush}"/>
+										Value="{DynamicResource ButtonPressedBrush}"/>
+								<Setter Property="Foreground"
+										Value="{DynamicResource ButtonTextBrush}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -439,7 +561,7 @@
 			<Setter Property="Background"
 					Value="{DynamicResource TertiaryDarkBrush}"/>
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource DropdownTextBrush}"/>
 			<Setter Property="BorderBrush"
 					Value="{DynamicResource BorderBrush}"/>
 			<Setter Property="BorderThickness"
@@ -483,8 +605,8 @@
 										</Border>
 										<ControlTemplate.Triggers>
 											<Trigger Property="IsMouseOver" Value="True">
-												<Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentRedBrush}"/>
-												<Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource AccentRedBrush}"/>
+												<Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource BorderHoverBrush}"/>
+												<Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource TextPrimaryBrush}"/>
 											</Trigger>
 											<Trigger Property="IsChecked" Value="True">
 												<Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentRedBrush}"/>
@@ -735,7 +857,7 @@
 			<Setter Property="Background"
 					Value="Transparent"/>
 			<Setter Property="Foreground"
-					Value="{DynamicResource TextPrimaryBrush}"/>
+					Value="{DynamicResource DropdownTextBrush}"/>
 			<Setter Property="Padding"
 					Value="12,8"/>
 			<Setter Property="Margin"
@@ -758,6 +880,8 @@
 									 Value="True">
 								<Setter Property="Background"
 										Value="{DynamicResource AccentRedBrush}"/>
+								<Setter Property="Foreground"
+										Value="{DynamicResource ButtonTextBrush}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>

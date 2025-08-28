@@ -1,31 +1,145 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- DARK GOTHIC THEME: Sophisticated darkness with auburn accents -->
+    <!-- DARK THEME: Gothic sophistication - ISOLATED BRUSH VOCABULARY -->
     
-    <!-- Primary Background Colors -->
-    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#0f0f0f"/>          <!-- Deep black base -->
-    <SolidColorBrush x:Key="SecondaryDarkBrush" Color="#1a1a1a"/>        <!-- Dark gray panels -->
-    <SolidColorBrush x:Key="TertiaryDarkBrush" Color="#1e1e1e"/>         <!-- Input/control backgrounds -->
+    <!-- === DARK THEME EXCLUSIVE BRUSHES - NO SHARING === -->
     
-    <!-- Accent Colors - Auburn/Red Theme -->
-    <SolidColorBrush x:Key="AccentRedBrush" Color="#c44536"/>            <!-- Primary auburn -->
-    <SolidColorBrush x:Key="AccentRedHoverBrush" Color="#a63429"/>       <!-- Hover auburn -->
-    <SolidColorBrush x:Key="AccentRedPressedBrush" Color="#8b2a1f"/>     <!-- Pressed auburn -->
+    <!-- Dark Background Hierarchy -->
+    <SolidColorBrush x:Key="DarkBaseBrush" Color="#0f0f0f"/>          <!-- Deep black base -->
+    <SolidColorBrush x:Key="DarkPanelBrush" Color="#1a1a1a"/>        <!-- Dark gray panels -->
+    <SolidColorBrush x:Key="DarkInputBrush" Color="#1e1e1e"/>        <!-- Input/control backgrounds -->
     
-    <!-- Border Colors -->
-    <SolidColorBrush x:Key="BorderBrush" Color="#374151"/>               <!-- Subtle borders -->
-    <SolidColorBrush x:Key="BorderHoverBrush" Color="#4b5563"/>          <!-- Hover borders -->
+    <!-- Dark Button System -->
+    <SolidColorBrush x:Key="DarkButtonBrush" Color="#374151"/>       <!-- Dark button base -->
+    <SolidColorBrush x:Key="DarkButtonHoverBrush" Color="#4b5563"/>  <!-- Hover state -->
+    <SolidColorBrush x:Key="DarkButtonPressedBrush" Color="#6b7280"/><!-- Pressed state -->
+    <SolidColorBrush x:Key="DarkButtonBorderBrush" Color="#374151"/> <!-- Button borders -->
     
-    <!-- Text Colors - Light on Dark -->
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#f7fafc"/>          <!-- Pure white primary text -->
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#e2e8f0"/>        <!-- Light gray secondary -->
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#94a3b8"/>            <!-- Muted gray -->
-    <SolidColorBrush x:Key="TextDisabledBrush" Color="#64748b"/>         <!-- Disabled gray -->
+    <!-- Dark Primary Accent (Auburn) -->
+    <SolidColorBrush x:Key="DarkAccentBrush" Color="#c44536"/>       <!-- Primary auburn -->
+    <SolidColorBrush x:Key="DarkAccentHoverBrush" Color="#a63429"/>  <!-- Hover auburn -->
+    <SolidColorBrush x:Key="DarkAccentPressedBrush" Color="#8b2a1f"/><!-- Pressed auburn -->
     
-    <!-- Status Colors -->
-    <SolidColorBrush x:Key="SuccessBrush" Color="#10b981"/>              <!-- Emerald success -->
-    <SolidColorBrush x:Key="ErrorBrush" Color="#ef4444"/>                <!-- Red error -->
-    <SolidColorBrush x:Key="WarningBrush" Color="#f59e0b"/>              <!-- Amber warning -->
+    <!-- Dark Border System -->
+    <SolidColorBrush x:Key="DarkBorderBrush" Color="#374151"/>       <!-- Subtle borders -->
+    <SolidColorBrush x:Key="DarkBorderHoverBrush" Color="#4b5563"/>  <!-- Hover borders -->
+    
+    <!-- Dark Text System -->
+    <SolidColorBrush x:Key="DarkPrimaryTextBrush" Color="#f7fafc"/>  <!-- Pure white for dark content -->
+    <SolidColorBrush x:Key="DarkSecondaryTextBrush" Color="#e2e8f0"/><!-- Light gray secondary -->
+    <SolidColorBrush x:Key="DarkMutedTextBrush" Color="#94a3b8"/>    <!-- Muted gray -->
+    <SolidColorBrush x:Key="DarkDisabledTextBrush" Color="#64748b"/> <!-- Disabled gray -->
+    
+    <!-- Dark Button Text System -->
+    <SolidColorBrush x:Key="DarkButtonTextBrush" Color="#f7fafc"/>   <!-- Selected button text -->
+    <SolidColorBrush x:Key="DarkButtonTextNormalBrush" Color="#e2e8f0"/><!-- Normal button text -->
+    <SolidColorBrush x:Key="DarkButtonTextHoverBrush" Color="#ffffff"/><!-- Hover button text -->
+    <SolidColorBrush x:Key="DarkAccentTextBrush" Color="#ffffff"/>   <!-- White text for auburn -->
+    
+    <!-- Dark Status Colors -->
+    <SolidColorBrush x:Key="DarkSuccessBrush" Color="#10b981"/>      <!-- Emerald success -->
+    <SolidColorBrush x:Key="DarkErrorBrush" Color="#ef4444"/>        <!-- Red error -->
+    <SolidColorBrush x:Key="DarkWarningBrush" Color="#f59e0b"/>      <!-- Amber warning -->
+    
+    <!-- Dark Control System -->
+    <SolidColorBrush x:Key="DarkControlBrush" Color="#1e1e1e"/>      <!-- Input backgrounds -->
+    <SolidColorBrush x:Key="DarkControlHoverBrush" Color="#2a2a2a"/> <!-- Hover state -->
+    <SolidColorBrush x:Key="DarkControlFocusBrush" Color="#333333"/> <!-- Focus state -->
+    
+    <!-- Dark Dropdown System -->
+    <SolidColorBrush x:Key="DarkDropdownBrush" Color="#1a1a1a"/>     <!-- Dark dropdown -->
+    <SolidColorBrush x:Key="DarkDropdownTextBrush" Color="#f7fafc"/> <!-- Dropdown text -->
+    <SolidColorBrush x:Key="DarkDropdownHoverBrush" Color="#c44536"/><!-- Auburn hover background -->
+    <SolidColorBrush x:Key="DarkDropdownHoverTextBrush" Color="#000000"/><!-- Black text on hover -->
+    <SolidColorBrush x:Key="DarkDropdownSelectedTextBrush" Color="#000000"/><!-- Black text selected -->
+    
+    <!-- Dark Alternative Accents -->
+    <SolidColorBrush x:Key="DarkPurpleBrush" Color="#8b5cf6"/>       <!-- Purple accent -->
+    <SolidColorBrush x:Key="DarkPurpleHoverBrush" Color="#7c3aed"/>  <!-- Purple hover -->
+    <SolidColorBrush x:Key="DarkPurplePressedBrush" Color="#6d28d9"/><!-- Purple pressed -->
+    
+    <SolidColorBrush x:Key="DarkGreenBrush" Color="#10b981"/>        <!-- Emerald green -->
+    <SolidColorBrush x:Key="DarkGreenHoverBrush" Color="#059669"/>   <!-- Green hover -->
+    <SolidColorBrush x:Key="DarkGreenPressedBrush" Color="#047857"/> <!-- Green pressed -->
+    
+    <SolidColorBrush x:Key="DarkYellowBrush" Color="#f59e0b"/>       <!-- Amber warning -->
+    <SolidColorBrush x:Key="DarkYellowHoverBrush" Color="#d97706"/>  <!-- Amber hover -->
+    <SolidColorBrush x:Key="DarkYellowPressedBrush" Color="#b45309"/><!-- Amber pressed -->
+    
+    <SolidColorBrush x:Key="DarkBlueBrush" Color="#3b82f6"/>         <!-- Professional blue -->
+    <SolidColorBrush x:Key="DarkBlueHoverBrush" Color="#2563eb"/>    <!-- Blue hover -->
+    <SolidColorBrush x:Key="DarkBluePressedBrush" Color="#1d4ed8"/>  <!-- Blue pressed -->
+    
+    <!-- === SEMANTIC BRUSH MAPPING FOR DARK THEME === -->
+    
+    <!-- Background Mapping -->
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#0f0f0f"/>
+    <SolidColorBrush x:Key="SecondaryDarkBrush" Color="#1a1a1a"/>
+    <SolidColorBrush x:Key="TertiaryDarkBrush" Color="#1e1e1e"/>
+    
+    <!-- Button Mapping -->
+    <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#374151"/>
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#4b5563"/>
+    <SolidColorBrush x:Key="ButtonPressedBrush" Color="#6b7280"/>
+    
+    <!-- Primary Button Mapping -->
+    <SolidColorBrush x:Key="AccentRedBrush" Color="#c44536"/>
+    <SolidColorBrush x:Key="AccentRedHoverBrush" Color="#a63429"/>
+    <SolidColorBrush x:Key="AccentRedPressedBrush" Color="#8b2a1f"/>
+    
+    <!-- Border Mapping -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#374151"/>
+    <SolidColorBrush x:Key="BorderHoverBrush" Color="#4b5563"/>
+    
+    <!-- Control Mapping -->
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#1e1e1e"/>
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="#2a2a2a"/>
+    <SolidColorBrush x:Key="ControlFocusBrush" Color="#333333"/>
+    
+    <!-- Text Mapping -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#f7fafc"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#e2e8f0"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#94a3b8"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="#64748b"/>
+    <SolidColorBrush x:Key="GeneralTextBrush" Color="#f7fafc"/>
+    
+    <!-- Button Text Mapping -->
+    <SolidColorBrush x:Key="ButtonTextNormalBrush" Color="#e2e8f0"/>
+    <SolidColorBrush x:Key="ButtonTextHoverBrush" Color="#ffffff"/>
+    <SolidColorBrush x:Key="ButtonTextBrush" Color="#f7fafc"/>
+    
+    <!-- Status Mapping -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#10b981"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="#ef4444"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#f59e0b"/>
+    
+    <!-- Dropdown Mapping -->
+    <SolidColorBrush x:Key="DropdownTextBrush" Color="#f7fafc"/>
+    <SolidColorBrush x:Key="DropdownTextHoverBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="DropdownTextSelectedBrush" Color="#000000"/>
+    
+    <!-- Alternative Accent Mapping -->
+    <SolidColorBrush x:Key="AccentPurpleBrush" Color="#8b5cf6"/>
+    <SolidColorBrush x:Key="AccentPurpleHoverBrush" Color="#7c3aed"/>
+    <SolidColorBrush x:Key="AccentPurplePressedBrush" Color="#6d28d9"/>
+    
+    <SolidColorBrush x:Key="AccentGreenBrush" Color="#10b981"/>
+    <SolidColorBrush x:Key="AccentGreenHoverBrush" Color="#059669"/>
+    <SolidColorBrush x:Key="AccentGreenPressedBrush" Color="#047857"/>
+    
+    <SolidColorBrush x:Key="AccentYellowBrush" Color="#f59e0b"/>
+    <SolidColorBrush x:Key="AccentYellowHoverBrush" Color="#d97706"/>
+    <SolidColorBrush x:Key="AccentYellowPressedBrush" Color="#b45309"/>
+    
+    <SolidColorBrush x:Key="AccentBlueBrush" Color="#3b82f6"/>
+    <SolidColorBrush x:Key="AccentBlueHoverBrush" Color="#2563eb"/>
+    <SolidColorBrush x:Key="AccentBluePressedBrush" Color="#1d4ed8"/>
+    
+    <!-- Error Background -->
+    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#1f1f1f"/>
+    
+    <!-- Utility -->
+    <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
 
 </ResourceDictionary>

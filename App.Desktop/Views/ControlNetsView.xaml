@@ -51,13 +51,14 @@
 									   Foreground="{DynamicResource AccentRedBrush}"/>
 							<Border Background="{DynamicResource AccentRedBrush}"
 									CornerRadius="8"
-									Padding="4,2"
+									Padding="8,4"
 									HorizontalAlignment="Right"
 									VerticalAlignment="Top"
 									Margin="0,4,4,0">
 								<TextBlock Text="{Binding Type}"
 										   Style="{StaticResource CaptionTextStyle}"
-										   FontSize="9"
+										   Foreground="{DynamicResource ButtonTextBrush}"
+										   FontSize="10"
 										   FontWeight="Bold"/>
 							</Border>
 						</Grid>
@@ -122,6 +123,8 @@
 												 Value="True">
 										<Setter Property="Background"
 												Value="{DynamicResource SuccessBrush}"/>
+										<Setter Property="Foreground"
+												Value="{DynamicResource ButtonTextBrush}"/>
 										<Setter Property="Content"
 												Value="✓ Applied"/>
 									</DataTrigger>
@@ -562,7 +565,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{DynamicResource SuccessBrush}"
+							   Foreground="{DynamicResource TextSecondaryBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -645,12 +648,12 @@
 										   HorizontalAlignment="Center"
 										   Foreground="{DynamicResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
-								<TextBlock Text="No ControlNets Applied"
+								<TextBlock Text="ControlNets Ready"
 										   HorizontalAlignment="Center"
 										   Style="{StaticResource BodyTextStyle}"
 										   FontSize="13"
 										   FontWeight="Medium"/>
-								<TextBlock Text="Configure settings above and apply ControlNet models"
+								<TextBlock Text="Configure settings above and apply ControlNet models below"
 										   HorizontalAlignment="Center"
 										   Style="{StaticResource CaptionTextStyle}"
 										   FontSize="11"

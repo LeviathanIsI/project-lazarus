@@ -23,10 +23,24 @@ public static class ApiClient
     {
         try
         {
-            using var resp = await Http.GetAsync("/status");
+            using var resp = await Http.GetAsync("/status").ConfigureAwait(false);
             return resp.IsSuccessStatusCode;
         }
-        catch { return false; }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in HealthAsync: {ex.Message}");
+            return false;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in HealthAsync: {ex.Message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in HealthAsync: {ex.Message}");
+            return false;
+        }
     }
 
     public static async Task<ChatCompletionResponse?> ChatCompletionAsync(ChatCompletionRequest request)
@@ -64,33 +78,75 @@ public static class ApiClient
     {
         try
         {
-            using var resp = await Http.GetAsync("/v1/system");
+            using var resp = await Http.GetAsync("/v1/system").ConfigureAwait(false);
             resp.EnsureSuccessStatusCode();
             return await resp.Content.ReadFromJsonAsync<SystemInfo>(Json);
         }
-        catch { return null; }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in GetSystemInfoAsync: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in GetSystemInfoAsync: {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in GetSystemInfoAsync: {ex.Message}");
+            return null;
+        }
     }
 
     public static async Task<ModelInventoryResponse?> GetAvailableModelsAsync()
     {
         try
         {
-            using var resp = await Http.GetAsync("/v1/models/available");
+            using var resp = await Http.GetAsync("/v1/models/available").ConfigureAwait(false);
             resp.EnsureSuccessStatusCode();
             return await resp.Content.ReadFromJsonAsync<ModelInventoryResponse>(Json);
         }
-        catch { return null; }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in GetAvailableModelsAsync: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in GetAvailableModelsAsync: {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in GetAvailableModelsAsync: {ex.Message}");
+            return null;
+        }
     }
 
     public static async Task<RunnerInfo?> GetRunnersAsync()
     {
         try
         {
-            using var resp = await Http.GetAsync("/v1/runners");
+            using var resp = await Http.GetAsync("/v1/runners").ConfigureAwait(false);
             resp.EnsureSuccessStatusCode();
             return await resp.Content.ReadFromJsonAsync<RunnerInfo>(Json);
         }
-        catch { return null; }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in GetRunnersAsync: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in GetRunnersAsync: {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in GetRunnersAsync: {ex.Message}");
+            return null;
+        }
     }
 
     public static async Task<bool> SwitchRunnerAsync(string type, string baseUrl, string? model = null)
@@ -98,10 +154,24 @@ public static class ApiClient
         try
         {
             var request = new { Type = type, BaseUrl = baseUrl, Model = model };
-            using var resp = await Http.PostAsJsonAsync("/v1/runners/switch", request, Json);
+            using var resp = await Http.PostAsJsonAsync("/v1/runners/switch", request, Json).ConfigureAwait(false);
             return resp.IsSuccessStatusCode;
         }
-        catch { return false; }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in SwitchRunnerAsync: {ex.Message}");
+            return false;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in SwitchRunnerAsync: {ex.Message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in SwitchRunnerAsync: {ex.Message}");
+            return false;
+        }
     }
 
     public static async Task<bool> LoadModelAsync(string modelPath, string? name = null)
@@ -109,10 +179,24 @@ public static class ApiClient
         try
         {
             var request = new { ModelPath = modelPath, Name = name };
-            using var resp = await Http.PostAsJsonAsync("/v1/models/load", request, Json);
+            using var resp = await Http.PostAsJsonAsync("/v1/models/load", request, Json).ConfigureAwait(false);
             return resp.IsSuccessStatusCode;
         }
-        catch { return false; }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in LoadModelAsync: {ex.Message}");
+            return false;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in LoadModelAsync: {ex.Message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in LoadModelAsync: {ex.Message}");
+            return false;
+        }
     }
 
     public static async Task<ModelCapabilities?> GetModelCapabilitiesAsync(string modelName = "current")
@@ -231,6 +315,122 @@ public static class ApiClient
             return false;
         }
     }
+    
+    /// <summary>
+    /// Get comprehensive system status for SystemStateViewModel
+    /// </summary>
+    public static async Task<SystemStatusResponse?> GetSystemStatusAsync()
+    {
+        try
+        {
+            // Use the ACTUAL /status endpoint that exists
+            using var statusResp = await Http.GetAsync("/status");
+            if (!statusResp.IsSuccessStatusCode) return null;
+            
+            var statusJson = await statusResp.Content.ReadAsStringAsync();
+            var statusData = JsonSerializer.Deserialize<JsonElement>(statusJson, Json);
+            
+            // Extract data from the actual orchestrator response
+            var runner = statusData.GetProperty("runner");
+            var runnerName = runner.GetProperty("name").GetString();
+            var runnerHealthy = runner.GetProperty("healthy").GetBoolean();
+            
+            // Get additional system info from /v1/system if available
+            string? gpuName = null;
+            int? vramUsedMB = null;
+            int? vramTotalMB = null;
+            
+            try
+            {
+                using var systemResp = await Http.GetAsync("/v1/system");
+                if (systemResp.IsSuccessStatusCode)
+                {
+                    var systemJson = await systemResp.Content.ReadAsStringAsync();
+                    var systemData = JsonSerializer.Deserialize<JsonElement>(systemJson, Json);
+                    
+                    if (systemData.TryGetProperty("Gpu", out var gpu))
+                    {
+                        vramTotalMB = (int?)(gpu.GetProperty("Total").GetInt64() / (1024 * 1024));
+                        vramUsedMB = (int?)(gpu.GetProperty("Used").GetInt64() / (1024 * 1024));
+                    }
+                }
+            }
+            catch
+            {
+                // System endpoint failed, continue with basic status
+            }
+            
+            return new SystemStatusResponse
+            {
+                LoadedModel = runnerHealthy ? runnerName : "No model loaded",
+                ActiveRunner = runnerName ?? "No runner",
+                ServerPort = 11711,
+                GpuName = gpuName,
+                VramUsedMB = vramUsedMB,
+                VramTotalMB = vramTotalMB,
+                QueuedJobs = 0 // TODO: Add job queue tracking
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] GetSystemStatus failed: {ex.Message}");
+            return null;
+        }
+    }
+    
+    /// <summary>
+    /// Unload currently loaded model
+    /// </summary>
+    public static async Task<bool> UnloadModelAsync()
+    {
+        try
+        {
+            using var resp = await Http.DeleteAsync("/v1/models/current").ConfigureAwait(false);
+            return resp.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in UnloadModelAsync: {ex.Message}");
+            return false;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in UnloadModelAsync: {ex.Message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in UnloadModelAsync: {ex.Message}");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Restart the active runner
+    /// </summary>
+    public static async Task<bool> RestartRunnerAsync()
+    {
+        try
+        {
+            using var resp = await Http.PostAsync("/v1/runners/restart", null).ConfigureAwait(false);
+            return resp.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[ApiClient] Network error in RestartRunnerAsync: {ex.Message}");
+            return false;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[ApiClient] Timeout in RestartRunnerAsync: {ex.Message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ApiClient] Unexpected error in RestartRunnerAsync: {ex.Message}");
+            return false;
+        }
+    }
 }
 
 // Response models
@@ -324,4 +524,20 @@ public record RunnerOption
     public string Id { get; init; } = "";
     public string Name { get; init; } = "";
     public string Description { get; init; } = "";
+}
+
+/// <summary>
+/// Comprehensive system status for the Context Bar
+/// </summary>
+public record SystemStatusResponse
+{
+    public string? LoadedModel { get; init; }
+    public string? ActiveRunner { get; init; }
+    public string? GpuName { get; init; }
+    public int? ContextLength { get; init; }
+    public double? TokensPerSecond { get; init; }
+    public int? ServerPort { get; init; }
+    public int? VramUsedMB { get; init; }
+    public int? VramTotalMB { get; init; }
+    public int? QueuedJobs { get; init; }
 }

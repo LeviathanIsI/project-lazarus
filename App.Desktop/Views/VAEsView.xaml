@@ -56,10 +56,10 @@
 						<Border Grid.Column="1"
 								Background="{DynamicResource AccentRedBrush}"
 								CornerRadius="8"
-								Padding="6,2">
+								Padding="8,4">
 							<TextBlock Text="{Binding Category}"
-									   Style="{StaticResource CaptionTextStyle}"
-									   FontSize="9"
+									   Foreground="{DynamicResource ButtonTextBrush}"
+									   FontSize="10"
 									   FontWeight="Bold"/>
 						</Border>
 					</Grid>
@@ -157,6 +157,8 @@
 													 Value="True">
 											<Setter Property="Background"
 													Value="{DynamicResource SuccessBrush}"/>
+											<Setter Property="Foreground"
+													Value="{DynamicResource ButtonTextBrush}"/>
 											<Setter Property="Content"
 													Value="✓ Active"/>
 										</DataTrigger>
@@ -264,7 +266,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{DynamicResource SuccessBrush}"
+							   Foreground="{DynamicResource TextSecondaryBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 
@@ -355,10 +357,10 @@
 									<Border Grid.Column="1"
 											Background="{DynamicResource AccentRedBrush}"
 											CornerRadius="8"
-											Padding="6,2">
+											Padding="8,4">
 										<TextBlock Text="{Binding ActiveVAE.Category}"
-												   Style="{StaticResource CaptionTextStyle}"
-												   FontSize="9"
+												   Foreground="{DynamicResource ButtonTextBrush}"
+												   FontSize="10"
 												   FontWeight="Bold"/>
 									</Border>
 								</Grid>
@@ -452,12 +454,12 @@
 										   HorizontalAlignment="Center"
 										   Foreground="{DynamicResource TextDisabledBrush}"
 										   Margin="0,0,0,8"/>
-								<TextBlock Text="No VAE Loaded"
+								<TextBlock Text="Default Encoder Active"
 										   HorizontalAlignment="Center"
 										   Style="{StaticResource BodyTextStyle}"
 										   FontSize="13"
 										   FontWeight="Medium"/>
-								<TextBlock Text="Using default encoder - load a VAE for enhanced quality"
+								<TextBlock Text="Choose a VAE below for enhanced image quality"
 										   HorizontalAlignment="Center"
 										   Style="{StaticResource CaptionTextStyle}"
 										   FontSize="11"

@@ -15,13 +15,19 @@
       "Bash(dotnet list package:*)",
       "Bash(dotnet restore:*)",
       "Bash(dotnet clean:*)",
-      "Bash(dotnet nuget locals:*)"
+      "Bash(dotnet nuget locals:*)",
+      "Bash(python:*)",
+      "Bash(rm:*)",
+      "Bash(start dotnet run --project App.Desktop)",
+      "Bash(taskkill:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
       "C:\\Users\\Josh\\.local",
-      "D:\\"
+      "D:\\",
+      "D:\\d"
     ]
   }
 }

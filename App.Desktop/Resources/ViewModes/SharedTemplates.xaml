@@ -3,12 +3,7 @@
     
     <!-- SHARED TEMPLATES: Common base templates used across all ViewModes -->
     <!-- These provide consistent base styling that gets enhanced by ViewMode-specific templates -->
-    
-    <!-- Base Text Styles -->
-    <Style x:Key="CodeTextStyle" TargetType="TextBlock" BasedOn="{DynamicResource CaptionTextStyle}">
-        <Setter Property="FontFamily" Value="Consolas, 'Courier New', monospace"/>
-        <Setter Property="FontSize" Value="11"/>
-    </Style>
+    <!-- Note: Common styles like CodeTextStyle, CaptionTextStyle etc. are defined in App.xaml -->
     
     <!-- Expandable Section Style -->
     <Style x:Key="SubtleExpanderStyle" TargetType="Expander">
@@ -109,6 +104,22 @@
         </Setter>
     </Style>
     
+    <!-- Converters for ViewMode templates -->
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    
+    <!-- Bool to Status Text Converters -->
+    <x:Static x:Key="BoolToActiveStatus" Member="Lazarus.Desktop.Converters.BoolToActiveStatusConverter.Instance"/>
+    <x:Static x:Key="BoolToAppliedStatus" Member="Lazarus.Desktop.Converters.BoolToAppliedStatusConverter.Instance"/>
+    <x:Static x:Key="BoolToApplyText" Member="Lazarus.Desktop.Converters.BoolToApplyTextConverter.Instance"/>
+    <x:Static x:Key="BoolToAccentBrush" Member="Lazarus.Desktop.Converters.BoolToAccentBrushConverter.Instance"/>
+    
+    <!-- Role-based Converters -->
+    <x:Static x:Key="RoleToDisplayName" Member="Lazarus.Desktop.Converters.RoleToDisplayNameConverter.Instance"/>
+    <x:Static x:Key="RoleToBackgroundBrush" Member="Lazarus.Desktop.Converters.RoleToBackgroundBrushConverter.Instance"/>
+    
+    <!-- Utility Converters -->
+    <x:Static x:Key="InvertBool" Member="Lazarus.Desktop.Converters.InvertBoolConverter.Instance"/>
+    
     <!-- Toggle Button Style for JSON/Grid view switching -->
     <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
         <Setter Property="Background" Value="{DynamicResource TertiaryDarkBrush}"/>
@@ -131,10 +142,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ButtonTextBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource AccentRedHoverBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ButtonTextHoverBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -142,119 +154,128 @@
         </Setter>
     </Style>
     
-    <!-- Caption Text Style -->
-    <Style x:Key="CaptionTextStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="Normal"/>
-    </Style>
+    <!-- ModuleStatusBar Template - Consistent status display across all feature modules -->
+    <DataTemplate x:Key="ModuleStatusBar">
+        <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" 
+                BorderThickness="0,1,0,0" 
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Module Status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!-- Status Indicator -->
+                    <Ellipse Width="8" Height="8" 
+                             Fill="{Binding ModuleStatusColor, Converter={StaticResource BoolToAccentBrush}}" 
+                             VerticalAlignment="Center" 
+                             Margin="0,0,6,0"/>
+                    <TextBlock Text="{Binding ModuleStatus}" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               FontSize="9" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Progress Bar (visible during processing) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0">
+                    <ProgressBar Value="{Binding ProcessingProgress}" 
+                                 Maximum="100" 
+                                 Height="4" 
+                                 MinWidth="80"
+                                 VerticalAlignment="Center"
+                                 Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibility}}"/>
+                    <TextBlock Text="{Binding ProcessingStatus}" 
+                               Foreground="{DynamicResource TextMutedBrush}" 
+                               FontSize="9" 
+                               VerticalAlignment="Center" 
+                               Margin="8,0,0,0"
+                               Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibility}}"/>
+                </StackPanel>
+                
+                <!-- Last Operation -->
+                <TextBlock Grid.Column="2" 
+                           Text="{Binding LastOperation}" 
+                           Foreground="{DynamicResource TextMutedBrush}" 
+                           FontSize="9" 
+                           VerticalAlignment="Center" 
+                           Margin="0,0,12,0"/>
+                
+                <!-- Timestamp -->
+                <TextBlock Grid.Column="3" 
+                           Text="{Binding TimestampDisplay}" 
+                           Foreground="{DynamicResource TextMutedBrush}" 
+                           FontSize="9" 
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
     
-    <!-- Ghost Button Style (for subtle interactions) -->
-    <Style x:Key="GhostButtonStyle" TargetType="ToggleButton">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="4,2"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ToggleButton">
-                    <Border Background="{TemplateBinding Background}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Foreground" Value="{DynamicResource AccentRedBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-    
-    <!-- Dark ComboBox Style -->
-    <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
-        <Setter Property="Background" Value="{DynamicResource TertiaryDarkBrush}"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="8,4"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ComboBox">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
-                        <Grid>
-                            <ToggleButton x:Name="ToggleButton"
-                                          Grid.Column="0"
-                                          Background="Transparent"
-                                          BorderThickness="0"
-                                          IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
-                                          ClickMode="Press"/>
-                            <ContentPresenter x:Name="ContentSite"
-                                              IsHitTestVisible="False"
-                                              Content="{TemplateBinding SelectionBoxItem}"
-                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                              Margin="{TemplateBinding Padding}"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Left"/>
-                            <Popup x:Name="Popup"
-                                   Placement="Bottom"
-                                   IsOpen="{TemplateBinding IsDropDownOpen}"
-                                   AllowsTransparency="True"
-                                   Focusable="False"
-                                   PopupAnimation="Slide">
-                                <Border Background="{DynamicResource SecondaryDarkBrush}"
-                                        BorderBrush="{DynamicResource BorderBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="4">
-                                    <ScrollViewer>
-                                        <ItemsPresenter/>
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-    
-    <!-- Main Navigation Button Style -->
-    <Style x:Key="MainNavButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="16,8"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="FontWeight" Value="Medium"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}"
-                            Padding="{TemplateBinding Padding}"
-                            CornerRadius="6">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    <!-- CapabilityErrorTemplate - Friendly error states for missing capabilities -->
+    <DataTemplate x:Key="CapabilityErrorTemplate">
+        <Border Background="{DynamicResource TertiaryDarkBrush}" 
+                BorderBrush="{DynamicResource WarningBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="20">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="400">
+                <!-- Error Icon -->
+                <TextBlock Text="{Binding ErrorIcon}" 
+                           FontSize="32" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,0,0,12"/>
+                
+                <!-- Error Title -->
+                <TextBlock Text="{Binding ErrorTitle}" 
+                           Style="{DynamicResource HeadingMediumStyle}"
+                           HorizontalAlignment="Center" 
+                           Margin="0,0,0,8"/>
+                
+                <!-- Error Description -->
+                <TextBlock Text="{Binding ErrorDescription}" 
+                           Style="{DynamicResource BodyTextStyle}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" 
+                           TextAlignment="Center"
+                           Margin="0,0,0,16"/>
+                
+                <!-- Action Button -->
+                <Button Content="{Binding ActionButtonText}" 
+                        Command="{Binding ActionCommand}"
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        Padding="16,8"
+                        Visibility="{Binding HasAction, Converter={StaticResource BoolToVisibility}}"/>
+                
+                <!-- Requirements List -->
+                <StackPanel Visibility="{Binding HasRequirements, Converter={StaticResource BoolToVisibility}}"
+                           Margin="0,12,0,0">
+                    <TextBlock Text="Requirements:" 
+                               Style="{DynamicResource CaptionTextStyle}"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding Requirements}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" 
+                                           HorizontalAlignment="Center"
+                                           Margin="0,2">
+                                    <TextBlock Text="{Binding IsAvailable, Converter={StaticResource BoolToStatusIcon}}" 
+                                               Foreground="{Binding IsAvailable, Converter={StaticResource BoolToAccentBrush}}"
+                                               Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding Description}" 
+                                               Style="{DynamicResource CaptionTextStyle}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
     
 </ResourceDictionary>

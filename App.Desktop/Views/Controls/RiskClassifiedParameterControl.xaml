@@ -1,0 +1,244 @@
+<UserControl x:Class="Lazarus.Desktop.Views.Controls.RiskClassifiedParameterControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    
+    <Border Background="{DynamicResource TertiaryDarkBrush}"
+            BorderBrush="{Binding RiskBorderBrush}"
+            BorderThickness="2"
+            CornerRadius="6"
+            Padding="12"
+            Margin="0,0,0,8">
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Parameter Header with Risk Indicator -->
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Risk Icon -->
+                <Border Grid.Column="0"
+                        Background="{Binding RiskBackgroundBrush}"
+                        CornerRadius="12"
+                        Width="24" Height="24"
+                        Margin="0,0,8,0">
+                    <TextBlock Text="{Binding RiskIcon}"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                
+                <!-- Parameter Name -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ParameterName}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+                
+                <!-- Risk Level Badge -->
+                <Border Grid.Column="2"
+                        Background="{Binding RiskBackgroundBrush}"
+                        CornerRadius="10"
+                        Padding="8,2"
+                        Margin="0,0,8,0">
+                    <TextBlock Text="{Binding RiskLevel}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+                </Border>
+                
+                <!-- Category Badge -->
+                <Border Grid.Column="3"
+                        Background="{DynamicResource SecondaryDarkBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="6,2">
+                    <TextBlock Text="{Binding Category}"
+                               FontSize="9"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+            
+            <!-- Warning Banner (if applicable) -->
+            <Border Grid.Row="1"
+                    Background="{DynamicResource WarningBrush}"
+                    CornerRadius="4"
+                    Padding="8,4"
+                    Margin="0,0,0,8"
+                    Visibility="{Binding HasWarning, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⚠️" FontSize="12" Margin="0,0,6,0"/>
+                    <TextBlock Text="{Binding WarningMessage}"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Parameter Control (Dynamic Content) -->
+            <ContentPresenter Grid.Row="2"
+                              Content="{Binding ParameterControl}"
+                              Margin="0,0,0,12"/>
+            
+            <!-- Risk Information Panel -->
+            <Expander Grid.Row="3"
+                      Header="ℹ️ Parameter Information"
+                      IsExpanded="False"
+                      FontSize="11"
+                      Foreground="{DynamicResource TextSecondaryBrush}">
+                <Border Background="{DynamicResource SecondaryDarkBrush}"
+                        CornerRadius="4"
+                        Padding="12"
+                        Margin="0,8,0,0">
+                    <StackPanel>
+                        <!-- Description -->
+                        <TextBlock Text="{Binding Description}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"/>
+                        
+                        <!-- Safe Usage -->
+                        <StackPanel Visibility="{Binding HasSafeUsage, Converter={StaticResource BoolToVisibility}}"
+                                    Margin="0,0,0,6">
+                            <TextBlock Text="💡 Safe Usage:"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding SafeUsageGuideline}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="12,0,0,0"/>
+                        </StackPanel>
+                        
+                        <!-- Risk Explanation -->
+                        <StackPanel Visibility="{Binding HasRiskExplanation, Converter={StaticResource BoolToVisibility}}"
+                                    Margin="0,0,0,6">
+                            <TextBlock Text="⚠️ Potential Risks:"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource WarningBrush}"
+                                       Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding RiskExplanation}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="12,0,0,0"/>
+                        </StackPanel>
+                        
+                        <!-- Common Mistakes -->
+                        <StackPanel Visibility="{Binding HasCommonMistakes, Converter={StaticResource BoolToVisibility}}"
+                                    Margin="0,0,0,6">
+                            <TextBlock Text="🚫 Common Mistakes:"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ErrorBrush}"
+                                       Margin="0,0,0,2"/>
+                            <ItemsControl ItemsSource="{Binding CommonMistakes}"
+                                          Margin="12,0,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StringFormat='• {0}'}"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        
+                        <!-- Parameter Interactions -->
+                        <StackPanel Visibility="{Binding HasInteractions, Converter={StaticResource BoolToVisibility}}"
+                                    Margin="0,0,0,6">
+                            <TextBlock Text="🔗 Interacts With:"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Margin="0,0,0,2"/>
+                            <ItemsControl ItemsSource="{Binding InteractsWith}"
+                                          Margin="12,0,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource AccentRedBrush}"
+                                                CornerRadius="8"
+                                                Padding="4,2"
+                                                Margin="0,0,4,2">
+                                            <TextBlock Text="{Binding}"
+                                                       FontSize="9"
+                                                       Foreground="White"
+                                                       FontWeight="SemiBold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        
+                        <!-- Recommendations -->
+                        <StackPanel Visibility="{Binding HasRecommendations, Converter={StaticResource BoolToVisibility}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Recommended For -->
+                                <StackPanel Grid.Column="0"
+                                            Visibility="{Binding HasRecommendedFor, Converter={StaticResource BoolToVisibility}}"
+                                            Margin="0,0,4,0">
+                                    <TextBlock Text="✨ Best For:"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SuccessBrush}"
+                                               Margin="0,0,0,2"/>
+                                    <TextBlock Text="{Binding RecommendedFor}"
+                                               FontSize="10"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                                
+                                <!-- Avoid When -->
+                                <StackPanel Grid.Column="1"
+                                            Visibility="{Binding HasAvoidWhen, Converter={StaticResource BoolToVisibility}}"
+                                            Margin="4,0,0,0">
+                                    <TextBlock Text="❌ Avoid When:"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ErrorBrush}"
+                                               Margin="0,0,0,2"/>
+                                    <TextBlock Text="{Binding AvoidWhen}"
+                                               FontSize="10"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Expander>
+        </Grid>
+    </Border>
+</UserControl>

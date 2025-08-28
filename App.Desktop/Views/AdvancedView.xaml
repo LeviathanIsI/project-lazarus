@@ -65,8 +65,8 @@
 								</Style>
 							</Border.Style>
 							<TextBlock Text="{Binding WarningLevel}"
-									   Style="{StaticResource CaptionTextStyle}"
-									   FontSize="8"
+									   Foreground="{DynamicResource ButtonTextBrush}"
+									   FontSize="9"
 									   FontWeight="Bold"/>
 						</Border>
 
@@ -77,8 +77,8 @@
 								Margin="4,0,0,0"
 								Visibility="{Binding RequiresRestart, Converter={StaticResource BooleanToVisibilityConverter}}">
 							<TextBlock Text="RESTART"
-									   Style="{StaticResource CaptionTextStyle}"
-									   FontSize="8"
+									   Foreground="{DynamicResource ButtonTextBrush}"
+									   FontSize="9"
 									   FontWeight="Bold"/>
 						</Border>
 					</StackPanel>
@@ -211,7 +211,7 @@
 
 					<TextBlock Grid.Column="0"
 							   Text="{Binding StatusText}"
-							   Foreground="{DynamicResource SuccessBrush}"
+							   Foreground="{DynamicResource TextSecondaryBrush}"
 							   FontSize="12"
 							   VerticalAlignment="Center"/>
 

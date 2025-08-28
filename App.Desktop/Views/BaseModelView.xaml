@@ -7,559 +7,604 @@
 			 mc:Ignorable="d"
 			 Background="{DynamicResource PrimaryDarkBrush}">
 
-	<UserControl.Resources>
-		<!-- Float Parameter Template - A1111 Inspired Section -->
-		<DataTemplate x:Key="FloatParameterTemplate">
-			<Border Style="{StaticResource DarkCardStyle}">
-				<Expander Background="Transparent"
-						  BorderThickness="0"
-						  IsExpanded="False">
-					<Expander.Header>
+	<!-- BASE MODEL MANAGEMENT: The Neural Core Command Center -->
+	<!-- Professional three-column layout for model selection, configuration, and monitoring -->
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="320" MinWidth="280"/>  <!-- Model Selection & Loading -->
+			<ColumnDefinition Width="*"/>                   <!-- Configuration & Testing -->
+			<ColumnDefinition Width="300" MinWidth="250"/>  <!-- Model Info & Status -->
+		</Grid.ColumnDefinitions>
+
+		<!-- LEFT COLUMN: Model Selection & Loading Interface -->
+		<Border Grid.Column="0" Background="{DynamicResource SecondaryDarkBrush}" 
+				Padding="16" Margin="0,0,8,0">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel>
+					<!-- Model Library Header -->
+					<Grid Margin="0,0,0,16">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						
+						<TextBlock Text="Model Library" 
+								   Style="{DynamicResource HeadingMediumStyle}"
+								   Foreground="{DynamicResource AccentRedBrush}"
+								   VerticalAlignment="Center"/>
+						
+						<Button Grid.Column="1" Content="🔍 Scan" 
+								Style="{DynamicResource SecondaryButtonStyle}"
+								Command="{Binding ScanModelsCommand}"
+								ToolTip="Scan for new models"/>
+					</Grid>
+
+					<!-- Model Search Filter -->
+					<Border Background="{DynamicResource TertiaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="12,8" 
+							Margin="0,0,0,12">
 						<Grid>
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="80"/>
+								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
+							<TextBlock Text="🔎" FontSize="14" 
+									   VerticalAlignment="Center" 
+									   Margin="0,0,8,0"
+									   Foreground="{DynamicResource TextMutedBrush}"/>
+							<TextBox Grid.Column="1" 
+									 Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}"
+									 Background="Transparent" 
+									 BorderThickness="0"
+									 Foreground="{DynamicResource TextPrimaryBrush}"
+									 VerticalAlignment="Center">
+								<TextBox.Style>
+									<Style TargetType="TextBox">
+										<Setter Property="Template">
+											<Setter.Value>
+												<ControlTemplate TargetType="TextBox">
+													<Grid>
+														<ScrollViewer x:Name="PART_ContentHost"
+																	  Background="Transparent"
+																	  BorderThickness="0"
+																	  IsTabStop="False"/>
+														<TextBlock Text="Filter models..." 
+																   Foreground="{DynamicResource TextMutedBrush}"
+																   FontStyle="Italic"
+																   VerticalAlignment="Center"
+																   Margin="2,0,0,0"
+																   IsHitTestVisible="False">
+															<TextBlock.Style>
+																<Style TargetType="TextBlock">
+																	<Setter Property="Visibility" Value="Collapsed"/>
+																	<Style.Triggers>
+																		<DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+																			<Setter Property="Visibility" Value="Visible"/>
+																		</DataTrigger>
+																	</Style.Triggers>
+																</Style>
+															</TextBlock.Style>
+														</TextBlock>
+													</Grid>
+												</ControlTemplate>
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</TextBox.Style>
+							</TextBox>
+						</Grid>
+					</Border>
 
-							<TextBlock Grid.Column="0"
-									   Text="{Binding Value.Name}"
-									   Style="{StaticResource BodyTextStyle}"
-									   VerticalAlignment="Center"
-									   FontWeight="Medium"
-									   FontSize="13"/>
+					<!-- Model Selection List -->
+					<Border Background="{DynamicResource TertiaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="0" 
+							MinHeight="300"
+							Margin="0,0,0,16">
+						<ScrollViewer VerticalScrollBarVisibility="Auto">
+							<ItemsControl ItemsSource="{Binding FilteredModels}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border Background="Transparent" 
+												Padding="12,8" 
+												Margin="0,0,0,1"
+												Cursor="Hand">
+											<Border.Style>
+												<Style TargetType="Border">
+													<Style.Triggers>
+														<Trigger Property="IsMouseOver" Value="True">
+															<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
+														</Trigger>
+														<DataTrigger Binding="{Binding IsSelected}" Value="True">
+															<Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</Border.Style>
+											<Border.InputBindings>
+												<MouseBinding MouseAction="LeftClick" 
+															  Command="{Binding DataContext.SelectModelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+															  CommandParameter="{Binding}"/>
+											</Border.InputBindings>
+											
+											<Grid>
+												<Grid.RowDefinitions>
+													<RowDefinition Height="Auto"/>
+													<RowDefinition Height="Auto"/>
+													<RowDefinition Height="Auto"/>
+												</Grid.RowDefinitions>
+												
+												<TextBlock Text="{Binding Name}" 
+														   FontWeight="SemiBold"
+														   Foreground="{DynamicResource TextPrimaryBrush}"
+														   TextTrimming="CharacterEllipsis"/>
+												
+												<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,2,0,0">
+													<Border Background="{DynamicResource AccentRedBrush}" 
+															CornerRadius="8" 
+															Padding="4,1">
+														<TextBlock Text="{Binding Size}" 
+																   FontSize="10" 
+																   Foreground="White"/>
+													</Border>
+													<Border Background="{DynamicResource TertiaryDarkBrush}" 
+															CornerRadius="8" 
+															Padding="4,1" 
+															Margin="4,0,0,0">
+														<TextBlock Text="{Binding Quantization}" 
+																   FontSize="10" 
+																   Foreground="{DynamicResource TextSecondaryBrush}"/>
+													</Border>
+												</StackPanel>
+												
+												<TextBlock Grid.Row="2" 
+														   Text="{Binding Architecture}" 
+														   FontSize="11"
+														   Foreground="{DynamicResource TextMutedBrush}"
+														   Margin="0,4,0,0"/>
+											</Grid>
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Border>
 
-							<!-- Dropdown indicator on the right -->
-							<Path Grid.Column="1"
-								  Fill="{DynamicResource TextMutedBrush}"
-								  Data="M7 10l5 5 5-5z"
-								  Width="12"
-								  Height="12"
-								  VerticalAlignment="Center"
-								  Margin="8,0,8,0"
-								  RenderTransformOrigin="0.5,0.5">
-								<Path.RenderTransform>
-									<RotateTransform Angle="0"/>
-								</Path.RenderTransform>
-							</Path>
+					<!-- Load/Unload Controls -->
+					<Grid Margin="0,0,0,16">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+						
+						<Button Content="Load Model" 
+								Style="{DynamicResource PrimaryButtonStyle}"
+								Command="{Binding LoadModelCommand}"
+								IsEnabled="{Binding CanLoadModel}"
+								Margin="0,0,4,0"/>
+						
+						<Button Grid.Column="1" 
+								Content="Unload" 
+								Style="{DynamicResource SecondaryButtonStyle}"
+								Command="{Binding UnloadModelCommand}"
+								IsEnabled="{Binding IsModelLoaded}"
+								Margin="4,0,0,0"/>
+					</Grid>
 
-							<Border Grid.Column="2"
-									Background="{DynamicResource TertiaryDarkBrush}"
-									CornerRadius="4"
-									BorderBrush="{DynamicResource BorderBrush}"
-									BorderThickness="1">
-								<TextBox Text="{Binding Value.DefaultValue, StringFormat=F2}"
-										 Background="Transparent"
-										 Foreground="{DynamicResource TextPrimaryBrush}"
-										 BorderThickness="0"
-										 Padding="8,4"
-										 TextAlignment="Center"
-										 FontFamily="Consolas"
-										 FontSize="12"/>
+					<!-- Loading Status -->
+					<Border Background="{DynamicResource TertiaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="12" 
+							Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<StackPanel Orientation="Horizontal">
+							<Border Background="{DynamicResource AccentRedBrush}" 
+									Width="16" Height="16" 
+									CornerRadius="8" 
+									Margin="0,0,8,0">
+								<Border.RenderTransform>
+									<RotateTransform x:Name="LoadingSpinner"/>
+								</Border.RenderTransform>
+								<Border.Triggers>
+									<EventTrigger RoutedEvent="Border.Loaded">
+										<BeginStoryboard>
+											<Storyboard RepeatBehavior="Forever">
+												<DoubleAnimation Storyboard.TargetName="LoadingSpinner"
+																 Storyboard.TargetProperty="Angle"
+																 From="0" To="360" 
+																 Duration="0:0:1"/>
+											</Storyboard>
+										</BeginStoryboard>
+									</EventTrigger>
+								</Border.Triggers>
 							</Border>
-						</Grid>
-					</Expander.Header>
+							<TextBlock Text="{Binding LoadingStatus}" 
+									   Foreground="{DynamicResource TextPrimaryBrush}"
+									   VerticalAlignment="Center"/>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
 
-					<StackPanel Margin="0,12,0,4">
-						<TextBlock Text="{Binding Value.Description}"
-								   Style="{StaticResource CaptionTextStyle}"
-								   TextWrapping="Wrap"
-								   LineHeight="16"
-								   Margin="0,0,0,12"/>
-
-						<Slider Value="{Binding Value.DefaultValue}"
-								Minimum="{Binding Value.MinValue}"
-								Maximum="{Binding Value.MaxValue}"
-								TickFrequency="0.01"
-								Foreground="{DynamicResource AccentRedBrush}"
-								Background="{DynamicResource BorderBrush}"
-								Height="20"/>
-					</StackPanel>
-				</Expander>
-			</Border>
-		</DataTemplate>
-
-		<!-- Integer Parameter Template - A1111 Inspired Section -->
-		<DataTemplate x:Key="IntParameterTemplate">
-			<Border Style="{StaticResource DarkCardStyle}">
-				<Expander Background="Transparent"
-						  BorderThickness="0"
-						  IsExpanded="False">
-					<Expander.Header>
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="80"/>
-							</Grid.ColumnDefinitions>
-
-							<TextBlock Grid.Column="0"
-									   Text="{Binding Value.Name}"
-									   Style="{StaticResource BodyTextStyle}"
-									   VerticalAlignment="Center"
-									   FontWeight="Medium"
-									   FontSize="13"/>
-
-							<Path Grid.Column="1"
-								  Fill="{DynamicResource TextMutedBrush}"
-								  Data="M7 10l5 5 5-5z"
-								  Width="12"
-								  Height="12"
-								  VerticalAlignment="Center"
-								  Margin="8,0,8,0"/>
-
-							<Border Grid.Column="2"
-									Background="{DynamicResource TertiaryDarkBrush}"
-									CornerRadius="4"
-									BorderBrush="{DynamicResource BorderBrush}"
-									BorderThickness="1">
-								<TextBox Text="{Binding Value.DefaultValue}"
-										 Background="Transparent"
-										 Foreground="{DynamicResource TextPrimaryBrush}"
-										 BorderThickness="0"
-										 Padding="8,4"
-										 TextAlignment="Center"
-										 FontFamily="Consolas"
-										 FontSize="12"/>
+		<!-- CENTER COLUMN: Configuration & Testing Interface -->
+		<Border Grid.Column="1" Background="{DynamicResource PrimaryDarkBrush}" 
+				Padding="16" Margin="0,0,8,0">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel>
+					<!-- Model Configuration Header -->
+					<Grid Margin="0,0,0,16">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						
+						<TextBlock Text="Model Configuration" 
+								   Style="{DynamicResource HeadingMediumStyle}"
+								   Foreground="{DynamicResource AccentRedBrush}"/>
+						
+						<StackPanel Grid.Column="1" Orientation="Horizontal">
+							<Border Background="{DynamicResource SuccessBrush}" 
+									CornerRadius="8" 
+									Padding="8,4"
+									Visibility="{Binding IsModelLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+								<TextBlock Text="Model Loaded" 
+										   Foreground="White" 
+										   FontSize="11" 
+										   FontWeight="SemiBold"/>
 							</Border>
-						</Grid>
-					</Expander.Header>
+						</StackPanel>
+					</Grid>
 
-					<StackPanel Margin="0,12,0,4">
-						<TextBlock Text="{Binding Value.Description}"
-								   Style="{StaticResource CaptionTextStyle}"
-								   TextWrapping="Wrap"
-								   LineHeight="16"
-								   Margin="0,0,0,12"/>
+					<!-- System Prompt Configuration -->
+					<Border Background="{DynamicResource SecondaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="16" 
+							Margin="0,0,0,16">
+						<StackPanel>
+							<TextBlock Text="System Prompt" 
+									   Style="{DynamicResource HeadingSmallStyle}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
+									   Margin="0,0,0,8"/>
+							
+							<TextBox Text="{Binding SystemPrompt, UpdateSourceTrigger=PropertyChanged}"
+									 Background="{DynamicResource TertiaryDarkBrush}"
+									 BorderBrush="{DynamicResource BorderBrush}"
+									 BorderThickness="1"
+									 Foreground="{DynamicResource TextPrimaryBrush}"
+									 Padding="12"
+									 MinHeight="120"
+									 AcceptsReturn="True"
+									 TextWrapping="Wrap"
+									 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+						</StackPanel>
+					</Border>
 
-						<Slider Value="{Binding Value.DefaultValue}"
-								Minimum="{Binding Value.MinValue}"
-								Maximum="{Binding Value.MaxValue}"
-								TickFrequency="1"
-								IsSnapToTickEnabled="True"
-								Foreground="{DynamicResource AccentRedBrush}"
-								Background="{DynamicResource BorderBrush}"
-								Height="20"/>
-					</StackPanel>
-				</Expander>
-			</Border>
-		</DataTemplate>
-
-		<!-- Boolean Parameter Template - A1111 Inspired Section -->
-		<DataTemplate x:Key="BoolParameterTemplate">
-			<Border Style="{StaticResource DarkCardStyle}">
-				<Expander Background="Transparent"
-						  BorderThickness="0"
-						  IsExpanded="False">
-					<Expander.Header>
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
-
-							<TextBlock Grid.Column="0"
-									   Text="{Binding Value.Name}"
-									   Style="{StaticResource BodyTextStyle}"
-									   VerticalAlignment="Center"
-									   FontWeight="Medium"
-									   FontSize="13"/>
-
-							<Path Grid.Column="1"
-								  Fill="{DynamicResource TextMutedBrush}"
-								  Data="M7 10l5 5 5-5z"
-								  Width="12"
-								  Height="12"
-								  VerticalAlignment="Center"
-								  Margin="8,0,8,0"/>
-
-							<CheckBox Grid.Column="2"
-									  IsChecked="{Binding Value.DefaultValue}"
-									  Style="{StaticResource DarkCheckBoxStyle}"/>
-						</Grid>
-					</Expander.Header>
-
-					<TextBlock Text="{Binding Value.Description}"
-							   Style="{StaticResource CaptionTextStyle}"
-							   TextWrapping="Wrap"
-							   LineHeight="16"
-							   Margin="0,12,0,4"/>
-				</Expander>
-			</Border>
-		</DataTemplate>
-
-		<!-- Dropdown Parameter Template - A1111 Inspired Section -->
-		<DataTemplate x:Key="DropdownParameterTemplate">
-			<Border Style="{StaticResource DarkCardStyle}">
-				<Expander Background="Transparent"
-						  BorderThickness="0"
-						  IsExpanded="False">
-					<Expander.Header>
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="120"/>
-							</Grid.ColumnDefinitions>
-
-							<TextBlock Grid.Column="0"
-									   Text="{Binding Value.Name}"
-									   Style="{StaticResource BodyTextStyle}"
-									   VerticalAlignment="Center"
-									   FontWeight="Medium"
-									   FontSize="13"/>
-
-							<Path Grid.Column="1"
-								  Fill="{DynamicResource TextMutedBrush}"
-								  Data="M7 10l5 5 5-5z"
-								  Width="12"
-								  Height="12"
-								  VerticalAlignment="Center"
-								  Margin="8,0,8,0"/>
-
-							<ComboBox Grid.Column="2"
-									  ItemsSource="{Binding Value.AllowedValues}"
-									  SelectedItem="{Binding Value.DefaultValue}"
-									  Style="{StaticResource DarkComboBoxStyle}">
-								<ComboBox.ItemContainerStyle>
-									<Style TargetType="ComboBoxItem"
-										   BasedOn="{StaticResource DarkComboBoxItemStyle}"/>
-								</ComboBox.ItemContainerStyle>
-							</ComboBox>
-						</Grid>
-					</Expander.Header>
-
-					<TextBlock Text="{Binding Value.Description}"
-							   Style="{StaticResource CaptionTextStyle}"
-							   TextWrapping="Wrap"
-							   LineHeight="16"
-							   Margin="0,12,0,4"/>
-				</Expander>
-			</Border>
-		</DataTemplate>
-
-		<!-- Parameter Template Selector - ViewMode Aware -->
-		<local:ParameterTemplateSelector x:Key="ParameterTemplateSelector"
-										 FloatTemplate="{DynamicResource FloatParameterTemplate}"
-										 IntTemplate="{DynamicResource IntParameterTemplate}"
-										 BoolTemplate="{DynamicResource BoolParameterTemplate}"
-										 DropdownTemplate="{DynamicResource DropdownParameterTemplate}"/>
-	</UserControl.Resources>
-
-	<ScrollViewer VerticalScrollBarVisibility="Auto">
-		<Grid>
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*"/>
-				<ColumnDefinition Width="*"/>
-			</Grid.ColumnDefinitions>
-
-			<!-- Left Column: Model Selection & Dynamic Sampling -->
-			<StackPanel Grid.Column="0"
-						Margin="0,0,8,0">
-				<!-- Model Selection -->
-				<Border Style="{StaticResource DarkBorderStyle}"
-						Margin="0,0,0,16">
-					<StackPanel>
-						<TextBlock Text="Model Selection"
-								   Style="{StaticResource HeadingMediumStyle}"
-								   Margin="0,0,0,12"/>
-
-						<Grid Margin="0,0,0,12">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
-
-							<ComboBox ItemsSource="{Binding BaseModels}"
-									  SelectedItem="{Binding SelectedModel}"
-									  DisplayMemberPath="Name"
-									  Style="{StaticResource DarkComboBoxStyle}"/>
-
-							<Button Grid.Column="1"
-									Content="Load"
-									Style="{StaticResource PrimaryButtonStyle}"
-									Margin="8,0,0,0"
-									Command="{Binding LoadModelCommand}"
-									CommandParameter="{Binding SelectedModel}"/>
-						</Grid>
-
-						<TextBlock Text="{Binding StatusText}"
-								   Foreground="{DynamicResource SuccessBrush}"
-								   FontSize="12"
-								   Margin="0,4,0,0"/>
-					</StackPanel>
-				</Border>
-
-				<!-- Dynamic Sampling Parameters -->
-				<Border Style="{StaticResource DarkBorderStyle}">
-					<StackPanel>
-						<Grid Margin="0,0,0,16">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="Sampling Parameters"
-									   Style="{StaticResource HeadingMediumStyle}"/>
-
-							<!-- Loading indicator -->
-							<StackPanel Grid.Column="1"
-										Orientation="Horizontal"
-										Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-								<TextBlock Text="Scanning..."
-										   Style="{StaticResource CaptionTextStyle}"
-										   Margin="0,0,8,0"/>
-								<Border Background="{DynamicResource AccentRedBrush}"
-										Width="16"
-										Height="16"
-										CornerRadius="8">
-									<Border.RenderTransform>
-										<RotateTransform x:Name="LoadingRotation"/>
-									</Border.RenderTransform>
-									<Border.Triggers>
-										<EventTrigger RoutedEvent="Border.Loaded">
-											<BeginStoryboard>
-												<Storyboard RepeatBehavior="Forever">
-													<DoubleAnimation Storyboard.TargetName="LoadingRotation"
-																	 Storyboard.TargetProperty="Angle"
-																	 From="0"
-																	 To="360"
-																	 Duration="0:0:1"/>
-												</Storyboard>
-											</BeginStoryboard>
-										</EventTrigger>
-									</Border.Triggers>
-								</Border>
-							</StackPanel>
-						</Grid>
-
-						<!-- Dynamic parameter controls -->
-						<ItemsControl ItemsSource="{Binding SupportedParameterSchema}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<Border Visibility="{Binding Value.IsSupported, Converter={StaticResource BooleanToVisibilityConverter}}">
-										<ContentPresenter Content="{Binding}"
-														  ContentTemplateSelector="{DynamicResource ParameterTemplateSelector}"/>
-									</Border>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-
-						<!-- Fallback message -->
-						<TextBlock Text="Load a model to see available parameters..."
-								   Style="{StaticResource CaptionTextStyle}"
-								   FontStyle="Italic"
-								   Visibility="{Binding SupportedParameterSchema.Count, Converter={StaticResource ZeroToVisibilityConverter}}"
-								   Margin="0,8,0,0"/>
-					</StackPanel>
-				</Border>
-			</StackPanel>
-
-			<!-- Right Column: System Prompt, Test Prompt & Model Info -->
-			<StackPanel Grid.Column="1"
-						Margin="8,0,0,0">
-				<!-- System Prompt -->
-				<Border Style="{StaticResource DarkBorderStyle}"
-						Margin="0,0,0,16">
-					<StackPanel>
-						<TextBlock Text="System Prompt"
-								   Style="{StaticResource HeadingMediumStyle}"
-								   Margin="0,0,0,12"/>
-						<TextBox Style="{StaticResource DarkTextBoxMultilineStyle}"
-								 MinHeight="150"
-								 Text="You are a helpful, harmless, and honest AI assistant."/>
-					</StackPanel>
-				</Border>
-
-				<!-- Test Prompt Laboratory -->
-				<Border Style="{StaticResource DarkBorderStyle}"
-						Margin="0,0,0,16">
-					<StackPanel>
-						<TextBlock Text="Test Prompt"
-								   Style="{StaticResource HeadingMediumStyle}"
-								   Margin="0,0,0,12"/>
-
-						<TextBox Style="{StaticResource DarkTextBoxMultilineStyle}"
-								 MinHeight="100"
-								 Text="{Binding TestPromptText, UpdateSourceTrigger=PropertyChanged}"
-								 Margin="0,0,0,12"
-								 TabIndex="1"/>
-
-						<Grid Margin="0,0,0,12">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
-
-							<Button Content="Execute Test"
-									Style="{StaticResource PrimaryButtonStyle}"
-									Command="{Binding TestParametersCommand}"
-									IsEnabled="{Binding CanExecuteTest}"/>
-
-							<StackPanel Grid.Column="1"
-										Orientation="Horizontal"
-										Margin="12,0,0,0">
-								<TextBlock Text="{Binding TestStatus}"
-										   Foreground="{DynamicResource SuccessBrush}"
-										   FontSize="12"
+					<!-- Sampling Parameters -->
+					<Border Background="{DynamicResource SecondaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="16" 
+							Margin="0,0,0,16"
+							Visibility="{Binding IsModelLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<StackPanel>
+							<TextBlock Text="Sampling Parameters" 
+									   Style="{DynamicResource HeadingSmallStyle}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
+									   Margin="0,0,0,12"/>
+							
+							<!-- Temperature -->
+							<Grid Margin="0,0,0,12">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="120"/>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="60"/>
+								</Grid.ColumnDefinitions>
+								
+								<TextBlock Text="Temperature" 
+										   Style="{DynamicResource BodyTextStyle}"
 										   VerticalAlignment="Center"/>
+								
+								<Slider Grid.Column="1" 
+										Value="{Binding Temperature}"
+										Minimum="0.0" Maximum="2.0" 
+										TickFrequency="0.1"
+										IsSnapToTickEnabled="True"
+										Margin="8,0"/>
+								
+								<TextBox Grid.Column="2" 
+										 Text="{Binding Temperature, StringFormat=F1}"
+										 Background="{DynamicResource TertiaryDarkBrush}"
+										 BorderBrush="{DynamicResource BorderBrush}"
+										 BorderThickness="1"
+										 Foreground="{DynamicResource TextPrimaryBrush}"
+										 Padding="4"
+										 HorizontalContentAlignment="Center"/>
+							</Grid>
 
-								<!-- Test execution spinner -->
-								<Border Background="{DynamicResource AccentRedBrush}"
-										Width="12"
-										Height="12"
-										CornerRadius="6"
-										Margin="8,0,0,0"
-										Visibility="{Binding IsTestRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
-									<Border.RenderTransform>
-										<RotateTransform x:Name="TestSpinner"/>
-									</Border.RenderTransform>
-									<Border.Triggers>
-										<EventTrigger RoutedEvent="Border.Loaded">
-											<BeginStoryboard>
-												<Storyboard RepeatBehavior="Forever">
-													<DoubleAnimation Storyboard.TargetName="TestSpinner"
-																	 Storyboard.TargetProperty="Angle"
-																	 From="0"
-																	 To="360"
-																	 Duration="0:0:0.8"/>
-												</Storyboard>
-											</BeginStoryboard>
-										</EventTrigger>
-									</Border.Triggers>
-								</Border>
-							</StackPanel>
-						</Grid>
+							<!-- Top P -->
+							<Grid Margin="0,0,0,12">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="120"/>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="60"/>
+								</Grid.ColumnDefinitions>
+								
+								<TextBlock Text="Top P" 
+										   Style="{DynamicResource BodyTextStyle}"
+										   VerticalAlignment="Center"/>
+								
+								<Slider Grid.Column="1" 
+										Value="{Binding TopP}"
+										Minimum="0.0" Maximum="1.0" 
+										TickFrequency="0.05"
+										IsSnapToTickEnabled="True"
+										Margin="8,0"/>
+								
+								<TextBox Grid.Column="2" 
+										 Text="{Binding TopP, StringFormat=F2}"
+										 Background="{DynamicResource TertiaryDarkBrush}"
+										 BorderBrush="{DynamicResource BorderBrush}"
+										 BorderThickness="1"
+										 Foreground="{DynamicResource TextPrimaryBrush}"
+										 Padding="4"
+										 HorizontalContentAlignment="Center"/>
+							</Grid>
 
-						<!-- Response area with proper visibility logic -->
-						<Border Background="{DynamicResource PrimaryDarkBrush}"
-								BorderBrush="{DynamicResource BorderBrush}"
-								BorderThickness="1"
-								CornerRadius="4"
-								Padding="12"
-								MinHeight="120">
-							<ScrollViewer VerticalScrollBarVisibility="Auto">
-								<StackPanel>
-									<!-- Actual response text -->
-									<TextBlock Text="{Binding TestResponse}"
+							<!-- Max Tokens -->
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="120"/>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="60"/>
+								</Grid.ColumnDefinitions>
+								
+								<TextBlock Text="Max Tokens" 
+										   Style="{DynamicResource BodyTextStyle}"
+										   VerticalAlignment="Center"/>
+								
+								<Slider Grid.Column="1" 
+										Value="{Binding MaxTokens}"
+										Minimum="1" Maximum="4096" 
+										TickFrequency="64"
+										IsSnapToTickEnabled="True"
+										Margin="8,0"/>
+								
+								<TextBox Grid.Column="2" 
+										 Text="{Binding MaxTokens}"
+										 Background="{DynamicResource TertiaryDarkBrush}"
+										 BorderBrush="{DynamicResource BorderBrush}"
+										 BorderThickness="1"
+										 Foreground="{DynamicResource TextPrimaryBrush}"
+										 Padding="4"
+										 HorizontalContentAlignment="Center"/>
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<!-- Test Prompt Laboratory -->
+					<Border Background="{DynamicResource SecondaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="16"
+							Visibility="{Binding IsModelLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<StackPanel>
+							<Grid Margin="0,0,0,12">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								
+								<TextBlock Text="Test Laboratory" 
+										   Style="{DynamicResource HeadingSmallStyle}"
+										   Foreground="{DynamicResource TextPrimaryBrush}"/>
+								
+								<Button Grid.Column="1" 
+										Content="Execute Test" 
+										Style="{DynamicResource PrimaryButtonStyle}"
+										Command="{Binding TestModelCommand}"
+										IsEnabled="{Binding CanTestModel}"/>
+							</Grid>
+							
+							<TextBox Text="{Binding TestPrompt, UpdateSourceTrigger=PropertyChanged}"
+									 Background="{DynamicResource TertiaryDarkBrush}"
+									 BorderBrush="{DynamicResource BorderBrush}"
+									 BorderThickness="1"
+									 Foreground="{DynamicResource TextPrimaryBrush}"
+									 Padding="12"
+									 MinHeight="100"
+									 AcceptsReturn="True"
+									 TextWrapping="Wrap"
+									 ScrollViewer.VerticalScrollBarVisibility="Auto"
+									 Margin="0,0,0,12"/>
+							
+							<!-- Response Area -->
+							<Border Background="{DynamicResource TertiaryDarkBrush}" 
+									BorderBrush="{DynamicResource BorderBrush}" 
+									BorderThickness="1" 
+									CornerRadius="4" 
+									Padding="12" 
+									MinHeight="150"
+									MaxHeight="300">
+								<ScrollViewer VerticalScrollBarVisibility="Auto">
+									<TextBlock Text="{Binding TestResponse}" 
 											   Foreground="{DynamicResource TextPrimaryBrush}"
-											   TextWrapping="Wrap">
-										<TextBlock.Style>
-											<Style TargetType="TextBlock">
-												<Setter Property="Visibility"
-														Value="Collapsed"/>
-												<Style.Triggers>
-													<DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}"
-																 Value="True">
-														<Setter Property="Visibility"
-																Value="Visible"/>
-													</DataTrigger>
-												</Style.Triggers>
-											</Style>
-										</TextBlock.Style>
-									</TextBlock>
+											   TextWrapping="Wrap"/>
+								</ScrollViewer>
+							</Border>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
 
-									<!-- Placeholder text -->
-									<TextBlock Text="Craft your dark prompt above and hit Execute Test to watch the model's digital soul respond..."
-											   FontStyle="Italic"
-											   TextWrapping="Wrap">
-										<TextBlock.Style>
-											<Style TargetType="TextBlock"
-												   BasedOn="{StaticResource CaptionTextStyle}">
-												<Setter Property="Visibility"
-														Value="Visible"/>
-												<Style.Triggers>
-													<DataTrigger Binding="{Binding TestResponse, Converter={StaticResource StringToBool}}"
-																 Value="True">
-														<Setter Property="Visibility"
-																Value="Collapsed"/>
-													</DataTrigger>
-												</Style.Triggers>
-											</Style>
-										</TextBlock.Style>
-									</TextBlock>
-								</StackPanel>
-							</ScrollViewer>
-						</Border>
-					</StackPanel>
-				</Border>
+		<!-- RIGHT COLUMN: Model Information & Status -->
+		<Border Grid.Column="2" Background="{DynamicResource SecondaryDarkBrush}" 
+				Padding="16">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel>
+					<!-- Model Status Header -->
+					<TextBlock Text="Model Status" 
+							   Style="{DynamicResource HeadingMediumStyle}"
+							   Foreground="{DynamicResource AccentRedBrush}"
+							   Margin="0,0,0,16"/>
 
-				<!-- Model Information -->
-				<Border Style="{StaticResource DarkBorderStyle}"
-						Margin="0,0,0,16">
-					<StackPanel>
-						<TextBlock Text="Model Information"
-								   Style="{StaticResource HeadingMediumStyle}"
-								   Margin="0,0,0,12"/>
+					<!-- Current Model Information -->
+					<Border Background="{DynamicResource TertiaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="16" 
+							Margin="0,0,0,16">
+						<StackPanel>
+							<TextBlock Text="{Binding SelectedModel.Name}" 
+									   Style="{DynamicResource HeadingSmallStyle}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
+									   TextWrapping="Wrap"
+									   Margin="0,0,0,12"/>
+							
+							<Grid Margin="0,0,0,6">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="80"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="Size:" 
+										   Foreground="{DynamicResource TextMutedBrush}"/>
+								<TextBlock Grid.Column="1" 
+										   Text="{Binding SelectedModel.Size}" 
+										   Foreground="{DynamicResource TextPrimaryBrush}"
+										   FontWeight="SemiBold"/>
+							</Grid>
+							
+							<Grid Margin="0,0,0,6">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="80"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="Context:" 
+										   Foreground="{DynamicResource TextMutedBrush}"/>
+								<TextBlock Grid.Column="1" 
+										   Text="{Binding SelectedModel.ContextLength, StringFormat={}{0:N0} tokens}" 
+										   Foreground="{DynamicResource TextPrimaryBrush}"
+										   FontWeight="SemiBold"/>
+							</Grid>
+							
+							<Grid Margin="0,0,0,6">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="80"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="Arch:" 
+										   Foreground="{DynamicResource TextMutedBrush}"/>
+								<TextBlock Grid.Column="1" 
+										   Text="{Binding SelectedModel.Architecture}" 
+										   Foreground="{DynamicResource TextPrimaryBrush}"
+										   FontWeight="SemiBold"/>
+							</Grid>
+							
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="80"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="Quant:" 
+										   Foreground="{DynamicResource TextMutedBrush}"/>
+								<TextBlock Grid.Column="1" 
+										   Text="{Binding SelectedModel.Quantization}" 
+										   Foreground="{DynamicResource TextPrimaryBrush}"
+										   FontWeight="SemiBold"/>
+							</Grid>
+						</StackPanel>
+					</Border>
 
-						<Grid Margin="0,0,0,6">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="Size:"
-									   Style="{StaticResource CaptionTextStyle}"
-									   Width="80"/>
-							<TextBlock Grid.Column="1"
-									   Text="{Binding SelectedModel.Size}"
-									   Style="{StaticResource BodyTextStyle}"/>
-						</Grid>
+					<!-- Performance Metrics -->
+					<Border Background="{DynamicResource TertiaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="16" 
+							Margin="0,0,0,16"
+							Visibility="{Binding IsModelLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<StackPanel>
+							<TextBlock Text="Performance" 
+									   Style="{DynamicResource HeadingSmallStyle}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
+									   Margin="0,0,0,12"/>
+							
+							<Grid Margin="0,0,0,8">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="Tokens/sec:" 
+										   Foreground="{DynamicResource TextMutedBrush}"/>
+								<TextBlock Grid.Column="1" 
+										   Text="{Binding TokensPerSecond, StringFormat=F1}" 
+										   Foreground="{DynamicResource SuccessBrush}"
+										   FontWeight="Bold"/>
+							</Grid>
+							
+							<Grid Margin="0,0,0,8">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="VRAM Usage:" 
+										   Foreground="{DynamicResource TextMutedBrush}"/>
+								<TextBlock Grid.Column="1" 
+										   Text="{Binding VramUsage}" 
+										   Foreground="{DynamicResource AccentRedBrush}"
+										   FontWeight="Bold"/>
+							</Grid>
+							
+							<ProgressBar Value="{Binding VramPercentage}" 
+										 Maximum="100" 
+										 Height="8" 
+										 Background="{DynamicResource TertiaryDarkBrush}"
+										 Foreground="{DynamicResource AccentRedBrush}"
+										 Margin="0,4,0,0"/>
+						</StackPanel>
+					</Border>
 
-						<Grid Margin="0,0,0,6">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="Context:"
-									   Style="{StaticResource CaptionTextStyle}"
-									   Width="80"/>
-							<TextBlock Grid.Column="1"
-									   Text="{Binding SelectedModel.ContextLength}"
-									   Style="{StaticResource BodyTextStyle}"/>
-						</Grid>
-
-						<Grid Margin="0,0,0,6">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="Arch:"
-									   Style="{StaticResource CaptionTextStyle}"
-									   Width="80"/>
-							<TextBlock Grid.Column="1"
-									   Text="{Binding SelectedModel.Architecture}"
-									   Style="{StaticResource BodyTextStyle}"/>
-						</Grid>
-
-						<Grid Margin="0,0,0,6">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="Quant:"
-									   Style="{StaticResource CaptionTextStyle}"
-									   Width="80"/>
-							<TextBlock Grid.Column="1"
-									   Text="{Binding SelectedModel.Quantization}"
-									   Style="{StaticResource BodyTextStyle}"/>
-						</Grid>
-
-						<!-- Parameter Summary -->
-						<Grid Margin="0,6,0,0">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Text="Params:"
-									   Style="{StaticResource CaptionTextStyle}"
-									   Width="80"/>
-							<TextBlock Grid.Column="1"
-									   Text="{Binding SupportedParameterSchema.Count, StringFormat={}{0} available}"
-									   Style="{StaticResource BodyTextStyle}"/>
-						</Grid>
-					</StackPanel>
-				</Border>
-			</StackPanel>
-		</Grid>
-	</ScrollViewer>
+					<!-- Quick Actions -->
+					<Border Background="{DynamicResource TertiaryDarkBrush}" 
+							BorderBrush="{DynamicResource BorderBrush}" 
+							BorderThickness="1" 
+							CornerRadius="4" 
+							Padding="16">
+						<StackPanel>
+							<TextBlock Text="Quick Actions" 
+									   Style="{DynamicResource HeadingSmallStyle}"
+									   Foreground="{DynamicResource TextPrimaryBrush}"
+									   Margin="0,0,0,12"/>
+							
+							<Button Content="Export Configuration" 
+									Style="{DynamicResource SecondaryButtonStyle}"
+									Command="{Binding ExportConfigCommand}"
+									Margin="0,0,0,8"/>
+							
+							<Button Content="Import Configuration" 
+									Style="{DynamicResource SecondaryButtonStyle}"
+									Command="{Binding ImportConfigCommand}"
+									Margin="0,0,0,8"/>
+							
+							<Button Content="Reset to Defaults" 
+									Style="{DynamicResource SecondaryButtonStyle}"
+									Command="{Binding ResetConfigCommand}"/>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
+	</Grid>
 </UserControl>

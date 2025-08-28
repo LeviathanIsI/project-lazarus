@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using App.Shared.Enums;
 
 namespace Lazarus.Shared.Models;
 
@@ -306,7 +307,7 @@ public class SamplingParameters
 }
 
 /// <summary>
-/// Metadata for dynamic parameter UI generation
+/// Metadata for dynamic parameter UI generation with risk classification
 /// </summary>
 public class ParameterMetadata
 {
@@ -319,6 +320,55 @@ public class ParameterMetadata
     public List<object>? AllowedValues { get; set; } // For enums/dropdowns
     public bool IsSupported { get; set; } = true;
     public bool IsExperimental { get; set; } = false;
+
+    /// <summary>
+    /// Gets the risk classification for this parameter
+    /// </summary>
+    public ParameterRiskClassification? RiskClassification => ParameterRiskRegistry.GetClassification(Name);
+
+    /// <summary>
+    /// Gets the risk level for this parameter
+    /// </summary>
+    public ParameterRiskLevel RiskLevel => RiskClassification?.RiskLevel ?? ParameterRiskLevel.Safe;
+
+    /// <summary>
+    /// Gets the parameter category
+    /// </summary>
+    public ParameterCategory Category => RiskClassification?.Category ?? ParameterCategory.CoreSampling;
+
+    /// <summary>
+    /// Determines if this parameter should be shown in the specified ViewMode
+    /// </summary>
+    public bool ShouldShowInViewMode(ViewMode viewMode)
+    {
+        return ParameterRiskRegistry.ShouldShowInViewMode(Name, viewMode);
+    }
+
+    /// <summary>
+    /// Gets warning message for this parameter at the specified ViewMode level
+    /// </summary>
+    public string? GetWarningForViewMode(ViewMode viewMode)
+    {
+        return ParameterRiskRegistry.GetWarningForLevel(Name, viewMode);
+    }
+
+    /// <summary>
+    /// Gets the display priority for this parameter (lower = higher priority)
+    /// Safe parameters get higher priority than experimental ones
+    /// </summary>
+    public int GetDisplayPriority()
+    {
+        var riskClassification = RiskClassification;
+        if (riskClassification == null) return 100;
+
+        return riskClassification.RiskLevel switch
+        {
+            ParameterRiskLevel.Safe => 10,
+            ParameterRiskLevel.Caution => 20,
+            ParameterRiskLevel.Experimental => 30,
+            _ => 100
+        };
+    }
 }
 
 /// <summary>

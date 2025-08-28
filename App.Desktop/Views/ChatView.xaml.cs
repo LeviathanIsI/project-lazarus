@@ -1,5 +1,7 @@
-using System.Windows;
 using System.Windows.Controls;
+using Lazarus.Desktop.Services;
+using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 
 namespace Lazarus.Desktop.Views
 {
@@ -12,9 +14,12 @@ namespace Lazarus.Desktop.Views
         
         private void ConfigureModelsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Find the MainWindow parent and trigger navigation to Model Configuration tab
-            var mainWindow = Window.GetWindow(this) as MainWindow;
-            mainWindow?.ShowTab("Models");
+            // Use MVVM navigation service instead of direct MainWindow manipulation
+            if (Application.Current is App app && app.ServiceProvider != null)
+            {
+                var navigationService = app.ServiceProvider.GetRequiredService<INavigationService>();
+                navigationService.NavigateTo(NavigationTab.Models);
+            }
         }
     }
 }

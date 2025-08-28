@@ -96,6 +96,47 @@ Project Lazarus is a .NET 8 multimedia AI platform with a multi-project architec
 
 ## Key UI Components ✅ **COMPLETE MULTIMEDIA INTERFACE**
 
+### 🏗️ **HIERARCHICAL NAVIGATION ARCHITECTURE** ✅ **REVOLUTIONARY SIDEBAR LAYOUT**
+
+**Professional Sidebar Navigation System** (MainWindow.xaml):
+- **Layout**: Two-column grid (280px sidebar + main content area)
+- **Window Dimensions**: 1400×800 optimized for sidebar + content
+- **Navigation Structure**: Hierarchical organization replacing horizontal tab spam
+- **Semantic Grouping**: Three logical sections for optimal cognitive load:
+
+```
+CORE SECTION:
+├── 🏠 Dashboard        (Central command & system overview)
+└── 💬 Conversations   (Chat interface & model interaction)
+
+MANAGEMENT SECTION:
+├── 🤖 Model Configuration  (Base models, LoRAs, parameters)
+├── 🏃‍♂️ Runner Manager      (Backend process control)
+├── 📋 Jobs               (Task queue & processing)
+└── 📚 Datasets           (Knowledge base management)
+
+MULTIMEDIA SECTION:
+├── 🖼️ Images            (Text2Image, Image2Image, Inpainting)
+├── 🎬 Video             (Text2Video, motion control)
+├── 🎧 Voice             (TTS, voice cloning, synthesis)
+├── 🧊 3D Models         (Viewport, model browser)
+└── 👤 Entities          (Avatar creation, behavioral patterns)
+```
+
+**Navigation Features**:
+- **SidebarNavButtonStyle**: Left-aligned content, full-width buttons
+- **Visual Selection**: Dynamic button state with `BoolToSelectedTag` converter
+- **Theme Integration**: Complete sidebar theming with `DynamicResource` brushes
+- **Contextual Controls**: Global theme/view mode selectors in sidebar footer
+- **System Context Bar**: Always-visible system state across top of content area
+
+**Architecture Benefits**:
+- ✅ **Eliminates Visual Terrorism**: No more horizontal feature explosion
+- ✅ **Reduces Cognitive Load**: Logical grouping and progressive disclosure
+- ✅ **Professional UX**: Industry-standard sidebar navigation pattern
+- ✅ **Scalable**: Easily accommodate future feature additions
+- ✅ **Theme Responsive**: Complete integration with 4-theme system
+
 ### Conversations Tab ✅ **FULLY IMPLEMENTED**
 
 - **Chat Interface**: Production-ready chat UI with message history
@@ -345,14 +386,52 @@ Always use proper `StaticResource` names:
 
 ### XAML Layout Patterns
 
-Follow the established three-column layout for multimedia tabs:
+**Main Window Layout** - Hierarchical Sidebar Navigation:
 
 ```xml
+<!-- Primary Layout: Sidebar + Content (MainWindow.xaml) -->
+<Grid>
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="280" MinWidth="250"/>  <!-- Navigation Sidebar -->
+    <ColumnDefinition Width="*"/>                   <!-- Main Content Area -->
+  </Grid.ColumnDefinitions>
+  
+  <!-- LEFT SIDEBAR: HIERARCHICAL NAVIGATION -->
+  <Border Grid.Column="0" Background="{DynamicResource SecondaryDarkBrush}">
+    <!-- App Header, Navigation Menu, Global Controls -->
+  </Border>
+  
+  <!-- RIGHT MAIN CONTENT AREA -->
+  <Grid Grid.Column="1">
+    <!-- System Context Bar + Dynamic Content Views -->
+  </Grid>
+</Grid>
+```
+
+**Content Area Layout** - Three-Column Multimedia Pattern:
+
+```xml
+<!-- Secondary Layout: For multimedia tabs (Images, Video, Voice, etc.) -->
 <Grid.ColumnDefinitions>
   <ColumnDefinition Width="300" MinWidth="200"/>  <!-- Controls -->
   <ColumnDefinition Width="*"/>                   <!-- Display -->
   <ColumnDefinition Width="300" MinWidth="200"/>  <!-- History -->
 </Grid.ColumnDefinitions>
+```
+
+**Sidebar Navigation Button Style**:
+
+```xml
+<!-- SidebarNavButtonStyle: Full-width, left-aligned navigation -->
+<Style x:Key="SidebarNavButtonStyle" TargetType="Button">
+  <Setter Property="HorizontalAlignment" Value="Stretch"/>
+  <Setter Property="HorizontalContentAlignment" Value="Left"/>
+  <Setter Property="Background" Value="Transparent"/>
+  <Setter Property="BorderThickness" Value="0"/>
+  <Setter Property="Padding" Value="16,12"/>
+  <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+  <Setter Property="FontSize" Value="14"/>
+</Style>
 ```
 
 ---

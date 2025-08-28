@@ -186,9 +186,14 @@ public class DynamicParameterViewModel : INotifyPropertyChanged
             {
                 Console.WriteLine($"[DynamicParameterViewModel] Found {orchestratorLoRAs.Count} active LoRAs in orchestrator");
                 _appliedLoRAs = orchestratorLoRAs.ToList();
-                OnPropertyChanged(nameof(AppliedLoRAs));
-                OnPropertyChanged(nameof(HasActiveLoRAs));
-                OnPropertyChanged(nameof(LoRAStatusSummary));
+                
+                // Marshal UI updates to UI thread
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    OnPropertyChanged(nameof(AppliedLoRAs));
+                    OnPropertyChanged(nameof(HasActiveLoRAs));
+                    OnPropertyChanged(nameof(LoRAStatusSummary));
+                });
                 
                 // Use LoRA-aware capabilities endpoint
                 var capabilities = await ApiClient.GetModelCapabilitiesWithLoRAsAsync(modelName, orchestratorLoRAs);
@@ -208,9 +213,14 @@ public class DynamicParameterViewModel : INotifyPropertyChanged
             {
                 Console.WriteLine("[DynamicParameterViewModel] No active LoRAs found, using base model capabilities");
                 _appliedLoRAs.Clear();
-                OnPropertyChanged(nameof(AppliedLoRAs));
-                OnPropertyChanged(nameof(HasActiveLoRAs));
-                OnPropertyChanged(nameof(LoRAStatusSummary));
+                
+                // Marshal UI updates to UI thread
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    OnPropertyChanged(nameof(AppliedLoRAs));
+                    OnPropertyChanged(nameof(HasActiveLoRAs));
+                    OnPropertyChanged(nameof(LoRAStatusSummary));
+                });
                 
                 // Use basic capabilities endpoint
                 var capabilities = await ApiClient.GetModelCapabilitiesAsync(modelName);
@@ -257,7 +267,11 @@ public class DynamicParameterViewModel : INotifyPropertyChanged
     /// </summary>
     public void UpdateAppliedLoRAs(List<AppliedLoRAInfo> appliedLoRAs)
     {
-        AppliedLoRAs = appliedLoRAs;
+        // Marshal property change to UI thread
+        System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            AppliedLoRAs = appliedLoRAs;
+        });
     }
 
     /// <summary>
@@ -302,8 +316,8 @@ public class DynamicParameterViewModel : INotifyPropertyChanged
         
         Console.WriteLine("[DynamicParameterViewModel] Generating dynamic UI...");
         
-        // Generate UI on UI thread
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        // Generate UI on UI thread safely
+        await UpdateUIAsync(() =>
         {
             try
             {
@@ -439,28 +453,21 @@ public class DynamicParameterViewModel : INotifyPropertyChanged
     /// <summary>
     /// Handle cross-tab LoRA state changes for real-time synchronization
     /// </summary>
-    private void OnLoRAStateChanged(object? sender, EventArgs e)
+    private async void OnLoRAStateChanged(object? sender, EventArgs e)
     {
         try
         {
             Console.WriteLine($"[DynamicParameterViewModel] 🔔 LoRA state changed! Triggering HasActiveLoRAs refresh");
             
-            // Immediately notify UI properties that depend on LoRA state
-            OnPropertyChanged(nameof(HasActiveLoRAs));
-            OnPropertyChanged(nameof(LoRAStatusSummary));
-            
-            // Optionally refresh capabilities asynchronously (but don't wait for it)
-            _ = Task.Run(async () =>
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() =>
             {
-                try
-                {
-                    await RefreshCapabilitiesAsync();
-                    Console.WriteLine($"[DynamicParameterViewModel] ✅ Capabilities refreshed due to LoRA change");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[DynamicParameterViewModel] Failed to refresh capabilities: {ex.Message}");
-                }
+                // Immediately notify UI properties that depend on LoRA state
+                OnPropertyChanged(nameof(HasActiveLoRAs));
+                OnPropertyChanged(nameof(LoRAStatusSummary));
+                
+                // Refresh capabilities asynchronously without Task.Run
+                _ = RefreshCapabilitiesAsync();
             });
         }
         catch (Exception ex)
@@ -476,6 +483,35 @@ public class DynamicParameterViewModel : INotifyPropertyChanged
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    #endregion
+
+    #region UI Thread Safety
+
+    /// <summary>
+    /// Safely update UI properties on the UI thread
+    /// </summary>
+    private async Task UpdateUIAsync(Action uiAction)
+    {
+        try
+        {
+            var app = System.Windows.Application.Current;
+            if (app?.Dispatcher == null) return;
+
+            if (app.Dispatcher.CheckAccess())
+            {
+                uiAction();
+            }
+            else
+            {
+                await app.Dispatcher.InvokeAsync(uiAction);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DynamicParameterViewModel] UI update failed: {ex.Message}");
+        }
     }
 
     #endregion

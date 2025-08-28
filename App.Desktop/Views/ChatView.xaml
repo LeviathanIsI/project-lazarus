@@ -22,7 +22,11 @@
 			<Grid Grid.Row="0" 
 				  Visibility="{Binding HasBaseModel, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
 				  Background="{DynamicResource SecondaryDarkBrush}">
-				<ContentPresenter Content="{Binding}" ContentTemplate="{DynamicResource ChatStatusTemplate}"/>
+				<TextBlock Text="No Base Model Loaded - Please configure a model first" 
+				           HorizontalAlignment="Center" 
+				           VerticalAlignment="Center"
+				           FontSize="16" 
+				           Foreground="{DynamicResource TextSecondaryBrush}"/>
 			</Grid>
 
 			<!-- Chat Messages Area -->

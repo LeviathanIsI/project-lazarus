@@ -1,31 +1,128 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- MINIMAL THEME: Brutalist simplicity - maximum contrast, minimal colors -->
+    <!-- MINIMAL THEME: Brutalist simplicity - ISOLATED BRUSH VOCABULARY -->
     
-    <!-- Primary Background Colors - Pure Monochrome -->
-    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#ffffff"/>          <!-- Pure white base -->
-    <SolidColorBrush x:Key="SecondaryDarkBrush" Color="#f5f5f5"/>        <!-- Very light gray -->
-    <SolidColorBrush x:Key="TertiaryDarkBrush" Color="#eeeeee"/>         <!-- Light gray inputs -->
+    <!-- === MINIMAL THEME EXCLUSIVE BRUSHES - NO SHARING === -->
     
-    <!-- Accent Colors - Pure Black Accents -->
-    <SolidColorBrush x:Key="AccentRedBrush" Color="#000000"/>            <!-- Pure black accent -->
-    <SolidColorBrush x:Key="AccentRedHoverBrush" Color="#333333"/>       <!-- Dark gray hover -->
-    <SolidColorBrush x:Key="AccentRedPressedBrush" Color="#666666"/>     <!-- Medium gray pressed -->
+    <!-- Minimal Background Hierarchy -->
+    <SolidColorBrush x:Key="MinimalBaseBrush" Color="#ffffff"/>           <!-- Pure white base -->
+    <SolidColorBrush x:Key="MinimalPanelBrush" Color="#f5f5f5"/>         <!-- Very light gray panels -->
+    <SolidColorBrush x:Key="MinimalInputBrush" Color="#eeeeee"/>         <!-- Light gray input backgrounds -->
     
-    <!-- Border Colors - Subtle Grays -->
-    <SolidColorBrush x:Key="BorderBrush" Color="#cccccc"/>               <!-- Light gray borders -->
-    <SolidColorBrush x:Key="BorderHoverBrush" Color="#999999"/>          <!-- Medium gray hover -->
+    <!-- Minimal Button System -->
+    <SolidColorBrush x:Key="MinimalButtonBrush" Color="#ffffff"/>        <!-- White button background -->
+    <SolidColorBrush x:Key="MinimalButtonHoverBrush" Color="#f0f0f0"/>   <!-- Light gray hover -->
+    <SolidColorBrush x:Key="MinimalButtonPressedBrush" Color="#e0e0e0"/> <!-- Light gray pressed -->
+    <SolidColorBrush x:Key="MinimalButtonBorderBrush" Color="#d0d0d0"/>  <!-- Light gray border -->
     
-    <!-- Text Colors - Pure Black/Gray on White -->
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#000000"/>          <!-- Pure black text -->
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#333333"/>        <!-- Dark gray secondary -->
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#666666"/>            <!-- Medium gray muted -->
-    <SolidColorBrush x:Key="TextDisabledBrush" Color="#999999"/>         <!-- Light gray disabled -->
+    <!-- Minimal Primary Accent (Dark buttons on light theme) -->
+    <SolidColorBrush x:Key="MinimalAccentBrush" Color="#111317"/>        <!-- Near-black for primary buttons -->
+    <SolidColorBrush x:Key="MinimalAccentHoverBrush" Color="#2b2f36"/>   <!-- Dark gray hover -->
+    <SolidColorBrush x:Key="MinimalAccentPressedBrush" Color="#374151"/> <!-- Medium gray pressed -->
     
-    <!-- Status Colors - Minimal Color Palette -->
-    <SolidColorBrush x:Key="SuccessBrush" Color="#006600"/>              <!-- Dark green success -->
-    <SolidColorBrush x:Key="ErrorBrush" Color="#cc0000"/>                <!-- Dark red error -->
-    <SolidColorBrush x:Key="WarningBrush" Color="#cc6600"/>              <!-- Dark orange warning -->
+    <!-- Minimal Border System -->
+    <SolidColorBrush x:Key="MinimalBorderBrush" Color="#cccccc"/>        <!-- Light gray borders -->
+    <SolidColorBrush x:Key="MinimalBorderHoverBrush" Color="#999999"/>   <!-- Medium gray hover borders -->
+    
+    <!-- Minimal Text System -->
+    <SolidColorBrush x:Key="MinimalPrimaryTextBrush" Color="#111317"/>   <!-- Near-black for main text -->
+    <SolidColorBrush x:Key="MinimalSecondaryTextBrush" Color="#666666"/> <!-- Medium gray for secondary text -->
+    <SolidColorBrush x:Key="MinimalMutedTextBrush" Color="#757575"/>     <!-- WCAG compliant gray for muted text (4.61:1) -->
+    <SolidColorBrush x:Key="MinimalDisabledTextBrush" Color="#999999"/>  <!-- WCAG compliant disabled gray (2.85:1) -->
+    
+    <!-- Minimal Button Text System -->
+    <SolidColorBrush x:Key="MinimalButtonTextBrush" Color="#111317"/>    <!-- Dark text for light buttons -->
+    <SolidColorBrush x:Key="MinimalButtonTextHoverBrush" Color="#000000"/><!-- Black text for hover -->
+    <SolidColorBrush x:Key="MinimalAccentTextBrush" Color="#ffffff"/>    <!-- White text for dark accent buttons -->
+    
+    <!-- Minimal Status Colors -->
+    <SolidColorBrush x:Key="MinimalSuccessBrush" Color="#2e7d32"/>       <!-- Dark green success -->
+    <SolidColorBrush x:Key="MinimalErrorBrush" Color="#d32f2f"/>         <!-- Dark red error -->
+    <SolidColorBrush x:Key="MinimalWarningBrush" Color="#f57c00"/>       <!-- Dark orange warning -->
+    
+    <!-- Minimal Dropdown System -->
+    <SolidColorBrush x:Key="MinimalDropdownBrush" Color="#ffffff"/>      <!-- White dropdown background -->
+    <SolidColorBrush x:Key="MinimalDropdownTextBrush" Color="#111317"/>  <!-- Dark text in dropdowns -->
+    <SolidColorBrush x:Key="MinimalDropdownHoverBrush" Color="#f0f0f0"/> <!-- Light hover background -->
+    <SolidColorBrush x:Key="MinimalDropdownHoverTextBrush" Color="#000000"/><!-- Black text on hover -->
+    
+    <!-- === SEMANTIC BRUSH MAPPING FOR MINIMAL THEME === -->
+    <!-- These map the semantic names used by templates to Minimal-specific brushes -->
+    
+    <!-- Background Mapping -->
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#ffffff"/>     <!-- Pure white base -->
+    <SolidColorBrush x:Key="SecondaryDarkBrush" Color="#f5f5f5"/>   <!-- Very light gray panels -->
+    <SolidColorBrush x:Key="TertiaryDarkBrush" Color="#eeeeee"/>    <!-- Light gray input backgrounds -->
+    
+    <!-- Secondary Button Mapping (Light buttons) -->
+    <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#ffffff"/>    <!-- White secondary button background -->
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#f0f0f0"/>         <!-- Light gray hover background -->
+    <SolidColorBrush x:Key="ButtonPressedBrush" Color="#e0e0e0"/>       <!-- Light gray pressed background -->
+    
+    <!-- Primary Accent Button Mapping (Dark buttons) -->
+    <SolidColorBrush x:Key="AccentRedBrush" Color="#111317"/>           <!-- Dark accent button background -->
+    <SolidColorBrush x:Key="AccentRedHoverBrush" Color="#2b2f36"/>      <!-- Dark hover background -->
+    <SolidColorBrush x:Key="AccentRedPressedBrush" Color="#374151"/>    <!-- Dark pressed background -->
+    
+    <!-- Border Mapping -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#cccccc"/>         <!-- Light gray borders -->
+    <SolidColorBrush x:Key="BorderHoverBrush" Color="#999999"/>    <!-- Medium gray hover borders -->
+    
+    <!-- SEMANTIC SEPARATION: Content Text Hierarchy -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#111317"/>        <!-- Primary content text on light backgrounds -->
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#666666"/>      <!-- Secondary content text -->
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#757575"/>         <!-- Muted content text -->
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="#999999"/>       <!-- Disabled content text -->
+    <SolidColorBrush x:Key="GeneralTextBrush" Color="#111317"/>        <!-- General body text -->
+    <SolidColorBrush x:Key="HeaderTextBrush" Color="#111317"/>         <!-- Section headers -->
+    <SolidColorBrush x:Key="AccentTextBrush" Color="#111317"/>         <!-- Highlighted content text -->
+    
+    <!-- SEMANTIC SEPARATION: Button Text Hierarchy -->
+    <SolidColorBrush x:Key="ButtonTextNormalBrush" Color="#111317"/>   <!-- Dark text on white/light buttons -->
+    <SolidColorBrush x:Key="ButtonTextHoverBrush" Color="#000000"/>    <!-- Black text on light hover -->
+    <SolidColorBrush x:Key="ButtonTextBrush" Color="#ffffff"/>         <!-- White text on dark accent buttons -->
+    <SolidColorBrush x:Key="ButtonTextSelectedBrush" Color="#ffffff"/>  <!-- White text on selected dark buttons -->
+    <SolidColorBrush x:Key="ButtonTextDisabledBrush" Color="#999999"/>  <!-- Gray text on disabled buttons -->
+    
+    <!-- Status Mapping -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#2e7d32"/>        <!-- Dark green success -->
+    <SolidColorBrush x:Key="ErrorBrush" Color="#d32f2f"/>          <!-- Dark red error -->
+    <SolidColorBrush x:Key="WarningBrush" Color="#f57c00"/>        <!-- Dark orange warning -->
+    
+    <!-- Dropdown Mapping -->
+    <SolidColorBrush x:Key="DropdownTextBrush" Color="#111317"/>               <!-- Dark text in dropdowns -->
+    <SolidColorBrush x:Key="DropdownTextHoverBrush" Color="#000000"/>          <!-- Black text on hover -->
+    <SolidColorBrush x:Key="DropdownTextSelectedBrush" Color="#000000"/>       <!-- Black text when selected -->
+    
+    <!-- MISSING CRITICAL BRUSHES - Added for theme consistency -->
+    
+    <!-- Control System (missing from MinimalTheme) -->
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#ffffff"/>         <!-- White control backgrounds -->
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="#f0f0f0"/>              <!-- Light gray control hover -->
+    <SolidColorBrush x:Key="ControlFocusBrush" Color="#e0e0e0"/>              <!-- Light gray control focus -->
+    
+    <!-- Alternative Accent Colors (missing from MinimalTheme) -->
+    <SolidColorBrush x:Key="AccentPurpleBrush" Color="#6b46c1"/>             <!-- Purple accent -->
+    <SolidColorBrush x:Key="AccentPurpleHoverBrush" Color="#553c9a"/>        <!-- Purple hover -->
+    <SolidColorBrush x:Key="AccentPurplePressedBrush" Color="#4c1d95"/>      <!-- Purple pressed -->
+    
+    <SolidColorBrush x:Key="AccentGreenBrush" Color="#059669"/>             <!-- Green accent -->
+    <SolidColorBrush x:Key="AccentGreenHoverBrush" Color="#047857"/>        <!-- Green hover -->
+    <SolidColorBrush x:Key="AccentGreenPressedBrush" Color="#065f46"/>      <!-- Green pressed -->
+    
+    <SolidColorBrush x:Key="AccentYellowBrush" Color="#d97706"/>            <!-- Yellow accent -->
+    <SolidColorBrush x:Key="AccentYellowHoverBrush" Color="#b45309"/>       <!-- Yellow hover -->
+    <SolidColorBrush x:Key="AccentYellowPressedBrush" Color="#92400e"/>     <!-- Yellow pressed -->
+    
+    <SolidColorBrush x:Key="AccentBlueBrush" Color="#2563eb"/>              <!-- Blue accent -->
+    <SolidColorBrush x:Key="AccentBlueHoverBrush" Color="#1d4ed8"/>         <!-- Blue hover -->
+    <SolidColorBrush x:Key="AccentBluePressedBrush" Color="#1e40af"/>       <!-- Blue pressed -->
+    
+    <!-- Error Background (missing from MinimalTheme) -->
+    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#fef2f2"/>         <!-- Light red error background -->
+
+    <!-- Utility -->
+    <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
 
 </ResourceDictionary>

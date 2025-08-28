@@ -4,54 +4,8 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views.Voice"
-			 mc:Ignorable="d">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<!-- tabs -->
-			<RowDefinition Height="*"/>
-			<!-- content -->
-		</Grid.RowDefinitions>
-		<!-- SubTab Buttons -->
-		<StackPanel Grid.Row="0"
-					Orientation="Horizontal"
-					Background="{DynamicResource TertiaryDarkBrush}"
-					Margin="8">
-			<Button x:Name="TTSConfigurationTab"
-					Content="TTS Configuration"
-					Tag="TTSConfiguration"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="VoiceCloningTab"
-					Content="Voice Cloning"
-					Tag="VoiceCloning"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="RealTimeSynthesisTab"
-					Content="Real-Time Synthesis"
-					Tag="RealTimeSynthesis"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-			<Button x:Name="AudioProcessingTab"
-					Content="Audio Processing"
-					Tag="AudioProcessing"
-					Style="{StaticResource SubTabButtonStyle}"
-					Click="SubTabButton_Click"
-					Margin="4,0"/>
-		</StackPanel>
-		<!-- Content Panels -->
-		<Grid Grid.Row="1">
-			<local:TTSConfigurationView x:Name="TTSConfigurationContent"
-								 Visibility="Visible"/>
-			<local:VoiceCloningView x:Name="VoiceCloningContent"
-							 Visibility="Collapsed"/>
-			<local:RealTimeSynthesisView x:Name="RealTimeSynthesisContent"
-								   Visibility="Collapsed"/>
-			<local:AudioProcessingView x:Name="AudioProcessingContent"
-							Visibility="Collapsed"/>
-		</Grid>
-	</Grid>
+			 mc:Ignorable="d"
+			 Background="{DynamicResource PrimaryDarkBrush}">
+	<!-- ViewMode Template Content -->
+	<ContentPresenter ContentTemplate="{DynamicResource VoiceTemplate}" />
 </UserControl>

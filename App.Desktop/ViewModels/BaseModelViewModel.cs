@@ -308,7 +308,9 @@ public class BaseModelViewModel : INotifyPropertyChanged
         try
         {
             IsLoading = true;
-            StatusText = "Scanning models...";
+            
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = "Scanning models...");
 
             var inventory = await ApiClient.GetAvailableModelsAsync();
 
@@ -321,7 +323,8 @@ public class BaseModelViewModel : INotifyPropertyChanged
                     BaseModels.Add(model);
 
                 SelectedModel = BaseModels.FirstOrDefault(m => m.IsActive);
-                StatusText = $"Found {BaseModels.Count} base models";
+                // Update UI on UI thread safely
+                await UpdateUIAsync(() => StatusText = $"Found {BaseModels.Count} base models");
             }
             else
             {
@@ -344,17 +347,26 @@ public class BaseModelViewModel : INotifyPropertyChanged
                         });
                     }
                     SelectedModel = BaseModels.FirstOrDefault();
-                    StatusText = $"Found {BaseModels.Count} local models";
+                    // Marshal UI update to UI thread
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        StatusText = $"Found {BaseModels.Count} local models";
+                    });
                 }
                 else
                 {
-                    StatusText = "No models found";
+                    // Marshal UI update to UI thread
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        StatusText = "No models found";
+                    });
                 }
             }
         }
         catch (Exception ex)
         {
-            StatusText = $"Error: {ex.Message}";
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = $"Error: {ex.Message}");
         }
         finally
         {
@@ -373,7 +385,9 @@ public class BaseModelViewModel : INotifyPropertyChanged
         try
         {
             IsLoading = true;
-            StatusText = $"Loading {model.Name}...";
+            
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = $"Loading {model.Name}...");
 
             var success = await ApiClient.LoadModelAsync(model.FileName, model.Name);
             if (success)
@@ -382,19 +396,22 @@ public class BaseModelViewModel : INotifyPropertyChanged
                     m.IsActive = m.Id == model.Id;
 
                 SelectedModel = model;
-                StatusText = $"Loaded {model.Name}";
+                // Update UI on UI thread safely
+                await UpdateUIAsync(() => StatusText = $"Loaded {model.Name}");
 
                 // Load the model's parameter capabilities
                 await LoadModelParametersAsync();
             }
             else
             {
-                StatusText = $"Failed to load {model.Name}";
+                // Update UI on UI thread safely
+                await UpdateUIAsync(() => StatusText = $"Failed to load {model.Name}");
             }
         }
         catch (Exception ex)
         {
-            StatusText = $"Error loading model: {ex.Message}";
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = $"Error loading model: {ex.Message}");
         }
         finally
         {
@@ -408,26 +425,34 @@ public class BaseModelViewModel : INotifyPropertyChanged
 
         try
         {
-            StatusText = "Loading parameter schema...";
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = "Loading parameter schema...");
 
             // TODO: Query the orchestrator for this model's supported parameters
             // var schema = await ApiClient.GetModelParameterSchemaAsync(SelectedModel.Id);
 
             // For now, create a default schema with all parameters enabled
-            SupportedParameterSchema = CreateDefaultParameterSchemaWithTooltips();
+            var defaultSchema = CreateDefaultParameterSchemaWithTooltips();
+            var defaultParameters = SelectedModel.DefaultParameters ?? new SamplingParameters();
+            
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() =>
+            {
+                SupportedParameterSchema = defaultSchema;
+                CurrentParameters = defaultParameters;
+                
+                // Notify UI that all parameter properties may have changed
+                OnPropertyChanged(nameof(CurrentParameters));
+                OnAllParametersChanged();
+            });
 
-            // Initialize current parameters with model defaults or sensible defaults
-            CurrentParameters = SelectedModel.DefaultParameters ?? new SamplingParameters();
-
-            // Notify UI that all parameter properties may have changed
-            OnPropertyChanged(nameof(CurrentParameters));
-            OnAllParametersChanged();
-
-            StatusText = $"Loaded {SelectedModel.Name} • Parameters: {SupportedParameterSchema.Count} available";
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = $"Loaded {SelectedModel.Name} • Parameters: {SupportedParameterSchema.Count} available");
         }
         catch (Exception ex)
         {
-            StatusText = $"Failed to load parameter schema: {ex.Message}";
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() => StatusText = $"Failed to load parameter schema: {ex.Message}");
         }
     }
 
@@ -622,6 +647,35 @@ public class BaseModelViewModel : INotifyPropertyChanged
         foreach (var prop in parameterProperties)
         {
             OnPropertyChanged(prop);
+        }
+    }
+
+    #endregion
+
+    #region UI Thread Safety
+
+    /// <summary>
+    /// Safely update UI properties on the UI thread
+    /// </summary>
+    private async Task UpdateUIAsync(Action uiAction)
+    {
+        try
+        {
+            var app = System.Windows.Application.Current;
+            if (app?.Dispatcher == null) return;
+
+            if (app.Dispatcher.CheckAccess())
+            {
+                uiAction();
+            }
+            else
+            {
+                await app.Dispatcher.InvokeAsync(uiAction);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[BaseModelViewModel] UI update failed: {ex.Message}");
         }
     }
 

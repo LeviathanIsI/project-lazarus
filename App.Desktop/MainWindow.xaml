@@ -1,4 +1,4 @@
-﻿<Window x:Class="Lazarus.Desktop.MainWindow"
+<Window x:Class="Lazarus.Desktop.MainWindow"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:views="clr-namespace:Lazarus.Desktop.Views"
@@ -7,145 +7,444 @@
 		xmlns:videoViews="clr-namespace:Lazarus.Desktop.Views.Video"
 		xmlns:voiceViews="clr-namespace:Lazarus.Desktop.Views.Voice"
 		xmlns:entitiesViews="clr-namespace:Lazarus.Desktop.Views.Entities"
+		xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+		xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+		xmlns:vmImages="clr-namespace:Lazarus.Desktop.ViewModels.Images"
+		xmlns:vmVideo="clr-namespace:Lazarus.Desktop.ViewModels.Video"
+		xmlns:vmVoice="clr-namespace:Lazarus.Desktop.ViewModels.Voice"
+		xmlns:vmEntities="clr-namespace:Lazarus.Desktop.ViewModels.Entities"
+		xmlns:vmThreeD="clr-namespace:Lazarus.Desktop.ViewModels.ThreeDModels"
 		Title="Project Lazarus"
-		Height="700"
-		Width="1200"
+		Height="800"
+		Width="1400"
 		Background="{DynamicResource PrimaryDarkBrush}">
-	<Grid Margin="16">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
-		</Grid.RowDefinitions>
-
-		<!-- Header -->
-		<TextBlock Text="Project Lazarus"
-				   Grid.Row="0"
-				   VerticalAlignment="Center"
-				   HorizontalAlignment="Center"
-				   FontSize="28"
-				   Foreground="{DynamicResource AccentRedBrush}"
-				   FontWeight="Bold"
-				   Margin="0,0,0,16"/>
-
-		<!-- API Status & Global Preferences -->
-		<StackPanel Orientation="Horizontal"
-					Grid.Row="1"
-					Margin="0,0,0,12">
-			<TextBlock x:Name="ApiStatus"
-					   Text="API: unknown"
-					   VerticalAlignment="Center"
-					   Foreground="{DynamicResource TextSecondaryBrush}"
-					   Margin="0,0,12,0"/>
-			<Button Content="Ping API"
-					Click="PingApi_Click"
-					Margin="0,0,8,0"
-					Padding="8,4"
-					Background="{DynamicResource BorderBrush}"
-					Foreground="{DynamicResource TextPrimaryBrush}"
-					BorderThickness="0"/>
-			
-			<!-- Global Customization Controls -->
-			<Separator Margin="12,0" Background="{DynamicResource BorderBrush}" Width="1"/>
-			
-			<TextBlock Text="View:"
-					   Style="{StaticResource CaptionTextStyle}"
-					   VerticalAlignment="Center"
-					   Margin="0,0,4,0"/>
-			<ComboBox x:Name="ViewModeSelector"
-					  ItemsSource="{Binding ViewModes}"
-					  SelectedItem="{Binding CurrentViewMode}"
-					  Style="{StaticResource DarkComboBoxStyle}"
-					  MinWidth="120"
-					  Margin="0,0,12,0"
-					  ToolTip="Change UI complexity: Novice (simple) → Enthusiast (balanced) → Developer (full chaos)"/>
-			
-			<TextBlock Text="Theme:"
-					   Style="{StaticResource CaptionTextStyle}"
-					   VerticalAlignment="Center" 
-					   Margin="0,0,4,0"/>
-			<ComboBox x:Name="ThemeSelector"
-					  ItemsSource="{Binding Themes}"
-					  SelectedItem="{Binding CurrentTheme}"
-					  Style="{StaticResource DarkComboBoxStyle}"
-					  MinWidth="120"
-					  ToolTip="Switch visual theme: Dark Gothic → Light Clean → Cyberpunk Neon → Minimal"/>
-		</StackPanel>
-
-		<!-- Tab Navigation -->
-		<Border Grid.Row="2"
-				Background="{DynamicResource SecondaryDarkBrush}"
-				CornerRadius="8,8,0,0"
-				Margin="0,0,0,0">
-			<StackPanel Orientation="Horizontal"
-						Background="{DynamicResource TertiaryDarkBrush}"
-						Margin="8">
-				<Button x:Name="ConversationsTabButton"
-						Content="Conversations"
-						Click="ConversationsTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-				<Button x:Name="ModelsTabButton"
-						Content="Model Configuration"
-						Click="ModelsTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-				<Button x:Name="ImagesTabButton"
-						Content="Images"
-						Click="ImagesTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-				<Button x:Name="VideoTabButton"
-						Content="Video"
-						Click="VideoTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-				<Button x:Name="ModelsThreeDTabButton"
-						Content="3D Models"
-						Click="ModelsThreeDTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-				<Button x:Name="VoiceTabButton"
-						Content="Voice"
-						Click="VoiceTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-				<Button x:Name="EntitiesTabButton"
-						Content="Entities"
-						Click="EntitiesTab_Click"
-						Style="{StaticResource MainNavButtonStyle}" />
-			</StackPanel>
-		</Border>
-
-		<!-- Tab Content -->
-		<Border Grid.Row="3"
-				Background="{DynamicResource SecondaryDarkBrush}"
-				CornerRadius="0,0,8,8"
-				Padding="0">
+	
+	<!-- PRIMARY LAYOUT: SIDEBAR + CONTENT -->
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="280" MinWidth="250"/>  <!-- Navigation Sidebar -->
+			<ColumnDefinition Width="*"/>                   <!-- Main Content Area -->
+		</Grid.ColumnDefinitions>
+		
+		<!-- LEFT SIDEBAR: HIERARCHICAL NAVIGATION -->
+		<Border Grid.Column="0" Background="{DynamicResource SecondaryDarkBrush}" 
+				BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
 			<Grid>
-				<!-- Conversations Tab -->
-				<views:ChatView x:Name="ConversationsView"
-								Visibility="Visible"/>
-
-				<!-- Model Configuration Tab -->
-				<views:ModelsView x:Name="ModelsView"
-								  Visibility="Collapsed"/>
-
-				<!-- Images Tab -->
-				<imagesViews:ImagesView x:Name="ImagesView"
-										Visibility="Collapsed"/>
-
-				<!-- Video Tab -->
-				<videoViews:VideoView x:Name="VideoView"
-									  Visibility="Collapsed"/>
-
-				<!-- 3D Models Tab -->
-				<threeDViews:ThreeDModelsView x:Name="ModelsThreeDView"
-											  Visibility="Collapsed"/>
-
-				<!-- Voice Tab -->
-				<voiceViews:VoiceView x:Name="VoiceView"
-									  Visibility="Collapsed"/>
-
-				<!-- Entities Tab -->
-				<entitiesViews:EntitiesView x:Name="EntitiesView"
-											Visibility="Collapsed"/>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>  <!-- App Header -->
+					<RowDefinition Height="*"/>     <!-- Navigation Menu -->
+					<RowDefinition Height="Auto"/>  <!-- Global Controls -->
+				</Grid.RowDefinitions>
+				
+				<!-- APP HEADER -->
+				<StackPanel Grid.Row="0" Margin="16,16,16,0">
+					<TextBlock Text="Project Lazarus"
+							   FontSize="24" FontWeight="Bold"
+							   Foreground="{DynamicResource AccentRedBrush}"
+							   HorizontalAlignment="Center"
+							   Margin="0,0,0,16"/>
+							   
+					<!-- API Status -->
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+						<TextBlock x:Name="ApiStatus"
+								   Text="API: unknown"
+								   FontSize="12"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   Margin="0,0,8,0"/>
+						<Button Content="Ping"
+								Click="PingApi_Click"
+								Padding="6,2"
+								FontSize="10"
+								Background="{DynamicResource BorderBrush}"
+								Foreground="{DynamicResource TextPrimaryBrush}"
+								BorderThickness="0"/>
+					</StackPanel>
+				</StackPanel>
+				
+				<!-- HIERARCHICAL NAVIGATION MENU -->
+				<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+					<StackPanel Margin="8,0,8,16">
+						
+						<!-- CORE SECTION -->
+						<TextBlock Text="CORE" 
+								   FontSize="10" FontWeight="SemiBold"
+								   Foreground="{DynamicResource TextMutedBrush}"
+								   Margin="16,16,16,8"/>
+						
+						<Button x:Name="DashboardButton" Content="🏠  Dashboard"
+								Command="{Binding NavigateToDashboardCommand}"
+								Tag="{Binding Navigation.IsDashboardActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+								
+						<Button x:Name="ConversationsButton" Content="💬  Conversations"
+								Command="{Binding NavigateToConversationsCommand}"
+								Tag="{Binding Navigation.IsConversationsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+						
+						<!-- MANAGEMENT SECTION -->
+						<TextBlock Text="MANAGEMENT" 
+								   FontSize="10" FontWeight="SemiBold"
+								   Foreground="{DynamicResource TextMutedBrush}"
+								   Margin="16,24,16,8"/>
+								   
+						<Button x:Name="ModelsButton" Content="🤖  Model Configuration"
+								Command="{Binding NavigateToModelsCommand}"
+								Tag="{Binding Navigation.IsModelsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+					
+					<!-- Models submenu -->
+					<StackPanel Margin="24,0,0,0"
+							Visibility="{Binding Navigation.IsModelsActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<Button Content="Base Model"
+								Command="{Binding NavigateToBaseModelCommand}"
+								Tag="{Binding Navigation.IsBaseModelActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="LoRAs"
+								Command="{Binding NavigateToLorAsCommand}"
+								Tag="{Binding Navigation.IsLorAsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="ControlNets"
+								Command="{Binding NavigateToControlNetsCommand}"
+								Tag="{Binding Navigation.IsControlNetsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="VAEs"
+								Command="{Binding NavigateToVAEsCommand}"
+								Tag="{Binding Navigation.IsVAEsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Embeddings"
+								Command="{Binding NavigateToEmbeddingsCommand}"
+								Tag="{Binding Navigation.IsEmbeddingsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Hypernetworks"
+								Command="{Binding NavigateToHypernetworksCommand}"
+								Tag="{Binding Navigation.IsHypernetworksActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Advanced"
+								Command="{Binding NavigateToAdvancedCommand}"
+								Tag="{Binding Navigation.IsAdvancedActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+					</StackPanel>
+								   
+						<Button x:Name="RunnerManagerButton" Content="🏃‍♂️  Runner Manager"
+								Command="{Binding NavigateToRunnerManagerCommand}"
+								Tag="{Binding Navigation.IsRunnerManagerActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+								
+						<Button x:Name="JobsButton" Content="📋  Jobs"
+								Command="{Binding NavigateToJobsCommand}"
+								Tag="{Binding Navigation.IsJobsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+								
+						<Button x:Name="DatasetsButton" Content="📚  Datasets"
+								Command="{Binding NavigateToDatasetsCommand}"
+								Tag="{Binding Navigation.IsDatasetsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+						
+						<!-- MULTIMEDIA SECTION -->
+						<TextBlock Text="MULTIMEDIA" 
+								   FontSize="10" FontWeight="SemiBold"
+								   Foreground="{DynamicResource TextMutedBrush}"
+								   Margin="16,24,16,8"/>
+								   
+						<Button x:Name="ImagesButton" Content="🖼️  Images"
+								Command="{Binding NavigateToImagesCommand}"
+								Tag="{Binding Navigation.IsImagesActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+					
+					<!-- Images submenu -->
+					<StackPanel Margin="24,0,0,0"
+							Visibility="{Binding Navigation.IsImagesActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<Button Content="Text to Image"
+								Command="{Binding NavigateToText2ImageCommand}"
+								Tag="{Binding Navigation.IsText2ImageVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Image to Image"
+								Command="{Binding NavigateToImage2ImageCommand}"
+								Tag="{Binding Navigation.IsImage2ImageVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Inpainting"
+								Command="{Binding NavigateToInpaintingCommand}"
+								Tag="{Binding Navigation.IsInpaintingVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Upscaling"
+								Command="{Binding NavigateToUpscalingCommand}"
+								Tag="{Binding Navigation.IsUpscalingVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+					</StackPanel>
+								   
+						<Button x:Name="VideoButton" Content="🎬  Video"
+								Command="{Binding NavigateToVideoCommand}"
+								Tag="{Binding Navigation.IsVideoActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+					
+					<!-- Video submenu -->
+					<StackPanel Margin="24,0,0,0"
+							Visibility="{Binding Navigation.IsVideoActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<Button Content="Text to Video"
+								Command="{Binding NavigateToText2VideoCommand}"
+								Tag="{Binding Navigation.IsText2VideoVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Video to Video"
+								Command="{Binding NavigateToVideo2VideoCommand}"
+								Tag="{Binding Navigation.IsVideo2VideoVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Motion Control"
+								Command="{Binding NavigateToMotionControlCommand}"
+								Tag="{Binding Navigation.IsMotionControlVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Temporal Effects"
+								Command="{Binding NavigateToTemporalEffectsCommand}"
+								Tag="{Binding Navigation.IsTemporalEffectsVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+					</StackPanel>
+								   
+						<Button x:Name="VoiceButton" Content="🎧  Voice"
+								Command="{Binding NavigateToVoiceCommand}"
+								Tag="{Binding Navigation.IsVoiceActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+					
+					<!-- Voice submenu -->
+					<StackPanel Margin="24,0,0,0"
+							Visibility="{Binding Navigation.IsVoiceActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<Button Content="TTS Configuration"
+								Command="{Binding NavigateToVoiceCommand}"
+								Tag="{Binding Navigation.IsTTSConfigurationVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Voice Cloning"
+								Command="{Binding NavigateToVoiceCloningCommand}"
+								Tag="{Binding Navigation.IsVoiceCloningVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Real-time Synthesis"
+								Command="{Binding NavigateToRealTimeSynthesisCommand}"
+								Tag="{Binding Navigation.IsRealTimeSynthesisVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Audio Processing"
+								Command="{Binding NavigateToAudioProcessingCommand}"
+								Tag="{Binding Navigation.IsAudioProcessingVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+					</StackPanel>
+								   
+						<Button x:Name="ThreeDModelsButton" Content="🧊  3D Models"
+								Command="{Binding NavigateToThreeDModelsCommand}"
+								Tag="{Binding Navigation.IsThreeDModelsActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+								
+						<Button x:Name="EntitiesButton" Content="👤  Entities"
+								Command="{Binding NavigateToEntitiesCommand}"
+								Tag="{Binding Navigation.IsEntitiesActive, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SidebarNavButtonStyle}"/>
+					
+					<!-- Entities submenu -->
+					<StackPanel Margin="24,0,0,0"
+							Visibility="{Binding Navigation.IsEntitiesActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+						<Button Content="Entity Creation"
+								Command="{Binding NavigateToEntitiesCommand}"
+								Tag="{Binding Navigation.IsEntityCreationVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Behavioral Patterns"
+								Command="{Binding NavigateToBehavioralPatternsCommand}"
+								Tag="{Binding Navigation.IsBehavioralPatternsVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Interaction Testing"
+								Command="{Binding NavigateToInteractionTestingCommand}"
+								Tag="{Binding Navigation.IsInteractionTestingVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+						<Button Content="Entity Management"
+								Command="{Binding NavigateToEntityManagementCommand}"
+								Tag="{Binding Navigation.IsEntityManagementVisible, Converter={StaticResource BoolToSelectedTag}}"
+								Style="{StaticResource SubtabNavButtonStyle}"/>
+					</StackPanel>
+								   
+					</StackPanel>
+				</ScrollViewer>
+				
+				<!-- GLOBAL CONTROLS -->
+				<StackPanel Grid.Row="2" Margin="16,0,16,16">
+					<Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,12"/>
+					
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+						<TextBlock Text="View:" FontSize="11"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   VerticalAlignment="Center" Margin="0,0,8,0"/>
+						<ComboBox x:Name="ViewModeSelector"
+								  ItemsSource="{Binding ViewModes}"
+								  SelectedItem="{Binding CurrentViewMode}"
+								  Style="{StaticResource DarkComboBoxStyle}"
+								  MinWidth="100" FontSize="11"/>
+					</StackPanel>
+					
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="Theme:" FontSize="11"
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   VerticalAlignment="Center" Margin="0,0,8,0"/>
+						<ComboBox x:Name="ThemeSelector"
+								  ItemsSource="{Binding Themes}"
+								  SelectedItem="{Binding CurrentTheme}"
+								  Style="{StaticResource DarkComboBoxStyle}"
+								  MinWidth="100" FontSize="11"/>
+					</StackPanel>
+				</StackPanel>
 			</Grid>
 		</Border>
+		
+		<!-- RIGHT MAIN CONTENT AREA -->
+		<Grid Grid.Column="1">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>  <!-- System Context Bar -->
+				<RowDefinition Height="*"/>     <!-- Dynamic Content Views -->
+			</Grid.RowDefinitions>
+			
+			<!-- SYSTEM CONTEXT BAR -->
+			<Border Grid.Row="0" Background="{DynamicResource TertiaryDarkBrush}"
+					BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+					Padding="16,12">
+				<TextBlock Text="System Context Bar - TODO: Add system status, breadcrumbs, etc."
+						   Foreground="{DynamicResource TextSecondaryBrush}"
+						   FontSize="12"/>
+			</Border>
+			
+			<!-- Content Area -->
+			<Border Grid.Row="1"
+			        Background="{DynamicResource PrimaryDarkBrush}"
+			        CornerRadius="8" Margin="8,0,16,16" Padding="0">
+			  <ContentControl x:Name="MainContentHost"
+			                  Content="{Binding CurrentViewModel}">
+			    <ContentControl.Resources>
+			      <!-- Fallback template for missing ViewModels -->
+			      <DataTemplate x:Key="FallbackTemplate">
+			        <Border Background="{DynamicResource ErrorBrush}" Padding="20" Margin="10">
+			          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+			            <TextBlock Text="⚠️ View Not Available" 
+			                       FontSize="18" FontWeight="Bold" 
+			                       Foreground="{DynamicResource TextPrimaryBrush}"
+			                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
+			            <TextBlock Text="The requested view could not be loaded." 
+			                       FontSize="14" 
+			                       Foreground="{DynamicResource TextSecondaryBrush}"
+			                       HorizontalAlignment="Center" Margin="0,0,0,5"/>
+			            <TextBlock Text="Please check the navigation or try refreshing." 
+			                       FontSize="12" 
+			                       Foreground="{DynamicResource TextMutedBrush}"
+			                       HorizontalAlignment="Center"/>
+			          </StackPanel>
+			        </Border>
+			      </DataTemplate>
+
+			      <!-- CORE -->
+			      <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+			        <views:DashboardView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:ChatViewModel}">
+			        <views:ChatView/>
+			      </DataTemplate>
+
+			      <!-- MANAGEMENT -->
+			      <DataTemplate DataType="{x:Type vm:RunnerManagerViewModel}">
+			        <views:RunnerManagerView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:JobsViewModel}">
+			        <views:JobsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:DatasetsViewModel}">
+			        <views:DatasetsView/>
+			      </DataTemplate>
+
+			      <!-- MODELS -->
+			      <DataTemplate DataType="{x:Type vm:ModelsViewModel}">
+			        <views:ModelsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:BaseModelViewModel}">
+			        <views:BaseModelView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:LorAsViewModel}">
+			        <views:LorAsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:ControlNetsViewModel}">
+			        <views:ControlNetsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:VAEsViewModel}">
+			        <views:VAEsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:EmbeddingsViewModel}">
+			        <views:EmbeddingsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:HypernetworksViewModel}">
+			        <views:HypernetworksView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vm:AdvancedViewModel}">
+			        <views:AdvancedView/>
+			      </DataTemplate>
+
+			      <!-- IMAGES -->
+			      <DataTemplate DataType="{x:Type vmImages:Text2ImageViewModel}">
+			        <imagesViews:Text2ImageView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmImages:Image2ImageViewModel}">
+			        <imagesViews:Image2ImageView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmImages:InpaintingViewModel}">
+			        <imagesViews:InpaintingView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmImages:UpscalingViewModel}">
+			        <imagesViews:UpscalingView/>
+			      </DataTemplate>
+
+			      <!-- VIDEO -->
+			      <DataTemplate DataType="{x:Type vmVideo:Text2VideoViewModel}">
+			        <videoViews:Text2VideoView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVideo:Video2VideoViewModel}">
+			        <videoViews:Video2VideoView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVideo:MotionControlViewModel}">
+			        <videoViews:MotionControlView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVideo:TemporalEffectsViewModel}">
+			        <videoViews:TemporalEffectsView/>
+			      </DataTemplate>
+
+			      <!-- VOICE -->
+			      <DataTemplate DataType="{x:Type vmVoice:VoiceViewModel}">
+			        <voiceViews:VoiceView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVoice:TTSConfigurationViewModel}">
+			        <voiceViews:TTSConfigurationView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVoice:VoiceCloningViewModel}">
+			        <voiceViews:VoiceCloningView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVoice:RealTimeSynthesisViewModel}">
+			        <voiceViews:RealTimeSynthesisView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmVoice:AudioProcessingViewModel}">
+			        <voiceViews:AudioProcessingView/>
+			      </DataTemplate>
+
+			      <!-- 3D -->
+			      <DataTemplate DataType="{x:Type vmThreeD:ThreeDModelsViewModel}">
+			        <threeDViews:ThreeDModelsView/>
+			      </DataTemplate>
+
+			      <!-- ENTITIES -->
+			      <DataTemplate DataType="{x:Type vmEntities:EntitiesViewModel}">
+			        <entitiesViews:EntitiesView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmEntities:EntityCreationViewModel}">
+			        <entitiesViews:EntityCreationView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmEntities:BehavioralPatternsViewModel}">
+			        <entitiesViews:BehavioralPatternsView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmEntities:InteractionTestingViewModel}">
+			        <entitiesViews:InteractionTestingView/>
+			      </DataTemplate>
+			      <DataTemplate DataType="{x:Type vmEntities:EntityManagementViewModel}">
+			        <entitiesViews:EntityManagementView/>
+			      </DataTemplate>
+
+			    </ContentControl.Resources>
+			  </ContentControl>
+			</Border>
+		</Grid>
 	</Grid>
 </Window>

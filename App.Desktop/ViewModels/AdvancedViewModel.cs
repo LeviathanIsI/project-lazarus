@@ -246,7 +246,7 @@ namespace Lazarus.Desktop.ViewModels
 
         public AdvancedViewModel()
         {
-            RefreshCommand = new Helpers.RelayCommand(_ => _ = Task.Run(async () => await RefreshSystemInfo()));
+            RefreshCommand = new Helpers.RelayCommand(async _ => await RefreshSystemInfo());
             ResetToDefaultsCommand = new Helpers.RelayCommand(_ => ResetToDefaults());
             ExportConfigCommand = new Helpers.RelayCommand(_ => ExportConfiguration());
             ImportConfigCommand = new Helpers.RelayCommand(_ => ImportConfiguration());
@@ -254,8 +254,8 @@ namespace Lazarus.Desktop.ViewModels
             RestartApplicationCommand = new Helpers.RelayCommand(_ => RestartApplication());
 
             InitializeCategories();
-            _ = Task.Run(LoadSettings);
-            _ = Task.Run(LoadSystemInfo);
+            _ = LoadSettingsAsync();
+            _ = LoadSystemInfoAsync();
         }
 
         private void InitializeCategories()
@@ -270,10 +270,27 @@ namespace Lazarus.Desktop.ViewModels
             Categories.Add("Debug");
         }
 
+        private async Task LoadSettingsAsync()
+        {
+            // Update UI on UI thread safely
+            await UpdateUIAsync(() =>
+            {
+                IsLoading = true;
+                StatusText = "Loading advanced settings...";
+            });
+            
+            // Background work
+            await LoadSettings();
+        }
+        
+        private async Task LoadSystemInfoAsync()
+        {
+            // Background work (LoadSystemInfo doesn't seem to update UI properties directly)
+            await LoadSystemInfo().ConfigureAwait(false);
+        }
+        
         private async Task LoadSettings()
         {
-            IsLoading = true;
-            StatusText = "Loading advanced settings...";
 
             try
             {
@@ -425,12 +442,20 @@ namespace Lazarus.Desktop.ViewModels
                     _allSettings.Add(setting);
                 }
 
-                FilterSettings();
-                StatusText = $"Loaded {settings.Count} advanced settings";
+                // Marshal UI updates to UI thread
+                await System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    FilterSettings();
+                    StatusText = $"Loaded {settings.Count} advanced settings";
+                });
             }
             finally
             {
-                IsLoading = false;
+                // Marshal UI update to UI thread
+                await System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    IsLoading = false;
+                });
             }
         }
 
@@ -514,6 +539,35 @@ namespace Lazarus.Desktop.ViewModels
         {
             StatusText = "Restarting application...";
         }
+
+        #region UI Thread Safety
+
+        /// <summary>
+        /// Safely update UI properties on the UI thread
+        /// </summary>
+        private async Task UpdateUIAsync(Action uiAction)
+        {
+            try
+            {
+                var app = System.Windows.Application.Current;
+                if (app?.Dispatcher == null) return;
+
+                if (app.Dispatcher.CheckAccess())
+                {
+                    uiAction();
+                }
+                else
+                {
+                    await app.Dispatcher.InvokeAsync(uiAction);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AdvancedViewModel] UI update failed: {ex.Message}");
+            }
+        }
+
+        #endregion
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
