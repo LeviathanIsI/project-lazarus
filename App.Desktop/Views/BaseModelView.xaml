@@ -157,15 +157,14 @@
 						<Button Content="Load Model" 
 								Style="{DynamicResource PrimaryButtonStyle}"
 								Command="{Binding LoadModelCommand}"
-								CommandParameter="{Binding SelectedModel}"
-								IsEnabled="{Binding SelectedModel, Converter={StaticResource NullToBooleanConverter}}"
+								CommandParameter="{Binding ElementName=ModelList, Path=SelectedItem}"
+								IsEnabled="{Binding ElementName=ModelList, Path=SelectedItem, Converter={StaticResource NullToBooleanConverter}}"
 								Margin="0,0,4,0"/>
 						
 						<Button Grid.Column="1" 
 								Content="Unload" 
 								Style="{DynamicResource SecondaryButtonStyle}"
 								Command="{Binding UnloadModelCommand}"
-								IsEnabled="{Binding IsModelLoaded}"
 								Margin="4,0,0,0"/>
 					</Grid>
 

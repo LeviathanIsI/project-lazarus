@@ -2,32 +2,10 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Lazarus.Desktop.Views"
-             Background="{DynamicResource PrimaryDarkBrush}">
+             Background="Transparent">
 
-    <UserControl.Resources>
-        <!-- ViewMode Template Selector - PROGRESSIVE DISCLOSURE DATASETS MANAGER -->
-        <!-- Novice: Simple dataset library + basic import -->
-        <!-- Enthusiast: Dataset management + RAG source configuration + index status -->
-        <!-- Developer: Full dataset control + embedding parameters + performance monitoring -->
-        <local:ViewModeTemplateSelector x:Key="DatasetsTemplateSelector"/>
-    </UserControl.Resources>
-
-    <!-- Datasets Content Selector - Template chosen by ViewMode -->
-    <ContentPresenter Content="{Binding}"
-                      ContentTemplateSelector="{StaticResource DatasetsTemplateSelector}">
-        <!-- Local fallback if selector returns null -->
-        <ContentPresenter.ContentTemplate>
-            <DataTemplate>
-                <Border Padding="16" BorderThickness="2"
-                        BorderBrush="{DynamicResource AccentRedBrush}">
-                    <StackPanel>
-                        <TextBlock Text="[FALLBACK] No ViewMode template selected"
-                                   FontSize="16" FontWeight="Bold"/>
-                        <TextBlock Text="This is a diagnostic default inside the view."
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
-            </DataTemplate>
-        </ContentPresenter.ContentTemplate>
-    </ContentPresenter>
+    <!-- Use global ViewModeTemplateSelector -->
+    <ContentPresenter x:Name="ModeAwareContent"
+                      Content="{Binding}"
+                      ContentTemplateSelector="{StaticResource ViewModeTemplateSelector}"/>
 </UserControl>

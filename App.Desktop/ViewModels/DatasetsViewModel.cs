@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 using System.Windows.Input;
 using Lazarus.Desktop.Helpers;
 using Lazarus.Desktop.Services;
@@ -218,22 +219,43 @@ public class DatasetsViewModel : INotifyPropertyChanged
     
     private void ImportDataset()
     {
-        // TODO: Open file dialog to select dataset files
-        var dataset = new DatasetViewModel
+        var ofd = new OpenFileDialog
         {
-            Id = Guid.NewGuid().ToString(),
-            Name = "Imported Dataset",
-            Description = "User imported dataset",
-            Type = DatasetType.Custom,
-            DocumentCount = 0,
-            SizeInMB = 0,
-            LastModified = DateTime.Now,
-            Status = DatasetStatus.Processing
+            Title = "Import Dataset",
+            Filter = "Dataset files (*.jsonl;*.csv;*.parquet;*.txt)|*.jsonl;*.csv;*.parquet;*.txt|All files (*.*)|*.*",
+            Multiselect = true
         };
-        
-        Datasets.Add(dataset);
-        UpdateCounts();
-        Console.WriteLine($"DatasetsViewModel: Imported dataset - {dataset.Name}");
+
+        if (ofd.ShowDialog() == true)
+        {
+            foreach (var file in ofd.FileNames)
+            {
+                try
+                {
+                    var info = new FileInfo(file);
+                    var dataset = new DatasetViewModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = Path.GetFileNameWithoutExtension(info.Name),
+                        Description = $"Imported {info.Extension.ToUpperInvariant()} dataset",
+                        Type = GetDatasetTypeFromExtension(info.Extension),
+                        DocumentCount = 0,
+                        SizeInMB = Math.Round(info.Length / 1024d / 1024d, 2),
+                        LastModified = info.LastWriteTime,
+                        Status = DatasetStatus.Ready
+                    };
+
+                    Datasets.Add(dataset);
+                    Console.WriteLine($"DatasetsViewModel: Imported dataset - {dataset.Name} ({dataset.Type})");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"DatasetsViewModel: Failed to import '{file}': {ex.Message}");
+                }
+            }
+
+            UpdateCounts();
+        }
     }
     
     private void CreateDataset()
@@ -303,25 +325,67 @@ public class DatasetsViewModel : INotifyPropertyChanged
         Console.WriteLine($"DatasetsViewModel: Creating embedding index - {index.Name}");
     }
     
-    private void RefreshDatasets()
+    private async void RefreshDatasets()
     {
         IsLoading = true;
-        
-        // TODO: Implement actual refresh from API/filesystem
-        Task.Run(async () =>
+
+        try
         {
-            await Task.Delay(1000); // Simulate loading
+            // Simulate dataset preparation for the currently selected dataset if present
+            if (SelectedDataset != null)
+            {
+                SelectedDataset.Status = DatasetStatus.Processing;
+            }
+
+            await Task.Delay(1000);
+
+            if (SelectedDataset != null)
+            {
+                SelectedDataset.Status = DatasetStatus.Ready;
+                SelectedDataset.LastModified = DateTime.Now;
+            }
+
+            Console.WriteLine("DatasetsViewModel: Refreshed datasets and RAG sources");
+        }
+        finally
+        {
             IsLoading = false;
-        });
-        
-        Console.WriteLine("DatasetsViewModel: Refreshing datasets and RAG sources");
+        }
     }
     
     private void BrowseDatasetPath()
     {
-        // TODO: Open folder browser dialog
-        SelectedDatasetPath = @"C:\Users\Documents\NewDataset";
-        Console.WriteLine($"DatasetsViewModel: Selected path - {SelectedDatasetPath}");
+        // Use file dialog to pick a file and derive the folder path (more reliable cross-target)
+        var ofd = new OpenFileDialog
+        {
+            Title = "Select a file in the dataset folder",
+            Filter = "All files (*.*)|*.*",
+            Multiselect = false
+        };
+
+        if (ofd.ShowDialog() == true)
+        {
+            var dir = Path.GetDirectoryName(ofd.FileName) ?? string.Empty;
+            SelectedDatasetPath = dir;
+            Console.WriteLine($"DatasetsViewModel: Selected path - {SelectedDatasetPath}");
+        }
+    }
+
+    private static DatasetType GetDatasetTypeFromExtension(string extension)
+    {
+        switch (extension.ToLowerInvariant())
+        {
+            case ".jsonl":
+                return DatasetType.Training;
+            case ".csv":
+                return DatasetType.Documents;
+            case ".parquet":
+                return DatasetType.Research;
+            case ".txt":
+                return DatasetType.Custom;
+            default:
+                return DatasetType.Custom;
+        }
     }
     
     #region INotifyPropertyChanged

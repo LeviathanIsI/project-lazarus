@@ -19,6 +19,7 @@ public class BaseModelViewModel : INotifyPropertyChanged
     private BaseModelDto? _selectedModel;
     private SamplingParameters _currentParameters = new();
     private Dictionary<string, ParameterMetadata> _supportedParameterSchema = new();
+    private bool _initialized;
 
     // New: filtering/sorting
     private string _searchFilter = string.Empty;
@@ -53,14 +54,18 @@ public class BaseModelViewModel : INotifyPropertyChanged
         LoadModelsCommand = new RelayCommand(async _ => await LoadModelsAsync(), _ => !IsLoading);
         LoadModelCommand = new RelayCommand(async model =>
         {
-            var target = model as BaseModelDto ?? SelectedModel;
+            var target = model as BaseModelDto;
             if (target == null) return; // require explicit selection present
             await LoadModelAsync(target);
         },
-        _ => !IsLoading && SelectedModel != null);
+        param =>
+        {
+            var candidate = param as BaseModelDto;
+            return !IsLoading && candidate != null && !(candidate.IsActive);
+        });
         LoadParametersCommand = new RelayCommand(async _ => await LoadModelParametersAsync(), _ => !IsLoading && SelectedModel != null);
         TestParametersCommand = new RelayCommand(async _ => await ExecuteTestAsync(), _ => CanExecuteTest);
-        UnloadModelCommand = new RelayCommand(async _ => await UnloadModelAsync(), _ => !IsLoading && IsModelLoaded);
+        UnloadModelCommand = new RelayCommand(async _ => await UnloadModelAsync(), _ => !IsLoading && _globalState.CurrentModel != null);
         SelectModelCommand = new RelayCommand(model => SelectModel(model as BaseModelDto));
 
         _debounceTimer.Elapsed += (_, __) => _ = LoadModelsAsync();
@@ -398,32 +403,31 @@ public class BaseModelViewModel : INotifyPropertyChanged
             {
                 foreach (var model in inventory.BaseModels)
                     BaseModels.Add(model);
-                // Only reflect active selection if a model is already active
-                SelectedModel = BaseModels.FirstOrDefault(m => m.IsActive);
+                // Do not auto-select on initial scan; user must pick explicitly
                 await UpdateUIAsync(() => StatusText = $"Found {BaseModels.Count} base models");
             }
             else
             {
-                var baseDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
-                var lazarusDir = Path.Combine(baseDir, "Lazarus");
-                var modelsMain = Path.Combine(lazarusDir, "models", "main");
-                Directory.CreateDirectory(modelsMain);
-                var exts = new HashSet<string>(new[] { ".gguf", ".safetensors", ".bin", ".pth" }, System.StringComparer.OrdinalIgnoreCase);
-                foreach (var file in Directory.EnumerateFiles(modelsMain, "*.*", SearchOption.TopDirectoryOnly))
+                // Fallback: scan common local locations for models
+                var discovered = EnumerateFallbackModelFiles();
+                foreach (var file in discovered)
                 {
-                    if (!exts.Contains(Path.GetExtension(file))) continue;
-                    var fi = new FileInfo(file);
-                    BaseModels.Add(new BaseModelDto
+                    try
                     {
-                        Id = System.Guid.NewGuid().ToString(),
-                        Name = Path.GetFileNameWithoutExtension(file),
-                        FileName = fi.FullName,
-                        Size = HumanSize(fi.Length),
-                        ContextLength = 4096,
-                        Architecture = InferArchitecture(file),
-                        Quantization = InferQuantization(file),
-                        IsActive = false
-                    });
+                        var fi = new FileInfo(file);
+                        BaseModels.Add(new BaseModelDto
+                        {
+                            Id = System.Guid.NewGuid().ToString(),
+                            Name = Path.GetFileNameWithoutExtension(file),
+                            FileName = fi.FullName,
+                            Size = HumanSize(fi.Length),
+                            ContextLength = 4096,
+                            Architecture = InferArchitecture(file),
+                            Quantization = InferQuantization(file),
+                            IsActive = false
+                        });
+                    }
+                    catch { }
                 }
                 // Do not auto-select the first model. Require explicit user click.
                 SelectedModel = null;
@@ -450,6 +454,8 @@ public class BaseModelViewModel : INotifyPropertyChanged
 
     public async Task InitializeAsync()
     {
+        if (_initialized) return;
+        _initialized = true;
         await LoadModelsAsync();
     }
 
@@ -819,6 +825,13 @@ public class BaseModelViewModel : INotifyPropertyChanged
             m.IsSelected = SelectedModel != null && ReferenceEquals(m, SelectedModel);
             FilteredModels.Add(m);
         }
+
+        if (SelectedModel != null && !FilteredModels.Contains(SelectedModel))
+        {
+            SelectedModel = null; // forces buttons to refresh
+        }
+
+        try { CommandManager.InvalidateRequerySuggested(); } catch { }
     }
 
     private void SelectModel(BaseModelDto? model)
@@ -890,6 +903,43 @@ public class BaseModelViewModel : INotifyPropertyChanged
             _watcher.Changed += (_, __) => _debounceTimer.Start();
         }
         catch { }
+    }
+
+    private static IEnumerable<string> EnumerateFallbackModelFiles()
+    {
+        var results = new List<string>();
+        try
+        {
+            var exts = new HashSet<string>(new[] { ".gguf", ".safetensors", ".bin", ".pth" }, System.StringComparer.OrdinalIgnoreCase);
+
+            // AppData default (models/main and models root)
+            var baseDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+            var lazarusDir = Path.Combine(baseDir, "Lazarus");
+            var modelsMain = Path.Combine(lazarusDir, "models", "main");
+            var modelsRoot = Path.Combine(lazarusDir, "models");
+            if (Directory.Exists(modelsMain))
+            {
+                results.AddRange(Directory.EnumerateFiles(modelsMain, "*.*", SearchOption.TopDirectoryOnly)
+                    .Where(f => exts.Contains(Path.GetExtension(f))));
+            }
+            if (Directory.Exists(modelsRoot))
+            {
+                results.AddRange(Directory.EnumerateFiles(modelsRoot, "*.*", SearchOption.AllDirectories)
+                    .Where(f => exts.Contains(Path.GetExtension(f))));
+            }
+
+            // Portable install path: binaries/llama-cpp under app base directory
+            var portableRoot = Path.Combine(AppContext.BaseDirectory, "binaries", "llama-cpp");
+            if (Directory.Exists(portableRoot))
+            {
+                results.AddRange(Directory.EnumerateFiles(portableRoot, "*.*", SearchOption.AllDirectories)
+                    .Where(f => exts.Contains(Path.GetExtension(f))));
+            }
+        }
+        catch { }
+
+        // Remove duplicates and return
+        return results.Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     #endregion

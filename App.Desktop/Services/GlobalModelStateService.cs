@@ -104,13 +104,20 @@ public sealed class GlobalModelStateService : INotifyPropertyChanged
             if (!string.IsNullOrWhiteSpace(dto.Model?.FilePath) && File.Exists(dto.Model.FilePath))
             {
                 CurrentModel = dto.Model;
-                LoadStatus = dto.Status;
+                // Treat presence of a valid model file as Loaded on startup
+                LoadStatus = ModelLoadStatus.Loaded;
+                // Propagate restored state to listeners so UI reflects previously loaded model
+                if (LoadStatus == ModelLoadStatus.Loaded && CurrentModel != null)
+                {
+                    ModelLoaded?.Invoke(this, CurrentModel);
+                }
             }
             else
             {
                 // File moved/deleted - clear but keep last known name for info
                 CurrentModel = string.IsNullOrWhiteSpace(dto.Model?.Name) ? null : new GlobalModelInfo { Name = dto.Model!.Name };
                 LoadStatus = ModelLoadStatus.Idle;
+                ModelUnloaded?.Invoke(this, EventArgs.Empty);
             }
         }
         catch { }

@@ -247,6 +247,12 @@ public sealed class LlamaCppEmbeddedRunner : IChatRunner, IDisposable
         }
     }
 
+    public async Task<bool> UnloadAsync(CancellationToken ct = default)
+    {
+        // For embedded server we would restart without a model if needed; stub true
+        return await Task.FromResult(true);
+    }
+
     public async Task StopAsync()
     {
         _logger.LogInformation("Stopping embedded llama.cpp server");

@@ -81,10 +81,28 @@ public class SystemStateViewModel : INotifyPropertyChanged
             // Could reflect Loading state in UI if needed
         };
 
-        // Initial update
+        // Seed from global immediately so top bar/dashboard are correct on first render
+        SyncFromGlobal();
+        // Initial update from orchestrator
         _ = UpdateSystemStateAsync();
         
         Console.WriteLine("[SystemState] 🧠 System brain initialized - users will never be blind again");
+    }
+
+    public void SyncFromGlobal()
+    {
+        try
+        {
+            var info = _globalState.CurrentModel;
+            if (_globalState.LoadStatus == ModelLoadStatus.Loaded && info != null)
+            {
+                CurrentModel = info.Name;
+                ContextLength = info.ContextLength?.ToString() ?? ContextLength;
+                if (!string.IsNullOrWhiteSpace(info.InferenceEngine))
+                    CurrentRunner = info.InferenceEngine;
+            }
+        }
+        catch { }
     }
 
     #region Properties - System Consciousness
@@ -334,6 +352,10 @@ public class SystemStateViewModel : INotifyPropertyChanged
     {
         try
         {
+            // Snapshot global state first so we never regress UI when API is late
+            var global = _globalState.CurrentModel;
+            var hasGlobalLoaded = _globalState.LoadStatus == ModelLoadStatus.Loaded && global != null;
+
             // Get system status
             var systemStatus = await ApiClient.GetSystemStatusAsync();
             if (systemStatus != null)
@@ -341,19 +363,16 @@ public class SystemStateViewModel : INotifyPropertyChanged
                 IsOnline = true;
                 ApiStatus = "Online";
 
-                // Prefer real values from orchestrator; otherwise fall back to global state; otherwise keep previous
-                var global = _globalState.CurrentModel;
-
                 var modelName = !string.IsNullOrWhiteSpace(systemStatus.LoadedModel)
                     ? systemStatus.LoadedModel
-                    : (_globalState.LoadStatus == ModelLoadStatus.Loaded ? global?.Name : null) ?? CurrentModel;
+                    : (hasGlobalLoaded ? global?.Name : null) ?? CurrentModel;
 
                 var runnerName = !string.IsNullOrWhiteSpace(systemStatus.ActiveRunner)
                     ? systemStatus.ActiveRunner
-                    : (_globalState.LoadStatus == ModelLoadStatus.Loaded ? global?.InferenceEngine : null) ?? CurrentRunner;
+                    : (hasGlobalLoaded ? global?.InferenceEngine : null) ?? CurrentRunner;
 
                 var ctxLen = systemStatus.ContextLength?.ToString()
-                    ?? (_globalState.LoadStatus == ModelLoadStatus.Loaded ? global?.ContextLength?.ToString() : null)
+                    ?? (hasGlobalLoaded ? global?.ContextLength?.ToString() : null)
                     ?? ContextLength;
 
                 CurrentModel = modelName;
@@ -385,8 +404,19 @@ public class SystemStateViewModel : INotifyPropertyChanged
                 // Offline state
                 IsOnline = false;
                 ApiStatus = "Offline";
-                CurrentModel = "No connection";
-                CurrentRunner = "Offline";
+                if (hasGlobalLoaded)
+                {
+                    // Preserve restored model while API is offline/not ready
+                    CurrentModel = global!.Name;
+                    ContextLength = global.ContextLength?.ToString() ?? ContextLength;
+                    if (!string.IsNullOrWhiteSpace(global.InferenceEngine))
+                        CurrentRunner = global.InferenceEngine;
+                }
+                else
+                {
+                    CurrentModel = "No model loaded";
+                    CurrentRunner = "Offline";
+                }
                 TokensPerSecond = "0.0";
             }
 
@@ -398,6 +428,15 @@ public class SystemStateViewModel : INotifyPropertyChanged
             // Error state
             IsOnline = false;
             ApiStatus = "Error";
+            // Preserve restored model on errors if we have it
+            var global = _globalState.CurrentModel;
+            if (_globalState.LoadStatus == ModelLoadStatus.Loaded && global != null)
+            {
+                CurrentModel = global.Name;
+                ContextLength = global.ContextLength?.ToString() ?? ContextLength;
+                if (!string.IsNullOrWhiteSpace(global.InferenceEngine))
+                    CurrentRunner = global.InferenceEngine;
+            }
             Console.WriteLine($"[SystemState] Error updating system state: {ex.Message}");
         }
     }

@@ -378,11 +378,36 @@ public static class RunnerRegistry
             Logger.LogInformation($"Loading model from path: {modelPath}");
             var modelName = Path.GetFileNameWithoutExtension(modelPath);
             Logger.LogInformation($"Model loaded: {modelName}");
+            _activeRunner = _activeRunner ?? _runners.Values.FirstOrDefault();
+            if (_activeRunner is LlamaServerRunner serverRunner)
+            {
+                serverRunner.SetCurrentModel(modelName);
+            }
             return true;
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Model load failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    public static bool UnloadModel()
+    {
+        try
+        {
+            Logger.LogInformation("Unloading current model");
+            if (_activeRunner is null) return true; // nothing to do
+            if (_activeRunner is LlamaServerRunner serverRunner)
+            {
+                serverRunner.SetCurrentModel(null);
+                return true;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Model unload failed");
             return false;
         }
     }

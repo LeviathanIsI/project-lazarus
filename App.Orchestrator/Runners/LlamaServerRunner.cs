@@ -10,22 +10,20 @@ public sealed class LlamaServerRunner : IChatRunner
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     public string Name { get; }
     public Uri BaseAddress { get; }
-    public string? CurrentModel => _defaultModel;
-    private readonly string _defaultModel;
+    public string? CurrentModel => _currentModel;
+    private string? _currentModel;
 
     public LlamaServerRunner(string name, Uri baseUrl, string? defaultModel = null, HttpMessageHandler? handler = null)
     {
         Name = string.IsNullOrWhiteSpace(name) ? "llama-server" : name;
         BaseAddress = baseUrl;
-        _defaultModel = string.IsNullOrWhiteSpace(defaultModel)
-            ? "Qwen2.5-32B-Instruct-Q5_K_M.gguf"
-            : defaultModel;
 
         _http = handler is null ? new HttpClient() : new HttpClient(handler);
         _http.BaseAddress = BaseAddress;
         _http.Timeout = TimeSpan.FromMinutes(5);
 
-        Console.WriteLine($"[LlamaServerRunner] Initialized with base URL: {BaseAddress}, default model: {_defaultModel}");
+        _currentModel = string.IsNullOrWhiteSpace(defaultModel) ? _currentModel : defaultModel;
+        Console.WriteLine($"[LlamaServerRunner] Initialized with base URL: {BaseAddress}, default model: {_currentModel}");
     }
 
     public async Task<bool> HealthAsync(CancellationToken ct = default)
@@ -66,7 +64,7 @@ public sealed class LlamaServerRunner : IChatRunner
     {
         try
         {
-            payload.Model ??= _defaultModel;
+            payload.Model ??= _currentModel ?? payload.Model;
 
             Console.WriteLine($"[LlamaServerRunner] Sending chat request to {BaseAddress}chat/completions");
             Console.WriteLine($"[LlamaServerRunner] Request model: {payload.Model}");
@@ -99,6 +97,26 @@ public sealed class LlamaServerRunner : IChatRunner
             Console.WriteLine($"[LlamaServerRunner] ChatAsync failed: {ex.Message}");
             Console.WriteLine($"[LlamaServerRunner] Stack trace: {ex.StackTrace}");
             throw;
+        }
+    }
+
+    // Internal helper to update current model from registry
+    public void SetCurrentModel(string? modelName)
+    {
+        _currentModel = modelName;
+    }
+
+    public async Task<bool> UnloadAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            _currentModel = null;
+            // If the upstream runner supports unload, call it here in future
+            return await Task.FromResult(true);
+        }
+        catch
+        {
+            return false;
         }
     }
 }

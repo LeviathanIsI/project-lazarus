@@ -119,20 +119,31 @@ namespace Lazarus.Desktop
             preferencesService2.ApplyViewMode(preferencesService2.CurrentViewMode);
             Console.WriteLine("App: ViewMode applied before MainWindow creation");
 
+            // Restore global model state BEFORE creating MainWindow so SystemState VM sees it on construction
+            try
+            {
+                var globalStateEarly = _serviceProvider.GetRequiredService<GlobalModelStateService>();
+                globalStateEarly.Restore();
+                Console.WriteLine("App: Restored global model state (early)");
+            }
+            catch (Exception gsEx)
+            {
+                Console.WriteLine($"App: Global state early restore failed: {gsEx.Message}");
+            }
+
             Console.WriteLine("App: Creating MainWindow...");
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
             Console.WriteLine("App: MainWindow created successfully");
 
-            // Restore global model state after DI is ready, before UI interaction
+            // Immediately sync the always-visible header to the restored state
             try
             {
-                var globalState = _serviceProvider.GetRequiredService<GlobalModelStateService>();
-                globalState.Restore();
-                Console.WriteLine("App: Restored global model state");
+                var systemStateVm = _serviceProvider.GetRequiredService<SystemStateViewModel>();
+                systemStateVm.SyncFromGlobal();
             }
-            catch (Exception gsEx)
+            catch (Exception syncEx)
             {
-                Console.WriteLine($"App: Global state restore failed: {gsEx.Message}");
+                Console.WriteLine($"App: SystemState sync failed: {syncEx.Message}");
             }
 
             Console.WriteLine("App: Showing MainWindow...");
@@ -184,12 +195,12 @@ namespace Lazarus.Desktop
             services.AddTransient<RunnerManagerViewModel>(); // LLM backend control
             services.AddTransient<JobsViewModel>(); // Job and queue management
             services.AddTransient<DatasetsViewModel>(); // Datasets and RAG sources
-            services.AddTransient<BaseModelViewModel>(); // Changed from Singleton - user-specific state
+            services.AddSingleton<BaseModelViewModel>();
             services.AddTransient<DynamicParameterViewModel>(); // Changed from Singleton - user-specific state
             services.AddTransient<MainWindowViewModel>(); // Changed from Singleton - window-specific
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<ChatViewModel>();
-            services.AddTransient<LorAsViewModel>(); // Changed from Singleton - user-specific state
+            services.AddSingleton<LorAsViewModel>();
             services.AddTransient<ControlNetsViewModel>();
             services.AddTransient<VAEsViewModel>();
             services.AddTransient<EmbeddingsViewModel>();

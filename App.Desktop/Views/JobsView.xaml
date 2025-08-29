@@ -4,30 +4,10 @@
              xmlns:local="clr-namespace:Lazarus.Desktop.Views"
              Background="{DynamicResource PrimaryDarkBrush}">
 
-    <UserControl.Resources>
-        <!-- ViewMode Template Selector - PROGRESSIVE DISCLOSURE JOBS MANAGER -->
-        <!-- Novice: Simple progress tracking + basic actions -->
-        <!-- Enthusiast: Detailed job monitoring + queue management -->
-        <!-- Developer: Full job control + logs + performance monitoring -->
-        <local:ViewModeTemplateSelector x:Key="JobsTemplateSelector"/>
-    </UserControl.Resources>
-
-    <!-- Jobs Content Selector - Template chosen by ViewMode -->
-    <ContentPresenter Content="{Binding}"
-                      ContentTemplateSelector="{StaticResource JobsTemplateSelector}">
-        <!-- Local fallback if selector returns null -->
-        <ContentPresenter.ContentTemplate>
-            <DataTemplate>
-                <Border Padding="16" BorderThickness="2"
-                        BorderBrush="{DynamicResource AccentRedBrush}">
-                    <StackPanel>
-                        <TextBlock Text="[FALLBACK] No ViewMode template selected"
-                                   FontSize="16" FontWeight="Bold"/>
-                        <TextBlock Text="This is a diagnostic default inside the view."
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
-            </DataTemplate>
-        </ContentPresenter.ContentTemplate>
-    </ContentPresenter>
+    <!-- Jobs Content - use global ViewModeTemplateSelector so mode changes retheme consistently -->
+    <ContentControl x:Name="ModeAwareContent" Content="{Binding}">
+        <ContentControl.ContentTemplateSelector>
+            <StaticResource ResourceKey="ViewModeTemplateSelector"/>
+        </ContentControl.ContentTemplateSelector>
+    </ContentControl>
 </UserControl>

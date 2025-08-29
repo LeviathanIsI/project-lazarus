@@ -4,6 +4,7 @@ using System.Windows.Media;
 using Lazarus.Shared.Models;
 using Lazarus.Desktop.Services;
 using App.Shared.Enums;
+using System;
 
 namespace Lazarus.Desktop.Views;
 
@@ -58,6 +59,29 @@ public class ViewModeTemplateSelector : DataTemplateSelector
         if (item != null)
         {
             var viewModelType = item.GetType().Name;
+            // Special-case Datasets when user sees overlay: be lenient
+            if (viewModelType.Contains("Dataset", StringComparison.OrdinalIgnoreCase))
+            {
+                // Try several known keys in order
+                var candidates = new[]
+                {
+                    $"{currentViewMode}DatasetsViewModelTemplate",
+                    $"{currentViewMode}DatasetViewModelTemplate",
+                    $"DatasetsViewModelTemplate",
+                    $"DatasetViewModelTemplate"
+                };
+                foreach (var key in candidates)
+                {
+                    var t = FindTemplate(key, container);
+                    if (t != null) return t;
+                }
+                // Try direct load from the active ViewMode dictionary as a last resort
+                foreach (var key in candidates)
+                {
+                    var t = TryLoadTemplateFromViewMode(currentViewMode, key);
+                    if (t != null) return t;
+                }
+            }
             
             // Generate ViewMode-specific template key
             var templateKey = $"{currentViewMode}{viewModelType}Template";
@@ -66,6 +90,19 @@ public class ViewModeTemplateSelector : DataTemplateSelector
             if (template != null)
                 return template;
             
+            // Hard recovery: attempt to load the ViewMode dictionary directly and fetch the template
+            Console.WriteLine($"[Selector] Attempting hard recovery for {templateKey}");
+            template = TryLoadTemplateFromViewMode(currentViewMode, templateKey);
+            if (template != null)
+            {
+                Console.WriteLine($"[Selector] ✅ Hard recovery successful for {templateKey}");
+                return template;
+            }
+            else
+            {
+                Console.WriteLine($"[Selector] ❌ Hard recovery failed for {templateKey}");
+            }
+
             // Try fallback chain
             template = FallbackViewModelTemplateSearch(viewModelType, currentViewMode, container);
             if (template != null)
@@ -109,6 +146,43 @@ public class ViewModeTemplateSelector : DataTemplateSelector
             _ => $"{viewMode}FloatParameterTemplate" // Default fallback
         };
     }
+
+    private static DataTemplate? TryLoadTemplateFromViewMode(ViewMode mode, string key)
+    {
+        try
+        {
+            string file = mode switch
+            {
+                ViewMode.Novice => "NoviceTemplates.xaml",
+                ViewMode.Enthusiast => "EnthusiastTemplates.xaml",
+                ViewMode.Developer => "DeveloperTemplates.xaml",
+                _ => "NoviceTemplates.xaml"
+            };
+            var uri = new Uri($"pack://application:,,,/Resources/ViewModes/{file}");
+            Console.WriteLine($"[Selector] Loading dictionary from {file}");
+            var dict = new ResourceDictionary { Source = uri };
+            Console.WriteLine($"[Selector] Dictionary loaded, contains {dict.Count} items");
+            if (dict.Contains(key))
+            {
+                Console.WriteLine($"[Selector] ✅ Found {key} in {file}");
+                return dict[key] as DataTemplate;
+            }
+            Console.WriteLine($"[Selector] ❌ {key} not found in {file}");
+            // List all keys for debugging
+            foreach (var dictKey in dict.Keys)
+            {
+                if (dictKey.ToString()?.Contains("Dataset") == true)
+                {
+                    Console.WriteLine($"[Selector]   - Found dataset-related key: {dictKey}");
+                }
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
     
     /// <summary>
     /// Find template in application resources
@@ -117,23 +191,22 @@ public class ViewModeTemplateSelector : DataTemplateSelector
     {
         try
         {
-            // Search in application resources first
-            if (Application.Current.Resources.Contains(templateKey))
+            // Prefer WPF resource lookup which traverses merged dictionaries
+            var fromApp = Application.Current?.TryFindResource(templateKey) as DataTemplate;
+            if (fromApp != null)
             {
-                return Application.Current.Resources[templateKey] as DataTemplate;
+                return fromApp;
             }
-            
-            // Search in container's resource hierarchy
-            var element = container as FrameworkElement;
-            while (element != null)
+
+            if (container is FrameworkElement fe)
             {
-                if (element.Resources.Contains(templateKey))
+                var fromElement = fe.TryFindResource(templateKey) as DataTemplate;
+                if (fromElement != null)
                 {
-                    return element.Resources[templateKey] as DataTemplate;
+                    return fromElement;
                 }
-                element = element.Parent as FrameworkElement;
             }
-            
+
             return null;
         }
         catch

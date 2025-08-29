@@ -203,6 +203,20 @@ public static class OrchestratorHost
             }
         });
 
+        // Model unload endpoint (UI expects this route)
+        app.MapDelete("/v1/models/current", () =>
+        {
+            try
+            {
+                var success = RunnerRegistry.UnloadModel();
+                return Results.Ok(new { success, message = success ? "Model unloaded" : "Failed to unload model" });
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { success = false, error = ex.Message });
+            }
+        });
+
         // Minimal models list (OpenAI compatibility)
         app.MapGet("/v1/models", () =>
         {

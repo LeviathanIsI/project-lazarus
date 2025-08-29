@@ -1,10 +1,13 @@
 <UserControl x:Class="Lazarus.Desktop.Views.Images.Image2ImageView"
-			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 mc:Ignorable="d"
-			 Background="{DynamicResource PrimaryDarkBrush}">
-	<!-- ViewMode-Aware Content: Dynamically switches between Novice/Enthusiast/Developer templates -->
-	<ContentPresenter ContentTemplate="{DynamicResource Image2ImageTemplate}"/>
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Background="Transparent">
+
+    <!-- Use global ViewModeTemplateSelector for dynamic view mode switching -->
+    <ContentPresenter x:Name="ModeAwareContent"
+                      Content="{Binding}"
+                      ContentTemplateSelector="{StaticResource ViewModeTemplateSelector}"/>
 </UserControl>

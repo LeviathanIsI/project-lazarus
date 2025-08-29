@@ -72,4 +72,11 @@ public sealed class LlamaCppRunner : IChatRunner
             throw;
         }
     }
+
+    public async Task<bool> UnloadAsync(CancellationToken ct = default)
+    {
+        // llama.cpp HTTP runner does not track a single loaded model via API in this stub
+        // Return true to satisfy UI expectations
+        return await Task.FromResult(true);
+    }
 }

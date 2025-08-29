@@ -133,6 +133,8 @@ public class LorAsViewModel : INotifyPropertyChanged
         ToggleLoRACommand = new RelayCommand(async applied => await SafeExecuteAsync(() => ToggleLoRAAsync((AppliedLoRADto)applied!)),
             applied => !IsLoading && applied is AppliedLoRADto);
 
+        // View is driven by global ViewMode (Novice/Enthusiast/Developer). No local switching.
+
             // Auto-scan moved to explicit initialization
             System.Diagnostics.Debug.WriteLine("[EMERGENCY] Constructor completed successfully - auto-scan deferred");
         }
@@ -200,6 +202,10 @@ public class LorAsViewModel : INotifyPropertyChanged
             }
         }
     }
+
+    // end computed properties section
+
+    // Remove local view-mode state; templates use global ViewMode via ViewModeTemplateSelector
 
     public ObservableCollection<LoRADto> AvailableLoRAs { get; }
     public ObservableCollection<AppliedLoRADto> AppliedLoRAs { get; }

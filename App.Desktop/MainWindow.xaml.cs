@@ -60,6 +60,10 @@ namespace Lazarus.Desktop
                 // Initialize LorAsViewModel after UI is stable
                 var lorasViewModel = _serviceProvider.GetRequiredService<LorAsViewModel>();
                 await lorasViewModel.InitializeAsync();
+
+                // After restore, force the SystemState bar to reflect global state immediately
+                var systemState = _serviceProvider.GetRequiredService<SystemStateViewModel>();
+                systemState.SyncFromGlobal();
                 
                 Console.WriteLine("ViewModels initialized successfully");
             }

@@ -415,9 +415,11 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     
     private object MapModels()
     {
+        // Ensure the always-visible header is in sync when entering Models area
+        _systemState?.SyncFromGlobal();
         return Navigation.CurrentSubtab switch
         {
-            "BaseModel"      => _baseModel,
+            "BaseModel"      => EnsureBaseModelInitialized(),
             "LoRAs"          => _lorAs,
             "ControlNets"    => _controlNets,
             "VAEs"           => _vaes,
@@ -426,6 +428,12 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             "Advanced"       => _advanced,
             _                => _models
         };
+    }
+
+    private BaseModelViewModel EnsureBaseModelInitialized()
+    {
+        try { _ = _baseModel.InitializeAsync(); } catch { }
+        return _baseModel;
     }
     
     private object MapImages()

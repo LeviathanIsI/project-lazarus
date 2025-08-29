@@ -305,13 +305,20 @@
 	</UserControl.Resources>
 
 	<Grid>
+		<!-- Add top row for mode switcher -->
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="2*"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 
+		<!-- Removed local mode switcher; templates come from global ViewMode system (Novice/Enthusiast/Developer) -->
+
 		<!-- Left: Available LoRAs -->
-		<Border Grid.Column="0"
+		<Border Grid.Row="1" Grid.Column="0"
 				Style="{StaticResource DarkBorderStyle}"
 				Margin="0,0,8,0">
 			<Grid>
@@ -451,7 +458,7 @@
 		</Border>
 
 		<!-- Right: Applied LoRAs Stack -->
-		<Border Grid.Column="1"
+		<Border Grid.Row="1" Grid.Column="1"
 				Style="{StaticResource DarkBorderStyle}"
 				Margin="8,0,0,0">
 			<Grid>

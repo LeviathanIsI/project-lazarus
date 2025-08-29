@@ -29,6 +29,7 @@ public class JobsViewModel : INotifyPropertyChanged
     private bool _hasQueuedJobs;
     private string _overallStatus = "Ready";
     private int _totalJobsCount;
+    private JobViewModel? _selectedJob;
     
     public bool HasActiveJobs
     {
@@ -82,6 +83,19 @@ public class JobsViewModel : INotifyPropertyChanged
             }
         }
     }
+
+    public JobViewModel? SelectedJob
+    {
+        get => _selectedJob;
+        set
+        {
+            if (_selectedJob != value)
+            {
+                _selectedJob = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     
     public bool ShowEmptyState => !HasActiveJobs && !HasQueuedJobs && CompletedJobs.Count == 0;
     
@@ -92,6 +106,9 @@ public class JobsViewModel : INotifyPropertyChanged
     public ICommand ClearCompletedCommand { get; }
     public ICommand PauseAllJobsCommand { get; }
     public ICommand ResumeAllJobsCommand { get; }
+    public ICommand PauseJobCommand { get; }
+    public ICommand ResumeJobCommand { get; }
+    public ICommand CancelJobCommand { get; }
     
     public JobsViewModel(INavigationService navigationService)
     {
@@ -105,6 +122,11 @@ public class JobsViewModel : INotifyPropertyChanged
         PauseAllJobsCommand = new RelayCommand(_ => PauseAllJobs(), _ => HasActiveJobs);
         ResumeAllJobsCommand = new RelayCommand(_ => ResumeAllJobs(), _ => HasActiveJobs);
         
+        // Per-job commands
+        PauseJobCommand = new SimpleRelayCommand<JobViewModel>(PauseJob, j => j != null && j.CanPause);
+        ResumeJobCommand = new SimpleRelayCommand<JobViewModel>(ResumeJob, j => j != null && j.CanResume);
+        CancelJobCommand = new SimpleRelayCommand<JobViewModel>(CancelJob, j => j != null && j.CanCancel);
+
         // Start job monitoring timer
         _jobUpdateTimer = new Timer(1000); // Update every second for smooth progress
         _jobUpdateTimer.Elapsed += async (s, e) => await RefreshJobsAsync();
@@ -127,7 +149,13 @@ public class JobsViewModel : INotifyPropertyChanged
             Progress = 45.7,
             Status = JobStatus.Running,
             StartTime = DateTime.Now.AddMinutes(-12),
-            EstimatedTimeRemaining = TimeSpan.FromMinutes(8)
+            EstimatedTimeRemaining = TimeSpan.FromMinutes(8),
+            Logs = new ObservableCollection<string>
+            {
+                "[00:00] Job started",
+                "[00:12] Connecting to mirror...",
+                "[00:45] Downloading chunks..."
+            }
         });
         
         QueuedJobs.Add(new JobViewModel
@@ -152,6 +180,10 @@ public class JobsViewModel : INotifyPropertyChanged
         });
         
         UpdateJobCounts();
+        if (ActiveJobs.Count > 0)
+        {
+            SelectedJob = ActiveJobs[0];
+        }
     }
     
     private async Task RefreshJobsAsync()
@@ -300,6 +332,40 @@ public class JobsViewModel : INotifyPropertyChanged
         }
         Console.WriteLine("JobsViewModel: Resumed all paused jobs");
     }
+
+    private void PauseJob(JobViewModel? job)
+    {
+        if (job == null) return;
+        if (job.Status == JobStatus.Running)
+        {
+            job.Status = JobStatus.Paused;
+        }
+    }
+
+    private void ResumeJob(JobViewModel? job)
+    {
+        if (job == null) return;
+        if (job.Status == JobStatus.Paused)
+        {
+            job.Status = JobStatus.Running;
+        }
+    }
+
+    private void CancelJob(JobViewModel? job)
+    {
+        if (job == null) return;
+        job.Status = JobStatus.Cancelled;
+        job.CompletionTime = DateTime.Now;
+
+        Application.Current?.Dispatcher.Invoke(() =>
+        {
+            if (ActiveJobs.Contains(job)) ActiveJobs.Remove(job);
+            if (QueuedJobs.Contains(job)) QueuedJobs.Remove(job);
+            if (!CompletedJobs.Contains(job)) CompletedJobs.Insert(0, job);
+        });
+
+        UpdateJobCounts();
+    }
     
     #region INotifyPropertyChanged
     
@@ -323,6 +389,7 @@ public class JobViewModel : INotifyPropertyChanged
     private string _statusMessage = string.Empty;
     private DateTime? _completionTime;
     private TimeSpan? _estimatedTimeRemaining;
+    private ObservableCollection<string> _logs = new();
     
     public string Id { get; set; } = string.Empty;
     public JobType Type { get; set; }
@@ -446,6 +513,18 @@ public class JobViewModel : INotifyPropertyChanged
     }
     
     public string ETAText => EstimatedTimeRemaining?.ToString(@"mm\:ss") ?? "-";
+    public ObservableCollection<string> Logs
+    {
+        get => _logs;
+        set
+        {
+            if (!ReferenceEquals(_logs, value))
+            {
+                _logs = value ?? new ObservableCollection<string>();
+                OnPropertyChanged();
+            }
+        }
+    }
     
     public event PropertyChangedEventHandler? PropertyChanged;
     

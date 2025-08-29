@@ -8,14 +8,7 @@ namespace Lazarus.Desktop.Views
         public BaseModelView()
         {
             InitializeComponent();
-            // NO DataContext assignment - let MainWindow handle it via DI
-            Loaded += async (_, __) =>
-            {
-                if (DataContext is BaseModelViewModel vm)
-                {
-                    await vm.InitializeAsync();
-                }
-            };
+            // Initialization is performed centrally from MainWindow via DI to avoid double-scans
         }
     }
 }
