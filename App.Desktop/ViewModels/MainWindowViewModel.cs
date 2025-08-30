@@ -12,6 +12,7 @@ using Lazarus.Desktop.ViewModels.Video;
 using Lazarus.Desktop.ViewModels.Voice;
 using Lazarus.Desktop.ViewModels.Entities;
 using Lazarus.Desktop.ViewModels.ThreeDModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -23,6 +24,7 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly UserPreferencesService _preferencesService;
     private readonly SystemStateViewModel _systemState;
     private readonly INavigationService _navigationService;
+    private readonly Lazarus.Desktop.Services.Dashboard.DashboardViewModelFactory? _dashboardFactory;
     
     // Core ViewModels
     private readonly DashboardViewModel _dashboardViewModel;
@@ -149,11 +151,13 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Lazarus.Desktop.ViewModels.Entities.EntityCreationViewModel entCreate,
         Lazarus.Desktop.ViewModels.Entities.BehavioralPatternsViewModel entBehave,
         Lazarus.Desktop.ViewModels.Entities.InteractionTestingViewModel entTest,
-        Lazarus.Desktop.ViewModels.Entities.EntityManagementViewModel entManage)
+        Lazarus.Desktop.ViewModels.Entities.EntityManagementViewModel entManage,
+        Lazarus.Desktop.Services.Dashboard.DashboardViewModelFactory? dashboardFactory = null)
     {
         _preferencesService = preferencesService;
         _systemState = systemState;
         _navigationService = navigation;
+        _dashboardFactory = dashboardFactory;
 
         _dashboard = dashboard; _chat = chat;
         _runner = runner; _jobs = jobs; _datasets = datasets;
@@ -373,6 +377,13 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             OnPropertyChanged(nameof(CurrentViewMode));
             OnPropertyChanged(nameof(CurrentViewModeDisplay));
+            
+            // Refresh Dashboard ViewModel when ViewMode changes
+            if (Navigation.CurrentTab == NavigationTab.Dashboard)
+            {
+                Console.WriteLine($"[MainWindowViewModel] ViewMode changed to {_preferencesService.CurrentViewMode} - refreshing Dashboard");
+                UpdateCurrentView(); // This will call MapDashboard() with the new ViewMode
+            }
         }
         else if (e.PropertyName == nameof(UserPreferencesService.CurrentTheme))
         {
@@ -398,7 +409,7 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         CurrentViewModel = Navigation.CurrentTab switch
         {
-            NavigationTab.Dashboard       => _dashboard,
+            NavigationTab.Dashboard       => MapDashboard(),
             NavigationTab.Conversations   => _chat,
             NavigationTab.Models          => MapModels(),
             NavigationTab.RunnerManager   => _runner,
@@ -411,6 +422,14 @@ public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             NavigationTab.Entities        => MapEntities(),
             _                            => _dashboard
         };
+    }
+
+    private object MapDashboard()
+    {
+        var currentViewMode = _preferencesService.CurrentViewMode;
+        Console.WriteLine($"[MainWindowViewModel] MapDashboard called for ViewMode: {currentViewMode}");
+        // Always return the central DashboardViewModel. The inner view switches via ViewModeTemplateSelector.
+        return _dashboard;
     }
     
     private object MapModels()

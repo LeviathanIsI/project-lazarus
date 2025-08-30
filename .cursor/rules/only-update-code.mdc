@@ -1,0 +1,11 @@
+---
+description: "Only update existing files, don't create duplicates"
+globs: ["**/*.xaml", "**/*.cs"]
+alwaysApply: true
+---
+
+When modifying code:
+- If a file already exists, update its contents instead of creating a new file
+- Only create new files when they don't already exist in the project
+- Always check for existing files before suggesting new file creation
+- Preserve existing file structure and organization

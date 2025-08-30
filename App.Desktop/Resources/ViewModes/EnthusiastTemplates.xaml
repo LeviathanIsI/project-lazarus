@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                    xmlns:dashboard="clr-namespace:Lazarus.Desktop.Views.Dashboard">
 
     <!-- Datasets View - Enthusiast Mode -->
     <DataTemplate x:Key="EnthusiastDatasetsViewModelTemplate">
@@ -6764,6 +6765,11 @@
     
     <!-- ENTHUSIAST DASHBOARD: Balanced system info + activity tracking -->
     <DataTemplate x:Key="EnthusiastDashboardViewModelTemplate">
+        <dashboard:EnthusiastDashboardView/>
+    </DataTemplate>
+
+    <!-- OLD TEMPLATE CONTENT BELOW - TO BE CLEANED UP -->
+    <DataTemplate x:Key="OldEnthusiastDashboardTemplate">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <Grid Margin="24">
                 <Grid.RowDefinitions>

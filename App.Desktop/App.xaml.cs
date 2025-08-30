@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -125,6 +126,30 @@ namespace Lazarus.Desktop
                 var globalStateEarly = _serviceProvider.GetRequiredService<GlobalModelStateService>();
                 globalStateEarly.Restore();
                 Console.WriteLine("App: Restored global model state (early)");
+                
+                // Auto-reload the persisted model into the server if it exists
+                if (globalStateEarly.LoadStatus == ModelLoadStatus.Loaded && globalStateEarly.CurrentModel != null)
+                {
+                    Console.WriteLine($"App: Auto-loading persisted model: {globalStateEarly.CurrentModel.Name}");
+                    
+                    // Resolve full path if only filename is stored
+                    var modelPath = globalStateEarly.CurrentModel.FilePath;
+                    if (!Path.IsPathRooted(modelPath))
+                    {
+                        var modelsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lazarus", "models", "main");
+                        modelPath = Path.Combine(modelsDir, modelPath);
+                    }
+                    
+                    var success = await ApiClient.LoadModelAsync(modelPath, globalStateEarly.CurrentModel.Name);
+                    if (success)
+                    {
+                        Console.WriteLine("App: Persisted model loaded into server successfully");
+                    }
+                    else
+                    {
+                        Console.WriteLine("App: Failed to auto-load persisted model into server");
+                    }
+                }
             }
             catch (Exception gsEx)
             {
@@ -188,10 +213,20 @@ namespace Lazarus.Desktop
             services.AddSingleton<GlobalModelStateService>();
             services.AddSingleton<INavigationService, NavigationService>();
             
+            // Register Dashboard Data Services
+            Console.WriteLine("App: Registering dashboard data services...");
+            services.AddSingleton<Lazarus.Desktop.Services.ISystemMonitor, Lazarus.Desktop.Services.Dashboard.SystemMonitorService>();
+            services.AddSingleton<Lazarus.Desktop.Services.IModelManager, Lazarus.Desktop.Services.Dashboard.ModelManagerService>();
+            services.AddSingleton<Lazarus.Desktop.Services.ITrainingService, Lazarus.Desktop.Services.Dashboard.TrainingServiceStub>();
+            services.AddSingleton<Lazarus.Desktop.Services.Dashboard.DashboardViewModelFactory>();
+            
             // Register ViewModels with proper lifetimes
             Console.WriteLine("App: Registering core ViewModels...");
             services.AddSingleton<SystemStateViewModel>(); // System brain - always available
             services.AddTransient<DashboardViewModel>(); // Central command center
+            services.AddTransient<Lazarus.Desktop.ViewModels.Dashboard.NoviceDashboardViewModel>(); // Novice Dashboard
+            services.AddTransient<Lazarus.Desktop.ViewModels.Dashboard.EnthusiastDashboardViewModel>(); // Enthusiast Dashboard
+            services.AddTransient<Lazarus.Desktop.ViewModels.Dashboard.DeveloperDashboardViewModel>(); // Developer Dashboard
             services.AddTransient<RunnerManagerViewModel>(); // LLM backend control
             services.AddTransient<JobsViewModel>(); // Job and queue management
             services.AddTransient<DatasetsViewModel>(); // Datasets and RAG sources

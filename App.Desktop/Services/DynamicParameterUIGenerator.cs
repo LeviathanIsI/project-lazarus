@@ -18,7 +18,7 @@ namespace Lazarus.Desktop.Services;
 public static class DynamicParameterUIGenerator
 {
     private static readonly ILogger Logger = LoggerFactory.Create(builder =>
-        builder.AddConsole().SetMinimumLevel(LogLevel.Debug)
+        builder.AddConsole().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug)
     ).CreateLogger("DynamicUI");
 
     /// <summary>

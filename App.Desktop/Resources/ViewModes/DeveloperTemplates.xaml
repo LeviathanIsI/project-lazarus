@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dashboard="clr-namespace:Lazarus.Desktop.Views.Dashboard">
     
     <!-- DEVELOPER TIER: MINIMAL SAFE TEMPLATES -->
     
@@ -1428,7 +1429,7 @@
                             FontSize="11"
                             FontWeight="Bold"
                             Background="{DynamicResource AccentRedBrush}"
-                            Foreground="White"
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             BorderThickness="0"
                             Padding="12,8"
                             Margin="0,0,4,0"/>
@@ -1438,7 +1439,7 @@
                             FontSize="11"
                             FontWeight="Bold"
                             Background="{DynamicResource AccentPurpleBrush}"
-                            Foreground="White"
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             BorderThickness="0"
                             Padding="12,8"
                             Margin="2,0"/>
@@ -1448,7 +1449,7 @@
                             FontSize="11"
                             FontWeight="Bold"
                             Background="{DynamicResource SuccessBrush}"
-                            Foreground="White"
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             BorderThickness="0"
                             Padding="12,8"
                             Margin="4,0,0,0"/>
@@ -2377,7 +2378,7 @@
                             <Border Background="{Binding ValidationStatus, Converter={StaticResource StatusToBrush}}" 
                                     Padding="4,1" CornerRadius="8">
                                 <TextBlock Text="{Binding ValidationStatus}" 
-                                           FontSize="9" Foreground="White"/>
+                                           FontSize="9" Foreground="{DynamicResource TextOnLightBrush}"/>
                             </Border>
                         </StackPanel>
                         
@@ -2450,14 +2451,17 @@
                                    HorizontalAlignment="Center"  Margin="0,8,0,0">
                             <Button Content="▶ Play Sample" 
                                     Command="{Binding PlaySampleCommand}" 
-                                    Background="{DynamicResource AccentRedBrush}" 
+                                    Background="{DynamicResource AccentRedBrush}"
+                                    Foreground="{DynamicResource TextOnLightBrush}"
                                     Padding="8,4" FontSize="9"/>
                             <Button Content="📊 Analyze Spectral" 
                                     Command="{Binding AnalyzeSpectralCommand}" 
+                                    Foreground="{DynamicResource TextOnLightBrush}"
                                     Padding="8,4" FontSize="9"/>
                             <Button Content="🎯 Start Training" 
                                     Command="{Binding StartTrainingCommand}" 
-                                    Background="{DynamicResource SuccessBrush}" 
+                                    Background="{DynamicResource SuccessBrush}"
+                                    Foreground="{DynamicResource TextOnLightBrush}"
                                     Padding="8,4" FontSize="9" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Grid>
@@ -2539,18 +2543,22 @@
                            HorizontalAlignment="Center"  Margin="0,8,0,0">
                     <Button Content="🚀 Start Training" 
                             Command="{Binding StartTrainingCommand}" 
-                            Background="{DynamicResource AccentRedBrush}" 
+                            Background="{DynamicResource AccentRedBrush}"
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             Padding="12,4" FontSize="10" FontWeight="SemiBold"/>
                     <Button Content="⏸️ Pause" 
                             Command="{Binding PauseTrainingCommand}" 
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             Padding="10,4" FontSize="10"/>
                     <Button Content="⏹️ Stop" 
                             Command="{Binding StopTrainingCommand}" 
-                            Background="{DynamicResource ErrorBrush}" 
+                            Background="{DynamicResource ErrorBrush}"
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             Padding="10,4" FontSize="10"/>
                     <Button Content="💾 Checkpoint" 
                             Command="{Binding SaveCheckpointCommand}" 
-                            Background="{DynamicResource SuccessBrush}" 
+                            Background="{DynamicResource SuccessBrush}"
+                            Foreground="{DynamicResource TextOnLightBrush}"
                             Padding="10,4" FontSize="10"/>
                 </StackPanel>
             </Grid>
@@ -2579,7 +2587,7 @@
                                                     <TextBlock Text="{Binding Name}" FontSize="10" FontWeight="SemiBold"/>
                                                     <Border Background="{Binding StatusColor}" 
                                                             Padding="2,0" CornerRadius="6">
-                                                        <TextBlock Text="{Binding Status}" FontSize="7" Foreground="White"/>
+                                                        <TextBlock Text="{Binding Status}" FontSize="7" Foreground="{DynamicResource TextOnLightBrush}"/>
                                                     </Border>
                                                 </StackPanel>
                                                 
@@ -8264,6 +8272,11 @@
     </DataTemplate>
 <!-- removed stray closing ResourceDictionary -->
 <DataTemplate x:Key="DeveloperDashboardViewModelTemplate">
+    <dashboard:DeveloperDashboardView/>
+</DataTemplate>
+
+<!-- OLD TEMPLATE CONTENT BELOW - TO BE CLEANED UP -->
+<DataTemplate x:Key="OldDeveloperDashboardTemplate">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/> <!-- Main Dashboard -->

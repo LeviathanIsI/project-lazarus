@@ -1,0 +1,60 @@
+<UserControl x:Class="Lazarus.Desktop.Views.Dashboard.NoviceDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:widgets="clr-namespace:Lazarus.Desktop.Views.Dashboard.Widgets"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1200">
+
+    <!-- Novice Dashboard - Simple 3x2 grid with large friendly widgets -->
+    <Grid Background="{DynamicResource PrimaryDarkBrush}" Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Welcome Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24" HorizontalAlignment="Center">
+            <TextBlock Text="{Binding WelcomeMessage}" 
+                       FontSize="28" 
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,8"/>
+            
+            <TextBlock Text="{Binding SystemStatusSummary}" 
+                       FontSize="16" 
+                       Foreground="{DynamicResource TextSecondaryBrush}" 
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Top Row: Chat Status, Model Status, Training Status -->
+        <UniformGrid Grid.Row="1" Rows="1" Columns="3" Margin="0,0,0,20">
+            <widgets:ChatStatusWidget Margin="0,0,10,0"/>
+            <widgets:ModelStatusWidget Margin="10,0,10,0"/>
+            <widgets:TrainingStatusWidget Margin="10,0,0,0"/>
+        </UniformGrid>
+
+        <!-- Bottom Row: Voice Features, Quick Actions, Help & Tutorials -->
+        <UniformGrid Grid.Row="2" Rows="1" Columns="3">
+            <widgets:VoiceFeaturesWidget Margin="0,0,10,0"/>
+            <widgets:QuickActionsWidget Margin="10,0,10,0"/>
+            <widgets:HelpTutorialsWidget Margin="10,0,0,0"/>
+        </UniformGrid>
+
+        <!-- Loading Overlay removed per request -->
+
+        <!-- Last Refresh Indicator -->
+        <TextBlock Grid.Row="2" 
+                   Text="{Binding LastRefreshDisplay}" 
+                   FontSize="10" 
+                   Foreground="{DynamicResource TextMutedBrush}" 
+                   HorizontalAlignment="Right" 
+                   VerticalAlignment="Bottom" 
+                   Margin="0,0,0,4"/>
+    </Grid>
+</UserControl>

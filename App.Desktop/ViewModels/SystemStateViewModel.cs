@@ -81,6 +81,8 @@ public class SystemStateViewModel : INotifyPropertyChanged
             // Could reflect Loading state in UI if needed
         };
 
+        // Restore persisted model state first
+        _globalState.Restore();
         // Seed from global immediately so top bar/dashboard are correct on first render
         SyncFromGlobal();
         // Initial update from orchestrator
@@ -414,7 +416,11 @@ public class SystemStateViewModel : INotifyPropertyChanged
                 }
                 else
                 {
-                    CurrentModel = "No model loaded";
+                    // Don't override restored model when offline - preserve global state
+                    if (!hasGlobalLoaded)
+                    {
+                        CurrentModel = "No model loaded";
+                    }
                     CurrentRunner = "Offline";
                 }
                 TokensPerSecond = "0.0";

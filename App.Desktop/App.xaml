@@ -25,6 +25,8 @@
 		<conv:ForensicVisibilityConverter x:Key="ForensicVisibilityConverter"/>
 		<conv:InvertBoolConverter x:Key="InvertBool"/>
 		<conv:StringToBoolConverter x:Key="StringToBool"/>
+		<!-- New: status string to brush mapping used by Developer Voice Cloning template -->
+		<conv:StatusToBrushConverter x:Key="StatusToBrush"/>
 
 		<!-- Missing converters that were causing the digital apocalypse -->
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>

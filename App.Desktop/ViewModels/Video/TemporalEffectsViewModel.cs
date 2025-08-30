@@ -821,3 +821,4 @@ namespace Lazarus.Desktop.ViewModels.Video
     }
     #endregion
 }
+

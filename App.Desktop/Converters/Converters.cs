@@ -252,6 +252,29 @@ namespace Lazarus.Desktop.Converters
             => throw new NotSupportedException();
     }
 
+    // Maps status strings (e.g., "OK", "Warning", "Error") to brushes for dark theme
+    public sealed class StatusToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var status = (value as string)?.ToLowerInvariant() ?? string.Empty;
+
+            // Choose brush keys by severity; fall back to muted text for unknown
+            string brushKey = status switch
+            {
+                var s when s.Contains("ok") || s.Contains("valid") || s.Contains("pass") => "AccentGreenBrush",
+                var s when s.Contains("warn") || s.Contains("caution") => "AccentYellowBrush",
+                var s when s.Contains("error") || s.Contains("fail") || s.Contains("invalid") => "ErrorBrush",
+                _ => "TextMutedBrush"
+            };
+
+            return Application.Current.FindResource(brushKey);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
     public sealed class RoleToDisplayNameConverter : IValueConverter
     {
         public static readonly RoleToDisplayNameConverter Instance = new();

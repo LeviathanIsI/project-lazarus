@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dashboard="clr-namespace:Lazarus.Desktop.Views.Dashboard">
     
     <!-- NOVICE TIER: Minimal working templates -->
     
@@ -4454,6 +4455,74 @@
         </DockPanel>
     </DataTemplate>
 
+    <!-- Novice Chat Message Template - Simple and Clean -->
+    <DataTemplate x:Key="ChatMessageTemplate">
+        <Border Margin="8,4" 
+                Padding="16" 
+                MaxWidth="600"
+                Background="{DynamicResource SecondaryDarkBrush}"
+                CornerRadius="8"
+                BorderBrush="{DynamicResource BorderBrush}" 
+                BorderThickness="1">
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Simple Message Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Role Badge -->
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource AccentRedBrush}"
+                            Padding="8,4"
+                            CornerRadius="8"
+                            Margin="0,0,8,0">
+                        <TextBlock Text="{Binding Role, Converter={StaticResource RoleToDisplayName}}" 
+                                   Style="{DynamicResource CaptionTextStyle}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Border>
+                    
+                    <!-- Timestamp -->
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding Timestamp, StringFormat=HH:mm}"
+                               Style="{DynamicResource CaptionTextStyle}"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               VerticalAlignment="Center"/>
+                </Grid>
+                
+                <!-- Message Content -->
+                <TextBlock Grid.Row="1"
+                           Text="{Binding Content}"
+                           Style="{DynamicResource BodyTextStyle}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8"/>
+                
+                <!-- Simple Stats -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <TextBlock Text="{Binding TokenCount, StringFormat='{}{0} tokens'}"
+                               Style="{DynamicResource CaptionTextStyle}"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               Margin="0,0,12,0"/>
+                    <TextBlock Text="{Binding TokensPerSecond, StringFormat='{}{0:F1} t/s'}"
+                               Style="{DynamicResource CaptionTextStyle}"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               Visibility="{Binding Role, Converter={StaticResource StringEqualsVisibilityConverter}, ConverterParameter=assistant}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
     <!-- Novice Chat Input Template -->
     <DataTemplate x:Key="ChatInputTemplate">
         <Grid>
@@ -4538,6 +4607,11 @@
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>
+    </DataTemplate>
+
+    <!-- ===== DASHBOARD VIEWMODEL TEMPLATE ===== -->
+    <DataTemplate x:Key="NoviceDashboardViewModelTemplate">
+        <dashboard:NoviceDashboardView/>
     </DataTemplate>
 
 </ResourceDictionary>

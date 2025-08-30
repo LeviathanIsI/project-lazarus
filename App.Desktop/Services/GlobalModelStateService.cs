@@ -101,23 +101,44 @@ public sealed class GlobalModelStateService : INotifyPropertyChanged
             var dto = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
             if (dto == null) return;
 
-            if (!string.IsNullOrWhiteSpace(dto.Model?.FilePath) && File.Exists(dto.Model.FilePath))
+            if (!string.IsNullOrWhiteSpace(dto.Model?.FilePath))
             {
-                CurrentModel = dto.Model;
-                // Treat presence of a valid model file as Loaded on startup
-                LoadStatus = ModelLoadStatus.Loaded;
-                // Propagate restored state to listeners so UI reflects previously loaded model
-                if (LoadStatus == ModelLoadStatus.Loaded && CurrentModel != null)
+                // Check if file exists - try full path first, then check models directory
+                var fullPath = dto.Model.FilePath;
+                if (!Path.IsPathRooted(fullPath))
                 {
-                    ModelLoaded?.Invoke(this, CurrentModel);
+                    // If it's just a filename, check the standard models directory
+                    var modelsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lazarus", "models", "main");
+                    fullPath = Path.Combine(modelsDir, dto.Model.FilePath);
+                }
+                
+                if (File.Exists(fullPath))
+                {
+                    CurrentModel = dto.Model;
+                    // Treat presence of a valid model file as Loaded on startup
+                    LoadStatus = ModelLoadStatus.Loaded;
+                    // Propagate restored state to listeners so UI reflects previously loaded model
+                    if (LoadStatus == ModelLoadStatus.Loaded && CurrentModel != null)
+                    {
+                        ModelLoaded?.Invoke(this, CurrentModel);
+                    }
                 }
             }
             else
             {
-                // File moved/deleted - clear but keep last known name for info
-                CurrentModel = string.IsNullOrWhiteSpace(dto.Model?.Name) ? null : new GlobalModelInfo { Name = dto.Model!.Name };
-                LoadStatus = ModelLoadStatus.Idle;
-                ModelUnloaded?.Invoke(this, EventArgs.Empty);
+                // File moved/deleted - keep model name for display but mark as not loaded
+                if (!string.IsNullOrWhiteSpace(dto.Model?.Name))
+                {
+                    CurrentModel = new GlobalModelInfo { Name = dto.Model!.Name };
+                    LoadStatus = ModelLoadStatus.Idle;
+                    // Don't fire ModelUnloaded during restore - just keep the name visible
+                }
+                else
+                {
+                    CurrentModel = null;
+                    LoadStatus = ModelLoadStatus.Idle;
+                    ModelUnloaded?.Invoke(this, EventArgs.Empty);
+                }
             }
         }
         catch { }

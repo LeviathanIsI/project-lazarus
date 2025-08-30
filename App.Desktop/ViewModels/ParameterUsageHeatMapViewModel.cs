@@ -276,7 +276,7 @@ public class ParameterUsageHeatMapViewModel : INotifyPropertyChanged
         // Use white text for dark backgrounds, black for light
         return intensity > 0.5 
             ? new SolidColorBrush(Colors.White) 
-            : new SolidColorBrush(Colors.Black);
+            : new SolidColorBrush(Colors.White);
     }
 
     #endregion

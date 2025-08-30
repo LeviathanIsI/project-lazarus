@@ -258,8 +258,8 @@ namespace Lazarus.Desktop.ViewModels
                 };
                 Messages.Add(assistantMessage);
 
-                // Simulate streaming for now - replace with actual API call
-                await StreamResponseAsync(assistantMessage, _cancellationTokenSource.Token);
+                // Call real API for chat completion
+                await GetRealResponseAsync(request, assistantMessage, _cancellationTokenSource.Token);
 
                 // Update metrics
                 var endTime = DateTime.Now;
@@ -332,41 +332,46 @@ namespace Lazarus.Desktop.ViewModels
                 TopP = TopP,
                 MaxTokens = MaxTokens,
                 RepetitionPenalty = RepetitionPenalty,
-                Stream = true // Enable streaming
+                Stream = false // Disable streaming for now - orchestrator doesn't support SSE yet
             };
         }
 
-        private async Task StreamResponseAsync(ChatMessageVm message, CancellationToken cancellationToken)
+        private async Task GetRealResponseAsync(ChatCompletionRequest request, ChatMessageVm message, CancellationToken cancellationToken)
         {
-            // Simulate streaming response - replace with actual SSE implementation
-            var responseText = "This is a simulated streaming response that demonstrates the chat functionality. " +
-                             "In a real implementation, this would connect to the orchestrator's chat completions endpoint " +
-                             "and stream the response token by token. The UI will update in real-time as tokens arrive.";
-
-            var words = responseText.Split(' ');
-            var tokenCount = 0;
-
-            foreach (var word in words)
+            try
             {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                message.Content += (message.Content.Length > 0 ? " " : "") + word;
-                tokenCount++;
+                // Call the actual API
+                var response = await ApiClient.ChatCompletionAsync(request);
                 
-                // Update tokens per second in real-time
-                var elapsed = (DateTime.Now - message.Timestamp).TotalSeconds;
-                if (elapsed > 0)
+                if (response?.Choices?.Count > 0)
                 {
-                    message.TokensPerSecond = tokenCount / elapsed;
-                    TokensPerSecond = message.TokensPerSecond;
+                    var content = response.Choices[0].Message?.Content ?? "";
+                    
+                    // For now, set the full response at once
+                    // TODO: Implement actual SSE streaming when orchestrator supports it
+                    message.Content = content;
+                    message.TokenCount = EstimateTokenCount(content);
+                    
+                    // Update tokens per second
+                    var elapsed = (DateTime.Now - message.Timestamp).TotalSeconds;
+                    if (elapsed > 0)
+                    {
+                        message.TokensPerSecond = message.TokenCount / elapsed;
+                        TokensPerSecond = message.TokensPerSecond;
+                    }
                 }
-
-                // Simulate natural typing speed
-                await Task.Delay(50, cancellationToken);
+                else
+                {
+                    message.Content = "No response received from the model. Please check your connection and try again.";
+                    message.TokenCount = EstimateTokenCount(message.Content);
+                }
             }
-
-            message.TokenCount = tokenCount;
+            catch (Exception ex)
+            {
+                message.Content = $"Error communicating with AI: {ex.Message}";
+                message.TokenCount = EstimateTokenCount(message.Content);
+                Console.WriteLine($"[ChatViewModel] API error: {ex.Message}");
+            }
         }
 
         private void StopGeneration()

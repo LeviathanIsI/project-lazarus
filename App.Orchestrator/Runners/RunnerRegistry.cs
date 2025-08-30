@@ -377,13 +377,40 @@ public static class RunnerRegistry
         {
             Logger.LogInformation($"Loading model from path: {modelPath}");
             var modelName = Path.GetFileNameWithoutExtension(modelPath);
-            Logger.LogInformation($"Model loaded: {modelName}");
-            _activeRunner = _activeRunner ?? _runners.Values.FirstOrDefault();
+            
+            // If no active runner, try to find or create one for this model
+            if (_activeRunner == null)
+            {
+                Logger.LogInformation("No active runner - searching for compatible runner");
+                
+                // Look for an embedded runner that matches this model
+                var embeddedRunnerName = $"Embedded-{modelName}";
+                if (_runners.TryGetValue(embeddedRunnerName, out var embeddedRunner))
+                {
+                    Logger.LogInformation($"Found matching embedded runner: {embeddedRunnerName}");
+                    _activeRunner = embeddedRunner;
+                }
+                else
+                {
+                    // Try any available runner as fallback
+                    _activeRunner = _runners.Values.FirstOrDefault();
+                    Logger.LogInformation($"Using fallback runner: {_activeRunner?.Name ?? "none"}");
+                }
+            }
+            
+            // Handle different runner types
             if (_activeRunner is LlamaServerRunner serverRunner)
             {
                 serverRunner.SetCurrentModel(modelName);
             }
-            return true;
+            else if (_activeRunner is LlamaCppEmbeddedRunner embeddedRunner)
+            {
+                // Embedded runners are already bound to their model file
+                Logger.LogInformation($"Embedded runner already configured for model: {modelName}");
+            }
+            
+            Logger.LogInformation($"Model loaded: {modelName} on runner: {_activeRunner?.Name ?? "unknown"}");
+            return _activeRunner != null;
         }
         catch (Exception ex)
         {

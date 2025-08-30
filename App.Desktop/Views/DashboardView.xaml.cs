@@ -15,6 +15,17 @@ namespace Lazarus.Desktop.Views
             {
                 InitializeComponent();
                 Console.WriteLine("[DashboardView] CONSTRUCTOR: InitializeComponent completed successfully");
+
+                // Force template refresh when ViewMode changes
+                Lazarus.Desktop.Services.UserPreferencesService.ViewModeChanged += (_, __) =>
+                {
+                    Dispatcher.InvokeAsync(() =>
+                    {
+                        var content = Presenter.Content;
+                        Presenter.Content = null;
+                        Presenter.Content = content; // re-evaluate template selector
+                    });
+                };
             }
             catch (Exception ex)
             {

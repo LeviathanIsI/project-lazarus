@@ -51,8 +51,8 @@
     <SolidColorBrush x:Key="DarkDropdownBrush" Color="#1a1a1a"/>     <!-- Dark dropdown -->
     <SolidColorBrush x:Key="DarkDropdownTextBrush" Color="#f7fafc"/> <!-- Dropdown text -->
     <SolidColorBrush x:Key="DarkDropdownHoverBrush" Color="#c44536"/><!-- Auburn hover background -->
-    <SolidColorBrush x:Key="DarkDropdownHoverTextBrush" Color="#000000"/><!-- Black text on hover -->
-    <SolidColorBrush x:Key="DarkDropdownSelectedTextBrush" Color="#000000"/><!-- Black text selected -->
+    <SolidColorBrush x:Key="DarkDropdownHoverTextBrush" Color="#ffffff"/><!-- White text on hover -->
+    <SolidColorBrush x:Key="DarkDropdownSelectedTextBrush" Color="#ffffff"/><!-- White text selected -->
     
     <!-- Dark Alternative Accents -->
     <SolidColorBrush x:Key="DarkPurpleBrush" Color="#8b5cf6"/>       <!-- Purple accent -->
@@ -103,6 +103,10 @@
     <SolidColorBrush x:Key="TextMutedBrush" Color="#94a3b8"/>
     <SolidColorBrush x:Key="TextDisabledBrush" Color="#64748b"/>
     <SolidColorBrush x:Key="GeneralTextBrush" Color="#f7fafc"/>
+    <!-- Generic Accent for text/icons in dark theme (used by widgets/headers) -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#f7fafc"/>
+    <!-- Text color for light badges/pills displayed over light backgrounds -->
+    <SolidColorBrush x:Key="TextOnLightBrush" Color="#0f0f0f"/>
     
     <!-- Button Text Mapping -->
     <SolidColorBrush x:Key="ButtonTextNormalBrush" Color="#e2e8f0"/>
@@ -116,8 +120,8 @@
     
     <!-- Dropdown Mapping -->
     <SolidColorBrush x:Key="DropdownTextBrush" Color="#f7fafc"/>
-    <SolidColorBrush x:Key="DropdownTextHoverBrush" Color="#000000"/>
-    <SolidColorBrush x:Key="DropdownTextSelectedBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="DropdownTextHoverBrush" Color="#ffffff"/>
+    <SolidColorBrush x:Key="DropdownTextSelectedBrush" Color="#ffffff"/>
     
     <!-- Alternative Accent Mapping -->
     <SolidColorBrush x:Key="AccentPurpleBrush" Color="#8b5cf6"/>
@@ -142,4 +146,26 @@
     <!-- Utility -->
     <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
 
+    <!-- Implicit defaults for dark theme to ensure text/icons are white -->
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style TargetType="Label">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style TargetType="Path">
+        <Setter Property="Fill" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="Stroke" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <!-- Ensure all controls default to white text unless explicitly overridden -->
+    <Style TargetType="Control">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- Map system brushes used by some controls to white in dark theme -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="#f7fafc"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#f7fafc"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#f7fafc"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.MenuTextBrushKey}" Color="#f7fafc"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}" Color="#e2e8f0"/>
 </ResourceDictionary>

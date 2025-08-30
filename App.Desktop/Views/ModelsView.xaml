@@ -6,8 +6,60 @@
 			 xmlns:local="clr-namespace:Lazarus.Desktop.Views"
 			 mc:Ignorable="d">
 	
-	<!-- SIMPLIFIED: ModelsView now directly contains BaseModelView -->
-	<!-- Subtab navigation is handled by the main sidebar (Base Model, LoRAs, ControlNets, etc.) -->
-	<local:BaseModelView x:Name="BaseModelContent"/>
+	<!-- Models Landing Page - shown when no subtab is selected -->
+	<Grid Background="{DynamicResource SecondaryDarkBrush}">
+		<Border Background="{DynamicResource TertiaryDarkBrush}" 
+				CornerRadius="8" 
+				Margin="20" 
+				Padding="40">
+			<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+				<TextBlock Text="🤖" FontSize="64" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+				<TextBlock Text="Model Management" 
+						   FontSize="28" 
+						   FontWeight="Bold" 
+						   Foreground="{DynamicResource TextPrimaryBrush}"
+						   HorizontalAlignment="Center"
+						   Margin="0,0,0,10"/>
+				<TextBlock Text="Select a category from the sidebar to manage your models" 
+						   FontSize="16" 
+						   Foreground="{DynamicResource TextSecondaryBrush}"
+						   HorizontalAlignment="Center"
+						   Margin="0,0,0,30"/>
+				
+				<!-- Quick Stats -->
+				<Grid HorizontalAlignment="Center">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="40"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					
+					<StackPanel Grid.Column="0" HorizontalAlignment="Center">
+						<TextBlock Text="{Binding SystemInfo.ModelCount, FallbackValue=0}" 
+								   FontSize="24" 
+								   FontWeight="Bold" 
+								   Foreground="{DynamicResource AccentBrush}"
+								   HorizontalAlignment="Center"/>
+						<TextBlock Text="Models Available" 
+								   FontSize="12" 
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   HorizontalAlignment="Center"/>
+					</StackPanel>
+					
+					<StackPanel Grid.Column="2" HorizontalAlignment="Center">
+						<TextBlock Text="{Binding StatusText}" 
+								   FontSize="24" 
+								   FontWeight="Bold" 
+								   Foreground="{DynamicResource SuccessBrush}"
+								   HorizontalAlignment="Center"/>
+						<TextBlock Text="System Status" 
+								   FontSize="12" 
+								   Foreground="{DynamicResource TextSecondaryBrush}"
+								   HorizontalAlignment="Center"/>
+					</StackPanel>
+				</Grid>
+			</StackPanel>
+		</Border>
+	</Grid>
 	
 </UserControl>
