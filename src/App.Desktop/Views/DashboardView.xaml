@@ -1,0 +1,802 @@
+<UserControl x:Class="Lazarus.App.Desktop.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:Lazarus.App.Desktop.Converters">
+    
+    <UserControl.Resources>
+        <!-- Value converters for UI adaptation -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        
+        <!-- Expandable card converters and effects -->
+        <converters:BoolToExpanderIconConverter x:Key="BooleanToExpanderIconConverter" />
+        
+        <!-- Card shadow effect for elevated appearance -->
+        <DropShadowEffect x:Key="CardShadowEffect" 
+                          Color="#40000000" 
+                          BlurRadius="4" 
+                          ShadowDepth="2" 
+                          Opacity="0.15" />
+        
+        <!-- Expandable card animation styles -->
+        <Style x:Key="ExpandableDetailsStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Margin" Value="16,0,16,16" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Visibility}" Value="Visible">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0" To="1" 
+                                    Duration="0:0:0.3"
+                                    AccelerationRatio="0.3" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Data templates for different view modes -->
+        <DataTemplate x:Key="NoviceTemplate">
+            <!-- Simple layout for novice users -->
+            <StackPanel>
+                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="16" />
+                <TextBlock Text="{Binding Description}" FontSize="12" Opacity="0.7" />
+            </StackPanel>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="DetailedTemplate">
+            <!-- Detailed layout for enthusiast/developer users -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Row="0" Grid.Column="0" 
+                           Text="{Binding Icon}" 
+                           FontSize="20" 
+                           Margin="0,0,12,0" 
+                           VerticalAlignment="Top" />
+                           
+                <StackPanel Grid.Row="0" Grid.Column="1">
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="14" />
+                    <TextBlock Text="{Binding Description}" FontSize="12" Opacity="0.8" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+    
+    <ScrollViewer>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            
+            <!-- Header with System Status -->
+            <Grid Grid.Row="0" Margin="0,0,0,30">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock Text="Dashboard" 
+                               FontSize="32" 
+                               FontWeight="Bold" 
+                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    <TextBlock Text="{Binding SystemStatusText}" 
+                               FontSize="14" 
+                               Foreground="{DynamicResource SecondaryForegroundBrush}" 
+                               Margin="0,4,0,0" />
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding LastUpdateTime, StringFormat='Last updated: {0:HH:mm:ss}'}" 
+                               FontSize="12" 
+                               Foreground="{DynamicResource SecondaryForegroundBrush}" 
+                               HorizontalAlignment="Right" />
+                    <TextBlock Text="{Binding CurrentViewMode, StringFormat='View Mode: {0}'}" 
+                               FontSize="12" 
+                               Foreground="{DynamicResource AccentBrush}" 
+                               HorizontalAlignment="Right" 
+                               Margin="0,2,0,0"
+                               Visibility="{Binding ShowDeveloperFeatures, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+            </Grid>
+            
+            <!-- Status Cards -->
+            <Grid Grid.Row="1" Margin="0,0,0,30">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Active Models Card -->
+                <Border Grid.Column="0" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="0,0,15,0" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="🤖" FontSize="16" DockPanel.Dock="Left" Margin="0,0,8,0" />
+                            <TextBlock Text="Active Models" 
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                        </DockPanel>
+                        <TextBlock Text="{Binding ActiveProjects}" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource AccentBrush}"
+                                   Margin="0,8,0,0" />
+                        <TextBlock Text="Currently loaded" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Opacity="0.8" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Running Jobs Card -->
+                <Border Grid.Column="1" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="7.5,0" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="⚙️" FontSize="16" DockPanel.Dock="Left" Margin="0,0,8,0" />
+                            <TextBlock Text="Running Jobs" 
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                        </DockPanel>
+                        <TextBlock Text="{Binding TotalModels}" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource InfoBrush}"
+                                   Margin="0,8,0,0" />
+                        <TextBlock Text="Active processes" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Opacity="0.8" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Training Hours Card -->
+                <Border Grid.Column="2" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="7.5,0" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="🔥" FontSize="16" DockPanel.Dock="Left" Margin="0,0,8,0" />
+                            <TextBlock Text="Training Hours" 
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                        </DockPanel>
+                        <TextBlock Text="{Binding TrainingHours}" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource SuccessBrush}"
+                                   Margin="0,8,0,0" />
+                        <TextBlock Text="Total accumulated" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Opacity="0.8" />
+                    </StackPanel>
+                </Border>
+
+                <!-- System Performance Card -->
+                <Border Grid.Column="3" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="15,0,0,0" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="📊" FontSize="16" DockPanel.Dock="Left" Margin="0,0,8,0" />
+                            <TextBlock Text="System Performance" 
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                        </DockPanel>
+                        <TextBlock Text="{Binding SystemLoad, StringFormat={}{0:F1}%}" 
+                                   FontSize="32" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource WarningBrush}"
+                                   Margin="0,8,0,0" />
+                        <TextBlock Text="CPU utilization" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Opacity="0.8" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Hardware Monitor Cards - Progressive Disclosure System -->
+            <Grid Grid.Row="2" Margin="0,0,0,30">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- CPU Card -->
+                <Border Grid.Row="0" Grid.Column="0" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="0,0,15,15" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Effect="{DynamicResource CardShadowEffect}">
+                    <StackPanel>
+                        <!-- CPU Summary Header -->
+                        <Button Command="{Binding ToggleCpuCardCommand}"
+                                Style="{DynamicResource GhostButtonStyle}"
+                                Padding="20,16"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="🖥️" FontSize="20" Margin="0,0,12,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="CPU" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                    <TextBlock Text="{Binding CpuSpecification.ProcessorName}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" 
+                                           Text="{Binding CpuSpecification.CurrentUsage, StringFormat={}{0:F1}%}"
+                                           FontSize="24" FontWeight="Bold" 
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Margin="8,0" />
+                                <TextBlock Grid.Column="3" 
+                                           Text="{Binding IsCpuCardExpanded, Converter={StaticResource BooleanToExpanderIconConverter}}"
+                                           FontSize="14" 
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                            </Grid>
+                        </Button>
+
+                        <!-- CPU Details (Expandable) -->
+                        <Border Visibility="{Binding IsCpuCardExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Style="{StaticResource ExpandableDetailsStyle}">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Cores" FontSize="11" 
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                        <TextBlock Text="{Binding CpuSpecification.CoreCount}" FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Temperature" FontSize="11" 
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                        <TextBlock Text="{Binding CpuSpecification.CurrentTemperature, StringFormat={}{0:F1}°C}" 
+                                                   FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Base Clock" FontSize="11" 
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                        <TextBlock Text="{Binding CpuSpecification.BaseFrequencyMhz, StringFormat={}{0:F0} MHz}" 
+                                                   FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Max Clock" FontSize="11" 
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                        <TextBlock Text="{Binding CpuSpecification.MaxFrequencyMhz, StringFormat={}{0:F0} MHz}" 
+                                                   FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Memory Card -->
+                <Border Grid.Row="0" Grid.Column="1" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="15,0,0,15" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Effect="{DynamicResource CardShadowEffect}">
+                    <StackPanel>
+                        <!-- Memory Summary Header -->
+                        <Button Command="{Binding ToggleMemoryCardCommand}"
+                                Style="{DynamicResource GhostButtonStyle}"
+                                Padding="20,16"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="🧠" FontSize="20" Margin="0,0,12,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Memory" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                    <TextBlock Text="{Binding MemorySpecification.TotalPhysicalGB, StringFormat={}{0:F0}GB Total}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" 
+                                           Text="{Binding MemorySpecification.UsagePercentage, StringFormat={}{0:F1}%}"
+                                           FontSize="24" FontWeight="Bold" 
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Margin="8,0" />
+                                <TextBlock Grid.Column="3" 
+                                           Text="{Binding IsMemoryCardExpanded, Converter={StaticResource BooleanToExpanderIconConverter}}"
+                                           FontSize="14" 
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Memory Details (Expandable) -->
+                        <Border Visibility="{Binding IsMemoryCardExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Style="{StaticResource ExpandableDetailsStyle}">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Used" FontSize="11" 
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                        <TextBlock Text="{Binding MemorySpecification.UsedGB, StringFormat={}{0:F1}GB}" 
+                                                   FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Available" FontSize="11" 
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                        <TextBlock Text="{Binding MemorySpecification.AvailableGB, StringFormat={}{0:F1}GB}" 
+                                                   FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel>
+                                    <TextBlock Text="Memory Modules" FontSize="11" 
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}" 
+                                               Margin="0,0,0,4" />
+                                    <ItemsControl ItemsSource="{Binding MemorySpecification.MemoryModules}" 
+                                                  MaxHeight="120" 
+                                                  Margin="0,0,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock FontSize="12" Margin="0,1">
+                                                    <Run Text="{Binding BankLabel}" />
+                                                    <Run Text=": " />
+                                                    <Run Text="{Binding CapacityGB, Mode=OneWay, StringFormat={}{0:F0}GB}" />
+                                                    <Run Text=" @ " />
+                                                    <Run Text="{Binding SpeedMhz, StringFormat={}{0}MHz}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- GPU Card -->
+                <Border Grid.Row="1" Grid.Column="0" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="0,0,15,0" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Effect="{DynamicResource CardShadowEffect}">
+                    <StackPanel>
+                        <!-- GPU Summary Header -->
+                        <Button Command="{Binding ToggleGpuCardCommand}"
+                                Style="{DynamicResource GhostButtonStyle}"
+                                Padding="20,16"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="🎮" FontSize="20" Margin="0,0,12,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Graphics" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                    <TextBlock Text="{Binding GpuSpecifications.Count, StringFormat={}{0} GPUs}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" 
+                                           Text="{Binding HardwareRollupSummary.TotalGpuUsage, StringFormat={}{0:F1}%}"
+                                           FontSize="24" FontWeight="Bold" 
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Margin="8,0" />
+                                <TextBlock Grid.Column="3" 
+                                           Text="{Binding IsGpuCardExpanded, Converter={StaticResource BooleanToExpanderIconConverter}}"
+                                           FontSize="14" 
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                            </Grid>
+                        </Button>
+
+                        <!-- GPU Details (Expandable) -->
+                        <Border Visibility="{Binding IsGpuCardExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Style="{StaticResource ExpandableDetailsStyle}">
+                            <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding GpuSpecifications}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8" Padding="12" 
+                                                    Background="{DynamicResource CardBackgroundBrush}"
+                                                    CornerRadius="4"
+                                                    BorderBrush="{DynamicResource BorderBrush}"
+                                                    BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <TextBlock Grid.Row="0" Text="{Binding Name}" 
+                                                               FontSize="13" FontWeight="SemiBold" 
+                                                               Margin="0,0,0,6"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    
+                                                    <Grid Grid.Row="1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="VRAM" FontSize="10" 
+                                                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                                            <TextBlock Text="{Binding AdapterRamGB, StringFormat={}{0:F1}GB}" 
+                                                                       FontSize="12" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="Usage" FontSize="10" 
+                                                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                                            <TextBlock Text="{Binding CurrentUsage, StringFormat={}{0:F1}%}" 
+                                                                       FontSize="12" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2">
+                                                            <TextBlock Text="Temp" FontSize="10" 
+                                                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                                            <TextBlock Text="{Binding CurrentTemperature, StringFormat={}{0:F0}°C}" 
+                                                                       FontSize="12" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Storage Card -->
+                <Border Grid.Row="1" Grid.Column="1" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="15,0,0,0" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Effect="{DynamicResource CardShadowEffect}">
+                    <StackPanel>
+                        <!-- Storage Summary Header -->
+                        <Button Command="{Binding ToggleStorageCardCommand}"
+                                Style="{DynamicResource GhostButtonStyle}"
+                                Padding="20,16"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="💾" FontSize="20" Margin="0,0,12,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Storage" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                    <TextBlock Text="{Binding StorageDevices.Count, StringFormat={}{0} Drives}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" 
+                                           Text="{Binding HardwareRollupSummary.OverallStorageUsage, StringFormat={}{0:F1}%}"
+                                           FontSize="24" FontWeight="Bold" 
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Margin="8,0" />
+                                <TextBlock Grid.Column="3" 
+                                           Text="{Binding IsStorageCardExpanded, Converter={StaticResource BooleanToExpanderIconConverter}}"
+                                           FontSize="14" 
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Storage Details (Expandable) -->
+                        <Border Visibility="{Binding IsStorageCardExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Style="{StaticResource ExpandableDetailsStyle}">
+                            <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding StorageDevices}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8" Padding="12" 
+                                                    Background="{DynamicResource CardBackgroundBrush}"
+                                                    CornerRadius="4"
+                                                    BorderBrush="{DynamicResource BorderBrush}"
+                                                    BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Model}" 
+                                                                   FontSize="13" FontWeight="SemiBold" 
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding DriveLetter}" 
+                                                                   FontSize="13" FontWeight="Bold"
+                                                                   Foreground="{DynamicResource AccentBrush}" />
+                                                    </Grid>
+                                                    
+                                                    <Grid Grid.Row="1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="Size" FontSize="10" 
+                                                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                                            <TextBlock Text="{Binding TotalSizeGB, StringFormat={}{0:F0}GB}" 
+                                                                       FontSize="12" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="Used" FontSize="10" 
+                                                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                                            <TextBlock Text="{Binding UsagePercentage, StringFormat={}{0:F1}%}" 
+                                                                       FontSize="12" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2">
+                                                            <TextBlock Text="Health" FontSize="10" 
+                                                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                                                            <TextBlock Text="{Binding HealthStatus}" 
+                                                                       FontSize="12" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- Main Content Layout -->
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Recent Activities -->
+                <Border Grid.Column="0" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="0,0,15,0" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,15">
+                            <TextBlock Text="📈" FontSize="16" DockPanel.Dock="Left" Margin="0,0,8,0" />
+                            <TextBlock Text="Recent Activities" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                        </DockPanel>
+                        
+                        <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding RecentActivities}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,8" 
+                                                Padding="12" 
+                                                Background="{DynamicResource BackgroundBrush}" 
+                                                CornerRadius="6"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Action}" 
+                                                               FontWeight="SemiBold" 
+                                                               FontSize="13"
+                                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                                    <TextBlock Text="{Binding Target}" 
+                                                               FontSize="11" 
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                               TextWrapping="Wrap" 
+                                                               Margin="0,2,0,0" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" 
+                                                           FontSize="10" 
+                                                           Foreground="{DynamicResource AccentBrush}" 
+                                                           VerticalAlignment="Top" 
+                                                           Margin="8,0,0,0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <!-- Quick Actions -->
+                <Border Grid.Column="1" 
+                        Background="{DynamicResource CardBackgroundBrush}" 
+                        Margin="15,0,0,0" 
+                        Padding="20" 
+                        CornerRadius="8"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,15">
+                            <TextBlock Text="⚡" FontSize="16" DockPanel.Dock="Left" Margin="0,0,8,0" />
+                            <TextBlock Text="Quick Actions" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                        </DockPanel>
+                        
+                        <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding QuickActions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Margin="0,0,0,8" 
+                                                Padding="16,12" 
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding Command}"
+                                                Style="{DynamicResource LazarusButtonStyle}"
+                                                Background="{DynamicResource BackgroundBrush}"
+                                                BorderThickness="1"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                Cursor="Hand">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Icon}" 
+                                                           FontSize="18" 
+                                                           Margin="0,0,12,0" 
+                                                           VerticalAlignment="Center" />
+                                                           
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}" 
+                                                               FontWeight="SemiBold" 
+                                                               FontSize="13"
+                                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                                    <TextBlock Text="{Binding Description}" 
+                                                               FontSize="11" 
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                               TextWrapping="Wrap" 
+                                                               Margin="0,2,0,0" />
+                                                </StackPanel>
+                                                
+                                                <TextBlock Grid.Column="2"
+                                                           Text="→" 
+                                                           FontSize="14" 
+                                                           Foreground="{DynamicResource AccentBrush}"
+                                                           VerticalAlignment="Center" 
+                                                           Margin="8,0,0,0" />
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Action Bar -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+                <Button Command="{Binding RefreshDashboardCommand}" 
+                        Style="{DynamicResource AccentButtonStyle}"
+                        Margin="0,0,10,0"
+                        Padding="20,12">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔄" FontSize="14" Margin="0,0,8,0" />
+                        <TextBlock Text="Refresh Dashboard" FontSize="14" />
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding StartNewChatCommand}" 
+                        Style="{DynamicResource LazarusButtonStyle}"
+                        Background="{DynamicResource SuccessBrush}"
+                        Padding="20,12">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💬" FontSize="14" Margin="0,0,8,0" />
+                        <TextBlock Text="New Chat" FontSize="14" Foreground="White" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

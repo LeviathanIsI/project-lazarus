@@ -17,6 +17,8 @@ builder.Services.AddDataServices(builder.Configuration);
 
 // Add business services
 builder.Services.AddScoped<ITrainingService, TrainingService>();
+builder.Services.AddSingleton<IRunnerService, RunnerService>();
+builder.Services.AddSingleton<IMetricsService, MetricsService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

@@ -1,0 +1,67 @@
+<UserControl x:Class="Lazarus.App.Desktop.Views.RunnerManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="Runner Manager" 
+                   FontSize="28" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20"
+                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
+
+        <!-- Actions -->
+        <Button Grid.Row="1" 
+                Command="{Binding RefreshRunnersCommand}"
+                Content="Refresh Runners" 
+                Style="{DynamicResource AccentButtonStyle}"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,20"
+                Padding="15,8" />
+
+        <!-- Runners List -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Runners}"
+                  SelectedItem="{Binding SelectedRunner}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  Style="{DynamicResource LazarusDataGridStyle}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150" />
+                <DataGridTextColumn Header="Hardware" Binding="{Binding Hardware}" Width="200" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                <DataGridTextColumn Header="Utilization" Binding="{Binding Utilization, StringFormat={}{0:F1}%}" Width="100" />
+                <DataGridTextColumn Header="Last Activity" Binding="{Binding LastActivity, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Width="150" />
+                <DataGridTemplateColumn Header="Actions" Width="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Start" 
+                                        Command="{Binding DataContext.StartRunnerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{DynamicResource ActionButtonStyle}"
+                                        Margin="2" />
+                                <Button Content="Stop" 
+                                        Command="{Binding DataContext.StopRunnerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{DynamicResource DangerButtonStyle}"
+                                        Margin="2" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

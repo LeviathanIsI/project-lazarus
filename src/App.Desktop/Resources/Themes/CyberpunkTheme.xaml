@@ -7,38 +7,40 @@
          ======================================== -->
 
     <!-- Background Brushes -->
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#0A0A0A" />
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#151515" />
-    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#1A1A1A" />
-    <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="#0D0D0D" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#0a0a0a" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#1a1a1a" />
+    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#0f1419" />
+    <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="#1e2329" />
 
     <!-- Foreground Brushes -->
-    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#00FF41" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#00CC33" />
-    <SolidColorBrush x:Key="AccentForegroundBrush" Color="#00FFFF" />
-    <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#444444" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#00ff88" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#88ff88" />
+    <SolidColorBrush x:Key="AccentForegroundBrush" Color="#00ffff" />
+    <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#4a6741" />
 
     <!-- Accent & State Brushes -->
-    <SolidColorBrush x:Key="AccentBrush" Color="#00FFFF" />
-    <SolidColorBrush x:Key="AccentHoverBrush" Color="#33FFFF" />
-    <SolidColorBrush x:Key="AccentPressedBrush" Color="#00CCCC" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#8b5cf6" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#a78bfa" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#7c3aed" />
     <SolidColorBrush x:Key="DangerBrush" Color="#FF0040" />
     <SolidColorBrush x:Key="SuccessBrush" Color="#00FF41" />
     <SolidColorBrush x:Key="InfoBrush" Color="#00FFFF" />
+    <SolidColorBrush x:Key="InfoBackgroundBrush" Color="#0f1419" />
+    <SolidColorBrush x:Key="InfoForegroundBrush" Color="#00FFFF" />
 
     <!-- Border & Effect Brushes -->
-    <SolidColorBrush x:Key="BorderBrush" Color="#333333" />
-    <SolidColorBrush x:Key="FocusBorderBrush" Color="#00FF41" />
-    <SolidColorBrush x:Key="HoverBorderBrush" Color="#00FFFF" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#2d4a2d" />
+    <SolidColorBrush x:Key="FocusBorderBrush" Color="#00ff88" />
+    <SolidColorBrush x:Key="HoverBorderBrush" Color="#3d5a3d" />
     <SolidColorBrush x:Key="ShadowBrush" Color="#00FF4150" />
 
-    <!-- Legacy Compatibility Brushes -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#00FFFF" />
-    <SolidColorBrush x:Key="SecondaryBrush" Color="#151515" />
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#151515" />
-    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#0D0D0D" />
-    <SolidColorBrush x:Key="TextBrush" Color="#00FF41" />
-    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#00CC33" />
+    <!-- Legacy Compatibility Brushes - FIXED TO MATCH PRIMARY FOREGROUND -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#00ff88" />
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#1a1a1a" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#1a1a1a" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1e2329" />
+    <SolidColorBrush x:Key="TextBrush" Color="#00ff88" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#88ff88" />
     <SolidColorBrush x:Key="WarningBrush" Color="#FFFF00" />
 
     <!-- Typography Styles -->
@@ -48,11 +50,6 @@
         <Setter Property="FontSize" Value="24" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="Margin" Value="0,0,0,12" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#00FF41" BlurRadius="8" ShadowDepth="0" Opacity="0.8" />
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <Style x:Key="SubHeadingTextStyle" TargetType="TextBlock">
@@ -61,11 +58,6 @@
         <Setter Property="FontSize" Value="18" />
         <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}" />
         <Setter Property="Margin" Value="0,0,0,8" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#00FFFF" BlurRadius="6" ShadowDepth="0" Opacity="0.6" />
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <Style x:Key="BodyTextStyle" TargetType="TextBlock">
@@ -89,11 +81,6 @@
         <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}" />
         <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
         <Setter Property="Padding" Value="4,2" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#00FFFF" BlurRadius="4" ShadowDepth="0" Opacity="0.5" />
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- Window Style -->
@@ -102,11 +89,6 @@
         <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#00FF41" BlurRadius="20" ShadowDepth="0" Opacity="0.3" />
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- Button Styles -->
@@ -120,11 +102,6 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#00FFFF" BlurRadius="10" ShadowDepth="0" Opacity="0.8" />
-            </Setter.Value>
-        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -141,7 +118,7 @@
                             <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
                             <Setter Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#00FFFF" BlurRadius="15" ShadowDepth="0" Opacity="1.0" />
+                                    <DropShadowEffect Color="#00ff88" BlurRadius="6" ShadowDepth="0" Opacity="0.6" />
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -177,11 +154,6 @@
         <Setter Property="Margin" Value="4" />
         <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#00FF41" BlurRadius="5" ShadowDepth="0" Opacity="0.5" />
-            </Setter.Value>
-        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -196,11 +168,6 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
                             <Setter Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}" />
-                            <Setter Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect Color="#00FF41" BlurRadius="10" ShadowDepth="0" Opacity="0.8" />
-                                </Setter.Value>
-                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
@@ -232,11 +199,6 @@
         <Setter Property="Margin" Value="4" />
         <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#FF0040" BlurRadius="10" ShadowDepth="0" Opacity="0.8" />
-            </Setter.Value>
-        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -251,11 +213,6 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="#FF3366" />
                             <Setter Property="BorderBrush" Value="#FF3366" />
-                            <Setter Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect Color="#FF0040" BlurRadius="15" ShadowDepth="0" Opacity="1.0" />
-                                </Setter.Value>
-                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="#CC0033" />
@@ -384,6 +341,99 @@
     <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}" />
     <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}" />
 
+    <!-- LazarusTextBoxStyle - Cyberpunk Neon Visual Style -->
+    <Style x:Key="LazarusTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="SelectionOpacity" Value="0.4" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF41" BlurRadius="4" ShadowDepth="0" Opacity="0.3" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Border x:Name="BorderElement"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden" />
+                                <TextBlock x:Name="PlaceholderText"
+                                           Text="{TemplateBinding Tag}"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           Margin="{TemplateBinding Padding}"
+                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                           FontFamily="{TemplateBinding FontFamily}"
+                                           IsHitTestVisible="False"
+                                           Opacity="0.7" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="Tag" Value="" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="Tag" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}" />
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="6" ShadowDepth="0" Opacity="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="{DynamicResource FocusBorderBrush}" />
+                            <Setter TargetName="BorderElement" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FF41" BlurRadius="10" ShadowDepth="0" Opacity="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BorderElement" Property="Opacity" Value="0.6" />
+                            <Setter Property="Effect" Value="{x:Null}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Input Control Styles -->
     <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
@@ -431,6 +481,159 @@
         </Setter>
     </Style>
 
+    <!-- ComboBox Complete Control Template -->
+    <Style x:Key="ComboBoxToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF41" BlurRadius="3" ShadowDepth="0" Opacity="0.4" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="20" />
+                                </Grid.ColumnDefinitions>
+                                <Path x:Name="DropDownArrow"
+                                      Grid.Column="1"
+                                      Fill="{TemplateBinding Foreground}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Data="M 0 0 L 4 4 L 8 0 Z"
+                                      RenderTransformOrigin="0.5,0.5">
+                                    <Path.RenderTransform>
+                                        <RotateTransform x:Name="ArrowRotation" Angle="0" />
+                                    </Path.RenderTransform>
+                                    <Path.Effect>
+                                        <DropShadowEffect Color="#00FFFF" BlurRadius="2" ShadowDepth="0" Opacity="0.6" />
+                                    </Path.Effect>
+                                </Path>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}" />
+                            <Setter TargetName="DropDownArrow" Property="Fill" Value="{DynamicResource AccentBrush}" />
+                            <Setter TargetName="Border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="8" ShadowDepth="0" Opacity="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="DropDownArrow" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="5" ShadowDepth="0" Opacity="1.0" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                            <Setter TargetName="Border" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="DropDownArrow" Property="Fill" Value="{DynamicResource AccentBrush}" />
+                            <Setter TargetName="Border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="12" ShadowDepth="0" Opacity="1.0" />
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ArrowRotation"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         To="180" Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <BackEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ArrowRotation"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         To="0" Duration="0:0:0.2" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Border" Property="Opacity" Value="0.6" />
+                            <Setter TargetName="DropDownArrow" Property="Fill" Value="{DynamicResource DisabledForegroundBrush}" />
+                            <Setter TargetName="Border" Property="Effect" Value="{x:Null}" />
+                            <Setter TargetName="DropDownArrow" Property="Effect" Value="{x:Null}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ComboBoxItemStyle" TargetType="ComboBoxItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="ItemBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource AccentBrush}" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter TargetName="ItemBorder" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="8" ShadowDepth="0" Opacity="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource AccentPressedBrush}" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter TargetName="ItemBorder" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="6" ShadowDepth="0" Opacity="0.6" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
+                            <Setter Property="Opacity" Value="0.6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
@@ -440,6 +643,121 @@
         <Setter Property="Height" Value="32" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ComboBoxItemStyle}" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF41" BlurRadius="4" ShadowDepth="0" Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="0" MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <Popup x:Name="PART_Popup"
+                               AllowsTransparency="True"
+                               Grid.ColumnSpan="2"
+                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                               Margin="1"
+                               PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}"
+                               Placement="Bottom">
+                            <Border x:Name="DropDownBorder"
+                                    Background="{DynamicResource SurfaceBackgroundBrush}"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="2"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    MinWidth="{Binding ActualWidth, ElementName=MainGrid}">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#00FFFF"
+                                                      BlurRadius="15"
+                                                      ShadowDepth="0"
+                                                      Opacity="0.8" />
+                                </Border.Effect>
+                                <ScrollViewer x:Name="DropDownScrollViewer"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              Margin="2">
+                                    <ItemsPresenter x:Name="ItemsPresenter"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                        
+                        <ToggleButton x:Name="toggleButton"
+                                      Grid.ColumnSpan="2"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Style="{StaticResource ComboBoxToggleButtonStyle}" />
+                        
+                        <ContentPresenter x:Name="ContentSite"
+                                          Grid.Column="0"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                          HorizontalAlignment="Left"
+                                          IsHitTestVisible="False"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" />
+                        
+                        <TextBox x:Name="PART_EditableTextBox"
+                                 Grid.Column="0"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="{TemplateBinding Foreground}"
+                                 FontFamily="{TemplateBinding FontFamily}"
+                                 HorizontalAlignment="Left"
+                                 IsReadOnly="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}"
+                                 Margin="{TemplateBinding Padding}"
+                                 VerticalAlignment="Center"
+                                 Visibility="Hidden" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter TargetName="DropDownBorder" Property="Height" Value="95" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
+                            <Setter Property="Opacity" Value="0.6" />
+                            <Setter Property="Effect" Value="{x:Null}" />
+                        </Trigger>
+                        <Trigger Property="IsGrouping" Value="True">
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                        </Trigger>
+                        <Trigger Property="IsEditable" Value="True">
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="toggleButton" Property="BorderBrush" Value="{DynamicResource FocusBorderBrush}" />
+                            <Setter TargetName="toggleButton" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="toggleButton" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FF41" BlurRadius="10" ShadowDepth="0" Opacity="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FF41" BlurRadius="8" ShadowDepth="0" Opacity="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Container Styles -->
@@ -535,6 +853,161 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- Default TextBlock Style - CRITICAL FIX -->
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+    </Style>
+
+    <!-- Missing Navigation Styles - CRITICAL FIX -->
+    <Style x:Key="NavigationPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF41" BlurRadius="8" ShadowDepth="0" Opacity="0.3" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationLogoStyle" TargetType="Border">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FFFF" BlurRadius="5" ShadowDepth="0" Opacity="0.4" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationSectionHeaderStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="Margin" Value="16,16,16,8" />
+        <Setter Property="Opacity" Value="0.9" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FFFF" BlurRadius="3" ShadowDepth="0" Opacity="0.6" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationItemStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Margin" Value="4,1" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="{TemplateBinding Margin}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="6" ShadowDepth="0" Opacity="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationItemSelectedStyle" TargetType="Button" BasedOn="{StaticResource NavigationItemStyle}">
+        <Setter Property="Background" Value="#0a3d1a" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF41" BlurRadius="8" ShadowDepth="0" Opacity="0.6" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="{TemplateBinding Margin}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#0f4d20" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FFFF" BlurRadius="10" ShadowDepth="0" Opacity="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#064019" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ContentAreaStyle" TargetType="ContentPresenter">
+        <Setter Property="Margin" Value="16" />
+    </Style>
+
+    <!-- Loading Indicator Styles -->
+    <Style x:Key="LoadingIndicatorStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+    <Style x:Key="LoadingSpinnerStyle" TargetType="Ellipse">
+        <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="12" />
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    </Style>
+
+    <Style x:Key="StatusMessageStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
 </ResourceDictionary>

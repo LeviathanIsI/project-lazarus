@@ -24,14 +24,16 @@ public class TrainingSessionRepository : ITrainingSessionRepository
     {
         return await _context.TrainingSessions
             .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<TrainingSession?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.TrainingSessions
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -40,7 +42,8 @@ public class TrainingSessionRepository : ITrainingSessionRepository
         return await _context.TrainingSessions
             .Where(x => x.Status == status)
             .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -50,7 +53,7 @@ public class TrainingSessionRepository : ITrainingSessionRepository
             throw new ArgumentNullException(nameof(entity));
 
         _context.TrainingSessions.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return entity;
     }
 
@@ -61,20 +64,20 @@ public class TrainingSessionRepository : ITrainingSessionRepository
             throw new ArgumentNullException(nameof(entity));
 
         _context.TrainingSessions.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return entity;
     }
 
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await GetByIdAsync(id, cancellationToken);
+        var entity = await GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
         if (entity == null)
             return false;
 
         // Soft delete
         entity.IsDeleted = true;
-        await UpdateAsync(entity, cancellationToken);
+        await UpdateAsync(entity, cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -82,6 +85,7 @@ public class TrainingSessionRepository : ITrainingSessionRepository
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.TrainingSessions
-            .AnyAsync(x => x.Id == id, cancellationToken);
+            .AnyAsync(x => x.Id == id, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

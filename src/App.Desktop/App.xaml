@@ -1,7 +1,6 @@
 <Application x:Class="Lazarus.App.Desktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -9,8 +8,8 @@
                 <!-- Default Dark theme loaded on startup -->
                 <ResourceDictionary Source="Resources/Themes/DarkTheme.xaml" />
                 
-                <!-- Legacy theme for compatibility during transition -->
-                <ResourceDictionary Source="Themes/LazarusTheme.xaml" />
+                <!-- Navigation styles -->
+                <ResourceDictionary Source="Resources/Styles/NavigationStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
             <!-- Global application resources that persist across theme changes -->

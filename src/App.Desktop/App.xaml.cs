@@ -1,8 +1,6 @@
 using Lazarus.App.Desktop.Extensions;
 using Lazarus.App.Desktop.Services;
-using Lazarus.App.Desktop.ViewModels;
-using Lazarus.App.SDK.Extensions;
-using Microsoft.Extensions.Configuration;
+using Lazarus.App.Data.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,36 +14,34 @@ namespace Lazarus.App.Desktop;
 public partial class App : Application
 {
     private IHost? _host;
-
-    /// <summary>
-    /// Gets or sets the service provider for dependency injection
-    /// </summary>
-    public static IServiceProvider? ServiceProvider { get; set; }
-
-    /// <summary>
-    /// Gets a service from the dependency injection container
-    /// </summary>
-    /// <typeparam name="T">The type of service to retrieve</typeparam>
-    /// <returns>The service instance</returns>
-    public static T GetService<T>() where T : class
-    {
-        return ServiceProvider?.GetRequiredService<T>() 
-            ?? throw new InvalidOperationException("Service provider not initialized");
-    }
-
+    private IServiceProvider? _serviceProvider;
     /// <inheritdoc />
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         try
         {
-            _host = CreateHostBuilder(e.Args).Build();
-            ServiceProvider = _host.Services;
+            // Build and configure host with dependency injection
+            _host = CreateHost();
             
-            // Initialize theme system synchronously
-            Task.Run(InitializeThemeSystemAsync).Wait();
+            // Start the host (this starts hosted services like InfrastructureStartupService)
+            await _host.StartAsync();
             
-            // Start the host
-            _ = _host.RunAsync();
+            _serviceProvider = _host.Services;
+            
+            // Initialize theme system
+            InitializeTheme();
+            
+            // Start services
+            StartServicesAsync();
+            
+            // Initialize navigation service after DI container is built
+            var navigationService = _serviceProvider.GetRequiredService<Lazarus.App.Desktop.Services.INavigationService>();
+            navigationService.Initialize();
+            
+            // Create and show main window
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+            System.Diagnostics.Debug.WriteLine("Main window shown");
             
             base.OnStartup(e);
         }
@@ -56,81 +52,135 @@ public partial class App : Application
             Shutdown(1);
         }
     }
-
+    
     /// <inheritdoc />
     protected override void OnExit(ExitEventArgs e)
     {
-        _host?.StopAsync().Wait(TimeSpan.FromSeconds(5));
-        _host?.Dispose();
-        base.OnExit(e);
-    }
-
-    /// <summary>
-    /// Creates the host builder with configured services
-    /// </summary>
-    /// <param name="args">Command line arguments</param>
-    /// <returns>Configured host builder</returns>
-    private static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((context, config) =>
-            {
-                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                config.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", 
-                    optional: true, reloadOnChange: true);
-                config.AddEnvironmentVariables();
-                config.AddCommandLine(args);
-            })
-            .ConfigureServices((context, services) =>
-            {
-                // Add logging
-                services.AddLogging();
-
-                // Add Lazarus SDK
-                services.AddLazarusSDK(context.Configuration);
-
-                // Add desktop services
-                services.AddDesktopServices();
-
-                // Add ViewModels
-                services.AddViewModels();
-            })
-            .UseConsoleLifetime();
-
-    /// <summary>
-    /// Initializes the theme system asynchronously
-    /// </summary>
-    private async Task InitializeThemeSystemAsync()
-    {
         try
         {
-            if (ServiceProvider == null)
-                return;
-
-            var logger = ServiceProvider.GetService<ILogger<App>>();
-            var userPreferencesService = ServiceProvider.GetService<IUserPreferencesService>();
-            
-            if (userPreferencesService != null)
+            // Ensure infrastructure services are properly stopped before exit
+            if (_serviceProvider != null)
             {
-                logger?.LogInformation("Initializing theme system");
-                
-                // Load user preferences
-                await userPreferencesService.LoadPreferencesAsync();
-                
-                // Apply the saved theme preference
-                userPreferencesService.ApplyThemePreference();
-                
-                logger?.LogInformation("Theme system initialized with theme: {Theme}", 
-                    userPreferencesService.CurrentTheme);
-            }
-            else
-            {
-                logger?.LogWarning("UserPreferencesService not available, using default theme");
+                var infrastructureService = _serviceProvider.GetService<InfrastructureStartupService>();
+                if (infrastructureService?.IsStarted == true)
+                {
+                    // Give infrastructure services time to shut down gracefully
+                    var shutdownTask = infrastructureService.StopAsync();
+                    if (!shutdownTask.Wait(10000)) // 10 second timeout
+                    {
+                        System.Diagnostics.Debug.WriteLine("Infrastructure shutdown timed out during application exit");
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            var logger = ServiceProvider?.GetService<ILogger<App>>();
-            logger?.LogError(ex, "Error initializing theme system");
+            System.Diagnostics.Debug.WriteLine($"Error during infrastructure shutdown: {ex.Message}");
+        }
+        finally
+        {
+            // Stop the host which will stop all hosted services
+            if (_host != null)
+            {
+                var hostStopTask = _host.StopAsync();
+                if (!hostStopTask.Wait(5000)) // 5 second timeout for host stop
+                {
+                    System.Diagnostics.Debug.WriteLine("Host shutdown timed out during application exit");
+                }
+                _host.Dispose();
+            }
+            
+            base.OnExit(e);
+        }
+    }
+
+    /// <summary>
+    /// Creates and configures the dependency injection host
+    /// </summary>
+    /// <returns>Configured host instance</returns>
+    private IHost CreateHost()
+    {
+        return Host.CreateDefaultBuilder()
+            .ConfigureServices((context, services) =>
+            {
+                // Add logging
+                services.AddLogging(builder =>
+                {
+                    builder.AddDebug();
+                    builder.AddConsole();
+                });
+                
+                // Add desktop services
+                services.AddDesktopServices(context.Configuration);
+                
+                // Add view models
+                services.AddViewModels();
+            })
+            .Build();
+    }
+    
+    /// <summary>
+    /// Initializes the theme system with default theme
+    /// </summary>
+    private void InitializeTheme()
+    {
+        try
+        {
+            // Apply default dark theme on startup
+            ThemeManager.ApplyTheme(Theme.Dark);
+        }
+        catch (Exception ex)
+        {
+            // Fallback - continue without theme if it fails
+            System.Diagnostics.Debug.WriteLine($"Theme initialization failed: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Starts background services asynchronously
+    /// </summary>
+    private async void StartServicesAsync()
+    {
+        if (_serviceProvider != null)
+        {
+            try
+            {
+                // Initialize database schema first (apply migrations)
+                await _serviceProvider.EnsureDatabaseCreatedAsync();
+                System.Diagnostics.Debug.WriteLine("Database initialization completed successfully");
+                
+                // Initialize user profile directory structure
+                var directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
+                var initResult = await directoryService.InitializeUserProfileAsync();
+                
+                if (!initResult.Success && initResult.Errors.Count > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Directory initialization completed with errors: {initResult.Message}");
+                }
+                
+                // Start system status monitoring
+                var systemStatusService = _serviceProvider.GetRequiredService<Lazarus.App.Shared.Services.ISystemStatusService>();
+                await systemStatusService.StartMonitoringAsync();
+                
+                // Load view mode preferences
+                var viewModeService = _serviceProvider.GetRequiredService<Lazarus.App.Shared.Services.IViewModeService>();
+                await viewModeService.LoadViewModeAsync();
+                
+                // Note: Infrastructure startup (orchestrator & llama.cpp) is handled 
+                // by the hosted service system and will start automatically
+                System.Diagnostics.Debug.WriteLine("Infrastructure startup initiated via hosted service");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Service startup failed: {ex.Message}");
+                
+                // For database initialization failures, show error dialog
+                if (ex.Message.Contains("database") || ex.Message.Contains("migration"))
+                {
+                    MessageBox.Show($"Database initialization failed: {ex.Message}\n\nApplication may not function correctly.", 
+                        "Database Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
         }
     }
 }

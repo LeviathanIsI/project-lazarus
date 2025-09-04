@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace Lazarus.App.Desktop.Services;
 
@@ -42,12 +43,34 @@ public static class ThemeManager
     };
 
     /// <summary>
-    /// Applies the specified theme to the application.
+    /// Applies the specified theme to the application with thread safety.
     /// </summary>
     /// <param name="theme">The theme to apply.</param>
     /// <exception cref="ArgumentException">Thrown when an invalid theme is specified.</exception>
     /// <exception cref="InvalidOperationException">Thrown when theme resources cannot be loaded.</exception>
     public static void ApplyTheme(Theme theme)
+    {
+        var app = Application.Current;
+        if (app?.Dispatcher == null)
+        {
+            throw new InvalidOperationException("Application dispatcher not available.");
+        }
+
+        if (app.Dispatcher.CheckAccess())
+        {
+            ApplyThemeCore(theme);
+        }
+        else
+        {
+            app.Dispatcher.Invoke(() => ApplyThemeCore(theme));
+        }
+    }
+
+    /// <summary>
+    /// Core theme application logic that must run on the UI thread
+    /// </summary>
+    /// <param name="theme">The theme to apply</param>
+    private static void ApplyThemeCore(Theme theme)
     {
         try
         {
@@ -62,28 +85,32 @@ public static class ThemeManager
                 throw new InvalidOperationException("Application resources not available.");
             }
 
-            // Get the resource dictionary path
-            var resourcePath = ThemeResourcePaths[theme];
-            var resourceUri = new Uri(resourcePath, UriKind.Relative);
-
-            // Load the new theme resource dictionary
-            var newThemeResources = new ResourceDictionary
+            // Prevent concurrent theme changes
+            lock (app.Resources)
             {
-                Source = resourceUri
-            };
+                // Get the resource dictionary path
+                var resourcePath = ThemeResourcePaths[theme];
+                var resourceUri = new Uri(resourcePath, UriKind.Relative);
 
-            // Remove existing theme resources
-            RemoveExistingThemeResources(app.Resources);
+                // Load the new theme resource dictionary
+                var newThemeResources = new ResourceDictionary
+                {
+                    Source = resourceUri
+                };
 
-            // Add the new theme resources
-            app.Resources.MergedDictionaries.Insert(0, newThemeResources);
+                // Remove existing theme resources
+                RemoveExistingThemeResources(app.Resources);
 
-            // Update current theme
-            var previousTheme = CurrentTheme;
-            CurrentTheme = theme;
+                // Add the new theme resources
+                app.Resources.MergedDictionaries.Insert(0, newThemeResources);
 
-            // Raise theme changed event
-            ThemeChanged?.Invoke(null, new ThemeChangedEventArgs(previousTheme, theme));
+                // Update current theme
+                var previousTheme = CurrentTheme;
+                CurrentTheme = theme;
+
+                // Raise theme changed event
+                ThemeChanged?.Invoke(null, new ThemeChangedEventArgs(previousTheme, theme));
+            }
         }
         catch (Exception ex) when (!(ex is ArgumentException || ex is InvalidOperationException))
         {
