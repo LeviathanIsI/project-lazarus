@@ -1,5 +1,11 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                    xmlns:controls="clr-namespace:Lazarus.Desktop.Controls">
+
+    <!-- Shared outline constants for rainbow text legibility -->
+    <sys:Double x:Key="RainbowTextOutlineBlur">2.6</sys:Double>
+    <sys:Double x:Key="RainbowTextOutlineOpacity">0.96</sys:Double>
 
     <!-- Readable rainbow button -->
     <Style x:Key="RainbowButton" TargetType="Button">
@@ -10,16 +16,24 @@
                         <!-- Rainbow base -->
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="10"/>
                         <!-- Scrim for contrast -->
-                        <Border Background="#66000000" CornerRadius="8" Margin="2"/>
+                        <Border Background="#33000000" CornerRadius="8" Margin="2"/>
                         <!-- Content -->
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          TextElement.Foreground="White"
-                                          TextElement.FontWeight="SemiBold">
-                            <ContentPresenter.Effect>
-                                <DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
-                            </ContentPresenter.Effect>
-                        </ContentPresenter>
+                        <controls:OutlineTextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Text="{TemplateBinding Content}"
+                                                   Foreground="Black"
+                                                   FontWeight="SemiBold"
+                                                   Stroke="White"
+                                                   StrokeThickness="1.4"
+                                                   SnapsToDevicePixels="True"
+                                                   TextOptions.TextFormattingMode="Display"
+                                                   TextOptions.TextRenderingMode="ClearType"
+                                                   TextOptions.TextHintingMode="Fixed">
+                            <controls:OutlineTextBlock.Effect>
+                                <DropShadowEffect Color="White" ShadowDepth="0"
+                                                  BlurRadius="{DynamicResource RainbowTextOutlineBlur}"
+                                                  Opacity="{DynamicResource RainbowTextOutlineOpacity}"/>
+                            </controls:OutlineTextBlock.Effect>
+                        </controls:OutlineTextBlock>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -36,11 +50,17 @@
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="10"/>
-                        <Border Background="#66000000" CornerRadius="8" Margin="2"/>
+                        <Border Background="#33000000" CornerRadius="8" Margin="2"/>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          TextElement.Foreground="White" TextElement.FontWeight="SemiBold">
+                                          SnapsToDevicePixels="True"
+                                          TextOptions.TextFormattingMode="Display"
+                                          TextOptions.TextRenderingMode="ClearType"
+                                          TextOptions.TextHintingMode="Fixed">
                             <ContentPresenter.Effect>
-                                <DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
+                                <!-- Icon-only can look too glowy; keep effect for now -->
+                                <DropShadowEffect Color="White" ShadowDepth="0"
+                                                  BlurRadius="{DynamicResource RainbowTextOutlineBlur}"
+                                                  Opacity="{DynamicResource RainbowTextOutlineOpacity}"/>
                             </ContentPresenter.Effect>
                         </ContentPresenter>
                     </Grid>
