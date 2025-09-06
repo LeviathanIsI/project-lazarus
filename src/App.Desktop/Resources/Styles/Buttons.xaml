@@ -92,6 +92,8 @@
         <Setter Property="Background" Value="{StaticResource BtnBg}"/>
         <Setter Property="Padding"    Value="{StaticResource BtnPad.Compact}"/>
         <Setter Property="MinHeight"  Value="{StaticResource BtnMinH.Compact}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment"   Value="Center"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
