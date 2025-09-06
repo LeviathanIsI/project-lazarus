@@ -8,14 +8,17 @@
                 <ResourceDictionary Source="Themes/BaseResources.xaml"/>
                 <ResourceDictionary Source="Resources/Themes/RainbowGradients.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/Buttons.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/Chips.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/Bubbles.xaml"/>
                 <ResourceDictionary Source="Themes/Glassmorphic.xaml"/>
                 <ResourceDictionary Source="Themes/GlassmorphicControls.xaml"/>
 
                 <!-- Rest of resources -->
                 <ResourceDictionary Source="Resources/Icons/LazarusLogo.xaml"/>
                 <ResourceDictionary Source="Themes/UXEnhancements.xaml"/>
-                <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>                
-                </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
+
