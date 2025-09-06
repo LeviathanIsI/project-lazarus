@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing audio files for processing"/>
                         
                         <Button Content="Generate Audio"
-                                Style="{StaticResource RainbowButton}"
+                                Style="{StaticResource RainbowBorderButton}"
                                 AutomationProperties.Name="Generate new audio"
                                 AutomationProperties.HelpText="Create new audio using AI synthesis"/>
                     </StackPanel>
@@ -140,10 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Speech Synthesis" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Music Generation" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Voice Cloning" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Audio Analysis" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Speech Synthesis" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Music Generation" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Voice Cloning" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Audio Analysis" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

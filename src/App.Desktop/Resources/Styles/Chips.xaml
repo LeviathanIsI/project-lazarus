@@ -56,4 +56,29 @@
         </Setter>
     </Style>
 
+    <!-- Chips/Pills with rainbow border -->
+    <Style x:Key="RainbowBorderChip" TargetType="ContentControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Grid>
+                        <Border CornerRadius="16" BorderThickness="2" Background="#1A1A1A">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                                    <GradientStop Color="#FFF59E0B" Offset="0.25"/>
+                                    <GradientStop Color="#FF10B981" Offset="0.50"/>
+                                    <GradientStop Color="#FF06B6D4" Offset="0.75"/>
+                                    <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                        </Border>
+                        <TextBlock Margin="12,6" Text="{TemplateBinding Content}"
+                                   Foreground="White" FontWeight="SemiBold"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

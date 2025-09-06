@@ -73,9 +73,9 @@
         <!-- Rainbow Buttons and Controls -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,32">
             <Button Content="Rainbow Button" 
-                    Style="{StaticResource RainbowBorderButtonStyle}"
+                    Style="{StaticResource RainbowBorderButton}"
                     Margin="0,0,16,0"/>
-            <ContentControl Style="{StaticResource RainbowChip}" Content="Status Pill"/>
+            <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Status Pill"/>
         </StackPanel>
 
         <!-- Progress Demonstrations -->

@@ -140,10 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Named Entity Recognition" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Relationship Mapping" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Knowledge Graphs" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Semantic Search" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Named Entity Recognition" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Relationship Mapping" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Knowledge Graphs" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Semantic Search" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

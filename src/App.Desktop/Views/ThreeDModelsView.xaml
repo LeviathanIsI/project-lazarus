@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing 3D models for viewing and editing"/>
                         
                         <Button Content="Generate Model"
-                                Style="{StaticResource RainbowButton}"
+                                Style="{StaticResource RainbowBorderButton}"
                                 AutomationProperties.Name="Generate new 3D model"
                                 AutomationProperties.HelpText="Create new 3D models using AI generation"/>
                     </StackPanel>
@@ -140,10 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Text-to-3D Generation" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Model Viewer" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Texture Mapping" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Animation Tools" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Text-to-3D Generation" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Model Viewer" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Texture Mapping" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Animation Tools" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

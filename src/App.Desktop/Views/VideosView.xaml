@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing videos for processing"/>
                         
                         <Button Content="Create Video"
-                                Style="{StaticResource RainbowButton}"
+                                Style="{StaticResource RainbowBorderButton}"
                                 AutomationProperties.Name="Create new video"
                                 AutomationProperties.HelpText="Generate new videos using AI models"/>
                     </StackPanel>
@@ -140,10 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="AI Video Generation" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Motion Analysis" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Auto Editing" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Frame Extraction" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="AI Video Generation" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Motion Analysis" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Auto Editing" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Frame Extraction" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

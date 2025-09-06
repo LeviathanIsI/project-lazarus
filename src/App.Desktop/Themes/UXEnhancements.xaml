@@ -792,4 +792,33 @@
         <Setter Property="AutomationProperties.HelpText" Value="This feature is not yet available. Coming soon in a future update."/>
     </Style>
 
+    <!-- Tab/active underline accent -->
+    <Style x:Key="RainbowUnderlineToggle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Margin="8,6" TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        <Rectangle x:Name="Underline" Height="2" VerticalAlignment="Bottom" Opacity="0">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                                    <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Underline" Property="Opacity" Value="1"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

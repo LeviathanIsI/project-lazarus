@@ -7,6 +7,123 @@
     <sys:Double x:Key="RainbowTextOutlineBlur">2.6</sys:Double>
     <sys:Double x:Key="RainbowTextOutlineOpacity">0.96</sys:Double>
 
+    <!-- Tokens -->
+    <SolidColorBrush x:Key="BtnBg"           Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="BtnBgHover"      Color="#222222"/>
+    <SolidColorBrush x:Key="BtnBgPressed"    Color="#141414"/>
+    <SolidColorBrush x:Key="BtnFg"           Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="BtnFgDisabled"   Color="#99FFFFFF"/>
+    <Thickness       x:Key="BtnPadding">14,8</Thickness>
+    <CornerRadius    x:Key="BtnRadius">8</CornerRadius>
+
+    <!-- Base dark button -->
+    <Style x:Key="SolidDarkButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource BtnFg}"/>
+        <Setter Property="Background" Value="{StaticResource BtnBg}"/>
+        <Setter Property="Padding"    Value="{StaticResource BtnPadding}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#303030"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Outer"
+                                CornerRadius="{StaticResource BtnRadius}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"/>
+
+                        <!-- Content -->
+                        <ContentPresenter
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            RecognizesAccessKey="True"
+                            TextElement.Foreground="{TemplateBinding Foreground}"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Outer" Property="Background" Value="{StaticResource BtnBgHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Outer" Property="Background" Value="{StaticResource BtnBgPressed}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource BtnFgDisabled}"/>
+                            <Setter TargetName="Outer" Property="Opacity" Value="0.75"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Rainbow accent as BORDER ONLY -->
+    <Style x:Key="RainbowBorderButton" TargetType="Button" BasedOn="{StaticResource SolidDarkButton}">
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <!-- reuse your RainbowGradient if you have it -->
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                    <GradientStop Color="#FFF59E0B" Offset="0.25"/>
+                    <GradientStop Color="#FF10B981" Offset="0.50"/>
+                    <GradientStop Color="#FF06B6D4" Offset="0.75"/>
+                    <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Optional: white  rainbow text only on hover (accent, not default) -->
+    <Style x:Key="RainbowHoverButton" TargetType="Button" BasedOn="{StaticResource SolidDarkButton}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground">
+                    <Setter.Value>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                            <GradientStop Color="#FFF59E0B" Offset="0.25"/>
+                            <GradientStop Color="#FF10B981" Offset="0.50"/>
+                            <GradientStop Color="#FF06B6D4" Offset="0.75"/>
+                            <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Icon/small round button variant -->
+    <Style x:Key="IconButton.Dark" TargetType="Button" BasedOn="{StaticResource SolidDarkButton}">
+        <Setter Property="Width"  Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                    <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Outer" CornerRadius="12"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Readable rainbow button -->
     <Style x:Key="RainbowButton" TargetType="Button">
         <Setter Property="Template">

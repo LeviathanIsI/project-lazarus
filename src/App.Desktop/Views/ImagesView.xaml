@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing images for processing"/>
                         
                         <Button Content="Generate New"
-                                Style="{StaticResource RainbowButton}"
+                                Style="{StaticResource RainbowBorderButton}"
                                 AutomationProperties.Name="Generate new image"
                                 AutomationProperties.HelpText="Create new images using AI generation"/>
                     </StackPanel>
@@ -140,10 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="AI Generation" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Image Analysis" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Style Transfer" Margin="4"/>
-                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Batch Processing" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="AI Generation" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Image Analysis" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Style Transfer" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowBorderChip}" Content="Batch Processing" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

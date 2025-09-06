@@ -229,7 +229,7 @@
                                                    VerticalAlignment="Center"/>
                                         
                                         <ContentControl Grid.Column="2"
-                                                        Style="{StaticResource RainbowChip}"
+                                                        Style="{StaticResource RainbowBorderChip}"
                                                         Content="Now"/>
                                     </Grid>
                                     
@@ -281,7 +281,7 @@
                         <!-- Send Button -->
                         <Button Grid.Column="1"
                                 x:Name="SendButton"
-                                Style="{StaticResource RainbowIconButton}"
+                                Style="{StaticResource IconButton.Dark}"
                                 IsDefault="True"
                                 AutomationProperties.Name="Send message"
                                 AutomationProperties.HelpText="Sends your message to the AI assistant">
