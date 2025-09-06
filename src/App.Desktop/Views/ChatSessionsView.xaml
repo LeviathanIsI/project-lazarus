@@ -190,8 +190,10 @@
                                       ItemTemplate="{StaticResource ChatMessageTemplate}"
                                       KeyboardNavigation.TabNavigation="Continue">
                             
-                            <!-- Sample User Message (Rainbow Bubble) -->
-                            <ContentControl Style="{StaticResource RainbowBubbleRight}"
+                            <!-- Sample User Message (Dark core + rainbow border) -->
+                            <ContentControl Style="{StaticResource RainbowBorderChip}"
+                                            HorizontalAlignment="Right"
+                                            Margin="40,0,0,16"
                                             AutomationProperties.Name="Your message: Can you explain how transformer architecture works?"
                                             Content="Can you explain how transformer architecture works?"/>
 
