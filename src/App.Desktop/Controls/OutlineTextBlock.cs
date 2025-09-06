@@ -14,9 +14,9 @@ public class OutlineTextBlock : FrameworkElement
             nameof(Text), typeof(string), typeof(OutlineTextBlock),
             new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
-    public static readonly DependencyProperty ForegroundProperty =
+    public static readonly DependencyProperty FillProperty =
         DependencyProperty.Register(
-            nameof(Foreground), typeof(Brush), typeof(OutlineTextBlock),
+            nameof(Fill), typeof(Brush), typeof(OutlineTextBlock),
             new FrameworkPropertyMetadata(Brushes.Black, FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty StrokeProperty =
@@ -27,38 +27,53 @@ public class OutlineTextBlock : FrameworkElement
     public static readonly DependencyProperty StrokeThicknessProperty =
         DependencyProperty.Register(
             nameof(StrokeThickness), typeof(double), typeof(OutlineTextBlock),
-            new FrameworkPropertyMetadata(1.4d, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(3.0d, FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty FontFamilyProperty =
-        TextElement.FontFamilyProperty.AddOwner(typeof(OutlineTextBlock), new FrameworkPropertyMetadata(SystemFonts.MessageFontFamily, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+        TextElement.FontFamilyProperty.AddOwner(
+            typeof(OutlineTextBlock),
+            new FrameworkPropertyMetadata(new FontFamily("Segoe UI"), FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty FontSizeProperty =
-        TextElement.FontSizeProperty.AddOwner(typeof(OutlineTextBlock), new FrameworkPropertyMetadata(SystemFonts.MessageFontSize, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+        TextElement.FontSizeProperty.AddOwner(
+            typeof(OutlineTextBlock),
+            new FrameworkPropertyMetadata(14.0d, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty FontWeightProperty =
-        TextElement.FontWeightProperty.AddOwner(typeof(OutlineTextBlock), new FrameworkPropertyMetadata(SystemFonts.MessageFontWeight, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+        TextElement.FontWeightProperty.AddOwner(
+            typeof(OutlineTextBlock),
+            new FrameworkPropertyMetadata(FontWeights.SemiBold, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty FontStyleProperty =
-        TextElement.FontStyleProperty.AddOwner(typeof(OutlineTextBlock), new FrameworkPropertyMetadata(SystemFonts.MessageFontStyle, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+        TextElement.FontStyleProperty.AddOwner(
+            typeof(OutlineTextBlock),
+            new FrameworkPropertyMetadata(FontStyles.Normal, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty FontStretchProperty =
-        TextElement.FontStretchProperty.AddOwner(typeof(OutlineTextBlock), new FrameworkPropertyMetadata(FontStretches.Normal, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+        TextElement.FontStretchProperty.AddOwner(
+            typeof(OutlineTextBlock),
+            new FrameworkPropertyMetadata(FontStretches.Normal, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+
+    public static readonly DependencyProperty TextAlignmentProperty =
+        DependencyProperty.Register(
+            nameof(TextAlignment), typeof(TextAlignment), typeof(OutlineTextBlock),
+            new FrameworkPropertyMetadata(TextAlignment.Center, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
     public static readonly DependencyProperty TextWrappingProperty =
         DependencyProperty.Register(
             nameof(TextWrapping), typeof(TextWrapping), typeof(OutlineTextBlock),
             new FrameworkPropertyMetadata(TextWrapping.NoWrap, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
 
-    public string? Text
+    public string Text
     {
-        get => (string?)GetValue(TextProperty);
+        get => (string)GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
 
-    public Brush Foreground
+    public Brush Fill
     {
-        get => (Brush)GetValue(ForegroundProperty);
-        set => SetValue(ForegroundProperty, value);
+        get => (Brush)GetValue(FillProperty);
+        set => SetValue(FillProperty, value);
     }
 
     public Brush Stroke
@@ -109,57 +124,42 @@ public class OutlineTextBlock : FrameworkElement
         set => SetValue(TextWrappingProperty, value);
     }
 
+    public TextAlignment TextAlignment
+    {
+        get => (TextAlignment)GetValue(TextAlignmentProperty);
+        set => SetValue(TextAlignmentProperty, value);
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var ft = CreateFormattedText();
-
-        if (TextWrapping == TextWrapping.Wrap && !double.IsInfinity(availableSize.Width))
-        {
-            ft.MaxTextWidth = Math.Max(0, availableSize.Width);
-        }
-
-        // Include stroke thickness margins to avoid clipping
-        var width = Math.Ceiling(ft.WidthIncludingTrailingWhitespace + StrokeThickness);
-        var height = Math.Ceiling(ft.Height + StrokeThickness);
-        return new Size(width, height);
+        return new Size(ft.WidthIncludingTrailingWhitespace, ft.Height);
     }
 
-    protected override void OnRender(DrawingContext drawingContext)
+    protected override void OnRender(DrawingContext dc)
     {
-        base.OnRender(drawingContext);
-        var text = Text ?? string.Empty;
-        if (string.IsNullOrEmpty(text)) return;
-
+        if (string.IsNullOrEmpty(Text)) return;
         var ft = CreateFormattedText();
-        if (TextWrapping == TextWrapping.Wrap)
+        var origin = new Point(0, 0);
+        var geo = ft.BuildGeometry(origin);
+
+        if (Stroke != null && StrokeThickness > 0)
         {
-            ft.MaxTextWidth = Math.Max(0, ActualWidth);
+            var pen = new Pen(Stroke, StrokeThickness) { LineJoin = PenLineJoin.Round };
+            dc.DrawGeometry(null, pen, geo);
         }
-
-        // Build geometry at origin; layout handles alignment externally
-        var geo = ft.BuildGeometry(new Point(0, 0));
-
-        // Draw stroke first for crisp edge, then fill
-        var pen = new Pen(Stroke, StrokeThickness)
-        {
-            LineJoin = PenLineJoin.Round,
-            MiterLimit = 2
-        };
-
-        drawingContext.DrawGeometry(null, pen, geo);
-        drawingContext.DrawGeometry(Foreground, null, geo);
+        if (Fill != null) dc.DrawGeometry(Fill, null, geo);
     }
 
     private FormattedText CreateFormattedText()
     {
-        var dpi = VisualTreeHelper.GetDpi(this);
-        return new FormattedText(
-            Text ?? string.Empty,
-            CultureInfo.CurrentUICulture,
-            FlowDirection,
-            new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-            FontSize,
-            Foreground,
-            dpi.PixelsPerDip);
+        var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        var tf = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+        var ft = new FormattedText(Text ?? string.Empty, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
+                                   tf, FontSize, Brushes.Black, dpi)
+        {
+            TextAlignment = this.TextAlignment
+        };
+        return ft;
     }
 }

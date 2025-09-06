@@ -10,19 +10,34 @@
                     <Grid>
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="16"/>
                         <Border Background="#33000000" CornerRadius="14" Margin="2"/>
+                        <!-- White feather band (center stronger, edges transparent) -->
+                        <Border CornerRadius="14" Margin="2" IsHitTestVisible="False">
+                            <Border.Background>
+                                <SolidColorBrush Color="White" Opacity="0.16"/>
+                            </Border.Background>
+                            <Border.OpacityMask>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00FFFFFF" Offset="0.00"/>
+                                    <GradientStop Color="#FFFFFFFF" Offset="0.20"/>
+                                    <GradientStop Color="#FFFFFFFF" Offset="0.80"/>
+                                    <GradientStop Color="#00FFFFFF" Offset="1.00"/>
+                                </LinearGradientBrush>
+                            </Border.OpacityMask>
+                        </Border>
                         <controls:OutlineTextBlock Margin="12,6"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
                                                    Text="{TemplateBinding Content}"
-                                                   Foreground="Black" FontWeight="SemiBold"
-                                                   Stroke="White" StrokeThickness="1.4"
-                                                   SnapsToDevicePixels="True"
-                                                   TextOptions.TextFormattingMode="Display"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   TextOptions.TextHintingMode="Fixed">
+                                                   Fill="Black"
+                                                   Stroke="White"
+                                                   StrokeThickness="{DynamicResource RainbowTextStroke}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontFamily="{TemplateBinding FontFamily}"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center">
                             <controls:OutlineTextBlock.Effect>
                                 <DropShadowEffect Color="White" ShadowDepth="0"
-                                                  BlurRadius="{DynamicResource RainbowTextOutlineBlur}"
-                                                  Opacity="{DynamicResource RainbowTextOutlineOpacity}"/>
+                                                  BlurRadius="{DynamicResource RainbowTextGlowBlur}"
+                                                  Opacity="{DynamicResource RainbowTextGlowOpacity}"/>
                             </controls:OutlineTextBlock.Effect>
                         </controls:OutlineTextBlock>
                     </Grid>
@@ -39,17 +54,36 @@
                     <Grid>
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="12"/>
                         <Border Background="#33000000" CornerRadius="10" Margin="2"/>
-                        <Grid Margin="10,4">
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="White" Margin="1,0,0,0"/>
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="White" Margin="0,1,0,0"/>
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="White" Margin="-1,0,0,0"/>
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="White" Margin="0,-1,0,0"/>
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="Black" FontWeight="Bold"
-                                       SnapsToDevicePixels="True"
-                                       TextOptions.TextFormattingMode="Display"
-                                       TextOptions.TextRenderingMode="ClearType"
-                                       TextOptions.TextHintingMode="Fixed"/>
-                        </Grid>
+                        <!-- White feather band (center stronger, edges transparent) -->
+                        <Border CornerRadius="10" Margin="2" IsHitTestVisible="False">
+                            <Border.Background>
+                                <SolidColorBrush Color="White" Opacity="0.16"/>
+                            </Border.Background>
+                            <Border.OpacityMask>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00FFFFFF" Offset="0.00"/>
+                                    <GradientStop Color="#FFFFFFFF" Offset="0.20"/>
+                                    <GradientStop Color="#FFFFFFFF" Offset="0.80"/>
+                                    <GradientStop Color="#00FFFFFF" Offset="1.00"/>
+                                </LinearGradientBrush>
+                            </Border.OpacityMask>
+                        </Border>
+                        <controls:OutlineTextBlock Margin="12,6"
+                                                   Text="{TemplateBinding Content}"
+                                                   Fill="Black"
+                                                   Stroke="White"
+                                                   StrokeThickness="{DynamicResource RainbowTextStroke}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontFamily="{TemplateBinding FontFamily}"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center">
+                            <controls:OutlineTextBlock.Effect>
+                                <DropShadowEffect Color="White" ShadowDepth="0"
+                                                  BlurRadius="{DynamicResource RainbowTextGlowBlur}"
+                                                  Opacity="{DynamicResource RainbowTextGlowOpacity}"/>
+                            </controls:OutlineTextBlock.Effect>
+                        </controls:OutlineTextBlock>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
