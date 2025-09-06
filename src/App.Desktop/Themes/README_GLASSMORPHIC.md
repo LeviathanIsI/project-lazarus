@@ -7,7 +7,7 @@ A comprehensive WPF design system implementing glassmorphic aesthetics with dark
 The Finexa Glassmorphic Design System provides a complete visual language for the Lazarus WPF application, featuring:
 
 - **Unified Dark Theme**: Near-black (#0A0A0F) background with glass-effect overlays
-- **Purple-Pink Gradient**: Primary gradient from #8B5CF6 to #EC4899
+- **Rainbow Spectrum Gradients**: Full-spectrum rainbow flows for accents
 - **Glass Morphism**: Semi-transparent cards with blur simulation and gradient borders
 - **Smooth Animations**: Hover, press, and entrance effects using native WPF Storyboards
 - **Typography Hierarchy**: Six levels from H1 (32px) to Small (12px) with Cascadia Code mono
@@ -28,8 +28,7 @@ src/App.Desktop/Themes/
 | Background | #0A0A0F | Main app background |
 | Card Background | #0A0A0F | Glass card base |
 | Card Overlay | #1A1A1A | Glass effect overlay (10% opacity) |
-| Primary Gradient Start | #8B5CF6 | Purple accent |
-| Primary Gradient End | #EC4899 | Pink accent |
+| Rainbow Spectrum | see RainbowGradients.xaml | Gradient accents |
 | Text Primary | #FFFFFF | Main text color |
 | Text Secondary | #A0A0A0 | Muted text |
 | Glass Border | #19FFFFFF | Semi-transparent borders |
@@ -269,8 +268,12 @@ src/App.Desktop/Themes/
 ## Implementation Guidelines
 
 ### 1. Resource Organization
-- Include both Glassmorphic.xaml and GlassmorphicControls.xaml in App.xaml
-- Load in correct order (base resources first)
+- Do not merge dictionaries in Views/Windows — rely on App.xaml
+- Load resources in App.xaml in this order:
+  1) `Themes/BaseResources.xaml`
+  2) `Resources/Themes/RainbowGradients.xaml`
+  3) `Themes/Glassmorphic.xaml`
+  4) `Themes/GlassmorphicControls.xaml`
 
 ### 2. Animation Best Practices
 - Always set RenderTransformOrigin="0.5,0.5" for scale animations
@@ -321,11 +324,18 @@ Replace existing style references in XAML:
 The design system works with existing ViewModels and data binding patterns. No changes required to business logic.
 
 ### Theme Switching
-To switch themes, update App.xaml resource dictionary references:
+To switch or reinitialize theme resources, ensure App.xaml has the full chain:
 ```xml
 <ResourceDictionary.MergedDictionaries>
+    <!-- Load in dependency order -->
+    <ResourceDictionary Source="Themes/BaseResources.xaml"/>
+    <ResourceDictionary Source="Resources/Themes/RainbowGradients.xaml"/>
     <ResourceDictionary Source="Themes/Glassmorphic.xaml"/>
     <ResourceDictionary Source="Themes/GlassmorphicControls.xaml"/>
+    <!-- Additional app-level resources -->
+    <ResourceDictionary Source="Resources/Icons/LazarusLogo.xaml"/>
+    <ResourceDictionary Source="Themes/UXEnhancements.xaml"/>
+    <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>
 </ResourceDictionary.MergedDictionaries>
 ```
 

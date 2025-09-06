@@ -141,11 +141,16 @@ AccessibilityHelper.ConfigureAccessibility(
 ## 🔧 Integration Instructions
 
 ### 1. Resource Dictionary Merge
-Already added to `App.xaml`:
+Already added to `App.xaml` (do not merge at view level):
 ```xml
 <ResourceDictionary.MergedDictionaries>
+    <!-- Load in dependency order -->
+    <ResourceDictionary Source="Themes/BaseResources.xaml"/>
+    <ResourceDictionary Source="Resources/Themes/RainbowGradients.xaml"/>
     <ResourceDictionary Source="Themes/Glassmorphic.xaml"/>
     <ResourceDictionary Source="Themes/GlassmorphicControls.xaml"/>
+    <!-- Additional app-level resources -->
+    <ResourceDictionary Source="Resources/Icons/LazarusLogo.xaml"/>
     <ResourceDictionary Source="Themes/UXEnhancements.xaml"/>
     <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>
 </ResourceDictionary.MergedDictionaries>
