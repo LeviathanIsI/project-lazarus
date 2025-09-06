@@ -140,22 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Text-to-3D Generation"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Model Viewer"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Texture Mapping"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Animation Tools"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Text-to-3D Generation" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Model Viewer" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Texture Mapping" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Animation Tools" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

@@ -140,22 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Speech Synthesis"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Music Generation"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Voice Cloning"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Audio Analysis"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Speech Synthesis" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Music Generation" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Voice Cloning" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Audio Analysis" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

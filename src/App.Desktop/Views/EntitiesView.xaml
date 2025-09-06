@@ -140,22 +140,10 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.Items>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Named Entity Recognition"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Relationship Mapping"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Knowledge Graphs"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
-                                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
-                                        <TextBlock Text="Semantic Search"
-                                                   Style="{StaticResource StatusPillTextStyle}"/>
-                                    </Border>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Named Entity Recognition" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Relationship Mapping" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Knowledge Graphs" Margin="4"/>
+                                    <ContentControl Style="{StaticResource RainbowChip}" Content="Semantic Search" Margin="4"/>
                                 </ItemsControl.Items>
                             </ItemsControl>
                         </StackPanel>

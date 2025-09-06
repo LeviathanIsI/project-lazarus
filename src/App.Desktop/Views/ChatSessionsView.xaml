@@ -190,26 +190,10 @@
                                       ItemTemplate="{StaticResource ChatMessageTemplate}"
                                       KeyboardNavigation.TabNavigation="Continue">
                             
-                            <!-- Sample User Message -->
-                            <ContentPresenter Content="{StaticResource UserMessageTemplate}">
-                                <ContentPresenter.ContentTemplate>
-                                    <DataTemplate>
-                                        <Border Style="{StaticResource InteractiveGlassCardStyle}"
-                                                Margin="40,0,0,16"
-                                                Padding="20"
-                                                HorizontalAlignment="Right"
-                                                Background="{StaticResource RainbowFlowBrush}"
-                                                BorderBrush="Transparent"
-                                                Focusable="True"
-                                                AutomationProperties.Name="Your message: Can you explain how transformer architecture works?"
-                                                >
-                                            <TextBlock Text="Can you explain how transformer architecture works?"
-                                                       Style="{StaticResource BodyTextStyle}"
-                                                       TextWrapping="Wrap"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ContentPresenter.ContentTemplate>
-                            </ContentPresenter>
+                            <!-- Sample User Message (Rainbow Bubble) -->
+                            <ContentControl Style="{StaticResource RainbowBubbleRight}"
+                                            AutomationProperties.Name="Your message: Can you explain how transformer architecture works?"
+                                            Content="Can you explain how transformer architecture works?"/>
 
                             <!-- Sample AI Response -->
                             <Border Style="{StaticResource InteractiveGlassCardStyle}"
@@ -244,11 +228,9 @@
                                                    FontWeight="SemiBold"
                                                    VerticalAlignment="Center"/>
                                         
-                                        <Border Grid.Column="2"
-                                                Style="{StaticResource RainbowStatusPillStyle}">
-                                            <TextBlock Text="Now"
-                                                       Style="{StaticResource StatusPillTextStyle}"/>
-                                        </Border>
+                                        <ContentControl Grid.Column="2"
+                                                        Style="{StaticResource RainbowChip}"
+                                                        Content="Now"/>
                                     </Grid>
                                     
                                     <TextBlock TextWrapping="Wrap"
@@ -299,15 +281,13 @@
                         <!-- Send Button -->
                         <Button Grid.Column="1"
                                 x:Name="SendButton"
-                                Style="{StaticResource AccessibleGlassButtonStyle}"
-                                Width="48" Height="48"
+                                Style="{StaticResource RainbowIconButton}"
                                 IsDefault="True"
                                 AutomationProperties.Name="Send message"
                                 AutomationProperties.HelpText="Sends your message to the AI assistant">
                             <Viewbox Width="20" Height="20">
                                 <Canvas Width="24" Height="24">
-                                    <Path Data="M2 21L23 12L2 3V10L17 12L2 14V21Z" 
-                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                    <Path Data="M2 21L23 12L2 3V10L17 12L2 14V21Z" Fill="White"/>
                                 </Canvas>
                             </Viewbox>
                         </Button>

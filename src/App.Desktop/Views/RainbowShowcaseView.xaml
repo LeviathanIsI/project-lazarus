@@ -75,9 +75,7 @@
             <Button Content="Rainbow Button" 
                     Style="{StaticResource RainbowBorderButtonStyle}"
                     Margin="0,0,16,0"/>
-            <Border Style="{StaticResource RainbowStatusPillStyle}">
-                <TextBlock Text="Status Pill" Style="{StaticResource StatusPillTextStyle}"/>
-            </Border>
+            <ContentControl Style="{StaticResource RainbowChip}" Content="Status Pill"/>
         </StackPanel>
 
         <!-- Progress Demonstrations -->
