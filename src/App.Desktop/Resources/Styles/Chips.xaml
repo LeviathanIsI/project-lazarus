@@ -3,26 +3,18 @@
 
     <!-- Rainbow chip/pill with scrim for text readability; reuses existing rainbow brushes -->
     <Style x:Key="RainbowChip" TargetType="ContentControl">
-        <Setter Property="Padding" Value="10,4"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContentControl">
                     <Grid>
-                        <!-- Rainbow base -->
-                        <Border Background="{StaticResource RainbowFlowBrush}"
-                                CornerRadius="12"/>
-
-                        <!-- Scrim for contrast (slightly tighter radius) -->
-                        <Border Background="#33000000"
-                                CornerRadius="10" Margin="1"/>
-
-                        <!-- Content -->
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          TextElement.Foreground="White"
-                                          TextElement.FontWeight="SemiBold"/>
+                        <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="16"/>
+                        <Border Background="#33000000" CornerRadius="14" Margin="2"/>
+                        <ContentPresenter Margin="12,6" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          TextElement.Foreground="White" TextElement.FontWeight="SemiBold">
+                            <ContentPresenter.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="1" Opacity="0.8"/>
+                            </ContentPresenter.Effect>
+                        </ContentPresenter>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -30,4 +22,3 @@
     </Style>
 
 </ResourceDictionary>
-

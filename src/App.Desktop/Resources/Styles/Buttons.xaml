@@ -1,34 +1,49 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Reusable rainbow gradient button with scrim for readability -->
+    <!-- Readable rainbow button -->
     <Style x:Key="RainbowButton" TargetType="Button">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid>
-                        <!-- Rainbow base (use existing gradient brush) -->
+                        <!-- Rainbow base -->
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="10"/>
-
-                        <!-- Semi-transparent scrim to improve text contrast -->
+                        <!-- Scrim for contrast -->
                         <Border Background="#33000000" CornerRadius="8" Margin="2"/>
-
                         <!-- Content -->
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           TextElement.Foreground="White"
                                           TextElement.FontWeight="SemiBold">
                             <ContentPresenter.Effect>
-                                <DropShadowEffect Color="Black"
-                                                  BlurRadius="3"
-                                                  ShadowDepth="1"
-                                                  Opacity="0.4"/>
+                                <DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
                             </ContentPresenter.Effect>
                         </ContentPresenter>
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <!-- keep default interaction behavior; template is visually stable -->
-                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Square icon button (send) -->
+    <Style x:Key="RainbowIconButton" TargetType="Button" BasedOn="{StaticResource RainbowButton}">
+        <Setter Property="Width" Value="44"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="10"/>
+                        <Border Background="#33000000" CornerRadius="8" Margin="2"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          TextElement.Foreground="White" TextElement.FontWeight="SemiBold">
+                            <ContentPresenter.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
+                            </ContentPresenter.Effect>
+                        </ContentPresenter>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
