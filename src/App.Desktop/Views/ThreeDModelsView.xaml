@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing 3D models for viewing and editing"/>
                         
                         <Button Content="Generate Model"
-                                Style="{StaticResource RainbowAccentButton}"
+                                Style="{StaticResource RainbowAccentButton.AutoFit}"
                                 AutomationProperties.Name="Generate new 3D model"
                                 AutomationProperties.HelpText="Create new 3D models using AI generation"/>
                     </StackPanel>

@@ -9,8 +9,8 @@
 
     <!-- Size tokens -->
     <CornerRadius    x:Key="BtnRadius">8</CornerRadius>
-    <Thickness       x:Key="BtnPad.Compact">10,6</Thickness>
-    <sys:Double      x:Key="BtnMinH.Compact">32</sys:Double>
+    <Thickness       x:Key="BtnPad.Compact">8,4</Thickness>
+    <sys:Double      x:Key="BtnMinH.Compact">28</sys:Double>
     <!-- Large (keep for the few places that really want tiles) -->
     <Thickness       x:Key="BtnPad.Large">16,10</Thickness>
     <sys:Double      x:Key="BtnMinH.Large">56</sys:Double>
