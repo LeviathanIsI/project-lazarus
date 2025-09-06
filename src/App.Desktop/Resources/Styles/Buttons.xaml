@@ -34,18 +34,14 @@
         </Setter>
     </Style>
 
-    <!-- Optional sample: tiny pill label outline (e.g., "NEW") -->
+    <!-- Optional tiny pill outline example (for reference in views) -->
     <DataTemplate x:Key="PillLabelOutlineSample">
         <Grid>
-            <!-- Outline (shadow) -->
-            <TextBlock Text="NEW"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       Margin="1,1,0,0"/>
-            <!-- Foreground label -->
-            <TextBlock Text="NEW"
-                       Foreground="White"
-                       FontWeight="Bold"/>
+            <TextBlock Text="New" Foreground="Black" Margin="1,0,0,0"/>
+            <TextBlock Text="New" Foreground="Black" Margin="0,1,0,0"/>
+            <TextBlock Text="New" Foreground="Black" Margin="-1,0,0,0"/>
+            <TextBlock Text="New" Foreground="Black" Margin="0,-1,0,0"/>
+            <TextBlock Text="New" Foreground="White" FontWeight="Bold"/>
         </Grid>
     </DataTemplate>
     
