@@ -156,7 +156,7 @@
                             
                             <!-- Action -->
                             <Button Content="Start New Chat"
-                                    Style="{StaticResource RainbowBorderButtonStyle}"
+                                    Style="{StaticResource RainbowAccentButton}"
                                     AutomationProperties.Name="Start new chat conversation"
                                     AutomationProperties.HelpText="Creates a new conversation to begin activity"/>
                         </StackPanel>
