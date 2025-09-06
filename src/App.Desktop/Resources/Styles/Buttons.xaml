@@ -22,7 +22,7 @@
                                 <DropShadowEffect Color="Black"
                                                   BlurRadius="3"
                                                   ShadowDepth="1"
-                                                  Opacity="0.8"/>
+                                                  Opacity="0.4"/>
                             </ContentPresenter.Effect>
                         </ContentPresenter>
                     </Grid>
