@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing audio files for processing"/>
                         
                         <Button Content="Generate Audio"
-                                Style="{StaticResource AccessibleGlassButtonStyle}"
+                                Style="{StaticResource RainbowButton}"
                                 AutomationProperties.Name="Generate new audio"
                                 AutomationProperties.HelpText="Create new audio using AI synthesis"/>
                     </StackPanel>

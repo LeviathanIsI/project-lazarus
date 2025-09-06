@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing images for processing"/>
                         
                         <Button Content="Generate New"
-                                Style="{StaticResource AccessibleGlassButtonStyle}"
+                                Style="{StaticResource RainbowButton}"
                                 AutomationProperties.Name="Generate new image"
                                 AutomationProperties.HelpText="Create new images using AI generation"/>
                     </StackPanel>
