@@ -384,9 +384,8 @@
 
     <!-- User Message Template (Right Aligned) -->
     <DataTemplate x:Key="UserMessageTemplate">
-        <ContentControl Style="{StaticResource RainbowBubbleRight}">
-            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
-        </ContentControl>
+        <ContentControl Style="{StaticResource RainbowBubbleRight}"
+                        Content="{Binding Content}"/>
     </DataTemplate>
 
     <!-- ====================
