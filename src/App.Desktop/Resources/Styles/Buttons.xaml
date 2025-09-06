@@ -10,7 +10,7 @@
                         <!-- Rainbow base -->
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="10"/>
                         <!-- Scrim for contrast -->
-                        <Border Background="#33000000" CornerRadius="8" Margin="2"/>
+                        <Border Background="#66000000" CornerRadius="8" Margin="2"/>
                         <!-- Content -->
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
@@ -36,7 +36,7 @@
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="10"/>
-                        <Border Background="#33000000" CornerRadius="8" Margin="2"/>
+                        <Border Background="#66000000" CornerRadius="8" Margin="2"/>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                           TextElement.Foreground="White" TextElement.FontWeight="SemiBold">
                             <ContentPresenter.Effect>

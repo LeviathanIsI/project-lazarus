@@ -38,7 +38,7 @@
                 <ControlTemplate TargetType="ContentControl">
                     <Grid Margin="40,0,0,16">
                         <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="12"/>
-                        <Border Background="#33000000" CornerRadius="10" Margin="2"/>
+                        <Border Background="#66000000" CornerRadius="10" Margin="2"/>
                         <ContentPresenter Margin="20"
                                           TextElement.Foreground="White"
                                           TextElement.FontWeight="Normal"/>
