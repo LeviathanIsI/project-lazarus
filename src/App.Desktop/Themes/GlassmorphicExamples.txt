@@ -383,7 +383,7 @@ Color resources:
 - {StaticResource BackgroundBrush} - Main app background
 - {StaticResource TextPrimaryBrush} - Primary text color
 - {StaticResource TextSecondaryBrush} - Secondary text color
-- {StaticResource PrimaryGradientBrush} - Purple to pink gradient
+- {StaticResource RainbowDiagonalFlowBrush} - Diagonal rainbow gradient
 - {StaticResource GlassCardBrush} - Semi-transparent card backgrounds
 - {StaticResource GlassBorderGradientBrush} - Gradient borders for glass effect
 -->

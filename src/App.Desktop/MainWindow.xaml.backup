@@ -506,7 +506,7 @@
                                     <Canvas Width="24" Height="24">
                                         <Ellipse Canvas.Left="2" Canvas.Top="2" 
                                                  Width="20" Height="20"
-                                                 Fill="{StaticResource PrimaryGradientBrush}"/>
+                                                 Fill="{StaticResource RainbowDiagonalFlowBrush}"/>
                                     </Canvas>
                                 </Viewbox>
                             </Button>

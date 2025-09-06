@@ -296,8 +296,8 @@ src/App.Desktop/Themes/
 - `{StaticResource GlassBorderBrush}` - Glass borders
 
 ### Gradient Brushes
-- `{StaticResource PrimaryGradientBrush}` - Diagonal gradient
-- `{StaticResource PrimaryGradientHorizontalBrush}` - Horizontal gradient
+- `{StaticResource RainbowDiagonalFlowBrush}` - Diagonal rainbow gradient
+- `{StaticResource RainbowFlowBrush}` - Horizontal rainbow gradient
 - `{StaticResource GlassCardBrush}` - Semi-transparent overlay
 - `{StaticResource GlassBorderGradientBrush}` - Border gradient
 
