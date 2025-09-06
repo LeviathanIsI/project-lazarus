@@ -1,0 +1,795 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <!-- No local merges; App.xaml provides base/theme resources globally -->
+
+    <!-- ====================
+         UX COPILOT ENHANCEMENTS
+         Accessibility, Loading States, Error Handling & Empty States
+         ==================== -->
+
+    <!-- ====================
+         ACCESSIBILITY COMPLIANT COLORS
+         ==================== -->
+
+    <!-- Enhanced contrast colors for WCAG 2.1 AA compliance -->
+    <Color x:Key="TextPrimaryHighContrastColor">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryHighContrastColor">#CCCCCC</Color>
+    <!-- REPLACED: FocusIndicatorColor with rainbow spectrum -->
+    <Color x:Key="FocusIndicatorColor">#FF0000</Color>
+    <Color x:Key="ErrorColor">#EF4444</Color>
+    <Color x:Key="SuccessColor">#10B981</Color>
+    <Color x:Key="WarningColor">#F59E0B</Color>
+    <Color x:Key="InfoColor">#3B82F6</Color>
+
+    <!-- Vibrant Rainbow Spectrum Colors for Accessibility Elements -->
+    <Color x:Key="RainbowRedColor">#FF0066</Color>
+    <Color x:Key="RainbowOrangeColor">#FF6600</Color>
+    <Color x:Key="RainbowYellowColor">#FFCC00</Color>
+    <Color x:Key="RainbowGreenColor">#00FF66</Color>
+    <Color x:Key="RainbowBlueColor">#0066FF</Color>
+    <Color x:Key="RainbowIndigoColor">#6600FF</Color>
+    <Color x:Key="RainbowVioletColor">#CC00FF</Color>
+
+    <!-- High contrast brushes -->
+    <SolidColorBrush x:Key="TextPrimaryHighContrastBrush" Color="{StaticResource TextPrimaryHighContrastColor}"/>
+    <SolidColorBrush x:Key="TextSecondaryHighContrastBrush" Color="{StaticResource TextSecondaryHighContrastColor}"/>
+    <SolidColorBrush x:Key="FocusIndicatorBrush" Color="{StaticResource FocusIndicatorColor}"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+
+    <!-- Vibrant Rainbow Brushes -->
+    <SolidColorBrush x:Key="RainbowRedBrush" Color="{StaticResource RainbowRedColor}"/>
+    <SolidColorBrush x:Key="RainbowOrangeBrush" Color="{StaticResource RainbowOrangeColor}"/>
+    <SolidColorBrush x:Key="RainbowYellowBrush" Color="{StaticResource RainbowYellowColor}"/>
+    <SolidColorBrush x:Key="RainbowGreenBrush" Color="{StaticResource RainbowGreenColor}"/>
+    <SolidColorBrush x:Key="RainbowBlueBrush" Color="{StaticResource RainbowBlueColor}"/>
+    <SolidColorBrush x:Key="RainbowIndigoBrush" Color="{StaticResource RainbowIndigoColor}"/>
+    <SolidColorBrush x:Key="RainbowVioletBrush" Color="{StaticResource RainbowVioletColor}"/>
+
+    <!-- Vibrant Rainbow Gradients -->
+    <LinearGradientBrush x:Key="VibrantRainbowGradientBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{StaticResource RainbowRedColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource RainbowOrangeColor}" Offset="0.166"/>
+        <GradientStop Color="{StaticResource RainbowYellowColor}" Offset="0.333"/>
+        <GradientStop Color="{StaticResource RainbowGreenColor}" Offset="0.5"/>
+        <GradientStop Color="{StaticResource RainbowBlueColor}" Offset="0.666"/>
+        <GradientStop Color="{StaticResource RainbowIndigoColor}" Offset="0.833"/>
+        <GradientStop Color="{StaticResource RainbowVioletColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="VibrantRainbowRadialBrush" RadiusX="1" RadiusY="1">
+        <GradientStop Color="{StaticResource RainbowRedColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource RainbowOrangeColor}" Offset="0.166"/>
+        <GradientStop Color="{StaticResource RainbowYellowColor}" Offset="0.333"/>
+        <GradientStop Color="{StaticResource RainbowGreenColor}" Offset="0.5"/>
+        <GradientStop Color="{StaticResource RainbowBlueColor}" Offset="0.666"/>
+        <GradientStop Color="{StaticResource RainbowIndigoColor}" Offset="0.833"/>
+        <GradientStop Color="{StaticResource RainbowVioletColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <!-- ====================
+         RAINBOW ANIMATION STORYBOARDS
+         ==================== -->
+
+    <!-- Rainbow Spectrum Animation for Focus Indicators -->
+    <Storyboard x:Key="RainbowFocusAnimationStoryboard" RepeatBehavior="Forever">
+        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                      Duration="0:0:4"
+                                      RepeatBehavior="Forever">
+            <LinearColorKeyFrame KeyTime="0:0:0" Value="{StaticResource RainbowRedColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:0.571" Value="{StaticResource RainbowOrangeColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:1.143" Value="{StaticResource RainbowYellowColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:1.714" Value="{StaticResource RainbowGreenColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:2.286" Value="{StaticResource RainbowBlueColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:2.857" Value="{StaticResource RainbowIndigoColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:3.429" Value="{StaticResource RainbowVioletColor}"/>
+            <LinearColorKeyFrame KeyTime="0:0:4" Value="{StaticResource RainbowRedColor}"/>
+        </ColorAnimationUsingKeyFrames>
+    </Storyboard>
+
+    <!-- Smooth Rainbow Gradient Shift Animation -->
+    <Storyboard x:Key="RainbowGradientShiftStoryboard" RepeatBehavior="Forever">
+        <DoubleAnimation Storyboard.TargetProperty="GradientOrigin.X"
+                         From="0" To="1" Duration="0:0:4"
+                         RepeatBehavior="Forever"
+                         AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="GradientOrigin.Y"
+                         From="0" To="1" Duration="0:0:3"
+                         RepeatBehavior="Forever"
+                         AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <!-- REMOVED: Rainbow Pulse Animation - NO OPACITY ANIMATIONS ALLOWED -->
+    <!-- Scale-only animation for focus states (no opacity/pulsing effects) -->
+    <Storyboard x:Key="RainbowPulseStoryboard" RepeatBehavior="Forever">
+        <!-- REMOVED: Opacity animation - Keep sharp, consistent colors -->
+        <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                         From="1.0" To="1.02" Duration="0:0:1.5"
+                         RepeatBehavior="Forever"
+                         AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                         From="1.0" To="1.02" Duration="0:0:1.5"
+                         RepeatBehavior="Forever"
+                         AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <!-- ====================
+         FOCUS INDICATOR STYLES
+         ==================== -->
+
+    <!-- Universal focus indicator style with rainbow enhancement -->
+    <Style x:Key="FocusIndicatorStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource VibrantRainbowGradientBrush}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Opacity" Value="0"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsFocused, RelativeSource={RelativeSource AncestorType=Control}}" Value="True">
+                <Setter Property="Opacity" Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard Storyboard="{StaticResource RainbowPulseStoryboard}" x:Name="FocusRainbowPulse"/>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="FocusRainbowPulse"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Enhanced accessible button style with focus indicators -->
+    <Style x:Key="AccessibleGlassButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryGlassButtonStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- Button Content -->
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Border.Effect>
+                                <DropShadowEffect Color="{StaticResource ShadowColor}" 
+                                                  ShadowDepth="4" 
+                                                  BlurRadius="16" 
+                                                  Opacity="0.2"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        
+                        <!-- Enhanced Rainbow Focus Indicator -->
+                        <Border x:Name="focusIndicator"
+                                BorderBrush="{StaticResource VibrantRainbowGradientBrush}"
+                                BorderThickness="3"
+                                CornerRadius="11"
+                                Opacity="0"
+                                IsHitTestVisible="False">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <Border.RenderTransformOrigin>0.5,0.5</Border.RenderTransformOrigin>
+                        </Border>
+                    </Grid>
+                    
+                    <ControlTemplate.Triggers>
+                        <!-- Enhanced Focus State with Rainbow Animation -->
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="focusIndicator" Property="Opacity" Value="1"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource RainbowPulseStoryboard}" x:Name="FocusRainbowAnimation"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="FocusRainbowAnimation"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        
+                        <!-- Enhanced Keyboard Focus with Rainbow Animation -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="focusIndicator" Property="Opacity" Value="1"/>
+                            <Setter TargetName="focusIndicator" Property="BorderThickness" Value="4"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource RainbowPulseStoryboard}" x:Name="KeyboardFocusRainbowAnimation"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="KeyboardFocusRainbowAnimation"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        
+                        <!-- Hover animations -->
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard Storyboard="{StaticResource HoverScaleUpStoryboard}"/>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard Storyboard="{StaticResource HoverScaleDownStoryboard}"/>
+                        </EventTrigger>
+                        
+                        <!-- Press animation -->
+                        <EventTrigger RoutedEvent="PreviewMouseLeftButtonDown">
+                            <BeginStoryboard Storyboard="{StaticResource PressScaleStoryboard}"/>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="PreviewMouseLeftButtonUp">
+                            <BeginStoryboard Storyboard="{StaticResource HoverScaleUpStoryboard}"/>
+                        </EventTrigger>
+                        
+                        <!-- Disabled state -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         EMPTY STATE COMPONENTS
+         ==================== -->
+
+    <!-- Empty state container style -->
+    <Style x:Key="EmptyStateContainerStyle" TargetType="StackPanel">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="Opacity" Value="0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TranslateTransform Y="20"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         To="1" Duration="0:0:0.4">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                         To="0" Duration="0:0:0.4">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Empty state header text style -->
+    <Style x:Key="EmptyStateHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource H2TextStyle}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,16,0,8"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryHighContrastBrush}"/>
+    </Style>
+
+    <!-- Empty state description text style -->
+    <Style x:Key="EmptyStateDescriptionStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextStyle}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="MaxWidth" Value="400"/>
+        <Setter Property="Margin" Value="0,0,0,24"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryHighContrastBrush}"/>
+        <Setter Property="LineHeight" Value="24"/>
+    </Style>
+
+    <!-- Empty state icon style -->
+    <Style x:Key="EmptyStateIconStyle" TargetType="Path">
+        <Setter Property="Fill" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Width" Value="64"/>
+        <Setter Property="Height" Value="64"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Opacity" Value="0.6"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+    </Style>
+
+    <!-- ====================
+         LOADING STATE COMPONENTS
+         ==================== -->
+
+    <!-- Enhanced loading spinner with better visibility -->
+    <Style x:Key="AccessibleLoadingSpinnerStyle" TargetType="Grid">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Width" Value="48"/>
+        <Setter Property="Height" Value="48"/>
+    </Style>
+
+    <!-- Enhanced Rainbow Loading spinner content template -->
+    <ControlTemplate x:Key="AccessibleLoadingSpinnerTemplate" TargetType="ContentControl">
+        <Grid>
+            <!-- Outer rainbow ring -->
+            <Ellipse Width="48" Height="48"
+                     Stroke="{StaticResource VibrantRainbowGradientBrush}"
+                     StrokeThickness="4"
+                     StrokeDashArray="12 8"
+                     Opacity="0.9">
+                <Ellipse.RenderTransform>
+                    <TransformGroup>
+                        <RotateTransform/>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </TransformGroup>
+                </Ellipse.RenderTransform>
+                <Ellipse.RenderTransformOrigin>0.5,0.5</Ellipse.RenderTransformOrigin>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(RotateTransform.Angle)"
+                                                 From="0" To="360"
+                                                 Duration="0:0:1.5"/>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                                                 From="1.0" To="1.1" Duration="0:0:1"
+                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                                                 From="1.0" To="1.1" Duration="0:0:1"
+                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            
+            <!-- Pulsating rainbow center dot -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{StaticResource VibrantRainbowRadialBrush}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center">
+                <Ellipse.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Ellipse.RenderTransform>
+                <Ellipse.RenderTransformOrigin>0.5,0.5</Ellipse.RenderTransformOrigin>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard Storyboard="{StaticResource RainbowPulseStoryboard}"/>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- Loading overlay style -->
+    <Style x:Key="LoadingOverlayStyle" TargetType="Grid">
+        <Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Color="{StaticResource BackgroundColor}" Opacity="0.8"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+
+    <!-- Skeleton loader style for content placeholders -->
+    <Style x:Key="SkeletonLoaderStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                    <GradientStop Color="#1A1A1A1A" Offset="0"/>
+                    <GradientStop Color="#33FFFFFF" Offset="0.5"/>
+                    <GradientStop Color="#1A1A1A1A" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Margin" Value="0,4"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TranslateTransform X="-200"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever">
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
+                                         From="-200" To="200"
+                                         Duration="0:0:1.5">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseInOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ====================
+         ERROR STATE COMPONENTS
+         ==================== -->
+
+    <!-- Enhanced Rainbow Error notification style -->
+    <Style x:Key="ErrorNotificationStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Color="{StaticResource ErrorColor}" Opacity="0.1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource RainbowRedBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="Margin" Value="0,8"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                         From="0.95" To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                         From="0.95" To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0" To="1" Duration="0:0:0.3"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Enhanced Rainbow Success notification style -->
+    <Style x:Key="SuccessNotificationStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Color="{StaticResource SuccessColor}" Opacity="0.1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource RainbowGreenBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="Margin" Value="0,8"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                         From="0.95" To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                         From="0.95" To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0" To="1" Duration="0:0:0.3"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- New Rainbow Accessibility Status notification style -->
+    <Style x:Key="RainbowAccessibilityNotificationStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" Opacity="0.1">
+                    <GradientStop Color="{StaticResource RainbowRedColor}" Offset="0"/>
+                    <GradientStop Color="{StaticResource RainbowVioletColor}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource VibrantRainbowGradientBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="20,16"/>
+        <Setter Property="Margin" Value="0,8"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                         From="0.9" To="1.0" Duration="0:0:0.5">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="2"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                         From="0.9" To="1.0" Duration="0:0:0.5">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="2"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0" To="1" Duration="0:0:0.4"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard Storyboard="{StaticResource RainbowPulseStoryboard}" x:Name="RainbowNotificationPulse"/>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <StopStoryboard BeginStoryboardName="RainbowNotificationPulse"/>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ====================
+         TOOLTIP ENHANCEMENTS
+         ==================== -->
+
+    <!-- Enhanced tooltip style with better contrast -->
+    <Style x:Key="AccessibleTooltipStyle" TargetType="ToolTip">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryHighContrastBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize_Body}"/>
+        <Setter Property="FontFamily" Value="{StaticResource SystemFont}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource ShadowColor}"
+                                              ShadowDepth="4"
+                                              BlurRadius="12"
+                                              Opacity="0.3"/>
+                        </Border.Effect>
+                        <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         FORM VALIDATION STYLES
+         ==================== -->
+
+    <!-- Validation error template -->
+    <ControlTemplate x:Key="ValidationErrorTemplate">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Original control with error indication -->
+            <Border Grid.Row="0"
+                    BorderBrush="{StaticResource ErrorBrush}"
+                    BorderThickness="2"
+                    CornerRadius="4">
+                <AdornedElementPlaceholder/>
+            </Border>
+            
+            <!-- Error message -->
+            <TextBlock Grid.Row="1"
+                       Text="{Binding [0].ErrorContent}"
+                       Foreground="{StaticResource ErrorBrush}"
+                       FontSize="{StaticResource FontSize_Small}"
+                       Margin="0,4,0,0"
+                       TextWrapping="Wrap"/>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- Enhanced TextBox with validation support -->
+    <Style x:Key="ValidatedGlassTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource GlassTextBoxStyle}">
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ====================
+         PROGRESS FEEDBACK ENHANCEMENTS
+         ==================== -->
+
+    <!-- Enhanced Rainbow Progress bar with text indicator -->
+    <Style x:Key="AccessibleProgressBarStyle" TargetType="ProgressBar" BasedOn="{StaticResource GlassProgressBarStyle}">
+        <Setter Property="Foreground" Value="{StaticResource VibrantRainbowGradientBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Rainbow enhanced progress text -->
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:P0}}"
+                                   Style="{StaticResource SmallTextStyle}"
+                                   Foreground="{StaticResource VibrantRainbowGradientBrush}"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,0,0,4"/>
+                        
+                        <!-- Enhanced rainbow progress bar -->
+                        <Border Grid.Row="1"
+                                Background="{StaticResource GlassCardBrush}"
+                                CornerRadius="6"
+                                Height="10">
+                            <Border x:Name="PART_Track"
+                                    Background="{StaticResource VibrantRainbowGradientBrush}"
+                                    CornerRadius="6"
+                                    HorizontalAlignment="Left">
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Border.RenderTransform>
+                                <Border.RenderTransformOrigin>0.5,0.5</Border.RenderTransformOrigin>
+                                <Border.Triggers>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                                 From="1.0" To="1.1" Duration="0:0:0.8"
+                                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <SineEase EasingMode="EaseInOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Border.Triggers>
+                            </Border>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         SCREEN READER SUPPORT
+         ==================== -->
+
+    <!-- Screen reader only text style (visually hidden but accessible) -->
+    <Style x:Key="ScreenReaderOnlyStyle" TargetType="TextBlock">
+        <Setter Property="Width" Value="1"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="-1"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Clip">
+            <Setter.Value>
+                <RectangleGeometry Rect="0,0,1,1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Opacity" Value="0"/>
+    </Style>
+
+    <!-- Live region for dynamic updates -->
+    <Style x:Key="LiveRegionStyle" TargetType="TextBlock" BasedOn="{StaticResource ScreenReaderOnlyStyle}">
+        <!-- AutomationProperties.LiveSetting should be set in code-behind or ViewModel -->
+    </Style>
+
+    <!-- ====================
+         COMING SOON NAVIGATION ENHANCEMENTS
+         ==================== -->
+
+    <!-- Enhanced tooltip for coming soon features -->
+    <Style x:Key="ComingSoonTooltipStyle" TargetType="ToolTip" BasedOn="{StaticResource AccessibleTooltipStyle}">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="{StaticResource BackgroundColor}" Offset="0"/>
+                    <GradientStop Color="#1A1A1A1A" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            Padding="12,8">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource ShadowColor}"
+                                              ShadowDepth="4"
+                                              BlurRadius="12"
+                                              Opacity="0.4"/>
+                        </Border.Effect>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Coming Soon icon -->
+                            <Ellipse Width="8" Height="8"
+                                     Fill="{StaticResource WarningBrush}"
+                                     Margin="0,0,8,0"
+                                     VerticalAlignment="Center"/>
+                            <!-- Tooltip text -->
+                            <ContentPresenter/>
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Navigation category separator style -->
+    <Style x:Key="NavCategorySeparatorStyle" TargetType="TextBlock" BasedOn="{StaticResource SmallTextStyle}">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Margin" Value="20,16,20,8"/>
+        <Setter Property="Opacity" Value="0.7"/>
+    </Style>
+
+    <!-- Disabled navigation item accessibility style -->
+    <Style x:Key="DisabledNavAccessibilityStyle" TargetType="Button" BasedOn="{StaticResource NavGlassButtonDisabledStyle}">
+        <Setter Property="AutomationProperties.HelpText" Value="This feature is not yet available. Coming soon in a future update."/>
+    </Style>
+
+</ResourceDictionary>

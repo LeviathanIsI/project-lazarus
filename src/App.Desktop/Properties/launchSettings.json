@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "App.Desktop": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "nativeDebugging": false
+    },
+    "App.Desktop (Production)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Production"
+      },
+      "nativeDebugging": false
+    }
+  }
+}

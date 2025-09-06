@@ -1,0 +1,551 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ====================
+         LAZARUS PHOENIX LOGO - PNG BITMAP RESOURCES
+         High-quality PNG integration with optimization
+         ==================== -->
+
+    <!-- Optimized BitmapImage Resources -->
+    <BitmapImage x:Key="LazarusPngLogo" 
+                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 CacheOption="OnLoad"
+                 CreateOptions="PreservePixelFormat,IgnoreColorProfile">
+        <BitmapImage.DecodePixelWidth>512</BitmapImage.DecodePixelWidth>
+        <BitmapImage.DecodePixelHeight>512</BitmapImage.DecodePixelHeight>
+    </BitmapImage>
+
+    <!-- Size-Optimized Variants -->
+    <BitmapImage x:Key="LazarusPngLogo24" 
+                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 CacheOption="OnLoad"
+                 CreateOptions="PreservePixelFormat,IgnoreColorProfile">
+        <BitmapImage.DecodePixelWidth>24</BitmapImage.DecodePixelWidth>
+        <BitmapImage.DecodePixelHeight>24</BitmapImage.DecodePixelHeight>
+    </BitmapImage>
+
+    <BitmapImage x:Key="LazarusPngLogo32" 
+                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 CacheOption="OnLoad"
+                 CreateOptions="PreservePixelFormat,IgnoreColorProfile">
+        <BitmapImage.DecodePixelWidth>32</BitmapImage.DecodePixelWidth>
+        <BitmapImage.DecodePixelHeight>32</BitmapImage.DecodePixelHeight>
+    </BitmapImage>
+
+    <BitmapImage x:Key="LazarusPngLogo48" 
+                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 CacheOption="OnLoad"
+                 CreateOptions="PreservePixelFormat,IgnoreColorProfile">
+        <BitmapImage.DecodePixelWidth>48</BitmapImage.DecodePixelWidth>
+        <BitmapImage.DecodePixelHeight>48</BitmapImage.DecodePixelHeight>
+    </BitmapImage>
+
+    <!-- ImageBrush Definitions for Flexible Application -->
+    <ImageBrush x:Key="LazarusLogoBrush" 
+                ImageSource="{StaticResource LazarusPngLogo}"
+                Stretch="Uniform"
+                TileMode="None"
+                AlignmentX="Center"
+                AlignmentY="Center"/>
+
+    <ImageBrush x:Key="LazarusLogoBrush24" 
+                ImageSource="{StaticResource LazarusPngLogo24}"
+                Stretch="Uniform"
+                TileMode="None"
+                AlignmentX="Center"
+                AlignmentY="Center"/>
+
+    <!-- ====================
+         LEGACY VECTOR GEOMETRY (Maintained for Compatibility)
+         ==================== -->
+
+    <!-- Phoenix Wing Geometry -->
+    <PathGeometry x:Key="PhoenixWingGeometry">
+        <PathFigure StartPoint="12,2">
+            <!-- Left Wing -->
+            <PolyBezierSegment Points="8,3 4,6 2,10 4,12 8,14 12,15"/>
+            <!-- Body Connection -->
+            <LineSegment Point="12,16"/>
+            <!-- Right Wing -->
+            <PolyBezierSegment Points="16,14 20,12 22,10 20,6 16,3 12,2"/>
+        </PathFigure>
+    </PathGeometry>
+
+    <!-- Phoenix Body Geometry -->
+    <PathGeometry x:Key="PhoenixBodyGeometry">
+        <PathFigure StartPoint="12,15">
+            <!-- Central body -->
+            <BezierSegment Point1="10,16" Point2="10,18" Point3="12,20"/>
+            <BezierSegment Point1="14,18" Point2="14,16" Point3="12,15"/>
+        </PathFigure>
+    </PathGeometry>
+
+    <!-- Phoenix Tail Geometry -->
+    <PathGeometry x:Key="PhoenixTailGeometry">
+        <PathFigure StartPoint="12,20">
+            <!-- Flowing tail feathers -->
+            <BezierSegment Point1="10,22" Point2="8,24" Point3="9,26"/>
+            <LineSegment Point="12,24"/>
+            <BezierSegment Point1="16,24" Point2="14,22" Point3="12,20"/>
+        </PathFigure>
+    </PathGeometry>
+
+    <!-- Circuit Trace Geometry -->
+    <PathGeometry x:Key="CircuitTraceGeometry">
+        <PathFigure StartPoint="12,20">
+            <!-- Main trace downward -->
+            <LineSegment Point="12,22"/>
+            <!-- Branch traces -->
+            <LineSegment Point="10,22"/>
+            <LineSegment Point="10,24"/>
+            <LineSegment Point="12,24"/>
+            <LineSegment Point="14,24"/>
+            <LineSegment Point="14,22"/>
+            <LineSegment Point="12,22"/>
+            <!-- Continue main trace -->
+            <LineSegment Point="12,26"/>
+            <!-- Sub-branches -->
+            <LineSegment Point="11,26"/>
+            <LineSegment Point="11,28"/>
+            <LineSegment Point="13,28"/>
+            <LineSegment Point="13,26"/>
+            <LineSegment Point="12,26"/>
+        </PathFigure>
+    </PathGeometry>
+
+    <!-- Circuit Node Geometry -->
+    <EllipseGeometry x:Key="CircuitNode1" Center="10,24" RadiusX="1" RadiusY="1"/>
+    <EllipseGeometry x:Key="CircuitNode2" Center="14,24" RadiusX="1" RadiusY="1"/>
+    <EllipseGeometry x:Key="CircuitNode3" Center="12,26" RadiusX="1" RadiusY="1"/>
+
+    <!-- ====================
+         PHOENIX GRADIENT DEFINITIONS
+         ==================== -->
+
+    <!-- REPLACED: Primary Phoenix Gradient with Rainbow Spectrum -->
+    <LinearGradientBrush x:Key="PhoenixPrimaryGradient" StartPoint="0.2,0" EndPoint="0.8,1">
+        <GradientStop Color="#FF0000" Offset="0"/>
+        <GradientStop Color="#FF8000" Offset="0.25"/>
+        <GradientStop Color="#FFFF00" Offset="0.5"/>
+        <GradientStop Color="#00FF00" Offset="0.75"/>
+        <GradientStop Color="#0080FF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- REPLACED: Phoenix Wing Gradient with Rainbow Radial -->
+    <RadialGradientBrush x:Key="PhoenixWingGradient" Center="0.5,0.3" RadiusX="0.8" RadiusY="0.8">
+        <GradientStop Color="#FF0000" Offset="0"/>
+        <GradientStop Color="#00FFFF" Offset="0.6"/>
+        <GradientStop Color="#8000FF" Offset="1"/>
+    </RadialGradientBrush>
+
+    <!-- REPLACED: Circuit Trace Gradient with Rainbow Vertical -->
+    <LinearGradientBrush x:Key="CircuitTraceGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FFFF00" Offset="0"/>
+        <GradientStop Color="#00FF00" Offset="0.7"/>
+        <GradientStop Color="#0080FF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- REPLACED: Circuit Node Glow with Rainbow Glow -->
+    <RadialGradientBrush x:Key="CircuitNodeGlow" Center="0.5,0.5" RadiusX="1" RadiusY="1">
+        <GradientStop Color="#FF00FF" Offset="0"/>
+        <GradientStop Color="#FF0000" Offset="0.5"/>
+        <GradientStop Color="#00000000" Offset="1"/>
+    </RadialGradientBrush>
+
+    <!-- ====================
+         COMPLETE PHOENIX LOGO STYLES
+         ==================== -->
+
+    <!-- Standard Phoenix Logo (32x32) - PNG Based -->
+    <DataTemplate x:Key="PhoenixLogoTemplate">
+        <Viewbox Width="32" Height="32" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+            <Viewbox.RenderTransform>
+                <TranslateTransform/>
+            </Viewbox.RenderTransform>
+            <Image Source="{StaticResource LazarusPngLogo32}"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Width="32" Height="32"
+                   Stretch="Uniform">
+                <Image.Effect>
+                    <DropShadowEffect Color="#FF0000" 
+                                      ShadowDepth="0" 
+                                      BlurRadius="4" 
+                                      Opacity="0.4"/>
+                </Image.Effect>
+            </Image>
+        </Viewbox>
+    </DataTemplate>
+
+    <!-- Compact Phoenix Logo (24x24) - PNG Based for Sidebar -->
+    <DataTemplate x:Key="PhoenixLogoCompactTemplate">
+        <Viewbox Width="24" Height="24" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+            <Viewbox.RenderTransform>
+                <TranslateTransform/>
+            </Viewbox.RenderTransform>
+            <Image Source="{StaticResource LazarusPngLogo24}"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Width="24" Height="24"
+                   Stretch="Uniform"
+                   Opacity="1.0">
+                <Image.Effect>
+                    <DropShadowEffect Color="#FF0000" 
+                                      ShadowDepth="0" 
+                                      BlurRadius="2" 
+                                      Opacity="0.3"/>
+                </Image.Effect>
+            </Image>
+        </Viewbox>
+    </DataTemplate>
+
+    <!-- Large Phoenix Logo (48x48) - PNG Based -->
+    <DataTemplate x:Key="PhoenixLogoLargeTemplate">
+        <Viewbox Width="48" Height="48" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+            <Viewbox.RenderTransform>
+                <TranslateTransform/>
+            </Viewbox.RenderTransform>
+            <Image Source="{StaticResource LazarusPngLogo48}"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Width="48" Height="48"
+                   Stretch="Uniform">
+                <Image.Effect>
+                    <DropShadowEffect Color="#FF0000" 
+                                      ShadowDepth="0" 
+                                      BlurRadius="6" 
+                                      Opacity="0.6"/>
+                </Image.Effect>
+            </Image>
+        </Viewbox>
+    </DataTemplate>
+
+    <!-- ====================
+         SOPHISTICATED BREATHING ANIMATIONS
+         ==================== -->
+
+    <!-- REMOVED: Core Breathing Animation - NO BREATHING/PULSING ALLOWED -->
+    <!-- <Storyboard x:Key="LogoBreathingAnimation" RepeatBehavior="Forever">
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                         From="1.0" To="1.02" Duration="0:0:2" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                         From="1.0" To="1.02" Duration="0:0:2" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         From="0.95" To="1.0" Duration="0:0:2" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard> -->
+
+    <!-- REMOVED: Agent Activity Pulse - NO BREATHING/PULSING ALLOWED -->
+    <!-- <Storyboard x:Key="LogoAgentActivityPulse" RepeatBehavior="Forever">
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                         From="1.0" To="1.04" Duration="0:0:0.8" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <ElasticEase EasingMode="EaseInOut" Oscillations="1" Springiness="3"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                         From="1.0" To="1.04" Duration="0:0:0.8" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <ElasticEase EasingMode="EaseInOut" Oscillations="1" Springiness="3"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(RotateTransform.Angle)"
+                         From="0" To="2" Duration="0:0:1.6" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <SineEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         From="0.9" To="1.0" Duration="0:0:0.8" AutoReverse="True">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseInOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard> -->
+
+    <!-- Enhanced Hover Glow Animation -->
+    <Storyboard x:Key="LogoHoverGlow">
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                         To="1.05" Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="5"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                         To="1.05" Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="5"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(RotateTransform.Angle)"
+                         To="5" Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <BackEase EasingMode="EaseOut" Amplitude="0.3"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <!-- REMOVED: Opacity animation - Keep sharp, consistent colors -->
+    </Storyboard>
+
+    <!-- Enhanced Hover Exit Animation -->
+    <Storyboard x:Key="LogoHoverExit">
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                         To="1.0" Duration="0:0:0.4">
+            <DoubleAnimation.EasingFunction>
+                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                         To="1.0" Duration="0:0:0.4">
+            <DoubleAnimation.EasingFunction>
+                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(RotateTransform.Angle)"
+                         To="0" Duration="0:0:0.4">
+            <DoubleAnimation.EasingFunction>
+                <BackEase EasingMode="EaseOut" Amplitude="0.2"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <!-- Enhanced Scale Animation (Thread-Safe Alternative) -->
+    <Storyboard x:Key="LogoGlowEnhancement">
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                         From="1.0" To="1.03" Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                         From="1.0" To="1.03" Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <!-- Scale Reset Animation (Thread-Safe Alternative) -->
+    <Storyboard x:Key="LogoGlowReset">
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                         To="1.0" Duration="0:0:0.4">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                         To="1.0" Duration="0:0:0.4">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <!-- ====================
+         ANIMATED PHOENIX LOGO STYLES
+         ==================== -->
+
+    <!-- Static Phoenix Logo - NO BREATHING/PULSING -->
+    <Style x:Key="BreathingPhoenixLogoStyle" TargetType="ContentControl">
+        <Setter Property="ContentTemplate" Value="{StaticResource PhoenixLogoTemplate}"/>
+        <Setter Property="Opacity" Value="1.0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <!-- REMOVED: Breathing animation - Keep static for sharp, consistent colors -->
+            
+            <!-- Enhanced hover interaction with glow -->
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard Storyboard="{StaticResource LogoHoverGlow}"/>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowEnhancement}"/>
+            </EventTrigger>
+            
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard Storyboard="{StaticResource LogoHoverExit}"/>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowReset}"/>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Static Agent Activity Phoenix Logo - NO BREATHING/PULSING -->
+    <Style x:Key="AgentActivityPhoenixLogoStyle" TargetType="ContentControl">
+        <Setter Property="ContentTemplate" Value="{StaticResource PhoenixLogoTemplate}"/>
+        <Setter Property="Opacity" Value="1.0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <!-- REMOVED: Default breathing animation - Keep static -->
+            <!-- REMOVED: Agent activity pulse - No pulsing allowed -->
+
+            <!-- Enhanced hover interaction -->
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard Storyboard="{StaticResource LogoHoverGlow}"/>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowEnhancement}"/>
+            </EventTrigger>
+            
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard Storyboard="{StaticResource LogoHoverExit}"/>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowReset}"/>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Static Sidebar Logo - NO BREATHING/PULSING -->
+    <Style x:Key="SidebarBreathingLogoStyle" TargetType="ContentControl">
+        <Setter Property="ContentTemplate" Value="{StaticResource PhoenixLogoCompactTemplate}"/>
+        <Setter Property="Opacity" Value="1.0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <!-- REMOVED: Breathing animation - Keep static -->
+            <!-- REMOVED: Agent activity indication - No pulsing -->
+
+            <!-- Hover enhancement for sidebar - NO OPACITY CHANGES -->
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <!-- REMOVED: Opacity change -->
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                         To="1.05" Duration="0:0:0.2">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                         To="1.05" Duration="0:0:0.2">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowEnhancement}"/>
+            </EventTrigger>
+            
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <!-- REMOVED: Opacity change -->
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                         To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="3"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                         To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="3"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowReset}"/>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Legacy Animated Phoenix Logo - Preserved for Compatibility -->
+    <Style x:Key="AnimatedPhoenixLogoStyle" TargetType="ContentControl" BasedOn="{StaticResource BreathingPhoenixLogoStyle}">
+        <!-- Inherits breathing animation behavior -->
+    </Style>
+
+    <!-- Static Sidebar Collapsed Logo Style - NO OPACITY CHANGES -->
+    <Style x:Key="SidebarCollapsedLogoStyle" TargetType="ContentControl" BasedOn="{StaticResource SidebarBreathingLogoStyle}">
+        <!-- Inherits static behavior -->
+        <Setter Property="Opacity" Value="1.0"/>
+        <Style.Triggers>
+            <!-- Override hover behavior for collapsed state - NO OPACITY CHANGES -->
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <!-- REMOVED: Opacity change -->
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                         To="1.08" Duration="0:0:0.2">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="5"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                         To="1.08" Duration="0:0:0.2">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="5"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowEnhancement}"/>
+            </EventTrigger>
+            
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <!-- REMOVED: Opacity change -->
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                         To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                         To="1.0" Duration="0:0:0.3">
+                            <DoubleAnimation.EasingFunction>
+                                <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+                <BeginStoryboard Storyboard="{StaticResource LogoGlowReset}"/>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Static Loading Phoenix Logo - NO BREATHING/PULSING -->
+    <Style x:Key="LoadingPhoenixLogoStyle" TargetType="ContentControl">
+        <Setter Property="ContentTemplate" Value="{StaticResource PhoenixLogoTemplate}"/>
+        <Setter Property="Opacity" Value="1.0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <!-- REMOVED: Default breathing animation - Keep static -->
+            <!-- REMOVED: Enhanced loading animation - No pulsing -->
+            <!-- REMOVED: Enhanced scale during loading - Keep consistent scale -->
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

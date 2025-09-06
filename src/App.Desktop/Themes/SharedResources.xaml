@@ -1,0 +1,18 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Shared Resources that need to be available everywhere -->
+    <!-- This file should be merged in every View/Window that needs these resources -->
+    
+    <ResourceDictionary.MergedDictionaries>
+        <!-- 1) Base fundamental resources (colors/brushes) -->
+        <ResourceDictionary Source="BaseResources.xaml"/>
+        <!-- 2) Rainbow gradients and animations (no theme dependencies) -->
+        <ResourceDictionary Source="../Resources/Themes/RainbowGradients.xaml"/>
+        <!-- 3) Glassmorphic theme (depends on base + gradients) -->
+        <ResourceDictionary Source="Glassmorphic.xaml"/>
+        <!-- 4) Controls (depends on all above) -->
+        <ResourceDictionary Source="GlassmorphicControls.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+    
+</ResourceDictionary>

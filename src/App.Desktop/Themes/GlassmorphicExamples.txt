@@ -1,0 +1,389 @@
+<!-- 
+====================
+FINEXA GLASSMORPHIC DESIGN SYSTEM
+Usage Examples and Implementation Guide
+====================
+
+This file demonstrates how to implement the glassmorphic design system throughout the application.
+Copy these patterns into your XAML views for consistent theming.
+
+WINDOW EXAMPLE:
+Apply glassmorphic window style to your main window:
+<Window x:Class="Lazarus.Desktop.MainWindow"
+        Style="{StaticResource GlassmorphicWindowStyle}"
+        Title="Lazarus" 
+        Height="800" 
+        Width="1200">
+    
+    <!-- Main content with glassmorphic background -->
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <!-- Your content here -->
+    </Grid>
+    
+</Window>
+
+<!-- ====================
+     LAYOUT EXAMPLES
+     ==================== -->
+
+<!-- Main application layout with glass cards -->
+<Grid>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="250"/>
+        <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    
+    <!-- Sidebar with navigation -->
+    <Border Grid.Column="0" 
+            Style="{StaticResource GlassCardStyle}"
+            Margin="16,16,8,16"
+            Padding="8">
+        
+        <StackPanel>
+            <!-- Navigation header -->
+            <TextBlock Text="Navigation" 
+                       Style="{StaticResource H2TextStyle}"
+                       Margin="16,16,16,24"/>
+            
+            <!-- Navigation buttons -->
+            <Button Content="Chat" 
+                    Style="{StaticResource NavGlassButtonStyle}"
+                    Tag="Selected"/>
+            <Button Content="Models" 
+                    Style="{StaticResource NavGlassButtonStyle}"/>
+            <Button Content="Settings" 
+                    Style="{StaticResource NavGlassButtonStyle}"/>
+        </StackPanel>
+        
+    </Border>
+    
+    <!-- Main content area -->
+    <Border Grid.Column="1"
+            Style="{StaticResource GlassCardStyle}"
+            Margin="8,16,16,16"
+            Padding="24">
+        
+        <!-- Content goes here -->
+        
+    </Border>
+    
+</Grid>
+
+<!-- ====================
+     CHAT INTERFACE EXAMPLE
+     ==================== -->
+
+<Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    
+    <!-- Chat header -->
+    <Border Grid.Row="0" 
+            Style="{StaticResource GlassCardStyle}"
+            Margin="0,0,0,16"
+            Padding="20">
+        
+        <Grid>
+            <TextBlock Text="Chat with AI Assistant" 
+                       Style="{StaticResource H2TextStyle}"/>
+            
+            <Border HorizontalAlignment="Right"
+                    Style="{StaticResource SuccessStatusPillStyle}">
+                <TextBlock Text="Online" 
+                           Style="{StaticResource StatusPillTextStyle}"/>
+            </Border>
+        </Grid>
+        
+    </Border>
+    
+    <!-- Chat messages -->
+    <ScrollViewer Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        
+        <ListBox ItemsSource="{Binding Messages}"
+                 Style="{StaticResource GlassListBoxStyle}"
+                 ItemContainerStyle="{StaticResource GlassListBoxItemStyle}"
+                 ItemTemplate="{StaticResource ChatMessageTemplate}"/>
+        
+    </ScrollViewer>
+    
+    <!-- Message input -->
+    <Border Grid.Row="2"
+            Style="{StaticResource GlassCardStyle}"
+            Margin="0,16,0,0"
+            Padding="20">
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBox Grid.Column="0"
+                     Style="{StaticResource GlassTextBoxStyle}"
+                     Text="{Binding CurrentMessage}"
+                     Margin="0,0,12,0"/>
+            
+            <Button Grid.Column="1"
+                    Style="{StaticResource PrimaryGlassButtonStyle}"
+                    Content="Send"
+                    Command="{Binding SendMessageCommand}"/>
+        </Grid>
+        
+    </Border>
+    
+</Grid>
+
+<!-- ====================
+     MODEL SELECTION EXAMPLE
+     ==================== -->
+
+<Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    
+    <!-- Header -->
+    <TextBlock Grid.Row="0"
+               Text="Select Model" 
+               Style="{StaticResource H1TextStyle}"
+               Margin="0,0,0,24"/>
+    
+    <!-- Model list -->
+    <ListBox Grid.Row="1"
+             ItemsSource="{Binding AvailableModels}"
+             Style="{StaticResource GlassListBoxStyle}"
+             ItemContainerStyle="{StaticResource GlassListBoxItemStyle}"
+             ItemTemplate="{StaticResource ModelCardTemplate}"/>
+    
+    <!-- Actions -->
+    <StackPanel Grid.Row="2" 
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Margin="0,24,0,0">
+        
+        <Button Content="Refresh" 
+                Style="{StaticResource SecondaryGlassButtonStyle}"
+                Margin="0,0,12,0"/>
+        
+        <Button Content="Load Selected" 
+                Style="{StaticResource PrimaryGlassButtonStyle}"
+                Command="{Binding LoadModelCommand}"/>
+        
+    </StackPanel>
+    
+</Grid>
+
+<!-- ====================
+     SETTINGS FORM EXAMPLE
+     ==================== -->
+
+<StackPanel Spacing="24">
+    
+    <!-- Settings header -->
+    <TextBlock Text="Settings" 
+               Style="{StaticResource H1TextStyle}"/>
+    
+    <!-- Setting groups in glass cards -->
+    <Border Style="{StaticResource GlassCardStyle}" 
+            Padding="24">
+        
+        <StackPanel>
+            <TextBlock Text="Model Configuration" 
+                       Style="{StaticResource H3TextStyle}"
+                       Margin="0,0,0,16"/>
+            
+            <!-- Temperature setting -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Temperature" 
+                               Style="{StaticResource BodyTextStyle}"/>
+                    <TextBlock Text="Controls randomness in responses" 
+                               Style="{StaticResource SmallTextStyle}"/>
+                </StackPanel>
+                
+                <Slider Grid.Column="1"
+                        Style="{StaticResource GlassSliderStyle}"
+                        Value="{Binding Temperature}"
+                        Minimum="0" 
+                        Maximum="2"
+                        TickFrequency="0.1"/>
+            </Grid>
+            
+            <!-- Max tokens setting -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Max Tokens" 
+                               Style="{StaticResource BodyTextStyle}"/>
+                    <TextBlock Text="Maximum length of responses" 
+                               Style="{StaticResource SmallTextStyle}"/>
+                </StackPanel>
+                
+                <TextBox Grid.Column="1"
+                         Style="{StaticResource GlassTextBoxStyle}"
+                         Text="{Binding MaxTokens}"/>
+            </Grid>
+            
+        </StackPanel>
+        
+    </Border>
+    
+    <!-- Feature toggles -->
+    <Border Style="{StaticResource GlassCardStyle}" 
+            Padding="24">
+        
+        <StackPanel>
+            <TextBlock Text="Features" 
+                       Style="{StaticResource H3TextStyle}"
+                       Margin="0,0,0,16"/>
+            
+            <StackPanel Orientation="Horizontal" 
+                        Margin="0,0,0,12">
+                <ToggleButton Style="{StaticResource GlassToggleButtonStyle}"
+                              IsChecked="{Binding EnableStreamingMode}"
+                              Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Streaming Mode" 
+                               Style="{StaticResource BodyTextStyle}"/>
+                    <TextBlock Text="Show responses as they generate" 
+                               Style="{StaticResource SmallTextStyle}"/>
+                </StackPanel>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton Style="{StaticResource GlassToggleButtonStyle}"
+                              IsChecked="{Binding EnableVoiceInput}"
+                              Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Voice Input" 
+                               Style="{StaticResource BodyTextStyle}"/>
+                    <TextBlock Text="Enable speech-to-text input" 
+                               Style="{StaticResource SmallTextStyle}"/>
+                </StackPanel>
+            </StackPanel>
+            
+        </StackPanel>
+        
+    </Border>
+    
+</StackPanel>
+
+<!-- ====================
+     LOADING STATES EXAMPLE
+     ==================== -->
+
+<!-- Loading overlay -->
+<Grid Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+    <Border Background="#80000000"/>
+    
+    <Border Style="{StaticResource GlassCardStyle}"
+            Padding="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        
+        <StackPanel HorizontalAlignment="Center">
+            <ContentControl Template="{StaticResource LoadingSpinnerTemplate}"
+                            Margin="0,0,0,16"/>
+            
+            <TextBlock Text="Loading model..." 
+                       Style="{StaticResource BodyTextStyle}"
+                       HorizontalAlignment="Center"/>
+            
+            <ProgressBar Style="{StaticResource GlassProgressBarStyle}"
+                         Value="{Binding LoadingProgress}"
+                         Width="200"
+                         Margin="0,16,0,0"/>
+        </StackPanel>
+        
+    </Border>
+    
+</Grid>
+
+<!-- ====================
+     STATUS INDICATORS EXAMPLE
+     ==================== -->
+
+<StackPanel Orientation="Horizontal">
+    
+    <!-- Status pills for different states -->
+    <Border Style="{StaticResource SuccessStatusPillStyle}" 
+            Margin="0,0,8,0">
+        <TextBlock Text="Connected" 
+                   Style="{StaticResource StatusPillTextStyle}"/>
+    </Border>
+    
+    <Border Style="{StaticResource WarningStatusPillStyle}" 
+            Margin="0,0,8,0">
+        <TextBlock Text="Limited" 
+                   Style="{StaticResource StatusPillTextStyle}"/>
+    </Border>
+    
+    <Border Style="{StaticResource ErrorStatusPillStyle}">
+        <TextBlock Text="Offline" 
+                   Style="{StaticResource StatusPillTextStyle}"/>
+    </Border>
+    
+</StackPanel>
+
+<!-- ====================
+     UTILITY CLASSES
+     ==================== -->
+
+<!-- 
+Typography usage:
+- {StaticResource H1TextStyle} - Main page headers (32px bold)
+- {StaticResource H2TextStyle} - Section headers (24px semibold)  
+- {StaticResource H3TextStyle} - Subsection headers (18px medium)
+- {StaticResource BodyTextStyle} - Regular text (14px normal)
+- {StaticResource SecondaryTextStyle} - Muted text (14px normal, gray)
+- {StaticResource SmallTextStyle} - Small text (12px normal, gray)
+- {StaticResource MonoTextStyle} - Code text (13px Cascadia Code)
+-->
+
+<!-- 
+Button styles:
+- {StaticResource PrimaryGlassButtonStyle} - Main actions
+- {StaticResource SecondaryGlassButtonStyle} - Secondary actions
+- {StaticResource IconGlassButtonStyle} - Icon-only buttons
+- {StaticResource NavGlassButtonStyle} - Navigation buttons
+-->
+
+<!-- 
+Card styles:
+- {StaticResource GlassCardStyle} - Static glass cards
+- {StaticResource InteractiveGlassCardStyle} - Clickable cards with hover effects
+-->
+
+<!-- 
+Status styles:
+- {StaticResource SuccessStatusPillStyle} - Green success states
+- {StaticResource WarningStatusPillStyle} - Yellow warning states
+- {StaticResource ErrorStatusPillStyle} - Red error states
+- {StaticResource PrimaryStatusPillStyle} - Purple primary states
+-->
+
+<!-- 
+Color resources:
+- {StaticResource BackgroundBrush} - Main app background
+- {StaticResource TextPrimaryBrush} - Primary text color
+- {StaticResource TextSecondaryBrush} - Secondary text color
+- {StaticResource PrimaryGradientBrush} - Purple to pink gradient
+- {StaticResource GlassCardBrush} - Semi-transparent card backgrounds
+- {StaticResource GlassBorderGradientBrush} - Gradient borders for glass effect
+-->

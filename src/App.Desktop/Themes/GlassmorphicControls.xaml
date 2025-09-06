@@ -1,0 +1,887 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Uses app-level merged resources (SharedResources in App.xaml) -->
+
+    <!-- ====================
+         SPECIALIZED CONTROL TEMPLATES
+         Glassmorphic Chat, Navigation, and UI Controls
+         ==================== -->
+
+
+    <!-- ====================
+         LISTBOX GLASS STYLES
+         ==================== -->
+
+    <!-- Glass ListBox Style -->
+    <Style x:Key="GlassListBoxStyle" TargetType="ListBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="12">
+                        <ScrollViewer Focusable="false"
+                                      Padding="{TemplateBinding Padding}">
+                            <ItemsPresenter/>
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Glass ListBox Item Style -->
+    <Style x:Key="GlassListBoxItemStyle" TargetType="ListBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="12"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <TranslateTransform/>
+                        </Border.RenderTransform>
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="border"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     From="0" To="1" Duration="0:0:0.4">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="border"
+                                                     Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                                     From="20" To="0" Duration="0:0:0.4">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         NAVIGATION STYLES
+         ==================== -->
+
+    <!-- SecondaryGlassButtonStyle now lives in BaseResources.xaml -->
+
+    <!-- ====================
+         RAINBOW THEME STYLES (depends on Glassmorphic + RainbowGradients)
+         ==================== -->
+
+    <!-- Rainbow Text Styles -->
+    <Style x:Key="RainbowTextStyle" TargetType="TextBlock" BasedOn="{StaticResource H2TextStyle}">
+        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{StaticResource RainbowPurple}"
+                                  ShadowDepth="0"
+                                  BlurRadius="12"
+                                  Opacity="0.3"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AnimatedRainbowTextStyle" TargetType="TextBlock" BasedOn="{StaticResource RainbowTextStyle}">
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+    </Style>
+
+    <!-- Rainbow Border Button -->
+    <Style x:Key="RainbowBorderButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryGlassButtonStyle}">
+        <Setter Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.02" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.02" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource RainbowFlowBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Rainbow Status Pill (no pulsing) -->
+    <Style x:Key="RainbowStatusPillStyle" TargetType="Border" BasedOn="{StaticResource StatusPillBaseStyle}">
+        <Setter Property="Background" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Opacity" Value="1.0"/>
+    </Style>
+
+    <!-- Rainbow Status Dot -->
+    <Style x:Key="RainbowStatusDotStyle" TargetType="Ellipse">
+        <Setter Property="Fill" Value="{StaticResource RainbowRadialBrush}"/>
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="Opacity" Value="1.0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever">
+                        <DoubleAnimation Storyboard.TargetProperty="(Ellipse.Fill).(RadialGradientBrush.Transform).(RotateTransform.Angle)"
+                                         From="0" To="360" Duration="0:0:10"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+    <!-- Navigation Button Style -->
+    <Style x:Key="NavGlassButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontFamily" Value="{StaticResource SystemFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize_Body}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Padding" Value="16,0"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Margin="8,2">
+                        <Grid>
+                            <Border x:Name="selectedIndicator" 
+                                    Width="3" 
+                                    Background="{StaticResource RainbowVerticalFlowBrush}"
+                                    HorizontalAlignment="Left"
+                                    Margin="-8,0,0,0"
+                                    CornerRadius="2"
+                                    Visibility="Collapsed"/>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.02" Duration="0:0:0.2">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.02" Duration="0:0:0.2">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.0" Duration="0:0:0.2">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.0" Duration="0:0:0.2">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource GlassCardBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        </Trigger>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="Selected">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource GlassCardBrush}"/>
+                            <Setter TargetName="selectedIndicator" Property="Visibility" Value="Visible"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Disabled Navigation Button Style - Coming Soon Features -->
+    <Style x:Key="NavGlassButtonDisabledStyle" TargetType="Button" BasedOn="{StaticResource NavGlassButtonStyle}">
+        <Setter Property="Opacity" Value="0.4"/>
+        <Setter Property="Cursor" Value="Arrow"/>
+        <Setter Property="IsEnabled" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Margin="8,2">
+                        <Grid>
+                            <!-- Coming Soon indicator -->
+                            <Border x:Name="comingSoonIndicator" 
+                                    Width="6" 
+                                    Height="6"
+                                    Background="{StaticResource RainbowFlowBrush}"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Margin="0,8,12,0"
+                                    CornerRadius="3"
+                                    Opacity="0.6"/>
+                            
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Subtle hover indication for disabled items -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource GlassBorderColor}" Opacity="0.1"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="comingSoonIndicator" Property="Opacity" Value="0.8"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         CHAT MESSAGE TEMPLATES
+         ==================== -->
+
+    <!-- Chat Message Data Template -->
+    <DataTemplate x:Key="ChatMessageTemplate">
+        <Border Style="{StaticResource GlassCardStyle}"
+                Margin="0,0,0,16"
+                Padding="20"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
+            <Border.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard Storyboard="{StaticResource FadeInStoryboard}"/>
+                </EventTrigger>
+            </Border.Triggers>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Message Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0" 
+                               Text="{Binding RoleName}"
+                               Style="{StaticResource H3TextStyle}"/>
+                    
+                    <Border Grid.Column="1"
+                            Style="{StaticResource RainbowStatusPillStyle}">
+                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                </Grid>
+                
+                <!-- Message Content -->
+                <TextBlock Grid.Row="1"
+                           Text="{Binding Content}"
+                           Style="{StaticResource BodyTextStyle}"
+                           TextWrapping="Wrap"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- User Message Template (Right Aligned) -->
+    <DataTemplate x:Key="UserMessageTemplate">
+        <Border Style="{StaticResource GlassCardStyle}"
+                Margin="40,0,0,16"
+                Padding="20"
+                HorizontalAlignment="Right"
+                Background="{StaticResource RainbowFlowBrush}"
+                BorderBrush="Transparent"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
+            <Border.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard Storyboard="{StaticResource FadeInStoryboard}"/>
+                </EventTrigger>
+            </Border.Triggers>
+            <TextBlock Text="{Binding Content}"
+                       Style="{StaticResource BodyTextStyle}"
+                       TextWrapping="Wrap"/>
+        </Border>
+    </DataTemplate>
+
+    <!-- ====================
+         MODEL SELECTION TEMPLATES
+         ==================== -->
+
+    <!-- Model Card Template -->
+    <DataTemplate x:Key="ModelCardTemplate">
+        <Border Style="{StaticResource InteractiveGlassCardStyle}"
+                Padding="20"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Model Name and Status -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding Name}"
+                               Style="{StaticResource H3TextStyle}"/>
+                    
+                    <Border Grid.Column="1"
+                            Style="{StaticResource SuccessStatusPillStyle}">
+                        <TextBlock Text="{Binding Status}"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                </Grid>
+                
+                <!-- Model Description -->
+                <TextBlock Grid.Row="1"
+                           Text="{Binding Description}"
+                           Style="{StaticResource SecondaryTextStyle}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,12"/>
+                
+                <!-- Model Details -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Border Style="{StaticResource WarningStatusPillStyle}" Margin="0,0,8,0">
+                        <TextBlock Text="{Binding Size}"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                    <Border Style="{StaticResource RainbowStatusPillStyle}">
+                        <TextBlock Text="{Binding Type}"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- ====================
+         PROGRESS AND LOADING CONTROLS
+         ==================== -->
+
+    <!-- Enhanced Glass Progress Bar Style with Rainbow Option -->
+    <Style x:Key="GlassProgressBarStyle" TargetType="ProgressBar">
+        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Height" Value="8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="4">
+                        <Rectangle Name="PART_Track" 
+                                   Fill="{TemplateBinding Foreground}"
+                                   RadiusX="4" 
+                                   RadiusY="4"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Rainbow Progress Bar Style (depends on gradients + GlassProgressBarStyle) -->
+    <Style x:Key="RainbowProgressBarStyle" TargetType="ProgressBar" BasedOn="{StaticResource GlassProgressBarStyle}">
+        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            BorderBrush="{StaticResource RainbowFlowBrush}"
+                            BorderThickness="1">
+                        <Rectangle Name="PART_Track" 
+                                   Fill="{TemplateBinding Foreground}"
+                                   RadiusX="6" 
+                                   RadiusY="6"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Rainbow Navigation Button Style (depends on NavGlassButtonStyle) -->
+    <Style x:Key="RainbowNavButtonStyle" TargetType="Button" BasedOn="{StaticResource NavGlassButtonStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Margin="8,2"
+                            BorderBrush="Transparent"
+                            BorderThickness="1">
+                        <Grid>
+                            <Border x:Name="selectedIndicator" 
+                                    Width="4" 
+                                    Background="{StaticResource RainbowVerticalFlowBrush}"
+                                    HorizontalAlignment="Left"
+                                    Margin="-8,0,0,0"
+                                    CornerRadius="2"
+                                    Visibility="Collapsed"/>
+                            <Border x:Name="rainbowBorder"
+                                    Background="Transparent"
+                                    BorderBrush="{StaticResource RainbowFlowBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Opacity="0"/>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="rainbowBorder"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.02" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.02" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="rainbowBorder"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0.0" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource GlassCardBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        </Trigger>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="Selected">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource GlassCardBrush}"/>
+                            <Setter TargetName="selectedIndicator" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="rainbowBorder" Property="Opacity" Value="0.6"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="selectedIndicator"
+                                                         Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.Transform).(TranslateTransform.Y)"
+                                                         From="0" To="-1" Duration="0:0:6"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- FINEXA Rainbow Glass Progress Bar Style -->
+    <Style x:Key="RainbowGlassProgressBarStyle" TargetType="ProgressBar" BasedOn="{StaticResource GlassProgressBarStyle}">
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            BorderBrush="{StaticResource RainbowFlowBrush}"
+                            BorderThickness="1">
+                        <Rectangle Name="PART_Track" 
+                                   RadiusX="6" 
+                                   RadiusY="6"
+                                   Fill="{StaticResource RainbowFlowBrush}">
+                            <Rectangle.RenderTransform>
+                                <ScaleTransform ScaleY="1"/>
+                            </Rectangle.RenderTransform>
+                            <Rectangle.RenderTransformOrigin>0.5,0.5</Rectangle.RenderTransformOrigin>
+                            <Rectangle.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                             From="1.0" To="1.15" Duration="0:0:1.5"
+                                                             RepeatBehavior="Forever" AutoReverse="True">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <SineEase EasingMode="EaseInOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Rectangle.Triggers>
+                        </Rectangle>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Loading Spinner Template -->
+    <ControlTemplate x:Key="LoadingSpinnerTemplate">
+        <Grid>
+            <Ellipse Width="32" Height="32"
+                     Stroke="{StaticResource RainbowDiagonalFlowBrush}"
+                     StrokeThickness="3"
+                     StrokeDashArray="12 8"
+                     Opacity="0.8">
+                <Ellipse.RenderTransform>
+                    <RotateTransform/>
+                </Ellipse.RenderTransform>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+                                                 From="0" To="360"
+                                                 Duration="0:0:1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- FINEXA Rainbow Loading Spinner Template -->
+    <ControlTemplate x:Key="RainbowLoadingSpinnerTemplate">
+        <Grid>
+            <!-- Primary rainbow ring -->
+            <Ellipse Width="36" Height="36"
+                     StrokeThickness="4"
+                     StrokeDashArray="15 5"
+                     Opacity="0.95"
+                     Stroke="{StaticResource RainbowDiagonalFlowBrush}">
+                <Ellipse.RenderTransform>
+                    <TransformGroup>
+                        <RotateTransform/>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </TransformGroup>
+                </Ellipse.RenderTransform>
+                <Ellipse.RenderTransformOrigin>0.5,0.5</Ellipse.RenderTransformOrigin>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(RotateTransform.Angle)"
+                                                 From="0" To="360"
+                                                 Duration="0:0:1.8"/>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                                                 From="1.0" To="1.15" Duration="0:0:1.5"
+                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                                                 From="1.0" To="1.15" Duration="0:0:1.5"
+                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            
+            <!-- Inner pulsating dot -->
+            <Ellipse Width="8" Height="8"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Fill="{StaticResource RainbowRadialBrush}">
+                <Ellipse.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Ellipse.RenderTransform>
+                <Ellipse.RenderTransformOrigin>0.5,0.5</Ellipse.RenderTransformOrigin>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                 From="0.8" To="1.2" Duration="0:0:1"
+                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                 From="0.8" To="1.2" Duration="0:0:1"
+                                                 RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- ====================
+         SLIDER CONTROLS
+         ==================== -->
+
+    <!-- Glass Slider Style -->
+    <Style x:Key="GlassSliderStyle" TargetType="Slider">
+        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Track -->
+                        <Border Grid.Row="1"
+                                x:Name="TrackBackground"
+                                Background="{TemplateBinding Background}"
+                                Height="6"
+                                CornerRadius="3"
+                                VerticalAlignment="Center">
+                            <Rectangle x:Name="PART_SelectionRange"
+                                       Fill="{TemplateBinding Foreground}"
+                                       RadiusX="3"
+                                       RadiusY="3"
+                                       Visibility="Hidden"/>
+                        </Border>
+                        
+                        <!-- Thumb -->
+                        <Track Grid.Row="1" x:Name="PART_Track">
+                            <Track.Thumb>
+                                <Thumb x:Name="Thumb">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Ellipse Fill="{StaticResource RainbowRadialBrush}"
+                                                     Width="16" Height="16"
+                                                     RenderTransformOrigin="0.5,0.5">
+                                                <Ellipse.RenderTransform>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Ellipse.RenderTransform>
+                                                <Ellipse.Effect>
+                                                    <DropShadowEffect Color="{StaticResource ShadowColor}"
+                                                                      ShadowDepth="2"
+                                                                      BlurRadius="8"
+                                                                      Opacity="0.3"/>
+                                                </Ellipse.Effect>
+                                                <Ellipse.Triggers>
+                                                    <EventTrigger RoutedEvent="MouseEnter">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                                                 To="1.2" Duration="0:0:0.15"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                                                 To="1.2" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                    <EventTrigger RoutedEvent="MouseLeave">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                                                 To="1.0" Duration="0:0:0.15"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                                                 To="1.0" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </Ellipse.Triggers>
+                                            </Ellipse>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         TOGGLE BUTTON STYLES
+         ==================== -->
+
+    <!-- Glass Toggle Button Style -->
+    <Style x:Key="GlassToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontFamily" Value="{StaticResource SystemFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize_Body}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.02" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.02" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.0" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource RainbowFlowBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

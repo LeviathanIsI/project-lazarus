@@ -1,0 +1,391 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ====================
+         EMPTY STATE TEMPLATES
+         Comprehensive empty states for all major application areas
+         ==================== -->
+
+    <!-- ====================
+         CHAT EMPTY STATES
+         ==================== -->
+
+    <!-- No conversations empty state -->
+    <DataTemplate x:Key="NoConversationsEmptyState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Icon -->
+            <Viewbox Width="80" Height="80" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M21 11.5C21 16.75 16.75 21 11.5 21C6.25 21 2 16.75 2 11.5C2 6.25 6.25 2 11.5 2M11.5 2C16.75 2 21 6.25 21 11.5V13C21 14.5 19.5 16 18 16C16.5 16 15 14.5 15 13V11.5"
+                          Style="{StaticResource EmptyStateIconStyle}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="Start Your First Conversation"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       AutomationProperties.HeadingLevel="Level2"/>
+            
+            <!-- Description -->
+            <TextBlock Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="Empty state description">
+                <TextBlock.Text>Ready to begin? Start a conversation with your AI assistant. Ask questions, explore ideas, or get help with your projects.</TextBlock.Text>
+            </TextBlock>
+            
+            <!-- Actions -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Start New Chat"
+                        Style="{StaticResource AccessibleGlassButtonStyle}"
+                        Margin="0,0,12,0"
+                        AutomationProperties.Name="Start new chat conversation"
+                        AutomationProperties.HelpText="Creates a new conversation with the AI assistant"/>
+                
+                <Button Content="Browse Examples"
+                        Style="{StaticResource SecondaryGlassButtonStyle}"
+                        AutomationProperties.Name="Browse example conversations"
+                        AutomationProperties.HelpText="View sample conversations to get started"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- No messages in conversation -->
+    <DataTemplate x:Key="NoMessagesEmptyState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Icon -->
+            <Viewbox Width="64" Height="64" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M8 12H16M8 16H16M6 20H18C19.1 20 20 19.1 20 18V6C20 4.9 19.1 4 18 4H6C4.9 4 4 4.9 4 6V18C4 19.1 4.9 20 6 20Z"
+                          Style="{StaticResource EmptyStateIconStyle}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="Ready to Chat"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       AutomationProperties.HeadingLevel="Level3"/>
+            
+            <!-- Description -->
+            <TextBlock Text="Type your message below to start the conversation"
+                       Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="Chat ready message"/>
+            
+            <!-- Suggested prompts -->
+            <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Items>
+                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
+                        <TextBlock Text="Explain a concept"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
+                        <TextBlock Text="Help with coding"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                    <Border Style="{StaticResource PrimaryStatusPillStyle}" Margin="4">
+                        <TextBlock Text="Creative writing"
+                                   Style="{StaticResource StatusPillTextStyle}"/>
+                    </Border>
+                </ItemsControl.Items>
+            </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ====================
+         MODEL MANAGEMENT EMPTY STATES
+         ==================== -->
+
+    <!-- No models available -->
+    <DataTemplate x:Key="NoModelsEmptyState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Icon -->
+            <Viewbox Width="80" Height="80" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M9 3V18H12V3H9M12 18H15V3H12M5 3V18H8V5H5"
+                          Style="{StaticResource EmptyStateIconStyle}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="No Models Available"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       AutomationProperties.HeadingLevel="Level2"/>
+            
+            <!-- Description -->
+            <TextBlock Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="No models description">
+                <TextBlock.Text>You need to load at least one language model to start conversations. Browse our model library or add your own.</TextBlock.Text>
+            </TextBlock>
+            
+            <!-- Actions -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Browse Models"
+                        Style="{StaticResource AccessibleGlassButtonStyle}"
+                        Margin="0,0,12,0"
+                        AutomationProperties.Name="Browse available models"
+                        AutomationProperties.HelpText="Opens the model browser to select and download models"/>
+                
+                <Button Content="Load Local Model"
+                        Style="{StaticResource SecondaryGlassButtonStyle}"
+                        AutomationProperties.Name="Load local model file"
+                        AutomationProperties.HelpText="Import a model file from your computer"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Model loading state -->
+    <DataTemplate x:Key="ModelLoadingState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Loading spinner -->
+            <Grid Style="{StaticResource AccessibleLoadingSpinnerStyle}" Margin="0,0,0,24"/>
+            
+            <!-- Status text -->
+            <TextBlock Text="Loading Model..."
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       AutomationProperties.HeadingLevel="Level3"
+                       AutomationProperties.LiveSetting="Polite"/>
+            
+            <!-- Progress description -->
+            <TextBlock Text="This may take a few moments depending on the model size"
+                       Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="Loading progress information"/>
+                       
+            <!-- Progress bar -->
+            <ProgressBar Style="{StaticResource AccessibleProgressBarStyle}"
+                         Width="300"
+                         Height="8"
+                         Margin="0,16,0,0"
+                         IsIndeterminate="True"
+                         AutomationProperties.Name="Model loading progress"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ====================
+         SEARCH AND FILTER EMPTY STATES
+         ==================== -->
+
+    <!-- No search results -->
+    <DataTemplate x:Key="NoSearchResultsEmptyState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Icon -->
+            <Viewbox Width="64" Height="64" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M21 21L16.514 16.506M18.485 10.485C18.485 15.133 14.618 19 9.97 19S1.455 15.133 1.455 10.485 5.322 1.97 9.97 1.97s8.515 3.867 8.515 8.515Z"
+                          Style="{StaticResource EmptyStateIconStyle}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="No Results Found"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       AutomationProperties.HeadingLevel="Level3"/>
+            
+            <!-- Description -->
+            <TextBlock Text="Try adjusting your search terms or filters"
+                       Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="No search results message"/>
+            
+            <!-- Actions -->
+            <Button Content="Clear Search"
+                    Style="{StaticResource SecondaryGlassButtonStyle}"
+                    AutomationProperties.Name="Clear current search"
+                    AutomationProperties.HelpText="Removes all search filters and shows all items"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ====================
+         TRAINING DATA EMPTY STATES
+         ==================== -->
+
+    <!-- No training data -->
+    <DataTemplate x:Key="NoTrainingDataEmptyState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Icon -->
+            <Viewbox Width="80" Height="80" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M12 2L2 9L12 16L22 9L12 2ZM12 7L17 10.5L12 14L7 10.5L12 7ZM2 17L12 24L22 17L20 15.8L12 20.7L4 15.8L2 17Z"
+                          Style="{StaticResource EmptyStateIconStyle}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="No Training Data"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       AutomationProperties.HeadingLevel="Level2"/>
+            
+            <!-- Description -->
+            <TextBlock Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="No training data description">
+                <TextBlock.Text>Upload training datasets to fine-tune models for your specific use cases. Supported formats include JSON, CSV, and text files.</TextBlock.Text>
+            </TextBlock>
+            
+            <!-- Actions -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Upload Dataset"
+                        Style="{StaticResource AccessibleGlassButtonStyle}"
+                        Margin="0,0,12,0"
+                        AutomationProperties.Name="Upload training dataset"
+                        AutomationProperties.HelpText="Select files from your computer to upload as training data"/>
+                
+                <Button Content="Learn More"
+                        Style="{StaticResource SecondaryGlassButtonStyle}"
+                        AutomationProperties.Name="Learn about training"
+                        AutomationProperties.HelpText="View documentation about model fine-tuning"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ====================
+         ERROR STATES
+         ==================== -->
+
+    <!-- Connection error -->
+    <DataTemplate x:Key="ConnectionErrorState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Error icon -->
+            <Viewbox Width="64" Height="64" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zM11 7v6h2V7h-2zm0 8v2h2v-2h-2z"
+                          Fill="{StaticResource ErrorBrush}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="Connection Error"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       Foreground="{StaticResource ErrorBrush}"
+                       AutomationProperties.HeadingLevel="Level3"/>
+            
+            <!-- Description -->
+            <TextBlock Text="Unable to connect to the model service. Please check your connection and try again."
+                       Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="Connection error message"
+                       AutomationProperties.LiveSetting="Assertive"/>
+            
+            <!-- Actions -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Retry"
+                        Style="{StaticResource AccessibleGlassButtonStyle}"
+                        Margin="0,0,12,0"
+                        AutomationProperties.Name="Retry connection"
+                        AutomationProperties.HelpText="Attempts to reconnect to the model service"/>
+                
+                <Button Content="Settings"
+                        Style="{StaticResource SecondaryGlassButtonStyle}"
+                        AutomationProperties.Name="Open connection settings"
+                        AutomationProperties.HelpText="Configure connection parameters"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ====================
+         SUCCESS STATES
+         ==================== -->
+
+    <!-- Operation completed -->
+    <DataTemplate x:Key="OperationCompletedState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Success icon -->
+            <Viewbox Width="64" Height="64" Margin="0,0,0,16">
+                <Canvas Width="24" Height="24">
+                    <Path Data="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1.177-7.86l-2.765-2.767L7 12.431l3.119 3.121L18 7.672l-1.177-1.058-5.647 6.526z"
+                          Fill="{StaticResource SuccessBrush}"/>
+                </Canvas>
+            </Viewbox>
+            
+            <!-- Header -->
+            <TextBlock Text="Operation Completed"
+                       Style="{StaticResource EmptyStateHeaderStyle}"
+                       Foreground="{StaticResource SuccessBrush}"
+                       AutomationProperties.HeadingLevel="Level3"
+                       AutomationProperties.LiveSetting="Polite"/>
+            
+            <!-- Description -->
+            <TextBlock Text="The operation completed successfully"
+                       Style="{StaticResource EmptyStateDescriptionStyle}"
+                       AutomationProperties.Name="Success message"/>
+            
+            <!-- Actions -->
+            <Button Content="Continue"
+                    Style="{StaticResource AccessibleGlassButtonStyle}"
+                    AutomationProperties.Name="Continue to next step"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ====================
+         ONBOARDING STATES
+         ==================== -->
+
+    <!-- Welcome state for first-time users -->
+    <DataTemplate x:Key="WelcomeState">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
+            <!-- Lazarus Phoenix Logo for Welcome -->
+            <ContentControl Width="96" 
+                            Height="96" 
+                            Margin="0,0,0,24"
+                            ContentTemplate="{StaticResource PhoenixLogoLargeTemplate}"/>
+            
+            <!-- Header -->
+            <TextBlock Text="Welcome to Lazarus"
+                       Style="{StaticResource H1TextStyle}"
+                       HorizontalAlignment="Center"
+                       AutomationProperties.HeadingLevel="Level1"/>
+            
+            <!-- Subtitle -->
+            <TextBlock Text="Your AI-Powered Assistant Platform"
+                       Style="{StaticResource H3TextStyle}"
+                       HorizontalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryHighContrastBrush}"
+                       Margin="0,8,0,24"/>
+            
+            <!-- Features list -->
+            <StackPanel MaxWidth="500" Margin="0,0,0,32">
+                <Grid Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{StaticResource SuccessBrush}" Margin="0,6,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Multiple AI model support"
+                               Style="{StaticResource BodyTextStyle}"/>
+                </Grid>
+                <Grid Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{StaticResource SuccessBrush}" Margin="0,6,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Conversation management"
+                               Style="{StaticResource BodyTextStyle}"/>
+                </Grid>
+                <Grid Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{StaticResource SuccessBrush}" Margin="0,6,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Model fine-tuning capabilities"
+                               Style="{StaticResource BodyTextStyle}"/>
+                </Grid>
+            </StackPanel>
+            
+            <!-- Action buttons -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Get Started"
+                        Style="{StaticResource AccessibleGlassButtonStyle}"
+                        Margin="0,0,16,0"
+                        AutomationProperties.Name="Begin setup wizard"
+                        AutomationProperties.HelpText="Starts the initial setup process"/>
+                
+                <Button Content="Import Models"
+                        Style="{StaticResource SecondaryGlassButtonStyle}"
+                        AutomationProperties.Name="Import existing models"
+                        AutomationProperties.HelpText="Load models you already have"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+</ResourceDictionary>
