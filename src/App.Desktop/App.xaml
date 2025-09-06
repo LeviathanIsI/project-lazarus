@@ -13,8 +13,9 @@
                 <!-- Rest of resources -->
                 <ResourceDictionary Source="Resources/Icons/LazarusLogo.xaml"/>
                 <ResourceDictionary Source="Themes/UXEnhancements.xaml"/>
-                <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>                
+                <ResourceDictionary Source="Resources/Styles/Buttons.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

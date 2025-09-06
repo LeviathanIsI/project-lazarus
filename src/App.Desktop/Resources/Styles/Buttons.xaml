@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Readability improvements for rainbow gradient buttons without duplicating usage keys. -->
+
+    <!-- Override RainbowBorderButtonStyle to enforce high-contrast text. -->
+    <Style x:Key="RainbowBorderButtonStyle" TargetType="Button" BasedOn="{StaticResource RainbowBorderButtonStyle}">
+        <!-- Stronger, crisper text on vibrant gradients -->
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Animated"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="#80FFFFFF"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Override RainbowNavButtonStyle for consistent readability on selection/hover. -->
+    <Style x:Key="RainbowNavButtonStyle" TargetType="Button" BasedOn="{StaticResource RainbowNavButtonStyle}">
+        <!-- Default nav text inherits; improve contrast on interaction states -->
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="Selected">
+                <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="#80FFFFFF"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>
+
