@@ -14,14 +14,15 @@
     <SolidColorBrush x:Key="BtnFg"           Color="#FFFFFFFF"/>
     <SolidColorBrush x:Key="BtnFgDisabled"   Color="#99FFFFFF"/>
     <Thickness       x:Key="BtnPadding">14,8</Thickness>
-    <CornerRadius    x:Key="BtnRadius">8</CornerRadius>
+    <CornerRadius    x:Key="BtnRadius">10</CornerRadius>
+    <Thickness       x:Key="BtnPad">16,10</Thickness>
 
     <!-- Base dark button -->
     <Style x:Key="SolidDarkButton" TargetType="Button">
         <Setter Property="Foreground" Value="{StaticResource BtnFg}"/>
         <Setter Property="Background" Value="{StaticResource BtnBg}"/>
         <Setter Property="Padding"    Value="{StaticResource BtnPadding}"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="BorderBrush" Value="#303030"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
@@ -34,11 +35,15 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"/>
 
-                        <!-- Content -->
-                        <ContentPresenter
+                        <!-- Text-aware label: wraps, trims, caps at 2 lines -->
+                        <TextBlock
                             HorizontalAlignment="Center" VerticalAlignment="Center"
-                            RecognizesAccessKey="True"
-                            TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            Margin="{TemplateBinding Padding}"
+                            Text="{TemplateBinding Content}"
+                            Foreground="{TemplateBinding Foreground}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"
+                            TextTrimming="CharacterEllipsis"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -75,8 +80,121 @@
         </Setter>
     </Style>
 
-    <!-- Alias: migrate targets to unified accent name -->
-    <Style x:Key="RainbowAccentButton" TargetType="Button" BasedOn="{StaticResource RainbowBorderButton}"/>
+    <!-- FLAT dark + rainbow border (text-friendly) -->
+    <Style x:Key="RainbowAccentButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource BtnFg}"/>
+        <Setter Property="Background" Value="{StaticResource BtnBg}"/>
+        <Setter Property="Padding"    Value="{StaticResource BtnPad}"/>
+        <Setter Property="MinHeight"  Value="56"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- rainbow border -->
+                        <Border CornerRadius="{StaticResource BtnRadius}" BorderThickness="2">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                                    <GradientStop Color="#FFF59E0B" Offset="0.25"/>
+                                    <GradientStop Color="#FF10B981" Offset="0.50"/>
+                                    <GradientStop Color="#FF06B6D4" Offset="0.75"/>
+                                    <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                        </Border>
+
+                        <!-- flat inner fill -->
+                        <Border x:Name="Fill"
+                                CornerRadius="{StaticResource BtnRadius}"
+                                Margin="1"
+                                Background="{TemplateBinding Background}"/>
+
+                        <!-- TEXT-AWARE label (centers, wraps, ellipses) -->
+                        <TextBlock
+                            Margin="{TemplateBinding Padding}"
+                            Text="{TemplateBinding Content}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"
+                            TextTrimming="CharacterEllipsis"
+                            FontWeight="SemiBold"
+                            Foreground="{TemplateBinding Foreground}"
+                            TextOptions.TextRenderingMode="ClearType"
+                            TextOptions.TextFormattingMode="Display"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Fill" Property="Background" Value="{StaticResource BtnBgHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Fill" Property="Background" Value="{StaticResource BtnBgPressed}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Fill" Property="Opacity" Value="0.85"/>
+                            <Setter Property="Foreground" Value="#99FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- AutoFit variant: scales down text only when needed -->
+    <Style x:Key="RainbowAccentButton.AutoFit" TargetType="Button" BasedOn="{StaticResource RainbowAccentButton}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- rainbow border -->
+                        <Border CornerRadius="{StaticResource BtnRadius}" BorderThickness="2">
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                                    <GradientStop Color="#FFF59E0B" Offset="0.25"/>
+                                    <GradientStop Color="#FF10B981" Offset="0.50"/>
+                                    <GradientStop Color="#FF06B6D4" Offset="0.75"/>
+                                    <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                        </Border>
+
+                        <!-- flat inner fill -->
+                        <Border x:Name="Fill"
+                                CornerRadius="{StaticResource BtnRadius}"
+                                Margin="1"
+                                Background="{TemplateBinding Background}"/>
+
+                        <!-- Viewbox = shrink only; keeps center, avoids wrap jitter -->
+                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                            <TextBlock
+                                Margin="{TemplateBinding Padding}"
+                                Text="{TemplateBinding Content}"
+                                TextAlignment="Center"
+                                TextWrapping="NoWrap"
+                                FontWeight="SemiBold"
+                                Foreground="{TemplateBinding Foreground}"
+                                TextOptions.TextRenderingMode="ClearType"
+                                TextOptions.TextFormattingMode="Display"/>
+                        </Viewbox>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Fill" Property="Background" Value="{StaticResource BtnBgHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Fill" Property="Background" Value="{StaticResource BtnBgPressed}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Fill" Property="Opacity" Value="0.85"/>
+                            <Setter Property="Foreground" Value="#99FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <!-- Optional: white  rainbow text only on hover (accent, not default) -->
     <Style x:Key="RainbowHoverButton" TargetType="Button" BasedOn="{StaticResource SolidDarkButton}">
@@ -115,7 +233,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid>
-                        <Border x:Name="Outer" CornerRadius="12"
+                        <Border x:Name="Outer" CornerRadius="10"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"/>
