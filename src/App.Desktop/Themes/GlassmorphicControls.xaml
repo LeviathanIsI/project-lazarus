@@ -384,25 +384,9 @@
 
     <!-- User Message Template (Right Aligned) -->
     <DataTemplate x:Key="UserMessageTemplate">
-        <Border Style="{StaticResource GlassCardStyle}"
-                Margin="40,0,0,16"
-                Padding="20"
-                HorizontalAlignment="Right"
-                Background="{StaticResource RainbowFlowBrush}"
-                BorderBrush="Transparent"
-                RenderTransformOrigin="0.5,0.5">
-            <Border.RenderTransform>
-                <TranslateTransform/>
-            </Border.RenderTransform>
-            <Border.Triggers>
-                <EventTrigger RoutedEvent="Loaded">
-                    <BeginStoryboard Storyboard="{StaticResource FadeInStoryboard}"/>
-                </EventTrigger>
-            </Border.Triggers>
-            <TextBlock Text="{Binding Content}"
-                       Style="{StaticResource BodyTextStyle}"
-                       TextWrapping="Wrap"/>
-        </Border>
+        <ContentControl Style="{StaticResource RainbowBubbleRight}">
+            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+        </ContentControl>
     </DataTemplate>
 
     <!-- ====================
@@ -885,3 +869,4 @@
     </Style>
 
 </ResourceDictionary>
+

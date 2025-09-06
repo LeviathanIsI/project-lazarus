@@ -30,4 +30,22 @@
         </Setter>
     </Style>
 
+    <!-- Chat bubble with rainbow background (right/user) -->
+    <Style x:Key="RainbowBubbleRight" TargetType="ContentControl">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Grid Margin="40,0,0,16">
+                        <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="12"/>
+                        <Border Background="#33000000" CornerRadius="10" Margin="2"/>
+                        <ContentPresenter Margin="20"
+                                          TextElement.Foreground="White"
+                                          TextElement.FontWeight="Normal"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

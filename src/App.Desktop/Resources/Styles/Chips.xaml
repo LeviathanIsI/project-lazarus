@@ -21,4 +21,25 @@
         </Setter>
     </Style>
 
+    <!-- Tiny New pill with faux outline -->
+    <Style x:Key="RainbowNewPill" TargetType="ContentControl" BasedOn="{StaticResource RainbowChip}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Grid>
+                        <Border Background="{StaticResource RainbowFlowBrush}" CornerRadius="12"/>
+                        <Border Background="#33000000" CornerRadius="10" Margin="2"/>
+                        <Grid Margin="10,4">
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="Black" Margin="1,0,0,0"/>
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="Black" Margin="0,1,0,0"/>
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="Black" Margin="-1,0,0,0"/>
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="Black" Margin="0,-1,0,0"/>
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="White" FontWeight="Bold"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
