@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import documents or datasets for entity extraction"/>
                         
                         <Button Content="Create Entity"
-                                Style="{StaticResource AccessibleGlassButtonStyle}"
+                                Style="{StaticResource RainbowAccentButton}"
                                 AutomationProperties.Name="Create new entity"
                                 AutomationProperties.HelpText="Manually create a new entity definition"/>
                     </StackPanel>
