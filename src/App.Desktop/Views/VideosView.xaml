@@ -42,7 +42,7 @@
                                 AutomationProperties.HelpText="Import existing videos for processing"/>
                         
                         <Button Content="Create Video"
-                                Style="{StaticResource RainbowAccentButton}"
+                                Style="{StaticResource RainbowAccentButton.AutoFit}"
                                 AutomationProperties.Name="Create new video"
                                 AutomationProperties.HelpText="Generate new videos using AI models"/>
                     </StackPanel>

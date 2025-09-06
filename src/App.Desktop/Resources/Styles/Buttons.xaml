@@ -9,8 +9,8 @@
 
     <!-- Size tokens -->
     <CornerRadius    x:Key="BtnRadius">8</CornerRadius>
-    <Thickness       x:Key="BtnPad.Compact">12,6</Thickness>
-    <sys:Double      x:Key="BtnMinH.Compact">36</sys:Double>
+    <Thickness       x:Key="BtnPad.Compact">10,6</Thickness>
+    <sys:Double      x:Key="BtnMinH.Compact">32</sys:Double>
     <!-- Large (keep for the few places that really want tiles) -->
     <Thickness       x:Key="BtnPad.Large">16,10</Thickness>
     <sys:Double      x:Key="BtnMinH.Large">56</sys:Double>
@@ -118,17 +118,16 @@
                                 Margin="1"
                                 Background="{TemplateBinding Background}"/>
 
-                        <!-- TEXT-AWARE label (centers, wraps, ellipses) -->
-                        <TextBlock
-                            Margin="{TemplateBinding Padding}"
-                            Text="{TemplateBinding Content}"
-                            TextAlignment="Center"
-                            TextWrapping="Wrap"
-                            TextTrimming="CharacterEllipsis"
-                            FontWeight="SemiBold"
-                            Foreground="{TemplateBinding Foreground}"
-                            TextOptions.TextRenderingMode="ClearType"
-                            TextOptions.TextFormattingMode="Display"/>
+                        <!-- Single-line, ellipsized label -->
+                        <TextBlock Margin="{TemplateBinding Padding}"
+                                   Text="{TemplateBinding Content}"
+                                   TextAlignment="Center"
+                                   TextWrapping="NoWrap"
+                                   TextTrimming="CharacterEllipsis"
+                                   FontWeight="SemiBold"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   TextOptions.TextRenderingMode="ClearType"
+                                   TextOptions.TextFormattingMode="Display"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -329,4 +328,10 @@
         </Grid>
     </DataTemplate>
     
+    <!-- LARGE tile variant (use only when you want big tiles) -->
+    <Style x:Key="RainbowAccentButton.Large" TargetType="Button" BasedOn="{StaticResource RainbowAccentButton}">
+        <Setter Property="Padding"   Value="{StaticResource BtnPad.Large}"/>
+        <Setter Property="MinHeight" Value="{StaticResource BtnMinH.Large}"/>
+    </Style>
+
 </ResourceDictionary>
