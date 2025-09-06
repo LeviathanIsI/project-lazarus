@@ -75,6 +75,9 @@
         </Setter>
     </Style>
 
+    <!-- Alias: migrate targets to unified accent name -->
+    <Style x:Key="RainbowAccentButton" TargetType="Button" BasedOn="{StaticResource RainbowBorderButton}"/>
+
     <!-- Optional: white  rainbow text only on hover (accent, not default) -->
     <Style x:Key="RainbowHoverButton" TargetType="Button" BasedOn="{StaticResource SolidDarkButton}">
         <Style.Triggers>
@@ -123,6 +126,9 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- Alias: icon dark with rainbow accent border -->
+    <Style x:Key="IconButton.DarkRainbow" TargetType="Button" BasedOn="{StaticResource IconButton.Dark}"/>
 
     <!-- Readable rainbow button -->
     <Style x:Key="RainbowButton" TargetType="Button">
