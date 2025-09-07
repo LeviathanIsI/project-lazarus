@@ -10,36 +10,19 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Lazarus.Desktop.ViewModels;
 
-public sealed class SelectableAdapter : ViewModelBase
-{
-    public SelectableAdapter(Lazarus.Shared.AdapterInfo item) { Item = item; }
-
-    public Lazarus.Shared.AdapterInfo Item { get; }
-
-    private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
-}
-
 public sealed class ModelsViewModel : ViewModelBase
 {
     private readonly IModelInventoryService _inventory;
     private readonly IModelPresetService _presets;
     private readonly ILogger<ModelsViewModel> _logger;
+    private readonly Func<AdapterInfo, SelectableAdapter> _adapterFactory;
 
-    public ModelsViewModel() : this(new ModelInventoryService(), new ModelPresetService(), NullLogger<ModelsViewModel>.Instance) { }
-
-    public ModelsViewModel(IModelInventoryService inventory, IModelPresetService presets)
-        : this(inventory, presets, NullLogger<ModelsViewModel>.Instance) { }
-
-    public ModelsViewModel(IModelInventoryService inventory, IModelPresetService presets, ILogger<ModelsViewModel> logger)
+    public ModelsViewModel(IModelInventoryService inventory, IModelPresetService presets, ILogger<ModelsViewModel> logger, Func<AdapterInfo, SelectableAdapter> adapterFactory)
     {
         _inventory = inventory;
         _presets = presets;
         _logger = logger;
+        _adapterFactory = adapterFactory;
         // Ensure preset folder exists for smooth UX
         _presets.EnsureFolders();
 
@@ -152,7 +135,7 @@ public sealed class ModelsViewModel : ViewModelBase
         // Populate both raw adapter list and checkbox-friendly list
         Loras.SmartReset(inv.Loras);
         LoRAs.Clear();
-        foreach (var l in inv.Loras) LoRAs.Add(new SelectableAdapter(l));
+        foreach (var l in inv.Loras) LoRAs.Add(_adapterFactory(l));
 
         Tokenizers.SmartReset(inv.Tokenizers);
 
@@ -176,7 +159,7 @@ public sealed class ModelsViewModel : ViewModelBase
         var preset = new ModelPreset(
             Name: NewPresetName!.Trim(),
             BaseModelKey: baseKey,
-            Loras: (SelectedLoras.Any() ? SelectedLoras.Select(x => x.Name) : LoRAs.Where(l => l.IsSelected).Select(l => l.Item.Name)).ToList(),
+            Loras: (SelectedLoras.Any() ? SelectedLoras.Select(x => x.Name) : LoRAs.Where(l => l.IsSelected).Select(l => l.Info.Name)).ToList(),
             Tokenizer: SelectedTokenizer?.Name,
             Embedding: SelectedEmbedding?.Name,
             Params: new ModelParams(Temperature, TopP, MaxTokens, RepeatPenalty, Mirostat)
@@ -211,7 +194,7 @@ public sealed class ModelsViewModel : ViewModelBase
             if (match != null) SelectedLoras.Add(match);
         }
         // Keep checkbox list in sync if UI uses it
-        foreach (var l in LoRAs) l.IsSelected = preset.Loras.Any(name => string.Equals(name, l.Item.Name, StringComparison.OrdinalIgnoreCase));
+        foreach (var l in LoRAs) l.IsSelected = preset.Loras.Any(name => string.Equals(name, l.Info.Name, StringComparison.OrdinalIgnoreCase));
 
         Temperature = preset.Params.Temperature;
         TopP = preset.Params.TopP;

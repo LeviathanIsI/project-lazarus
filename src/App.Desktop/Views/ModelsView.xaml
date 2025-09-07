@@ -64,7 +64,7 @@
                                 <ItemsControl ItemsSource="{Binding LoRAs}" Margin="0,8,0,0">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <CheckBox Content="{Binding Item.Name}"
+                                            <CheckBox Content="{Binding Info.Name}"
                                                       IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -185,3 +185,4 @@
         </ScrollViewer>
     </Grid>
 </UserControl>
+

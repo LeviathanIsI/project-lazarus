@@ -157,6 +157,15 @@ namespace Lazarus.Desktop
             {
                 services.AddLazarusDesktop(context.Configuration);
                 services.AddLazarusHosting();
+
+                // Factory that creates SelectableAdapter given an AdapterInfo at runtime
+                services.AddTransient<Func<Lazarus.Shared.AdapterInfo, Lazarus.Desktop.ViewModels.SelectableAdapter>>(sp =>
+                {
+                    return info => ActivatorUtilities.CreateInstance<Lazarus.Desktop.ViewModels.SelectableAdapter>(sp, info);
+                });
+                // Keep the plain registration too (optional). It won't be used for item creation,
+                // but allows direct resolution if needed for design-time, etc.
+                services.AddTransient<Lazarus.Desktop.ViewModels.SelectableAdapter>();
             });
 
             return builder.Build();
