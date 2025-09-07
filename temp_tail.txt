@@ -1,0 +1,220 @@
+public sealed class LoadRunnerRequest
+{
+    public required string ModelPath { get; set; }
+}
+
+public interface IRunnerSupervisor
+{
+    bool IsRunning { get; }
+    int? ProcessId { get; }
+    string? CurrentModelPath { get; }
+    int Port { get; }
+    Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken);
+    Task UnloadAsync(CancellationToken cancellationToken);
+}
+
+internal sealed class LlamaCppSupervisor : IRunnerSupervisor
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<LlamaCppSupervisor> _logger;
+    private Process? _process;
+    private string? _currentModelPath;
+    private StreamWriter? _stdoutWriter;
+    private StreamWriter? _stderrWriter;
+    public int Port => 11888;
+
+    public LlamaCppSupervisor(IConfiguration config, ILogger<LlamaCppSupervisor> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
+    public bool IsRunning => _process is { HasExited: false };
+    public int? ProcessId => _process?.HasExited == false ? _process.Id : null;
+    public string? CurrentModelPath => _currentModelPath;
+
+    public async Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken)
+    {
+        // Stop any existing process
+        await UnloadAsync(cancellationToken).ConfigureAwait(false);
+
+        var exe = ResolveLlamaExe();
+        if (exe is null)
+        {
+            _logger.LogError("Unable to locate llama-server.exe. Configure Orchestrator:Runner:BinaryDir or LAZARUS_BINARIES.");
+            return false;
+        }
+        // Prefer GPU offload when hardware seems available; otherwise default to CPU-only.
+        var preferGpu = HasCuda() || exe.Contains("cu", StringComparison.OrdinalIgnoreCase) || exe.Contains("cuda", StringComparison.OrdinalIgnoreCase);
+
+        if (await StartOnceAsync(exe, modelPath, preferGpu ? 999 : 0, cancellationToken).ConfigureAwait(false))
+            return true;
+
+        // If GPU attempt failed quickly, retry with CPU-only as a fallback.
+        if (preferGpu)
+        {
+            _logger.LogWarning("GPU-start failed; retrying llama-server with CPU-only (n-gpu-layers=0)");
+            return await StartOnceAsync(exe, modelPath, 0, cancellationToken).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    private async Task<bool> StartOnceAsync(string exe, string modelPath, int gpuLayers, CancellationToken cancellationToken)
+    {
+        var args = $"--api --host 127.0.0.1 --port {Port} --n-gpu-layers {gpuLayers} --model \"{modelPath}\"";
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = exe,
+                Arguments = args,
+                WorkingDirectory = Path.GetDirectoryName(exe)!,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            // Prepare log files under Lazarus tree
+            try
+            {
+                Directory.CreateDirectory(LazarusPaths.SystemData.Logs);
+                var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                var outPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.out.log");
+                var errPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.err.log");
+                _stdoutWriter = new StreamWriter(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
+                _stderrWriter = new StreamWriter(new FileStream(errPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to create runner log files; continuing without file logging");
+            }
+
+            _logger.LogInformation("Starting llama-server: {Exe} {Args}", exe, args);
+            _process = Process.Start(psi);
+            if (_process is null)
+            {
+                _logger.LogError("Failed to start llama-server process");
+                return false;
+            }
+
+            try
+            {
+                if (_stdoutWriter is not null)
+                {
+                    _process.OutputDataReceived += (s, e) => { if (e.Data is not null) { try { _stdoutWriter.WriteLine(e.Data); } catch { } } };
+                    _process.BeginOutputReadLine();
+                }
+                if (_stderrWriter is not null)
+                {
+                    _process.ErrorDataReceived += (s, e) => { if (e.Data is not null) { try { _stderrWriter.WriteLine(e.Data); } catch { } } };
+                    _process.BeginErrorReadLine();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed hooking runner stdout/stderr handlers");
+            }
+
+            _currentModelPath = modelPath;
+
+            // Health check with 30s startup wait
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(30);
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            var url = $"http://127.0.0.1:{Port}/health";
+            while (DateTimeOffset.UtcNow < deadline && !cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var resp = await http.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                    if (resp.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("llama-server is healthy on port {Port}", Port);
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // ignore transient errors during startup
+                }
+
+                // If process died, stop early
+                if (_process.HasExited)
+                {
+                    _logger.LogWarning("llama-server exited with code {Code} during startup", _process.ExitCode);
+                    break;
+                }
+
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.LogError("llama-server failed to become healthy within timeout");
+            await UnloadAsync(cancellationToken).ConfigureAwait(false);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception starting llama-server");
+            await UnloadAsync(cancellationToken).ConfigureAwait(false);
+            return false;
+        }
+    }
+
+    private static bool HasCuda()
+    {
+        try
+        {
+            var system32 = Environment.GetFolderPath(Environment.SpecialFolder.System);
+            var nvcuda = Path.Combine(system32, "nvcuda.dll");
+            if (File.Exists(nvcuda)) return true;
+        }
+        catch { }
+        var env = Environment.GetEnvironmentVariable("CUDA_PATH");
+        return !string.IsNullOrWhiteSpace(env);
+    }
+
+    public async Task UnloadAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (_process is { HasExited: false })
+            {
+                try
+                {
+                    _process.CloseMainWindow();
+                }
+                catch { }
+                try
+                {
+                    if (!_process.HasExited)
+                        _process.Kill(true);
+                }
+                catch { }
+
+                // give it a moment
+                var sw = Stopwatch.StartNew();
+                while (!_process.HasExited && sw.Elapsed < TimeSpan.FromSeconds(5))
+                {
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+        finally
+        {
+            _process?.Dispose();
+            _process = null;
+            _currentModelPath = null;
+            try { _stdoutWriter?.Dispose(); } catch { }
+            try { _stderrWriter?.Dispose(); } catch { }
+            _stdoutWriter = null;
+            _stderrWriter = null;
+        }
+    }
+
+    private string? ResolveLlamaExe()
+    {
+        // Priority 1: appsettings Orchestrator:Runner:BinaryDir
+        var dir = _config["Orchestrator:Runner:BinaryDir"];
+        if (!string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir))

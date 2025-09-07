@@ -420,8 +420,10 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
 
             _currentModelPath = modelPath;
 
-            // Health check with 30s startup wait
-            var deadline = DateTimeOffset.UtcNow.AddSeconds(30);
+            // Health check with configurable startup wait
+            var startupTimeout = GetStartupTimeout();
+            _logger.LogInformation("Waiting up to {Timeout} for runner health", startupTimeout);
+            var deadline = DateTimeOffset.UtcNow.Add(startupTimeout);
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
             var url = $"http://127.0.0.1:{Port}/health";
             while (DateTimeOffset.UtcNow < deadline && !cancellationToken.IsCancellationRequested)
@@ -460,6 +462,31 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             await UnloadAsync(cancellationToken).ConfigureAwait(false);
             return false;
         }
+    }
+
+    private TimeSpan GetStartupTimeout()
+    {
+        try
+        {
+            // Preferred: TimeSpan-formatted value like "00:02:00"
+            var tsString = _config["Orchestrator:Runner:StartupTimeout"];
+            if (!string.IsNullOrWhiteSpace(tsString) && TimeSpan.TryParse(tsString, out var ts) && ts > TimeSpan.Zero)
+                return ts;
+
+            // Fallback 1: milliseconds value (int)
+            var msString = _config["Orchestrator:Runner:StartupTimeoutMs"] ?? _config["Runner.StartupTimeout"];
+            if (!string.IsNullOrWhiteSpace(msString) && int.TryParse(msString, out var ms) && ms > 0)
+                return TimeSpan.FromMilliseconds(ms);
+
+            // Fallback 2: environment variable (seconds)
+            var envSeconds = Environment.GetEnvironmentVariable("LAZARUS_RUNNER_STARTUP_TIMEOUT");
+            if (!string.IsNullOrWhiteSpace(envSeconds) && int.TryParse(envSeconds, out var sec) && sec > 0)
+                return TimeSpan.FromSeconds(sec);
+        }
+        catch { }
+
+        // Sensible default: 2 minutes
+        return TimeSpan.FromMinutes(2);
     }
 
     private static bool HasCuda()
