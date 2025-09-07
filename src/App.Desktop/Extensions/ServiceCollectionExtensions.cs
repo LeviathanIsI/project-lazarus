@@ -184,6 +184,8 @@ public static class ServiceCollectionExtensions
         // DEBUG: uses `dotnet run`; RELEASE: tries App.Orchestrator.Host.exe near the app
         services.AddSingleton<IOrchestratorProcessService, OrchestratorProcessService>();
         services.AddHostedService<OrchestratorBootstrapHostedService>();
+        // Optionally auto-start last runner/model once orchestrator is up
+        services.AddHostedService<RunnerAutoStartHostedService>();
 
         return services;
     }

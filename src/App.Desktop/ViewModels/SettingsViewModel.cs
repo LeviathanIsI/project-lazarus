@@ -28,6 +28,7 @@ namespace Lazarus.Desktop.ViewModels;
         _orchestratorBaseUrl = s.OrchestratorBaseUrl;
         _orchestratorStartupTimeoutSec = s.OrchestratorStartupTimeoutSec;
         _activeRunner = s.ActiveRunner;
+        _autoStartLastRunner = s.AutoStartLastRunner;
         _llamaServerExecutablePath = s.LlamaCpp.ServerExecutablePath;
         _llamaAdditionalArgs = s.LlamaCpp.AdditionalArgs;
         _llamaPort = s.LlamaCpp.Port;
@@ -124,6 +125,13 @@ namespace Lazarus.Desktop.ViewModels;
     {
         get => _activeRunner;
         set => SetProperty(ref _activeRunner, value, OnChangedPersist);
+    }
+
+    private bool _autoStartLastRunner;
+    public bool AutoStartLastRunner
+    {
+        get => _autoStartLastRunner;
+        set => SetProperty(ref _autoStartLastRunner, value, OnChangedPersist);
     }
 
     private string? _activeModelId;
@@ -254,6 +262,7 @@ namespace Lazarus.Desktop.ViewModels;
         s.OrchestratorBaseUrl = OrchestratorBaseUrl;
         s.OrchestratorStartupTimeoutSec = OrchestratorStartupTimeoutSec;
         s.ActiveRunner = ActiveRunner;
+        s.AutoStartLastRunner = AutoStartLastRunner;
         s.ActiveModelId = string.IsNullOrWhiteSpace(ActiveModelId) ? null : ActiveModelId;
         s.LlamaCpp.ServerExecutablePath = LlamaServerExecutablePath;
         s.LlamaCpp.AdditionalArgs = LlamaAdditionalArgs ?? string.Empty;

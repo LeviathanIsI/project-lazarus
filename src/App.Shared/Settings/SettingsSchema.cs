@@ -36,6 +36,7 @@ public sealed class AppSettings
 
     // ---- Runner (active + per-runner opts) ----
     public string ActiveRunner { get; set; } = "llama.cpp"; // llama.cpp | vllm | exllamav2
+    public bool AutoStartLastRunner { get; set; } = false;
 
     public LlamaCppSettings LlamaCpp { get; set; } = new();
     public VllmSettings Vllm { get; set; } = new();
