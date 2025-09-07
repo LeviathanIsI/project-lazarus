@@ -5,42 +5,35 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
              mc:Ignorable="d">
-    <Grid Margin="16">
+    <Grid Margin="16" Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Settings" FontSize="20" FontWeight="Bold" />
+        <TextBlock Text="Settings" Style="{StaticResource H2TextStyle}" />
 
-        <TabControl Grid.Row="1" Margin="0,12,0,12">
+        <Border Grid.Row="1" Margin="0,12,0,12" Background="{StaticResource GlassCardBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="8">
+        <TabControl Background="Transparent">
             <TabItem Header="General">
                 <StackPanel Margin="12" Orientation="Vertical" >
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Theme"/>
-                        <ComboBox Width="200" SelectedItem="{Binding PreferredTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <ComboBoxItem Content="Dark"/>
-                            <ComboBoxItem Content="Light"/>
-                            <ComboBoxItem Content="System"/>
-                        </ComboBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Language"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Language" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
-                    <CheckBox Margin="0,6" Content="Check for updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}"/>
+                    <CheckBox Margin="0,6" Content="Check for updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
                 </StackPanel>
             </TabItem>
 
             <TabItem Header="Paths">
                 <StackPanel Margin="12" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="380" Text="{Binding ModelsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Cache Directory"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Cache Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="380" Text="{Binding CacheDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </StackPanel>
@@ -49,11 +42,11 @@
             <TabItem Header="Orchestrator">
                 <StackPanel Margin="12" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Base URL"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Base URL" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="380" Text="{Binding OrchestratorBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="100" Text="{Binding OrchestratorStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </StackPanel>
@@ -62,24 +55,25 @@
             <TabItem Header="Llama.cpp">
                 <StackPanel Margin="12" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Binary Directory"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Binary Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="380" Text="{Binding LlamaBinaryDir, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Default Port"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Default Port" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="100" Text="{Binding LlamaDefaultPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Width="100" Text="{Binding LlamaStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
         </TabControl>
+        </Border>
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" >
-            <Button Margin="4,0" Content="Save" Command="{Binding SaveCommand}" />
-            <Button Margin="4,0" Content="Reset" Command="{Binding ResetCommand}" />
+            <Button Margin="4,0" Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+            <Button Margin="4,0" Content="Reset" Command="{Binding ResetCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
         </StackPanel>
     </Grid>
 </UserControl>
