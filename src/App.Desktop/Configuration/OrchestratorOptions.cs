@@ -10,7 +10,7 @@ public sealed class OrchestratorOptions
     /// <summary>
     /// Base URL for the orchestrator API.
     /// </summary>
-    public string BaseUrl { get; set; } = "http://localhost:5000";
+    public string BaseUrl { get; set; } = "http://127.0.0.1:11711";
 
     /// <summary>
     /// Interval between health checks.
