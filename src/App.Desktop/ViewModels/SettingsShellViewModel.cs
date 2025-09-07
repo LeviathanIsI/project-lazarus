@@ -1,14 +1,34 @@
+using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lazarus.Desktop.ViewModels;
 
-public sealed class SettingsShellViewModel
+public sealed class SettingsShellViewModel : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void OnPropertyChanged([CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
     public ObservableCollection<SettingsSection> Sections { get; } = new();
-    public SettingsSection? SelectedSection { get; set; }
+
+    private SettingsSection? _selectedSection;
+    public SettingsSection? SelectedSection
+    {
+        get => _selectedSection;
+        set
+        {
+            if (!ReferenceEquals(_selectedSection, value))
+            {
+                _selectedSection = value ?? Sections.FirstOrDefault();
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public SettingsShellViewModel()
     {
@@ -34,9 +54,9 @@ public sealed class SettingsShellViewModel
         Sections.Add(Make<Views.AdvancedSettingsView>("Advanced"));
         Sections.Add(Make<Views.AvatarSettingsView>("Avatars (future)"));
 
+        // Default selection
         SelectedSection = Sections.FirstOrDefault();
     }
 }
 
 public sealed record SettingsSection(string Title, UserControl View);
-

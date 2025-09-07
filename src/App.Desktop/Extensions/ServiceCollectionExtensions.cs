@@ -146,6 +146,8 @@ public static class ServiceCollectionExtensions
             services.AddTransient<NavigationViewModel>();
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<SettingsShellViewModel>();
+            services.AddTransient<SettingsViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();
