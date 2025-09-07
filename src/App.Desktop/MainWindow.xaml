@@ -69,7 +69,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         
         <!-- Custom Title Bar -->
@@ -85,6 +84,61 @@
                 
                 <!-- Draggable Title Area -->
                 <Border Grid.Column="0" Background="Transparent" WindowChrome.IsHitTestVisibleInChrome="False"/>
+
+                <!-- Top HUD: Orchestrator/Runner status and loaded model -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Orchestrator Dot -->
+                    <Ellipse Width="10" Height="10" HorizontalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="Red"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOrchestratorHealthy}" Value="True">
+                                        <Setter Property="Fill" Value="LimeGreen"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text=" Orchestrator" Margin="6,0,12,0"/>
+                    <TextBlock Text="●" Foreground="Transparent">
+                        <TextBlock.ToolTip>
+                            <ToolTip Content="{Binding OrchestratorStatusTooltip}"/>
+                        </TextBlock.ToolTip>
+                    </TextBlock>
+
+                    <!-- Runner Dot -->
+                    <Ellipse Width="10" Height="10" HorizontalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="Yellow"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOrchestratorHealthy}" Value="False">
+                                        <Setter Property="Fill" Value="Red"/>
+                                    </DataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsOrchestratorHealthy}" Value="True"/>
+                                            <Condition Binding="{Binding IsRunnerRunning}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Fill" Value="LimeGreen"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text=" Runner" Margin="6,0,12,0"/>
+                    <TextBlock Text="●" Foreground="Transparent">
+                        <TextBlock.ToolTip>
+                            <ToolTip Content="{Binding RunnerStatusTooltip}"/>
+                        </TextBlock.ToolTip>
+                    </TextBlock>
+
+                    <!-- Loaded Model Name -->
+                    <TextBlock Text="Model:" Style="{StaticResource SecondaryTextStyle}"/>
+                    <TextBlock Text=" "/>
+                    <TextBlock Text="{Binding LoadedModelName}"/>
+                </StackPanel>
                 
                 <!-- Window Controls -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,8,16,0">
@@ -522,77 +576,6 @@
             </Grid>
         </Border>
         </Grid>
-
-        <!-- Global Status Bar -->
-        <Border Grid.Row="2" Background="#1AFFFFFF" Padding="12,4">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
-                    <!-- Orchestrator Status -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Ellipse Width="10" Height="10" HorizontalAlignment="Center">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="Red"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsOrchestratorHealthy}" Value="True">
-                                            <Setter Property="Fill" Value="LimeGreen"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                        <TextBlock Text=" Orchestrator" Margin="6,0,0,0"/>
-                        <TextBlock Text="●" Foreground="Transparent">
-                            <TextBlock.ToolTip>
-                                <ToolTip Content="{Binding OrchestratorStatusTooltip}"/>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </StackPanel>
-
-                    <!-- Runner Status -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                        <Ellipse Width="10" Height="10" HorizontalAlignment="Center">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="Yellow"/>
-                                    <Style.Triggers>
-                                        <!-- Red when orchestrator not healthy -->
-                                        <DataTrigger Binding="{Binding IsOrchestratorHealthy}" Value="False">
-                                            <Setter Property="Fill" Value="Red"/>
-                                        </DataTrigger>
-                                        <!-- Green when running and orchestrator healthy -->
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding IsOrchestratorHealthy}" Value="True"/>
-                                                <Condition Binding="{Binding IsRunnerRunning}" Value="True"/>
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Fill" Value="LimeGreen"/>
-                                        </MultiDataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                        <TextBlock Text=" Runner" Margin="6,0,0,0"/>
-                        <TextBlock Text="●" Foreground="Transparent">
-                            <TextBlock.ToolTip>
-                                <ToolTip Content="{Binding RunnerStatusTooltip}"/>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </StackPanel>
-
-                    <!-- Loaded Model -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                        <TextBlock Text="Model:" Style="{StaticResource SecondaryTextStyle}"/>
-                        <TextBlock Text=" "/>
-                        <TextBlock Text="{Binding LoadedModelName}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Right-aligned info -->
-                <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Text="Lazarus" Opacity="0.6"/>
-            </DockPanel>
-        </Border>
     </Grid>
 
 </Window>
