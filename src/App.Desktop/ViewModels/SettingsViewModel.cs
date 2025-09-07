@@ -1,22 +1,24 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Lazarus.Shared.Settings;
+using Microsoft.Win32;
+using System.Collections.ObjectModel;
 
 namespace Lazarus.Desktop.ViewModels;
 
 /// <summary>
 /// ViewModel for the Settings view. Wraps AppSettings for editing and persistence.
 /// </summary>
-public sealed class SettingsViewModel : ViewModelBase
-{
-    private readonly ISettingsService _settingsService;
-
-    public SettingsViewModel(ISettingsService settingsService)
+    public sealed class SettingsViewModel : ViewModelBase
     {
-        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-        // Initialize from current settings
-        var s = _settingsService.Current;
+        private readonly ISettingsService _settingsService;
+    // private readonly Services.IOrchestratorClient? _orchestratorClient;
+
+        public SettingsViewModel(ISettingsService settingsService)
+        {
+            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+            // Initialize from current settings
+            var s = _settingsService.Current;
         _preferredTheme = s.PreferredTheme ?? "Dark";
         _language = s.Language ?? "en-US";
         _checkForUpdatesOnStart = s.CheckForUpdatesOnStart;
@@ -32,9 +34,18 @@ public sealed class SettingsViewModel : ViewModelBase
         _llamaUseCuda = s.LlamaCpp.UseCuda;
 
         SaveCommand = new RelayCommand(async () => await _settingsService.SaveAsync().ConfigureAwait(false));
-    }
+        BrowseLlamaServerCommand = new RelayCommand(BrowseLlamaServer);
+        BrowseModelsDirectoryCommand = new RelayCommand(BrowseModelsDirectory);
+        BrowseCacheDirectoryCommand = new RelayCommand(BrowseCacheDirectory);
+
+        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runner" });
+        SelectedCategory = "General";
+        }
 
     public RelayCommand SaveCommand { get; }
+    public RelayCommand BrowseLlamaServerCommand { get; }
+    public RelayCommand BrowseModelsDirectoryCommand { get; }
+    public RelayCommand BrowseCacheDirectoryCommand { get; }
     
 
     private string _preferredTheme;
@@ -147,4 +158,77 @@ public sealed class SettingsViewModel : ViewModelBase
         s.LlamaCpp.UseCuda = LlamaUseCuda;
         _ = _settingsService.SaveAsync();
     }
+
+    public ObservableCollection<string> Categories { get; }
+    private string _selectedCategory = "General";
+    public string SelectedCategory
+    {
+        get => _selectedCategory;
+        set => SetProperty(ref _selectedCategory, value);
+    }
+    private void BrowseLlamaServer()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select llama-server.exe",
+            Filter = "Executable (*.exe)|*.exe|All files (*.*)|*.*",
+            FileName = System.IO.Path.GetFileName(LlamaServerExecutablePath),
+            InitialDirectory = TryInitialDir(LlamaServerExecutablePath)
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            LlamaServerExecutablePath = dlg.FileName;
+        }
+    }
+
+    private void BrowseModelsDirectory()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select Models folder",
+            CheckFileExists = false,
+            CheckPathExists = true,
+            ValidateNames = false,
+            FileName = "Select Folder"
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
+            if (!string.IsNullOrWhiteSpace(dir)) ModelsDirectory = dir!;
+        }
+    }
+
+    private void BrowseCacheDirectory()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select Cache folder",
+            CheckFileExists = false,
+            CheckPathExists = true,
+            ValidateNames = false,
+            FileName = "Select Folder"
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
+            if (!string.IsNullOrWhiteSpace(dir)) CacheDirectory = dir!;
+        }
+    }
+
+    private static string TryInitialDir(string path)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                var dir = System.IO.Path.GetDirectoryName(ExpandEnv(path));
+                if (!string.IsNullOrWhiteSpace(dir) && System.IO.Directory.Exists(dir)) return dir!;
+            }
+        }
+        catch { }
+        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    }
+
+    private static string ExpandEnv(string path) =>
+        string.IsNullOrWhiteSpace(path) ? path : Environment.ExpandEnvironmentVariables(path);
 }

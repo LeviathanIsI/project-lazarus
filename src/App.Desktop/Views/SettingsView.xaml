@@ -15,68 +15,123 @@
         <TextBlock Text="Settings" Style="{StaticResource H2TextStyle}" />
 
         <Border Grid.Row="1" Margin="0,12,0,12" Background="{StaticResource GlassCardBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="8">
-        <TabControl Background="Transparent">
-            <TabItem Header="General">
-                <StackPanel Margin="12" Orientation="Vertical" >
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Language" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <CheckBox Margin="0,6" Content="Check for updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                </StackPanel>
-            </TabItem>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="0,0,1,0">
+                    <ListBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"/>
+                </Border>
+                <ScrollViewer Grid.Column="1">
+                    <Grid Margin="12">
+                        <Grid.Resources>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Style>
+                        </Grid.Resources>
+                        <StackPanel x:Name="GeneralPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="General">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Language" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <CheckBox Margin="0,6" Content="Check for updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        </StackPanel>
 
-            <TabItem Header="Paths">
-                <StackPanel Margin="12" Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="380" Text="{Binding ModelsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Cache Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="380" Text="{Binding CacheDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
+                        <StackPanel x:Name="PathsPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Paths">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="320" Text="{Binding ModelsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseModelsDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Cache Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="320" Text="{Binding CacheDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseCacheDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                            </StackPanel>
+                        </StackPanel>
 
-            <TabItem Header="Orchestrator">
-                <StackPanel Margin="12" Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Base URL" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="380" Text="{Binding OrchestratorBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="100" Text="{Binding OrchestratorStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
+                        <StackPanel x:Name="OrchestratorPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Orchestrator">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Base URL" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="380" ToolTip="http://127.0.0.1:11711" Text="{Binding OrchestratorBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="100" ToolTip="Seconds to wait for runner health" Text="{Binding OrchestratorStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </StackPanel>
 
-            <TabItem Header="Llama.cpp">
-                <StackPanel Margin="12" Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Server Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="380" Text="{Binding LlamaServerExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Port" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="100" Text="{Binding LlamaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="GPU Layers" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="100" Text="{Binding LlamaGpuLayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Use CUDA" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Additional Args" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="380" Text="{Binding LlamaAdditionalArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
+                        <StackPanel x:Name="RunnerPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Runner">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Server Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="320" Text="{Binding LlamaServerExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseLlamaServerCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Port" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="100" ToolTip="Valid port: 1-65535" Text="{Binding LlamaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="GPU Layers" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="100" ToolTip="Number of layers to offload to GPU" Text="{Binding LlamaGpuLayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <Expander Margin="0,6" Header="Advanced">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,6">
+                                        <TextBlock Width="200" VerticalAlignment="Center" Text="Use CUDA" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,6">
+                                        <TextBlock Width="200" VerticalAlignment="Center" Text="Additional Args" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBox Width="320" Text="{Binding LlamaAdditionalArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
         </Border>
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" >
