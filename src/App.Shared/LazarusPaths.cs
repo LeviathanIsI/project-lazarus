@@ -99,6 +99,18 @@ public static class LazarusPaths
     }
 
     /// <summary>
+    /// Runner binaries under %LOCALAPPDATA%\Lazarus\Runners
+    /// </summary>
+    public static class Runners
+    {
+        public static readonly string RootDir  = Path.Combine(Root, "Runners");
+        // Conventional engine folders (optional):
+        public static readonly string LlamaCpp = Path.Combine(RootDir, "llama.cpp");
+        public static readonly string Vllm     = Path.Combine(RootDir, "vllm");
+        public static readonly string ExLlamaV2= Path.Combine(RootDir, "exllamav2");
+    }
+
+    /// <summary>
     /// Enumerates all standard Lazarus directories to ensure on first run.
     /// Order is not guaranteed; duplicates are not returned. Do not change names.
     /// </summary>
@@ -137,6 +149,9 @@ public static class LazarusPaths
             UserContent.GeneratedOutput,
             UserContent.InputFiles,
             UserContent.Projects,
+
+            // Prepare Runners root so users can drop engines here
+            Runners.RootDir,
         };
 
         // Distinct by path

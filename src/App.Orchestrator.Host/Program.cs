@@ -485,7 +485,20 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             if (File.Exists(p)) return p;
         }
 
-        // Priority 2: LAZARUS_BINARIES env (try as-is, then with /runners)
+        // Priority 2: Lazarus Runners folder scan: %LOCALAPPDATA%\Lazarus\Runners\llama.cpp\**\llama-server.exe
+        try
+        {
+            var engineRoot = LazarusPaths.Runners.LlamaCpp;
+            if (Directory.Exists(engineRoot))
+            {
+                var found = Directory.EnumerateFiles(engineRoot, "llama-server.exe", SearchOption.AllDirectories)
+                    .FirstOrDefault();
+                if (found != null) return found;
+            }
+        }
+        catch { }
+
+        // Priority 3: LAZARUS_BINARIES env (try as-is, then with /runners)
         var env = Environment.GetEnvironmentVariable("LAZARUS_BINARIES");
         if (!string.IsNullOrWhiteSpace(env))
         {
@@ -495,7 +508,7 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             if (File.Exists(p2)) return p2;
         }
 
-        // Priority 3: <Base>/binaries/runners
+        // Priority 4: <Base>/binaries/runners
         var baseDir = AppContext.BaseDirectory;
         var p3 = Path.Combine(baseDir, "binaries", "runners", "llama-server.exe");
         if (File.Exists(p3)) return p3;
