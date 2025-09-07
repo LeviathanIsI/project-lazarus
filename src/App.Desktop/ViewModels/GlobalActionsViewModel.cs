@@ -1,5 +1,8 @@
 using System.Diagnostics;
 using System.Windows;
+using Microsoft.Win32;
+using System.Text.Json;
+using System.IO;
 using Lazarus.Desktop.Services;
 using Lazarus.Shared;
 using Lazarus.Shared.Settings;
@@ -68,6 +71,42 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
             await svc.SaveAsync(AppSettings.CreateDefault()).ConfigureAwait(false);
             // SettingsViewModel is subscribed to SettingsChanged and will refresh UI
         });
+
+        ExportSettingsCommand = new RelayCommand(() =>
+        {
+            try
+            {
+                var svc = App.ServiceProvider.GetRequiredService<ISettingsService>();
+                var snapshot = svc.Current;
+
+                var dlg = new SaveFileDialog
+                {
+                    Title = "Export Lazarus Settings",
+                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    AddExtension = true,
+                    DefaultExt = ".json",
+                    OverwritePrompt = true,
+                    FileName = $"lazarus-settings-{DateTime.Now:yyyyMMdd-HHmm}.json",
+                    InitialDirectory = Directory.Exists(SettingsPaths.AppDataRoot)
+                        ? SettingsPaths.AppDataRoot
+                        : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                };
+                if (dlg.ShowDialog() != true) return;
+
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+                var json = JsonSerializer.Serialize(snapshot, options);
+                File.WriteAllText(dlg.FileName, json);
+                MessageBox.Show($"Exported settings to:\n{dlg.FileName}", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to export settings:\n{ex.Message}", "Export Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        });
     }
 
     public RelayCommand CheckUpdatesCommand { get; }
@@ -79,6 +118,7 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
     public RelayCommand OpenSettingsFolderCommand { get; }
     public RelayCommand OpenModelsFolderCommand { get; }
     public RelayCommand ResetSettingsCommand { get; }
+    public RelayCommand ExportSettingsCommand { get; }
 
     private static void OpenFolder(string path)
     {
