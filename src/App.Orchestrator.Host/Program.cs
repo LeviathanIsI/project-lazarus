@@ -6,6 +6,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
 
@@ -22,6 +23,21 @@ builder.Services.AddSingleton<IModelInventoryService, ModelInventoryService>();
 builder.Services.AddSingleton<IModelPresetService, ModelPresetService>();
 builder.Services.AddSingleton<IRunnerSupervisor, LlamaCppSupervisor>();
 builder.Services.AddHostedService<RunnerAutoStartService>();
+
+// Logging: write to System-Data/Logs and console
+try
+{
+    Directory.CreateDirectory(LazarusPaths.SystemData.Logs);
+}
+catch { }
+var logPath = Path.Combine(LazarusPaths.SystemData.Logs, "orchestrator-.log");
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File(path: logPath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(Log.Logger, dispose: true);
 
 // Simple in-memory runner registry
 var runners = new ConcurrentDictionary<string, RunnerInfo>();
@@ -201,7 +217,7 @@ app.MapPost("/runner/load", async (LoadRunnerRequest req, IRunnerSupervisor sup,
     if (req is null || string.IsNullOrWhiteSpace(req.ModelPath))
         return Results.BadRequest(new { error = "modelPath required" });
 
-    var fullPath = Path.GetFullPath(req.ModelPath);
+    var fullPath = HostHelpers.ResolveModelPath(req.ModelPath) ?? req.ModelPath;
     if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
         return Results.BadRequest(new { error = "modelPath not found" });
 
@@ -303,6 +319,8 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
     private readonly ILogger<LlamaCppSupervisor> _logger;
     private Process? _process;
     private string? _currentModelPath;
+    private StreamWriter? _stdoutWriter;
+    private StreamWriter? _stderrWriter;
     public int Port => 11888;
 
     public LlamaCppSupervisor(IConfiguration config, ILogger<LlamaCppSupervisor> logger)
@@ -342,11 +360,44 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
                 RedirectStandardError = true
             };
 
+            // Prepare log files under Lazarus tree
+            try
+            {
+                Directory.CreateDirectory(LazarusPaths.SystemData.Logs);
+                var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                var outPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.out.log");
+                var errPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.err.log");
+                _stdoutWriter = new StreamWriter(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
+                _stderrWriter = new StreamWriter(new FileStream(errPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to create runner log files; continuing without file logging");
+            }
+
             _process = Process.Start(psi);
             if (_process is null)
             {
                 _logger.LogError("Failed to start llama-server process");
                 return false;
+            }
+
+            try
+            {
+                if (_stdoutWriter is not null)
+                {
+                    _process.OutputDataReceived += (s, e) => { if (e.Data is not null) { try { _stdoutWriter.WriteLine(e.Data); } catch { } } };
+                    _process.BeginOutputReadLine();
+                }
+                if (_stderrWriter is not null)
+                {
+                    _process.ErrorDataReceived += (s, e) => { if (e.Data is not null) { try { _stderrWriter.WriteLine(e.Data); } catch { } } };
+                    _process.BeginErrorReadLine();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed hooking runner stdout/stderr handlers");
             }
 
             _currentModelPath = modelPath;
@@ -417,6 +468,10 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             _process?.Dispose();
             _process = null;
             _currentModelPath = null;
+            try { _stdoutWriter?.Dispose(); } catch { }
+            try { _stderrWriter?.Dispose(); } catch { }
+            _stdoutWriter = null;
+            _stderrWriter = null;
         }
     }
 
@@ -545,5 +600,36 @@ internal static class HostHelpers
         if (File.Exists(modelPath))
             return Path.GetFileNameWithoutExtension(modelPath);
         return new DirectoryInfo(modelPath).Name;
+    }
+
+    public static string? ResolveModelPath(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return null;
+        var expanded = Environment.ExpandEnvironmentVariables(input);
+        try
+        {
+            if (Path.IsPathRooted(expanded) || expanded.Contains('\\') || expanded.Contains('/'))
+            {
+                var p = Path.GetFullPath(expanded);
+                if (File.Exists(p) || Directory.Exists(p)) return p;
+            }
+        }
+        catch { }
+
+        // Try under Lazarus model directories
+        var candidates = new[]
+        {
+            Path.Combine(LazarusPaths.Models.BaseModels, expanded),
+            Path.Combine(LazarusPaths.Models.RootDir, expanded)
+        };
+        foreach (var c in candidates)
+        {
+            try
+            {
+                if (File.Exists(c) || Directory.Exists(c)) return c;
+            }
+            catch { }
+        }
+        return null;
     }
 }
