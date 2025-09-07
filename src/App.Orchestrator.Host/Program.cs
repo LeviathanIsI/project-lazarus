@@ -1,9 +1,12 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Diagnostics;
+using System.Text;
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,7 @@ builder.WebHost.ConfigureKestrel(options =>
 // Backend services used by the host
 builder.Services.AddSingleton<IModelInventoryService, ModelInventoryService>();
 builder.Services.AddSingleton<IModelPresetService, ModelPresetService>();
+builder.Services.AddSingleton<IRunnerSupervisor, LlamaCppSupervisor>();
 
 // Simple in-memory runner registry
 var runners = new ConcurrentDictionary<string, RunnerInfo>();
@@ -26,11 +30,11 @@ DirectoryBootstrap.EnsureAll();
 var app = builder.Build();
 
 // Health endpoint
-app.MapGet("/health", () => Results.Json(new
+app.MapGet("/health", (IRunnerSupervisor sup) => Results.Json(new
 {
     status = "ok",
-    runner = runners.IsEmpty ? "idle" : "ok",
-    pid = Environment.ProcessId
+    runner = sup.IsRunning ? "ok" : "idle",
+    pid = sup.ProcessId ?? Environment.ProcessId
 }));
 
 // Models list (enumerated from LazarusPaths using backend service)
@@ -95,19 +99,24 @@ app.MapDelete("/api/runners/{id}", (string id) =>
 });
 
 // Runner status (simulated: mark all as healthy)
-app.MapGet("/api/runners/status", () =>
+app.MapGet("/api/runners/status", (IRunnerSupervisor sup) =>
 {
-    var statuses = runners.Values.Select(r => new RunnerStatus
+    var list = new List<RunnerStatus>();
+    var r = runners.Values.FirstOrDefault();
+    if (r is not null)
     {
-        Id = r.Id,
-        ModelId = r.ModelId,
-        RunnerType = r.RunnerType,
-        Port = r.Port,
-        IsHealthy = true,
-        LastHealthCheck = DateTimeOffset.UtcNow,
-        ErrorMessage = null
-    });
-    return Results.Json(statuses);
+        list.Add(new RunnerStatus
+        {
+            Id = r.Id,
+            ModelId = r.ModelId,
+            RunnerType = r.RunnerType,
+            Port = r.Port,
+            IsHealthy = sup.IsRunning,
+            LastHealthCheck = DateTimeOffset.UtcNow,
+            ErrorMessage = sup.IsRunning ? null : "stopped"
+        });
+    }
+    return Results.Json(list);
 });
 
 // List current runners
@@ -123,38 +132,21 @@ app.MapGet("/api/info", () => Results.Json(new
 }));
 
 // Simple runner status summary
-app.MapGet("/runner/status", (IModelInventoryService inventory) =>
+app.MapGet("/runner/status", (IRunnerSupervisor sup, IModelInventoryService inventory) =>
 {
-    var active = runners.Values.FirstOrDefault();
-    string? modelPath = null;
-    int? pid = null; // Placeholder until real runner processes are managed
-
-    if (active is not null)
-    {
-        var inv = inventory.Scan();
-        var model = inv.BaseModels.FirstOrDefault(m => string.Equals(m.ModelKey, active.ModelId, StringComparison.OrdinalIgnoreCase));
-        modelPath = model?.FilePath;
-        // pid remains null in stub implementation
-    }
-
-    return Results.Json(new
-    {
-        isRunning = active is not null,
-        modelPath,
-        pid
-    });
+    var modelPath = sup.CurrentModelPath;
+    return Results.Json(new { isRunning = sup.IsRunning, modelPath, pid = sup.ProcessId });
 });
 
 // OpenAI-compatible models list: proxy to runner if available; otherwise fallback
-app.MapGet("/v1/models", async (IModelInventoryService inventory) =>
+app.MapGet("/v1/models", async (IRunnerSupervisor sup, IModelInventoryService inventory) =>
 {
-    var active = runners.Values.FirstOrDefault(r => r.Port > 0);
-    if (active is not null)
+    if (sup.IsRunning)
     {
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
-            var url = $"http://127.0.0.1:{active.Port}/v1/models";
+            var url = $"http://127.0.0.1:{sup.Port}/v1/models";
             using var resp = await http.GetAsync(url);
             if (resp.IsSuccessStatusCode)
             {
@@ -175,10 +167,9 @@ app.MapGet("/v1/models", async (IModelInventoryService inventory) =>
 });
 
 // OpenAI-compatible chat completions proxy
-app.MapPost("/v1/chat/completions", async (HttpRequest incoming) =>
+app.MapPost("/v1/chat/completions", async (IRunnerSupervisor sup, HttpRequest incoming) =>
 {
-    var active = runners.Values.FirstOrDefault(r => r.Port > 0);
-    if (active is null)
+    if (!sup.IsRunning)
     {
         return Results.BadRequest(new { error = "runner idle" });
     }
@@ -190,7 +181,7 @@ app.MapPost("/v1/chat/completions", async (HttpRequest incoming) =>
     try
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
-        var url = $"http://127.0.0.1:{active.Port}/v1/chat/completions";
+        var url = $"http://127.0.0.1:{sup.Port}/v1/chat/completions";
         using var content = new StringContent(payload, Encoding.UTF8, "application/json");
         using var resp = await http.PostAsync(url, content);
         var body = await resp.Content.ReadAsStringAsync();
@@ -203,7 +194,7 @@ app.MapPost("/v1/chat/completions", async (HttpRequest incoming) =>
 });
 
 // Start or hot-swap model into the runner
-app.MapPost("/runner/load", (LoadRunnerRequest req, IModelInventoryService inventory) =>
+app.MapPost("/runner/load", async (LoadRunnerRequest req, IRunnerSupervisor sup, IModelInventoryService inventory, CancellationToken ct) =>
 {
     if (req is null || string.IsNullOrWhiteSpace(req.ModelPath))
         return Results.BadRequest(new { error = "modelPath required" });
@@ -215,32 +206,32 @@ app.MapPost("/runner/load", (LoadRunnerRequest req, IModelInventoryService inven
     var runnerType = HostHelpers.InferRunnerType(fullPath);
     var modelId = HostHelpers.InferModelKey(fullPath);
 
-    var existing = runners.Values.FirstOrDefault();
-    var hotSwapped = existing is not null;
+    var started = await sup.LoadAsync(fullPath, ct);
+    if (!started)
+        return Results.BadRequest(new { error = "failed to start runner" });
 
-    if (existing is not null)
-    {
-        existing.ModelId = modelId;
-        existing.RunnerType = runnerType;
-        // Keep existing port to simulate in-place hot-swap
-        runners[existing.Id] = existing;
-        return Results.Json(new { status = "ok", hotSwapped = true, runnerId = existing.Id, port = existing.Port, runnerType, modelId, modelPath = fullPath });
-    }
-
-    // Start new simulated runner
-    var port = runnerType.Equals("LlamaCpp", StringComparison.OrdinalIgnoreCase) ? 8080 : 8081;
-    var id = Guid.NewGuid().ToString("n");
+    // Keep a single registry entry to reflect current runner
+    var id = "llamacpp";
     var info = new RunnerInfo
     {
         Id = id,
         ModelId = modelId,
         RunnerType = runnerType,
-        Port = port,
+        Port = sup.Port,
         StartedAt = DateTimeOffset.UtcNow
     };
     runners[id] = info;
 
-    return Results.Json(new { status = "ok", hotSwapped = false, runnerId = id, port, runnerType, modelId, modelPath = fullPath });
+    return Results.Json(new { status = "ok", hotSwapped = true, runnerId = id, port = sup.Port, runnerType, modelId, modelPath = fullPath, pid = sup.ProcessId });
+});
+
+// Stop/unload runner
+app.MapPost("/runner/unload", async (IRunnerSupervisor sup, CancellationToken ct) =>
+{
+    await sup.UnloadAsync(ct);
+    // Clear registry entry
+    foreach (var k in runners.Keys) { runners.TryRemove(k, out _); }
+    return Results.Json(new { status = "ok" });
 });
 
 app.Run();
@@ -294,6 +285,167 @@ public sealed class LoadRunnerRequest
     public required string ModelPath { get; set; }
 }
 
+public interface IRunnerSupervisor
+{
+    bool IsRunning { get; }
+    int? ProcessId { get; }
+    string? CurrentModelPath { get; }
+    int Port { get; }
+    Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken);
+    Task UnloadAsync(CancellationToken cancellationToken);
+}
+
+internal sealed class LlamaCppSupervisor : IRunnerSupervisor
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<LlamaCppSupervisor> _logger;
+    private Process? _process;
+    private string? _currentModelPath;
+    public int Port => 11888;
+
+    public LlamaCppSupervisor(IConfiguration config, ILogger<LlamaCppSupervisor> logger)
+    {
+        _config = config;
+        _logger = logger;
+    }
+
+    public bool IsRunning => _process is { HasExited: false };
+    public int? ProcessId => _process?.HasExited == false ? _process.Id : null;
+    public string? CurrentModelPath => _currentModelPath;
+
+    public async Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken)
+    {
+        // Stop any existing process
+        await UnloadAsync(cancellationToken).ConfigureAwait(false);
+
+        var exe = ResolveLlamaExe();
+        if (exe is null)
+        {
+            _logger.LogError("Unable to locate llama-server.exe. Configure Orchestrator:Runner:BinaryDir or LAZARUS_BINARIES.");
+            return false;
+        }
+
+        var args = $"--api --host 127.0.0.1 --port {Port} --n-gpu-layers 999 --model \"{modelPath}\"";
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = exe,
+                Arguments = args,
+                WorkingDirectory = Path.GetDirectoryName(exe)!,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            _process = Process.Start(psi);
+            if (_process is null)
+            {
+                _logger.LogError("Failed to start llama-server process");
+                return false;
+            }
+
+            _currentModelPath = modelPath;
+
+            // Health check with 30s startup wait
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(30);
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            var url = $"http://127.0.0.1:{Port}/health";
+            while (DateTimeOffset.UtcNow < deadline && !cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var resp = await http.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                    if (resp.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("llama-server is healthy on port {Port}", Port);
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // ignore transient errors during startup
+                }
+
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.LogError("llama-server failed to become healthy within timeout");
+            await UnloadAsync(cancellationToken).ConfigureAwait(false);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception starting llama-server");
+            await UnloadAsync(cancellationToken).ConfigureAwait(false);
+            return false;
+        }
+    }
+
+    public async Task UnloadAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (_process is { HasExited: false })
+            {
+                try
+                {
+                    _process.CloseMainWindow();
+                }
+                catch { }
+                try
+                {
+                    if (!_process.HasExited)
+                        _process.Kill(true);
+                }
+                catch { }
+
+                // give it a moment
+                var sw = Stopwatch.StartNew();
+                while (!_process.HasExited && sw.Elapsed < TimeSpan.FromSeconds(5))
+                {
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+        finally
+        {
+            _process?.Dispose();
+            _process = null;
+            _currentModelPath = null;
+        }
+    }
+
+    private string? ResolveLlamaExe()
+    {
+        // Priority 1: appsettings Orchestrator:Runner:BinaryDir
+        var dir = _config["Orchestrator:Runner:BinaryDir"];
+        if (!string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir))
+        {
+            var p = Path.Combine(dir, "llama-server.exe");
+            if (File.Exists(p)) return p;
+        }
+
+        // Priority 2: LAZARUS_BINARIES env (try as-is, then with /runners)
+        var env = Environment.GetEnvironmentVariable("LAZARUS_BINARIES");
+        if (!string.IsNullOrWhiteSpace(env))
+        {
+            var p1 = Path.Combine(env, "llama-server.exe");
+            if (File.Exists(p1)) return p1;
+            var p2 = Path.Combine(env, "runners", "llama-server.exe");
+            if (File.Exists(p2)) return p2;
+        }
+
+        // Priority 3: <Base>/binaries/runners
+        var baseDir = AppContext.BaseDirectory;
+        var p3 = Path.Combine(baseDir, "binaries", "runners", "llama-server.exe");
+        if (File.Exists(p3)) return p3;
+
+        return null;
+    }
+}
 internal static class HostHelpers
 {
     public static long TrySize(string path)
