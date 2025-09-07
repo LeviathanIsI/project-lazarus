@@ -544,10 +544,22 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
     {
         // Priority 1: appsettings Orchestrator:Runner:BinaryDir
         var dir = _config["Orchestrator:Runner:BinaryDir"];
-        if (!string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir))
+        if (!string.IsNullOrWhiteSpace(dir))
         {
-            var p = Path.Combine(dir, "llama-server.exe");
-            if (File.Exists(p)) return p;
+            var normalized = NormalizeDirectory(dir);
+            if (!string.Equals(dir, normalized, StringComparison.Ordinal))
+            {
+                _logger.LogDebug("Normalized Runner BinaryDir from '{Orig}' to '{Norm}'", dir, normalized);
+            }
+            if (Directory.Exists(normalized))
+            {
+                var p = Path.Combine(normalized, "llama-server.exe");
+                if (File.Exists(p)) return p;
+            }
+            else
+            {
+                _logger.LogWarning("Configured Orchestrator:Runner:BinaryDir does not exist: {Dir}", dir);
+            }
         }
 
         // Priority 2: Lazarus Runners folder scan: %LOCALAPPDATA%\Lazarus\Runners\llama.cpp\**\llama-server.exe
@@ -579,6 +591,22 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         if (File.Exists(p3)) return p3;
 
         return null;
+    }
+
+    private static string NormalizeDirectory(string input)
+    {
+        var s = (input ?? string.Empty).Trim();
+        if (s.Length == 0) return s;
+        s = s.Replace('/', Path.DirectorySeparatorChar);
+        // Insert missing colon for paths like "D\foo\bar" -> "D:\\foo\\bar"
+        if (Environment.OSVersion.Platform.ToString().StartsWith("Win", StringComparison.OrdinalIgnoreCase))
+        {
+            if (s.Length >= 2 && s[1] == '\\' && char.IsLetter(s[0]))
+            {
+                s = s[0] + ":\\" + s.Substring(2);
+            }
+        }
+        return s;
     }
 }
 
