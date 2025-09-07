@@ -163,9 +163,8 @@ namespace Lazarus.Desktop
                 {
                     return info => ActivatorUtilities.CreateInstance<Lazarus.Desktop.ViewModels.SelectableAdapter>(sp, info);
                 });
-                // Keep the plain registration too (optional). It won't be used for item creation,
-                // but allows direct resolution if needed for design-time, etc.
-                services.AddTransient<Lazarus.Desktop.ViewModels.SelectableAdapter>();
+                // Do not register SelectableAdapter directly; it requires AdapterInfo.
+                // Use the typed factory above to create instances with per-item data.
             });
 
             return builder.Build();
