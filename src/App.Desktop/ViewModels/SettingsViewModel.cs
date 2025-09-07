@@ -22,6 +22,7 @@ namespace Lazarus.Desktop.ViewModels;
         _preferredTheme = s.PreferredTheme ?? "Dark";
         _language = s.Language ?? "en-US";
         _checkForUpdatesOnStart = s.CheckForUpdatesOnStart;
+        _startOrchestratorWithApp = s.StartOrchestratorWithApp;
         _modelsDirectory = s.ModelsDirectory;
         _cacheDirectory = s.CacheDirectory;
         _orchestratorBaseUrl = s.OrchestratorBaseUrl;
@@ -81,6 +82,13 @@ namespace Lazarus.Desktop.ViewModels;
     {
         get => _checkForUpdatesOnStart;
         set => SetProperty(ref _checkForUpdatesOnStart, value, OnChangedPersist);
+    }
+
+    private bool _startOrchestratorWithApp;
+    public bool StartOrchestratorWithApp
+    {
+        get => _startOrchestratorWithApp;
+        set => SetProperty(ref _startOrchestratorWithApp, value, OnChangedPersist);
     }
 
     private string _modelsDirectory;
@@ -240,6 +248,7 @@ namespace Lazarus.Desktop.ViewModels;
         s.PreferredTheme = PreferredTheme;
         s.Language = Language;
         s.CheckForUpdatesOnStart = CheckForUpdatesOnStart;
+        s.StartOrchestratorWithApp = StartOrchestratorWithApp;
         s.ModelsDirectory = ModelsDirectory;
         s.CacheDirectory = CacheDirectory;
         s.OrchestratorBaseUrl = OrchestratorBaseUrl;

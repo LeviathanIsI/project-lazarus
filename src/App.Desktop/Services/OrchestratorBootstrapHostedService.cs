@@ -7,16 +7,27 @@ internal sealed class OrchestratorBootstrapHostedService : IHostedService
 {
     private readonly ILogger<OrchestratorBootstrapHostedService> _logger;
     private readonly IOrchestratorProcessService _proc;
+    private readonly Lazarus.Shared.Settings.ISettingsService _settings;
 
-    public OrchestratorBootstrapHostedService(ILogger<OrchestratorBootstrapHostedService> logger, IOrchestratorProcessService proc)
+    public OrchestratorBootstrapHostedService(ILogger<OrchestratorBootstrapHostedService> logger, IOrchestratorProcessService proc, Lazarus.Shared.Settings.ISettingsService settings)
     {
         _logger = logger;
         _proc = proc;
+        _settings = settings;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("OrchestratorBootstrapHostedService starting");
+        // Load settings to honor persisted preference before attempting start
+        try { await _settings.LoadAsync().ConfigureAwait(false); } catch { }
+
+        if (!_settings.Current.StartOrchestratorWithApp)
+        {
+            _logger.LogInformation("StartOrchestratorWithApp is disabled; skipping orchestrator auto-start");
+            return;
+        }
+
         await _proc.StartIfNeededAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -26,4 +37,3 @@ internal sealed class OrchestratorBootstrapHostedService : IHostedService
         await _proc.StopIfOwnedAsync(cancellationToken).ConfigureAwait(false);
     }
 }
-

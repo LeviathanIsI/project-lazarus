@@ -32,6 +32,7 @@ public sealed class AppSettings
     // ---- Orchestrator ----
     public string OrchestratorBaseUrl { get; set; } = "http://127.0.0.1:11711";
     public int OrchestratorStartupTimeoutSec { get; set; } = 45;
+    public bool StartOrchestratorWithApp { get; set; } = true;
 
     // ---- Runner (active + per-runner opts) ----
     public string ActiveRunner { get; set; } = "llama.cpp"; // llama.cpp | vllm | exllamav2

@@ -46,6 +46,7 @@
                                 <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                             <CheckBox Margin="0,6" Content="Check for updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <CheckBox Margin="0,6" Content="Start orchestrator with app" IsChecked="{Binding StartOrchestratorWithApp, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </StackPanel>
 
                         <StackPanel x:Name="PathsPanel">
