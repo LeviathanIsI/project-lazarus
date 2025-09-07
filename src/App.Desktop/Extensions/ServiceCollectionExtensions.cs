@@ -77,21 +77,23 @@ public static class ServiceCollectionExtensions
             builder.AddSerilog(logger, dispose: true);
         });
 
-        // Add HTTP client for orchestrator communication
-        services.AddHttpClient<IOrchestratorClient, OrchestratorClient>((serviceProvider, httpClient) =>
+        // Orchestrator clients: ensure a single shared instance across view models
+        // to keep health state and events consistent in the UI.
+        services.AddHttpClient<OrchestratorClient>((serviceProvider, httpClient) =>
         {
             var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<OrchestratorOptions>>().Value;
             httpClient.BaseAddress = new Uri(options.BaseUrl);
             httpClient.Timeout = options.RequestTimeout;
         });
+        services.AddSingleton<IOrchestratorClient>(sp => sp.GetRequiredService<OrchestratorClient>());
 
-        // Add HTTP client for orchestrator runner control
-        services.AddHttpClient<IOrchestratorRunnerClient, OrchestratorRunnerClient>((serviceProvider, httpClient) =>
+        services.AddHttpClient<OrchestratorRunnerClient>((serviceProvider, httpClient) =>
         {
             var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<OrchestratorOptions>>().Value;
             httpClient.BaseAddress = new Uri(options.BaseUrl);
             httpClient.Timeout = options.RequestTimeout;
         });
+        services.AddSingleton<IOrchestratorRunnerClient>(sp => sp.GetRequiredService<OrchestratorRunnerClient>());
 
         // Add data layer services with shared path contract for DB location
         var dbPath = Lazarus.Shared.LazarusPaths.DatabaseFile;
