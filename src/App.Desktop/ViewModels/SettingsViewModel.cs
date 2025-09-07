@@ -32,14 +32,22 @@ namespace Lazarus.Desktop.ViewModels;
         _llamaPort = s.LlamaCpp.Port;
         _llamaGpuLayers = s.LlamaCpp.GpuLayers;
         _llamaUseCuda = s.LlamaCpp.UseCuda;
+        // Audio
+        _audioEnableTts = s.Audio.EnableTts;
+        _audioPiperExecutable = s.Audio.PiperExecutable;
+        _audioPiperVoice = s.Audio.PiperVoice;
+        _audioEnableAsr = s.Audio.EnableAsr;
+        _audioFasterWhisperExecutable = s.Audio.FasterWhisperExecutable;
 
         SaveCommand = new RelayCommand(async () => await _settingsService.SaveAsync().ConfigureAwait(false));
         BrowseLlamaServerCommand = new RelayCommand(BrowseLlamaServer);
         BrowseModelsDirectoryCommand = new RelayCommand(BrowseModelsDirectory);
         BrowseCacheDirectoryCommand = new RelayCommand(BrowseCacheDirectory);
         BrowseActiveModelCommand = new RelayCommand(BrowseActiveModel);
+        BrowsePiperExecutableCommand = new RelayCommand(BrowsePiperExecutable);
+        BrowseFasterWhisperExecutableCommand = new RelayCommand(BrowseFasterWhisperExecutable);
 
-        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runners", "Models" });
+        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runners", "Models", "Audio" });
         SelectedCategory = "General";
         }
 
@@ -48,6 +56,8 @@ namespace Lazarus.Desktop.ViewModels;
     public RelayCommand BrowseModelsDirectoryCommand { get; }
     public RelayCommand BrowseCacheDirectoryCommand { get; }
     public RelayCommand BrowseActiveModelCommand { get; }
+    public RelayCommand BrowsePiperExecutableCommand { get; }
+    public RelayCommand BrowseFasterWhisperExecutableCommand { get; }
     
 
     private string _preferredTheme;
@@ -148,6 +158,42 @@ namespace Lazarus.Desktop.ViewModels;
         set => SetProperty(ref _llamaUseCuda, value, OnChangedPersist);
     }
 
+    // --- Audio ---
+    private bool _audioEnableTts;
+    public bool AudioEnableTts
+    {
+        get => _audioEnableTts;
+        set => SetProperty(ref _audioEnableTts, value, OnChangedPersist);
+    }
+
+    private string _audioPiperExecutable = string.Empty;
+    public string AudioPiperExecutable
+    {
+        get => _audioPiperExecutable;
+        set => SetProperty(ref _audioPiperExecutable, value, OnChangedPersist);
+    }
+
+    private string _audioPiperVoice = string.Empty;
+    public string AudioPiperVoice
+    {
+        get => _audioPiperVoice;
+        set => SetProperty(ref _audioPiperVoice, value, OnChangedPersist);
+    }
+
+    private bool _audioEnableAsr;
+    public bool AudioEnableAsr
+    {
+        get => _audioEnableAsr;
+        set => SetProperty(ref _audioEnableAsr, value, OnChangedPersist);
+    }
+
+    private string _audioFasterWhisperExecutable = string.Empty;
+    public string AudioFasterWhisperExecutable
+    {
+        get => _audioFasterWhisperExecutable;
+        set => SetProperty(ref _audioFasterWhisperExecutable, value, OnChangedPersist);
+    }
+
     private void OnChangedPersist()
     {
         // Push values into the settings service and schedule a save.
@@ -166,6 +212,11 @@ namespace Lazarus.Desktop.ViewModels;
         s.LlamaCpp.Port = LlamaPort;
         s.LlamaCpp.GpuLayers = LlamaGpuLayers;
         s.LlamaCpp.UseCuda = LlamaUseCuda;
+        s.Audio.EnableTts = AudioEnableTts;
+        s.Audio.PiperExecutable = AudioPiperExecutable;
+        s.Audio.PiperVoice = AudioPiperVoice;
+        s.Audio.EnableAsr = AudioEnableAsr;
+        s.Audio.FasterWhisperExecutable = AudioFasterWhisperExecutable;
         _ = _settingsService.SaveAsync();
     }
 
@@ -222,6 +273,36 @@ namespace Lazarus.Desktop.ViewModels;
         {
             var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
             if (!string.IsNullOrWhiteSpace(dir)) CacheDirectory = dir!;
+        }
+    }
+
+    private void BrowsePiperExecutable()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select piper.exe",
+            Filter = "Executable (*.exe)|*.exe|All files (*.*)|*.*",
+            FileName = System.IO.Path.GetFileName(AudioPiperExecutable),
+            InitialDirectory = TryInitialDir(AudioPiperExecutable)
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            AudioPiperExecutable = dlg.FileName;
+        }
+    }
+
+    private void BrowseFasterWhisperExecutable()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select faster-whisper.exe",
+            Filter = "Executable (*.exe)|*.exe|All files (*.*)|*.*",
+            FileName = System.IO.Path.GetFileName(AudioFasterWhisperExecutable),
+            InitialDirectory = TryInitialDir(AudioFasterWhisperExecutable)
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            AudioFasterWhisperExecutable = dlg.FileName;
         }
     }
 
