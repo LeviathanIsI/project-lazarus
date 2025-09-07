@@ -36,3 +36,5 @@ public sealed class AdvancedSettingsViewModel : SettingsSectionBase
 { public AdvancedSettingsViewModel(SettingsViewModel s) : base(s, "Advanced") { } }
 public sealed class AvatarsSettingsViewModel : SettingsSectionBase
 { public AvatarsSettingsViewModel(SettingsViewModel s) : base(s, "Avatars (future)") { } }
+
+// Rich section with commands is implemented in a separate class file (GlobalActionsViewModel.cs)

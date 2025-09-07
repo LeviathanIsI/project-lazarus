@@ -58,6 +58,9 @@
             <DataTemplate DataType="{x:Type vm:AvatarsSettingsViewModel}">
                 <views:AvatarSettingsView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:GlobalActionsViewModel}">
+                <views:GlobalActionsView/>
+            </DataTemplate>
 
             <!-- Fallback debug template: shows when no specific template matches -->
             <DataTemplate DataType="{x:Type vm:SettingsSectionBase}">

@@ -108,6 +108,8 @@ public static class ServiceCollectionExtensions
 
         // Settings service (JSON-backed under LazarusPaths.Root)
         services.AddSingleton<ISettingsService, SettingsService>();
+        // Update service for checking latest releases
+        services.AddSingleton<IUpdateService, UpdateService>();
 
         return services;
     }

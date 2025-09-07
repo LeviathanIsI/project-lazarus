@@ -36,6 +36,7 @@ public sealed class SettingsShellViewModel : INotifyPropertyChanged
         var settings = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
 
         Sections.Add(new GeneralSettingsViewModel(settings));
+        Sections.Add(new GlobalActionsViewModel(settings));
         Sections.Add(new PathsSettingsViewModel(settings));
         Sections.Add(new OrchestratorSettingsViewModel(settings));
         Sections.Add(new RunnersSettingsViewModel(settings));
