@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Sockets;
 using System.Diagnostics;
 using System.Text;
 using System.Net.Http;
@@ -321,12 +322,14 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
     private string? _currentModelPath;
     private StreamWriter? _stdoutWriter;
     private StreamWriter? _stderrWriter;
-    public int Port => 11888;
+    private int _port;
+    public int Port => _port;
 
     public LlamaCppSupervisor(IConfiguration config, ILogger<LlamaCppSupervisor> logger)
     {
         _config = config;
         _logger = logger;
+        _port = ResolveBasePort();
     }
 
     public bool IsRunning => _process is { HasExited: false };
@@ -362,6 +365,15 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
 
     private async Task<bool> StartOnceAsync(string exe, string modelPath, int gpuLayers, CancellationToken cancellationToken)
     {
+        // Pick a usable port, avoiding collisions if the preferred is busy
+        var preferred = ResolveBasePort();
+        var selected = SelectAvailablePortNear(preferred);
+        if (selected != preferred)
+        {
+            _logger.LogWarning("Preferred port {Preferred} is busy; using {Port}", preferred, selected);
+        }
+        _port = selected;
+
         var args = $"--api --host 127.0.0.1 --port {Port} --n-gpu-layers {gpuLayers} --model \"{modelPath}\"";
 
         try
@@ -591,6 +603,49 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         if (File.Exists(p3)) return p3;
 
         return null;
+    }
+
+    private int ResolveBasePort()
+    {
+        try
+        {
+            var v = _config["Orchestrator:Runner:Port"];
+            if (!string.IsNullOrWhiteSpace(v) && int.TryParse(v, out var p) && p > 0 && p < 65536)
+                return p;
+
+            // Fallback to Desktop-style key if present in this host's config
+            v = _config["Runners:LlamaCpp:DefaultPort"];
+            if (!string.IsNullOrWhiteSpace(v) && int.TryParse(v, out p) && p > 0 && p < 65536)
+                return p;
+        }
+        catch { }
+        return 11888; // default
+    }
+
+    private static int SelectAvailablePortNear(int preferred, int scan = 20)
+    {
+        for (var i = 0; i < scan; i++)
+        {
+            var p = preferred + i;
+            if (IsPortAvailable(p)) return p;
+        }
+        return preferred;
+    }
+
+    private static bool IsPortAvailable(int port)
+    {
+        try
+        {
+            var ep = new IPEndPoint(IPAddress.Loopback, port);
+            using var listener = new TcpListener(ep);
+            listener.Start();
+            listener.Stop();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static string NormalizeDirectory(string input)
