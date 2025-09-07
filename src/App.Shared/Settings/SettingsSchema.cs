@@ -26,8 +26,8 @@ public sealed class AppSettings
     public bool CheckForUpdatesOnStart { get; set; } = false; // future use
 
     // ---- Paths ----
-    public string ModelsDirectory { get; set; } = @"D:\\models"; // user can change
-    public string CacheDirectory { get; set; } = @"%LOCALAPPDATA%\\Lazarus\\cache";
+    public string ModelsDirectory { get; set; } = @"D:\models"; // user can change
+    public string CacheDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\cache";
 
     // ---- Orchestrator ----
     public string OrchestratorBaseUrl { get; set; } = "http://127.0.0.1:11711";
