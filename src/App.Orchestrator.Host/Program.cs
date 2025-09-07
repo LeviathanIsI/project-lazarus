@@ -3,6 +3,7 @@ using System.Net;
 using System.Diagnostics;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -148,6 +149,34 @@ app.MapGet("/v1/models", async (IModelInventoryService inventory) =>
     var inv = inventory.Scan();
     var data = inv.BaseModels.Select(m => new { id = m.ModelKey, @object = "model" });
     return Results.Json(new { data });
+});
+
+// OpenAI-compatible chat completions proxy
+app.MapPost("/v1/chat/completions", async (HttpRequest incoming) =>
+{
+    var active = runners.Values.FirstOrDefault(r => r.Port > 0);
+    if (active is null)
+    {
+        return Results.BadRequest(new { error = "runner idle" });
+    }
+
+    // Read incoming JSON body
+    using var reader = new StreamReader(incoming.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 8192, leaveOpen: true);
+    var payload = await reader.ReadToEndAsync();
+
+    try
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+        var url = $"http://127.0.0.1:{active.Port}/v1/chat/completions";
+        using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+        using var resp = await http.PostAsync(url, content);
+        var body = await resp.Content.ReadAsStringAsync();
+        return Results.Text(body, "application/json", statusCode: (int)resp.StatusCode);
+    }
+    catch
+    {
+        return Results.BadRequest(new { error = "runner idle" });
+    }
 });
 
 app.Run();
