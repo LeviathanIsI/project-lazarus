@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
              mc:Ignorable="d">
     <DockPanel>
         <StackPanel DockPanel.Dock="Left"
@@ -26,8 +27,13 @@
             </ListBox>
         </StackPanel>
         <Border Background="{StaticResource GlassCardBrush}" Padding="24" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" CornerRadius="8">
-            <ContentControl Content="{Binding SelectedSection.View}"/>
+            <ContentControl Content="{Binding SelectedSection}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate DataType="{x:Type vm:SettingsSection}">
+                        <ContentPresenter Content="{Binding View}"/>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
         </Border>
     </DockPanel>
 </UserControl>
-
