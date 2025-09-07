@@ -13,6 +13,7 @@ namespace Lazarus.Desktop.ViewModels;
 
 public sealed class ModelsViewModel : ViewModelBase
 {
+    public sealed record RunnerCandidate(string Engine, string DisplayName, string ResolvedPath, string Entrypoint);
     private readonly IModelInventoryService _inventory;
     private readonly IModelPresetService _presets;
     private readonly ILogger<ModelsViewModel> _logger;
@@ -32,11 +33,12 @@ public sealed class ModelsViewModel : ViewModelBase
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
         LoadSelectedModelCommand = new RelayCommand(async () => await LoadSelectedModelAsync(), () => SelectedModel is not null && !IsDisposed);
         UnloadRunnerCommand = new RelayCommand(async () => await UnloadRunnerAsync(), () => !IsDisposed);
-        RefreshRunnerStatusCommand = new RelayCommand(async () => await RefreshRunnerStatusAsync(), () => !IsDisposed);
+        RefreshRunnerStatusCommand = new RelayCommand(async () => { await RefreshRunnerStatusAsync(); await RefreshRunnersCatalogAsync(); }, () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
         LoadPresetCommand = new RelayCommand(LoadPreset, () => SelectedPresetName is not null && !IsDisposed);
 
         Refresh();
+        _ = RefreshRunnersCatalogAsync();
     }
 
     // Collections (bound to dropdowns/lists)
@@ -132,6 +134,10 @@ public sealed class ModelsViewModel : ViewModelBase
     public RelayCommand UnloadRunnerCommand { get; }
     public RelayCommand RefreshRunnerStatusCommand { get; }
 
+    public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
+    private RunnerCandidate? _selectedRunner;
+    public RunnerCandidate? SelectedRunner { get => _selectedRunner; set { _selectedRunner = value; OnPropertyChanged(); LoadSelectedModelCommand.RaiseCanExecuteChanged(); } }
+
     private bool _isRunnerRunning;
     public bool IsRunnerRunning { get => _isRunnerRunning; private set => SetProperty(ref _isRunnerRunning, value); }
 
@@ -197,7 +203,23 @@ public sealed class ModelsViewModel : ViewModelBase
     {
         ThrowIfDisposed();
         var model = SelectedModel;
-        if (model is null) return;
+        if (model is null)
+        {
+            RunnerStatusMessage = "Choose a model to load.";
+            return;
+        }
+
+        if (SelectedRunner is null)
+        {
+            RunnerStatusMessage = "Choose a runner engine.";
+            return;
+        }
+
+        if (!string.Equals(SelectedRunner.Engine, "llama.cpp", StringComparison.OrdinalIgnoreCase))
+        {
+            RunnerStatusMessage = $"Engine '{SelectedRunner.Engine}' not supported yet.";
+            return;
+        }
 
         RunnerStatusMessage = null;
         var ok = await _runnerClient.LoadModelAsync(model.FilePath).ConfigureAwait(false);
@@ -231,6 +253,61 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsRunnerRunning));
         OnPropertyChanged(nameof(RunnerModelPath));
         OnPropertyChanged(nameof(RunnerPid));
+        LoadSelectedModelCommand.RaiseCanExecuteChanged();
+    }
+
+    private Task RefreshRunnersCatalogAsync()
+    {
+        try
+        {
+            var list = ScanRunners();
+            RunnerCatalog.SmartReset(list);
+            OnPropertyChanged(nameof(RunnerCatalog));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed scanning runners");
+        }
+        return Task.CompletedTask;
+    }
+
+    private static IReadOnlyList<RunnerCandidate> ScanRunners()
+    {
+        var results = new System.Collections.Generic.List<RunnerCandidate>();
+        var root = LazarusPaths.Runners.RootDir;
+        if (!System.IO.Directory.Exists(root)) return results;
+
+        foreach (var engineDir in System.IO.Directory.EnumerateDirectories(root, "*", System.IO.SearchOption.TopDirectoryOnly))
+        {
+            var engineKey = System.IO.Path.GetFileName(engineDir).Trim();
+            string[] patterns = engineKey.ToLowerInvariant() switch
+            {
+                "llama.cpp" => new[] { "llama-server.exe" },
+                "vllm" => new[] { "start-vllm.cmd", "start-vllm.bat", "vllm*.exe" },
+                "exllamav2" => new[] { "exllamav2*.exe", "*exllama*.exe", "exllamav2*.cmd" },
+                _ => System.Array.Empty<string>()
+            };
+            if (patterns.Length == 0) continue;
+
+            foreach (var pattern in patterns)
+            {
+                System.Collections.Generic.IEnumerable<string> files;
+                try { files = System.IO.Directory.EnumerateFiles(engineDir, pattern, System.IO.SearchOption.AllDirectories); }
+                catch { continue; }
+                foreach (var exe in files)
+                {
+                    var folder = System.IO.Path.GetDirectoryName(exe)!;
+                    var leaf = new System.IO.DirectoryInfo(folder).Name;
+                    results.Add(new RunnerCandidate(engineKey, leaf, folder, exe));
+                }
+            }
+        }
+        return results
+            .GroupBy(r => new Tuple<string,string>(r.Engine.ToLowerInvariant(), r.ResolvedPath), System.Collections.Generic.EqualityComparer<Tuple<string,string>>.Default)
+            .Select(g => g.First())
+            .OrderBy(r => r.Engine)
+            .ThenBy(r => r.DisplayName)
+            .ToList();
     }
 
     private void LoadPreset()
