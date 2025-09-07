@@ -50,8 +50,14 @@ namespace Lazarus.Desktop.ViewModels;
         BrowseFasterWhisperExecutableCommand = new RelayCommand(BrowseFasterWhisperExecutable);
         BrowseRagDatabaseCommand = new RelayCommand(BrowseRagDatabase);
 
-        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runners", "Models", "Audio", "RAG" });
+        Categories = new ObservableCollection<string>(new[] { "General", "Global Actions", "Paths", "Orchestrator", "Runners", "Models", "Audio", "RAG" });
         SelectedCategory = "General";
+        // Keep this VM in sync if settings are changed externally (e.g., reset)
+        _settingsService.SettingsChanged += (_, updated) =>
+        {
+            try { System.Windows.Application.Current.Dispatcher.Invoke(() => SyncFromService(updated)); }
+            catch { SyncFromService(updated); }
+        };
         }
 
     public RelayCommand SaveCommand { get; }
@@ -247,6 +253,49 @@ namespace Lazarus.Desktop.ViewModels;
     {
         get => _ragUseSQLiteVss;
         set => SetProperty(ref _ragUseSQLiteVss, value, OnChangedPersist);
+    }
+
+    private void SyncFromService(AppSettings s)
+    {
+        // General
+        _preferredTheme = s.PreferredTheme ?? "Dark"; OnPropertyChanged(nameof(PreferredTheme));
+        _language = s.Language ?? "en-US"; OnPropertyChanged(nameof(Language));
+        _checkForUpdatesOnStart = s.CheckForUpdatesOnStart; OnPropertyChanged(nameof(CheckForUpdatesOnStart));
+        _startOrchestratorWithApp = s.StartOrchestratorWithApp; OnPropertyChanged(nameof(StartOrchestratorWithApp));
+        _autoStartLastRunner = s.AutoStartLastRunner; OnPropertyChanged(nameof(AutoStartLastRunner));
+
+        // Paths
+        _modelsDirectory = s.ModelsDirectory; OnPropertyChanged(nameof(ModelsDirectory));
+        _cacheDirectory = s.CacheDirectory; OnPropertyChanged(nameof(CacheDirectory));
+
+        // Orchestrator
+        _orchestratorBaseUrl = s.OrchestratorBaseUrl; OnPropertyChanged(nameof(OrchestratorBaseUrl));
+        _orchestratorStartupTimeoutSec = s.OrchestratorStartupTimeoutSec; OnPropertyChanged(nameof(OrchestratorStartupTimeoutSec));
+
+        // Runner
+        _activeRunner = s.ActiveRunner; OnPropertyChanged(nameof(ActiveRunner));
+        _activeModelId = string.IsNullOrWhiteSpace(s.ActiveModelId) ? null : s.ActiveModelId; OnPropertyChanged(nameof(ActiveModelId));
+        _llamaServerExecutablePath = s.LlamaCpp.ServerExecutablePath; OnPropertyChanged(nameof(LlamaServerExecutablePath));
+        _llamaAdditionalArgs = s.LlamaCpp.AdditionalArgs; OnPropertyChanged(nameof(LlamaAdditionalArgs));
+        _llamaPort = s.LlamaCpp.Port; OnPropertyChanged(nameof(LlamaPort));
+        _llamaGpuLayers = s.LlamaCpp.GpuLayers; OnPropertyChanged(nameof(LlamaGpuLayers));
+        _llamaUseCuda = s.LlamaCpp.UseCuda; OnPropertyChanged(nameof(LlamaUseCuda));
+
+        // Audio
+        _audioEnableTts = s.Audio.EnableTts; OnPropertyChanged(nameof(AudioEnableTts));
+        _audioPiperExecutable = s.Audio.PiperExecutable; OnPropertyChanged(nameof(AudioPiperExecutable));
+        _audioPiperVoice = s.Audio.PiperVoice; OnPropertyChanged(nameof(AudioPiperVoice));
+        _audioEnableAsr = s.Audio.EnableAsr; OnPropertyChanged(nameof(AudioEnableAsr));
+        _audioFasterWhisperExecutable = s.Audio.FasterWhisperExecutable; OnPropertyChanged(nameof(AudioFasterWhisperExecutable));
+
+        // Logging
+        _loggingLevel = s.Logging.Level; OnPropertyChanged(nameof(LoggingLevel));
+        _loggingEnableStructured = s.Logging.EnableStructured; OnPropertyChanged(nameof(LoggingEnableStructured));
+
+        // RAG
+        _ragEnableVectorStore = s.Rag.EnableVectorStore; OnPropertyChanged(nameof(RagEnableVectorStore));
+        _ragDatabasePath = s.Rag.DatabasePath; OnPropertyChanged(nameof(RagDatabasePath));
+        _ragUseSQLiteVss = s.Rag.UseSQLiteVss; OnPropertyChanged(nameof(RagUseSQLiteVss));
     }
 
     private void OnChangedPersist()

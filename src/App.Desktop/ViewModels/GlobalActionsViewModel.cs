@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Windows;
 using Lazarus.Desktop.Services;
 using Lazarus.Shared;
 using Lazarus.Shared.Settings;
@@ -52,6 +53,21 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
         OpenLogsFolderCommand = new RelayCommand(() => OpenFolder(LazarusPaths.FlatLogs));
         OpenSettingsFolderCommand = new RelayCommand(() => OpenFolder(SettingsPaths.AppDataRoot));
         OpenModelsFolderCommand = new RelayCommand(() => OpenFolder(LazarusPaths.Models.RootDir));
+
+        ResetSettingsCommand = new RelayCommand(async () =>
+        {
+            var result = MessageBox.Show(
+                "Reset all settings to defaults? This cannot be undone.",
+                "Confirm Reset",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+
+            var svc = App.ServiceProvider.GetRequiredService<ISettingsService>();
+            // Reset to default schema and persist
+            await svc.SaveAsync(AppSettings.CreateDefault()).ConfigureAwait(false);
+            // SettingsViewModel is subscribed to SettingsChanged and will refresh UI
+        });
     }
 
     public RelayCommand CheckUpdatesCommand { get; }
@@ -62,6 +78,7 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
     public RelayCommand OpenLogsFolderCommand { get; }
     public RelayCommand OpenSettingsFolderCommand { get; }
     public RelayCommand OpenModelsFolderCommand { get; }
+    public RelayCommand ResetSettingsCommand { get; }
 
     private static void OpenFolder(string path)
     {
