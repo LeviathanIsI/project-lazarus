@@ -34,6 +34,7 @@ public static class ServiceCollectionExtensions
         services.Configure<OrchestratorOptions>(configuration.GetSection(OrchestratorOptions.SectionName));
         services.Configure<UIOptions>(configuration.GetSection(UIOptions.SectionName));
         services.Configure<BinaryValidationOptions>(configuration.GetSection(BinaryValidationOptions.SectionName));
+        services.Configure<UpdatesOptions>(configuration.GetSection(UpdatesOptions.SectionName));
 
         // Add core services
         services.AddLazarusCore(configuration);
@@ -184,6 +185,7 @@ public static class ServiceCollectionExtensions
         // DEBUG: uses `dotnet run`; RELEASE: tries App.Orchestrator.Host.exe near the app
         services.AddSingleton<IOrchestratorProcessService, OrchestratorProcessService>();
         services.AddHostedService<OrchestratorBootstrapHostedService>();
+        services.AddHostedService<UpdateCheckHostedService>();
         // Optionally auto-start last runner/model once orchestrator is up
         services.AddHostedService<RunnerAutoStartHostedService>();
 
