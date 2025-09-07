@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
@@ -29,6 +30,9 @@ namespace Lazarus.Desktop
 
         protected override async void OnStartup(StartupEventArgs e)
         {
+            // Increase binding trace verbosity during diagnostics
+            PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Information;
+
             try
             {
                 // Ensure first-run directory layout exists before host/logging initialization
@@ -58,10 +62,34 @@ namespace Lazarus.Desktop
                 _logger.LogDebug("LazarusPaths.UserContent.GeneratedOutput: {GenOut}", Lazarus.Shared.LazarusPaths.UserContent.GeneratedOutput);
 
                 // Perform lightweight binary validation before UI initialization
-                await ValidateBinariesAsync().ConfigureAwait(true);
+                // Swallow cancellation so UI remains visible for diagnostics
+                try
+                {
+                    await ValidateBinariesAsync().ConfigureAwait(true);
+                }
+                catch (OperationCanceledException oce)
+                {
+                    _logger?.LogWarning(oce, "Startup binary validation cancelled; continuing to show UI for diagnostics");
+                    Debug.WriteLine("[Startup] Binary validation canceled: " + oce.Message);
+                }
 
                 // Initialize and show the main window
                 await InitializeMainWindowAsync().ConfigureAwait(true);
+            }
+            catch (TaskCanceledException tex)
+            {
+                // Suppress TaskCanceledException to keep UI alive during diagnostics
+                Debug.WriteLine("[Startup] TaskCanceledException suppressed so UI stays alive: " + tex);
+                _logger?.LogWarning(tex, "Startup canceled; keeping UI alive for diagnostics");
+
+                try
+                {
+                    if (ServiceProvider != null)
+                    {
+                        await InitializeMainWindowAsync().ConfigureAwait(true);
+                    }
+                }
+                catch { }
             }
             catch (Exception ex)
             {
@@ -78,9 +106,9 @@ namespace Lazarus.Desktop
                         MessageBoxImage.Error);
                 }
 
-                // Shutdown the application
-                Shutdown(1);
-                return;
+                // Avoid immediate shutdown during diagnostics to inspect UI state
+                // Shutdown(1);
+                // return;
             }
 
             base.OnStartup(e);
