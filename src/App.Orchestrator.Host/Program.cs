@@ -42,9 +42,9 @@ app.MapGet("/api/models", (IModelInventoryService inventory) =>
         Id = m.ModelKey,
         Name = m.DisplayName,
         Path = m.FilePath,
-        SizeBytes = TrySize(m.FilePath),
+        SizeBytes = HostHelpers.TrySize(m.FilePath),
         Architecture = m.Format.ToString(),
-        SupportedRunners = SupportedRunnersFor(m.PreferredRunner)
+        SupportedRunners = HostHelpers.SupportedRunnersFor(m.PreferredRunner)
     });
     return Results.Json(list);
 });
@@ -202,37 +202,48 @@ app.MapPost("/v1/chat/completions", async (HttpRequest incoming) =>
     }
 });
 
-app.Run();
-
-static long TrySize(string path)
+// Start or hot-swap model into the runner
+app.MapPost("/runner/load", (LoadRunnerRequest req, IModelInventoryService inventory) =>
 {
-    try
+    if (req is null || string.IsNullOrWhiteSpace(req.ModelPath))
+        return Results.BadRequest(new { error = "modelPath required" });
+
+    var fullPath = Path.GetFullPath(req.ModelPath);
+    if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
+        return Results.BadRequest(new { error = "modelPath not found" });
+
+    var runnerType = HostHelpers.InferRunnerType(fullPath);
+    var modelId = HostHelpers.InferModelKey(fullPath);
+
+    var existing = runners.Values.FirstOrDefault();
+    var hotSwapped = existing is not null;
+
+    if (existing is not null)
     {
-        if (File.Exists(path)) return new FileInfo(path).Length;
-        if (Directory.Exists(path))
-        {
-            long total = 0;
-            foreach (var f in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
-            {
-                try { total += new FileInfo(f).Length; } catch { }
-            }
-            return total;
-        }
+        existing.ModelId = modelId;
+        existing.RunnerType = runnerType;
+        // Keep existing port to simulate in-place hot-swap
+        runners[existing.Id] = existing;
+        return Results.Json(new { status = "ok", hotSwapped = true, runnerId = existing.Id, port = existing.Port, runnerType, modelId, modelPath = fullPath });
     }
-    catch { }
-    return 0L;
-}
 
-static string[] SupportedRunnersFor(Lazarus.Shared.RunnerKind preferred)
-{
-    return preferred switch
+    // Start new simulated runner
+    var port = runnerType.Equals("LlamaCpp", StringComparison.OrdinalIgnoreCase) ? 8080 : 8081;
+    var id = Guid.NewGuid().ToString("n");
+    var info = new RunnerInfo
     {
-        Lazarus.Shared.RunnerKind.LlamaCpp => new[] { "LlamaCpp" },
-        Lazarus.Shared.RunnerKind.Vllm => new[] { "VLLM" },
-        Lazarus.Shared.RunnerKind.ExLlamaV2 => new[] { "ExLlamaV2" },
-        _ => Array.Empty<string>()
+        Id = id,
+        ModelId = modelId,
+        RunnerType = runnerType,
+        Port = port,
+        StartedAt = DateTimeOffset.UtcNow
     };
-}
+    runners[id] = info;
+
+    return Results.Json(new { status = "ok", hotSwapped = false, runnerId = id, port, runnerType, modelId, modelPath = fullPath });
+});
+
+app.Run();
 
 // DTOs mirroring Desktop client expectations (property names in camelCase)
 public sealed class ModelInfo
@@ -276,4 +287,55 @@ public sealed class RunnerStatus
     public bool IsHealthy { get; set; }
     public DateTimeOffset LastHealthCheck { get; set; }
     public string? ErrorMessage { get; set; }
+}
+
+public sealed class LoadRunnerRequest
+{
+    public required string ModelPath { get; set; }
+}
+
+internal static class HostHelpers
+{
+    public static long TrySize(string path)
+    {
+        try
+        {
+            if (File.Exists(path)) return new FileInfo(path).Length;
+            if (Directory.Exists(path))
+            {
+                long total = 0;
+                foreach (var f in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+                {
+                    try { total += new FileInfo(f).Length; } catch { }
+                }
+                return total;
+            }
+        }
+        catch { }
+        return 0L;
+    }
+
+    public static string[] SupportedRunnersFor(Lazarus.Shared.RunnerKind preferred)
+    {
+        return preferred switch
+        {
+            Lazarus.Shared.RunnerKind.LlamaCpp => new[] { "LlamaCpp" },
+            Lazarus.Shared.RunnerKind.Vllm => new[] { "VLLM" },
+            Lazarus.Shared.RunnerKind.ExLlamaV2 => new[] { "ExLlamaV2" },
+            _ => Array.Empty<string>()
+        };
+    }
+
+    public static string InferRunnerType(string modelPath)
+    {
+        var ext = Path.GetExtension(modelPath).ToLowerInvariant();
+        return ext == ".gguf" ? "LlamaCpp" : "VLLM";
+    }
+
+    public static string InferModelKey(string modelPath)
+    {
+        if (File.Exists(modelPath))
+            return Path.GetFileNameWithoutExtension(modelPath);
+        return new DirectoryInfo(modelPath).Name;
+    }
 }
