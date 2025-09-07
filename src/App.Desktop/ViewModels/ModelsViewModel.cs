@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using Lazarus.Shared;
@@ -18,22 +19,30 @@ public sealed class ModelsViewModel : ViewModelBase
     private readonly IModelPresetService _presets;
     private readonly ILogger<ModelsViewModel> _logger;
     private readonly IOrchestratorRunnerClient _runnerClient;
+    private readonly IOrchestratorClient _orchestratorClient;
     private readonly Func<AdapterInfo, SelectableAdapter> _adapterFactory;
 
-    public ModelsViewModel(IModelInventoryService inventory, IModelPresetService presets, ILogger<ModelsViewModel> logger, Func<AdapterInfo, SelectableAdapter> adapterFactory, Lazarus.Desktop.Services.IOrchestratorRunnerClient runnerClient)
+    public ModelsViewModel(
+        IModelInventoryService inventory,
+        IModelPresetService presets,
+        ILogger<ModelsViewModel> logger,
+        Func<AdapterInfo, SelectableAdapter> adapterFactory,
+        Lazarus.Desktop.Services.IOrchestratorRunnerClient runnerClient,
+        IOrchestratorClient orchestratorClient)
     {
         _inventory = inventory;
         _presets = presets;
         _logger = logger;
         _adapterFactory = adapterFactory;
         _runnerClient = runnerClient;
+        _orchestratorClient = orchestratorClient;
         // Ensure preset folder exists for smooth UX
         _presets.EnsureFolders();
 
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
         LoadSelectedModelCommand = new RelayCommand(
             async () => await LoadSelectedModelAsync(),
-            () => SelectedModel is not null && SelectedRunner is not null && !IsRunnerRunning && !IsDisposed);
+            () => SelectedModel is not null && SelectedRunner is not null && !IsRunnerRunning && _orchestratorClient.IsHealthy && !IsDisposed);
         UnloadRunnerCommand = new RelayCommand(async () => await UnloadRunnerAsync(), () => !IsDisposed);
         RefreshRunnerStatusCommand = new RelayCommand(async () => { await RefreshRunnerStatusAsync(); await RefreshRunnersCatalogAsync(); }, () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
@@ -41,6 +50,15 @@ public sealed class ModelsViewModel : ViewModelBase
 
         Refresh();
         _ = RefreshRunnersCatalogAsync();
+
+        // Observe orchestrator health to update enablement and messaging
+        _orchestratorClient.HealthStatusChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(IsOrchestratorHealthy));
+            OnPropertyChanged(nameof(LoadDisabledReason));
+            OnPropertyChanged(nameof(ShowRunnerHint));
+            LoadSelectedModelCommand.RaiseCanExecuteChanged();
+        };
     }
 
     // Collections (bound to dropdowns/lists)
@@ -52,7 +70,26 @@ public sealed class ModelsViewModel : ViewModelBase
 
     // Selections
     private BaseModelInfo? _selectedModel;
-    public BaseModelInfo? SelectedModel { get => _selectedModel; set { _selectedModel = value; OnPropertyChanged(); LoadSelectedModelCommand.RaiseCanExecuteChanged(); } }
+    public BaseModelInfo? SelectedModel
+    {
+        get => _selectedModel;
+        set
+        {
+            _selectedModel = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(VisibleBaseModels));
+            OnPropertyChanged(nameof(VisibleRunnerCatalog));
+            OnPropertyChanged(nameof(LoadDisabledReason));
+            OnPropertyChanged(nameof(ShowRunnerHint));
+
+            // If current runner cannot load this model, clear selection
+            if (_selectedModel is not null && _selectedRunner is not null && !IsCompatible(_selectedModel, _selectedRunner))
+            {
+                SelectedRunner = null;
+            }
+            LoadSelectedModelCommand.RaiseCanExecuteChanged();
+        }
+    }
 
     // Selected single LoRA adapter for now
     private AdapterInfo? _selectedLora;
@@ -138,7 +175,24 @@ public sealed class ModelsViewModel : ViewModelBase
 
     public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
     private RunnerCandidate? _selectedRunner;
-    public RunnerCandidate? SelectedRunner { get => _selectedRunner; set { _selectedRunner = value; OnPropertyChanged(); LoadSelectedModelCommand.RaiseCanExecuteChanged(); } }
+    public RunnerCandidate? SelectedRunner
+    {
+        get => _selectedRunner;
+        set
+        {
+            _selectedRunner = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(VisibleBaseModels));
+            OnPropertyChanged(nameof(LoadDisabledReason));
+
+            // If selected model is incompatible with this runner, clear the model
+            if (_selectedRunner is not null && _selectedModel is not null && !IsCompatible(_selectedModel, _selectedRunner))
+            {
+                SelectedModel = null;
+            }
+            LoadSelectedModelCommand.RaiseCanExecuteChanged();
+        }
+    }
 
     private bool _isRunnerRunning;
     public bool IsRunnerRunning { get => _isRunnerRunning; private set => SetProperty(ref _isRunnerRunning, value); }
@@ -151,6 +205,33 @@ public sealed class ModelsViewModel : ViewModelBase
 
     private string? _runnerStatusMessage;
     public string? RunnerStatusMessage { get => _runnerStatusMessage; private set => SetProperty(ref _runnerStatusMessage, value); }
+
+    // Orchestrator health for enablement/messaging
+    public bool IsOrchestratorHealthy => _orchestratorClient.IsHealthy;
+
+    // Show hint to choose runner when a model is selected first
+    public bool ShowRunnerHint => SelectedModel is not null && SelectedRunner is null && !IsRunnerRunning;
+
+    // Filtered models based on runner selection
+    public IEnumerable<BaseModelInfo> VisibleBaseModels
+        => SelectedRunner is null ? BaseModels : BaseModels.Where(m => IsCompatible(m, SelectedRunner));
+
+    // Filtered runners based on model selection
+    public IEnumerable<RunnerCandidate> VisibleRunnerCatalog
+        => SelectedModel is null ? RunnerCatalog : RunnerCatalog.Where(r => IsCompatible(SelectedModel, r));
+
+    // Inline UX hint for why Load is disabled
+    public string? LoadDisabledReason
+    {
+        get
+        {
+            if (IsRunnerRunning) return "Runner already running";
+            if (!IsOrchestratorHealthy) return "Orchestrator offline";
+            if (SelectedRunner is null) return SelectedModel is null ? "Choose a runner and model" : "Choose a runner for this model";
+            if (SelectedModel is null) return "Select a model to enable loading";
+            return null;
+        }
+    }
 
     private bool CanSave() => !IsDisposed && !string.IsNullOrWhiteSpace(NewPresetName);
 
@@ -256,6 +337,7 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(RunnerModelPath));
         OnPropertyChanged(nameof(RunnerPid));
         LoadSelectedModelCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(LoadDisabledReason));
     }
 
     private Task RefreshRunnersCatalogAsync()
@@ -265,6 +347,7 @@ public sealed class ModelsViewModel : ViewModelBase
             var list = ScanRunners();
             RunnerCatalog.SmartReset(list);
             OnPropertyChanged(nameof(RunnerCatalog));
+            OnPropertyChanged(nameof(VisibleRunnerCatalog));
         }
         catch (Exception ex)
         {
@@ -348,4 +431,16 @@ public sealed class ModelsViewModel : ViewModelBase
 
     private static int Clamp(int value, IntParam param)
         => Math.Max(param.Min, Math.Min(param.Max, value));
+
+    private static bool IsCompatible(BaseModelInfo model, RunnerCandidate runner)
+    {
+        var engine = runner.Engine.ToLowerInvariant();
+        return engine switch
+        {
+            "llama.cpp" => model.Format == ModelFormat.GGUF,
+            "vllm" => model.Format == ModelFormat.HF,
+            "exllamav2" => model.Format == ModelFormat.HF,
+            _ => false
+        };
+    }
 }
