@@ -55,16 +55,24 @@
             <TabItem Header="Llama.cpp">
                 <StackPanel Margin="12" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Binary Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="380" Text="{Binding LlamaBinaryDir, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Server Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBox Width="380" Text="{Binding LlamaServerExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Default Port" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="100" Text="{Binding LlamaDefaultPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Port" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBox Width="100" Text="{Binding LlamaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,6">
-                        <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBox Width="100" Text="{Binding LlamaStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="GPU Layers" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBox Width="100" Text="{Binding LlamaGpuLayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,6">
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Use CUDA" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,6">
+                        <TextBlock Width="200" VerticalAlignment="Center" Text="Additional Args" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBox Width="380" Text="{Binding LlamaAdditionalArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>

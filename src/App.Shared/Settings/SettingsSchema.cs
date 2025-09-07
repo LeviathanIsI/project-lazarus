@@ -42,6 +42,13 @@ public sealed class AppSettings
 
     public string? ActiveModelId { get; set; } = null;
 
+    // Additional sections
+    public TrainingSettings Training { get; set; } = new();
+    public AudioSettings Audio { get; set; } = new();
+    public RagSettings Rag { get; set; } = new();
+    public UiSettings Ui { get; set; } = new();
+    public LoggingSettings Logging { get; set; } = new();
+
     /// <summary>
     /// Creates default settings aligned with the MVP schema.
     /// </summary>
@@ -53,25 +60,11 @@ public sealed class AppSettings
 /// </summary>
 public sealed class LlamaCppSettings
 {
-    /// <summary>
-    /// Optional absolute directory containing llama-server.exe.
-    /// </summary>
-    public string? BinaryDir { get; set; }
-
-    /// <summary>
-    /// Preferred port (orchestrator may adjust to avoid collisions).
-    /// </summary>
-    public int DefaultPort { get; set; } = 11888;
-
-    /// <summary>
-    /// Startup timeout in seconds to wait for health.
-    /// </summary>
-    public int StartupTimeoutSec { get; set; } = 120;
-
-    /// <summary>
-    /// Health endpoint path.
-    /// </summary>
-    public string HealthCheckEndpoint { get; set; } = "/health";
+    public string ServerExecutablePath { get; set; } = @"%LOCALAPPDATA%\Lazarus\Runners\llama.cpp\llama-server.exe";
+    public string AdditionalArgs { get; set; } = string.Empty;
+    public int Port { get; set; } = 8080;
+    public int GpuLayers { get; set; } = 9999;
+    public bool UseCuda { get; set; } = true;
 }
 
 /// <summary>
@@ -115,3 +108,10 @@ public sealed class ExLlamaV2Settings
     /// </summary>
     public int StartupTimeoutSec { get; set; } = 60;
 }
+
+// Placeholder sections for MVP; extend as needed.
+public sealed class TrainingSettings { }
+public sealed class AudioSettings { }
+public sealed class RagSettings { }
+public sealed class UiSettings { }
+public sealed class LoggingSettings { }

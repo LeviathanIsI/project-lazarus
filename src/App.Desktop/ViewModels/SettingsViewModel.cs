@@ -25,9 +25,11 @@ public sealed class SettingsViewModel : ViewModelBase
         _orchestratorBaseUrl = s.OrchestratorBaseUrl;
         _orchestratorStartupTimeoutSec = s.OrchestratorStartupTimeoutSec;
         _activeRunner = s.ActiveRunner;
-        _llamaBinaryDir = s.LlamaCpp.BinaryDir ?? string.Empty;
-        _llamaDefaultPort = s.LlamaCpp.DefaultPort;
-        _llamaStartupTimeoutSec = s.LlamaCpp.StartupTimeoutSec;
+        _llamaServerExecutablePath = s.LlamaCpp.ServerExecutablePath;
+        _llamaAdditionalArgs = s.LlamaCpp.AdditionalArgs;
+        _llamaPort = s.LlamaCpp.Port;
+        _llamaGpuLayers = s.LlamaCpp.GpuLayers;
+        _llamaUseCuda = s.LlamaCpp.UseCuda;
 
         SaveCommand = new RelayCommand(async () => await _settingsService.SaveAsync().ConfigureAwait(false));
         ResetCommand = new RelayCommand(async () => await _settingsService.ResetToDefaultsAsync().ConfigureAwait(false));
@@ -104,25 +106,39 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _activeRunner, value, OnChangedPersist);
     }
 
-    private string _llamaBinaryDir;
-    public string LlamaBinaryDir
+    private string _llamaServerExecutablePath;
+    public string LlamaServerExecutablePath
     {
-        get => _llamaBinaryDir;
-        set => SetProperty(ref _llamaBinaryDir, value, OnChangedPersist);
+        get => _llamaServerExecutablePath;
+        set => SetProperty(ref _llamaServerExecutablePath, value, OnChangedPersist);
     }
 
-    private int _llamaDefaultPort;
-    public int LlamaDefaultPort
+    private string _llamaAdditionalArgs;
+    public string LlamaAdditionalArgs
     {
-        get => _llamaDefaultPort;
-        set => SetProperty(ref _llamaDefaultPort, value, OnChangedPersist);
+        get => _llamaAdditionalArgs;
+        set => SetProperty(ref _llamaAdditionalArgs, value, OnChangedPersist);
     }
 
-    private int _llamaStartupTimeoutSec;
-    public int LlamaStartupTimeoutSec
+    private int _llamaPort;
+    public int LlamaPort
     {
-        get => _llamaStartupTimeoutSec;
-        set => SetProperty(ref _llamaStartupTimeoutSec, value, OnChangedPersist);
+        get => _llamaPort;
+        set => SetProperty(ref _llamaPort, value, OnChangedPersist);
+    }
+
+    private int _llamaGpuLayers;
+    public int LlamaGpuLayers
+    {
+        get => _llamaGpuLayers;
+        set => SetProperty(ref _llamaGpuLayers, value, OnChangedPersist);
+    }
+
+    private bool _llamaUseCuda;
+    public bool LlamaUseCuda
+    {
+        get => _llamaUseCuda;
+        set => SetProperty(ref _llamaUseCuda, value, OnChangedPersist);
     }
 
     private void OnChangedPersist()
@@ -138,10 +154,11 @@ public sealed class SettingsViewModel : ViewModelBase
             s.OrchestratorBaseUrl = OrchestratorBaseUrl;
             s.OrchestratorStartupTimeoutSec = OrchestratorStartupTimeoutSec;
             s.ActiveRunner = ActiveRunner;
-            s.LlamaCpp.BinaryDir = string.IsNullOrWhiteSpace(LlamaBinaryDir) ? null : LlamaBinaryDir;
-            s.LlamaCpp.DefaultPort = LlamaDefaultPort;
-            s.LlamaCpp.StartupTimeoutSec = LlamaStartupTimeoutSec;
+            s.LlamaCpp.ServerExecutablePath = LlamaServerExecutablePath;
+            s.LlamaCpp.AdditionalArgs = LlamaAdditionalArgs ?? string.Empty;
+            s.LlamaCpp.Port = LlamaPort;
+            s.LlamaCpp.GpuLayers = LlamaGpuLayers;
+            s.LlamaCpp.UseCuda = LlamaUseCuda;
         });
     }
 }
-
