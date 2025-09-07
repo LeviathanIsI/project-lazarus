@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
 using Lazarus.Desktop.Extensions;
+using Lazarus.Desktop.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -15,18 +16,23 @@ public sealed class ModelsViewModel : ViewModelBase
     private readonly IModelInventoryService _inventory;
     private readonly IModelPresetService _presets;
     private readonly ILogger<ModelsViewModel> _logger;
+    private readonly IOrchestratorRunnerClient _runnerClient;
     private readonly Func<AdapterInfo, SelectableAdapter> _adapterFactory;
 
-    public ModelsViewModel(IModelInventoryService inventory, IModelPresetService presets, ILogger<ModelsViewModel> logger, Func<AdapterInfo, SelectableAdapter> adapterFactory)
+    public ModelsViewModel(IModelInventoryService inventory, IModelPresetService presets, ILogger<ModelsViewModel> logger, Func<AdapterInfo, SelectableAdapter> adapterFactory, Lazarus.Desktop.Services.IOrchestratorRunnerClient runnerClient)
     {
         _inventory = inventory;
         _presets = presets;
         _logger = logger;
         _adapterFactory = adapterFactory;
+        _runnerClient = runnerClient;
         // Ensure preset folder exists for smooth UX
         _presets.EnsureFolders();
 
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
+        LoadSelectedModelCommand = new RelayCommand(async () => await LoadSelectedModelAsync(), () => SelectedModel is not null && !IsDisposed);
+        UnloadRunnerCommand = new RelayCommand(async () => await UnloadRunnerAsync(), () => !IsDisposed);
+        RefreshRunnerStatusCommand = new RelayCommand(async () => await RefreshRunnerStatusAsync(), () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
         LoadPresetCommand = new RelayCommand(LoadPreset, () => SelectedPresetName is not null && !IsDisposed);
 
@@ -122,6 +128,21 @@ public sealed class ModelsViewModel : ViewModelBase
     public RelayCommand RefreshCommand { get; }
     public RelayCommand SavePresetCommand { get; }
     public RelayCommand LoadPresetCommand { get; }
+    public RelayCommand LoadSelectedModelCommand { get; }
+    public RelayCommand UnloadRunnerCommand { get; }
+    public RelayCommand RefreshRunnerStatusCommand { get; }
+
+    private bool _isRunnerRunning;
+    public bool IsRunnerRunning { get => _isRunnerRunning; private set => SetProperty(ref _isRunnerRunning, value); }
+
+    private string? _runnerModelPath;
+    public string? RunnerModelPath { get => _runnerModelPath; private set => SetProperty(ref _runnerModelPath, value); }
+
+    private int? _runnerPid;
+    public int? RunnerPid { get => _runnerPid; private set => SetProperty(ref _runnerPid, value); }
+
+    private string? _runnerStatusMessage;
+    public string? RunnerStatusMessage { get => _runnerStatusMessage; private set => SetProperty(ref _runnerStatusMessage, value); }
 
     private bool CanSave() => !IsDisposed && !string.IsNullOrWhiteSpace(NewPresetName);
 
@@ -172,6 +193,46 @@ public sealed class ModelsViewModel : ViewModelBase
         PresetNames.Clear();
         foreach (var n in _presets.List()) PresetNames.Add(n);
         OnPropertyChanged(nameof(PresetNames));
+    }
+
+    private async Task LoadSelectedModelAsync()
+    {
+        ThrowIfDisposed();
+        var model = SelectedModel;
+        if (model is null) return;
+
+        RunnerStatusMessage = null;
+        var ok = await _runnerClient.LoadModelAsync(model.FilePath).ConfigureAwait(false);
+        if (!ok)
+        {
+            RunnerStatusMessage = _runnerClient.LastError ?? "Failed to load model.";
+            _logger.LogWarning("LoadSelectedModel failed: {Message}", RunnerStatusMessage);
+        }
+        await RefreshRunnerStatusAsync().ConfigureAwait(false);
+    }
+
+    private async Task UnloadRunnerAsync()
+    {
+        ThrowIfDisposed();
+        RunnerStatusMessage = null;
+        var ok = await _runnerClient.UnloadAsync().ConfigureAwait(false);
+        if (!ok)
+        {
+            RunnerStatusMessage = _runnerClient.LastError ?? "Failed to unload runner.";
+            _logger.LogWarning("UnloadRunner failed: {Message}", RunnerStatusMessage);
+        }
+        await RefreshRunnerStatusAsync().ConfigureAwait(false);
+    }
+
+    private async Task RefreshRunnerStatusAsync()
+    {
+        var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
+        IsRunnerRunning = status.IsRunning;
+        RunnerModelPath = status.ModelPath;
+        RunnerPid = status.Pid;
+        OnPropertyChanged(nameof(IsRunnerRunning));
+        OnPropertyChanged(nameof(RunnerModelPath));
+        OnPropertyChanged(nameof(RunnerPid));
     }
 
     private void LoadPreset()

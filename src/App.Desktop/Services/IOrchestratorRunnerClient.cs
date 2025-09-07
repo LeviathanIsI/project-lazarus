@@ -7,6 +7,7 @@ public interface IOrchestratorRunnerClient : IDisposable
     Task<bool> LoadModelAsync(string modelPath, CancellationToken cancellationToken = default);
     Task<bool> UnloadAsync(CancellationToken cancellationToken = default);
     Task<RunnerProcessStatus> GetStatusAsync(CancellationToken cancellationToken = default);
+    string? LastError { get; }
 }
 
 public sealed record RunnerProcessStatus(
@@ -14,4 +15,3 @@ public sealed record RunnerProcessStatus(
     string? ModelPath,
     int? Pid
 );
-

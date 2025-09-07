@@ -155,7 +155,7 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- Right: Presets -->
+                    <!-- Right: Presets + Runner Control -->
                     <StackPanel Grid.Column="1">
                         <Border Style="{StaticResource GlassCardStyle}" Padding="16" Margin="16,0,0,16">
                             <StackPanel>
@@ -177,6 +177,34 @@
                                 <Button Content="Load"
                                         Style="{StaticResource RainbowAccentButton.AutoFit}"
                                         Command="{Binding LoadPresetCommand}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Runner Control -->
+                        <Border Style="{StaticResource GlassCardStyle}" Padding="16" Margin="16,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Runner" Style="{StaticResource H3TextStyle}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                                    <Button Content="Load Selected"
+                                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                            Command="{Binding LoadSelectedModelCommand}"/>
+                                    <Button Content="Unload"
+                                            Margin="8,0,0,0"
+                                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                            Command="{Binding UnloadRunnerCommand}"/>
+                                    <Button Content="Refresh"
+                                            Margin="8,0,0,0"
+                                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                            Command="{Binding RefreshRunnerStatusCommand}"/>
+                                </StackPanel>
+                                <TextBlock Text="Status:" Style="{StaticResource SecondaryTextStyle}"/>
+                                <TextBlock Text="{Binding IsRunnerRunning}"/>
+                                <TextBlock Text="Model Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerModelPath}" TextWrapping="Wrap"/>
+                                <TextBlock Text="PID:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerPid}"/>
+                                <TextBlock Text="Message:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerStatusMessage}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

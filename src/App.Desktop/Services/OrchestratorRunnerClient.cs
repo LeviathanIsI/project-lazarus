@@ -14,6 +14,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
     private readonly IOptionsMonitor<OrchestratorOptions> _options;
     private readonly JsonSerializerOptions _jsonOptions;
     private bool _disposed;
+    private string? _lastError;
 
     public OrchestratorRunnerClient(HttpClient httpClient, ILogger<OrchestratorRunnerClient> logger, IOptionsMonitor<OrchestratorOptions> options)
     {
@@ -43,6 +44,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
             if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                _lastError = TryExtractError(body) ?? body;
                 _logger.LogWarning("LoadModelAsync failed: {Status} {Body}", (int)response.StatusCode, body);
                 return false;
             }
@@ -54,6 +56,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
+            _lastError = ex.Message;
             _logger.LogError(ex, "Error loading model {ModelPath}", modelPath);
             return false;
         }
@@ -67,13 +70,18 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
             using var response = await _httpClient.PostAsync("/runner/unload", content: null, cancellationToken)
                 .ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                _lastError = TryExtractError(body) ?? body;
                 return false;
+            }
             var payload = await response.Content.ReadFromJsonAsync<SimpleStatus>(_jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
             return payload?.Status?.Equals("ok", StringComparison.OrdinalIgnoreCase) == true;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
+            _lastError = ex.Message;
             _logger.LogError(ex, "Error unloading runner");
             return false;
         }
@@ -90,6 +98,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
         }
         catch (Exception ex)
         {
+            _lastError = ex.Message;
             _logger.LogWarning(ex, "Failed to get runner status");
             return new RunnerProcessStatus(false, null, null);
         }
@@ -103,6 +112,8 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
             _disposed = true;
         }
     }
+
+    public string? LastError => _lastError;
 
     private void ConfigureHttpClient()
     {
@@ -120,5 +131,18 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
 
     private sealed record SimpleStatus(string Status);
     private sealed record LoadRunnerResponse(string Status, bool HotSwapped, string? RunnerId, int? Port, string? RunnerType, string? ModelId, string? ModelPath, int? Pid);
-}
 
+    private static string? TryExtractError(string body)
+    {
+        try
+        {
+            var doc = System.Text.Json.JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("error", out var err))
+            {
+                return err.GetString();
+            }
+        }
+        catch { }
+        return null;
+    }
+}
