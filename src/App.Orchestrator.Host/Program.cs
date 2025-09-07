@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
 
@@ -20,6 +21,7 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddSingleton<IModelInventoryService, ModelInventoryService>();
 builder.Services.AddSingleton<IModelPresetService, ModelPresetService>();
 builder.Services.AddSingleton<IRunnerSupervisor, LlamaCppSupervisor>();
+builder.Services.AddHostedService<RunnerAutoStartService>();
 
 // Simple in-memory runner registry
 var runners = new ConcurrentDictionary<string, RunnerInfo>();
@@ -444,6 +446,54 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         if (File.Exists(p3)) return p3;
 
         return null;
+    }
+}
+
+internal sealed class RunnerAutoStartService : IHostedService
+{
+    private readonly IConfiguration _config;
+    private readonly ILogger<RunnerAutoStartService> _logger;
+    private readonly IRunnerSupervisor _supervisor;
+
+    public RunnerAutoStartService(IConfiguration config, ILogger<RunnerAutoStartService> logger, IRunnerSupervisor supervisor)
+    {
+        _config = config;
+        _logger = logger;
+        _supervisor = supervisor;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        var autoStart = string.Equals(_config["Orchestrator:Runner:AutoStart"], "true", StringComparison.OrdinalIgnoreCase);
+        var modelPath = _config["Orchestrator:Runner:ModelPath"]; // may be blank
+
+        if (!autoStart)
+        {
+            _logger.LogInformation("Runner auto-start disabled by configuration");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(modelPath))
+        {
+            _logger.LogInformation("Runner ModelPath not set; starting idle");
+            return;
+        }
+
+        _logger.LogInformation("Attempting runner auto-start with model: {ModelPath}", modelPath);
+        var ok = await _supervisor.LoadAsync(modelPath, cancellationToken).ConfigureAwait(false);
+        if (!ok)
+        {
+            _logger.LogWarning("Runner auto-start failed; service remains idle");
+        }
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (_supervisor.IsRunning)
+        {
+            _logger.LogInformation("Stopping runner due to host shutdown");
+            await _supervisor.UnloadAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 }
 internal static class HostHelpers
