@@ -92,12 +92,12 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <StackPanel x:Name="RunnerPanel">
+                        <StackPanel x:Name="RunnersPanel">
                             <StackPanel.Style>
                                 <Style TargetType="StackPanel">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Runner">
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Runners">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -128,6 +128,24 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Expander>
+                        </StackPanel>
+
+                        <StackPanel x:Name="ModelsPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Models">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Active Model" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="320" Text="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseActiveModelCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>

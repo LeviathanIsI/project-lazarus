@@ -37,8 +37,9 @@ namespace Lazarus.Desktop.ViewModels;
         BrowseLlamaServerCommand = new RelayCommand(BrowseLlamaServer);
         BrowseModelsDirectoryCommand = new RelayCommand(BrowseModelsDirectory);
         BrowseCacheDirectoryCommand = new RelayCommand(BrowseCacheDirectory);
+        BrowseActiveModelCommand = new RelayCommand(BrowseActiveModel);
 
-        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runner" });
+        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runners", "Models" });
         SelectedCategory = "General";
         }
 
@@ -46,6 +47,7 @@ namespace Lazarus.Desktop.ViewModels;
     public RelayCommand BrowseLlamaServerCommand { get; }
     public RelayCommand BrowseModelsDirectoryCommand { get; }
     public RelayCommand BrowseCacheDirectoryCommand { get; }
+    public RelayCommand BrowseActiveModelCommand { get; }
     
 
     private string _preferredTheme;
@@ -104,6 +106,13 @@ namespace Lazarus.Desktop.ViewModels;
         set => SetProperty(ref _activeRunner, value, OnChangedPersist);
     }
 
+    private string? _activeModelId;
+    public string? ActiveModelId
+    {
+        get => _activeModelId;
+        set => SetProperty(ref _activeModelId, value, OnChangedPersist);
+    }
+
     private string _llamaServerExecutablePath;
     public string LlamaServerExecutablePath
     {
@@ -151,6 +160,7 @@ namespace Lazarus.Desktop.ViewModels;
         s.OrchestratorBaseUrl = OrchestratorBaseUrl;
         s.OrchestratorStartupTimeoutSec = OrchestratorStartupTimeoutSec;
         s.ActiveRunner = ActiveRunner;
+        s.ActiveModelId = string.IsNullOrWhiteSpace(ActiveModelId) ? null : ActiveModelId;
         s.LlamaCpp.ServerExecutablePath = LlamaServerExecutablePath;
         s.LlamaCpp.AdditionalArgs = LlamaAdditionalArgs ?? string.Empty;
         s.LlamaCpp.Port = LlamaPort;
@@ -212,6 +222,21 @@ namespace Lazarus.Desktop.ViewModels;
         {
             var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
             if (!string.IsNullOrWhiteSpace(dir)) CacheDirectory = dir!;
+        }
+    }
+
+    private void BrowseActiveModel()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select Model File",
+            Filter = "Models (*.gguf;*.safetensors)|*.gguf;*.safetensors|All files (*.*)|*.*",
+            CheckFileExists = true,
+            CheckPathExists = true
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            ActiveModelId = dlg.FileName;
         }
     }
 
