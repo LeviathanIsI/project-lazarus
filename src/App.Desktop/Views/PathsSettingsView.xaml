@@ -2,6 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel>
+    <TextBlock Text="Paths Settings View LOADED"
+               FontSize="18"
+               FontWeight="Bold"
+               Margin="0,0,0,12"
+               Foreground="{StaticResource TextPrimaryBrush}"/>
     <StackPanel Orientation="Horizontal" Margin="0,6">
       <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
       <TextBox Width="320" Text="{Binding ModelsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -14,4 +19,3 @@
     </StackPanel>
   </StackPanel>
 </UserControl>
-
