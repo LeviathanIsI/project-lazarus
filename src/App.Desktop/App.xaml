@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="Resources/Icons/LazarusLogo.xaml"/>
                 <ResourceDictionary Source="Themes/UXEnhancements.xaml"/>
                 <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ComboBoxes.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

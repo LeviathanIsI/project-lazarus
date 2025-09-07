@@ -15,6 +15,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
     private readonly JsonSerializerOptions _jsonOptions;
     private bool _disposed;
     private string? _lastError;
+    public event EventHandler<RunnerProcessStatus>? RunnerStatusChanged;
 
     public OrchestratorRunnerClient(HttpClient httpClient, ILogger<OrchestratorRunnerClient> logger, IOptionsMonitor<OrchestratorOptions> options)
     {
@@ -52,6 +53,11 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
             var payload = await response.Content.ReadFromJsonAsync<LoadRunnerResponse>(_jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
             var ok = payload?.Status?.Equals("ok", StringComparison.OrdinalIgnoreCase) == true;
+            if (ok)
+            {
+                var status = await GetStatusAsync(cancellationToken).ConfigureAwait(false);
+                RunnerStatusChanged?.Invoke(this, status);
+            }
             return ok;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
@@ -77,7 +83,13 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
             }
             var payload = await response.Content.ReadFromJsonAsync<SimpleStatus>(_jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
-            return payload?.Status?.Equals("ok", StringComparison.OrdinalIgnoreCase) == true;
+            var ok = payload?.Status?.Equals("ok", StringComparison.OrdinalIgnoreCase) == true;
+            if (ok)
+            {
+                var status = await GetStatusAsync(cancellationToken).ConfigureAwait(false);
+                RunnerStatusChanged?.Invoke(this, status);
+            }
+            return ok;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -94,7 +106,9 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
         {
             var status = await _httpClient.GetFromJsonAsync<RunnerProcessStatus>("/runner/status", _jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
-            return status ?? new RunnerProcessStatus(false, null, null);
+            var s = status ?? new RunnerProcessStatus(false, null, null);
+            RunnerStatusChanged?.Invoke(this, s);
+            return s;
         }
         catch (Exception ex)
         {

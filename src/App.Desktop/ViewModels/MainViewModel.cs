@@ -36,7 +36,9 @@ namespace Lazarus.Desktop.ViewModels
 
             // Prime runner status and start a light polling timer
             _ = RefreshRunnerStatusAsync();
+            _ = RefreshConnectionAsync();
             _runnerTimer = new System.Threading.Timer(async _ => await RefreshRunnerStatusAsync(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
+            _runnerClient.RunnerStatusChanged += OnRunnerStatusChanged;
 
             _logger.LogDebug("MainViewModel initialized");
         }
@@ -147,6 +149,7 @@ namespace Lazarus.Desktop.ViewModels
         {
             try { _runnerTimer?.Dispose(); } catch { }
             _orchestratorClient.HealthStatusChanged -= OnOrchestratorHealthChanged;
+            _runnerClient.RunnerStatusChanged -= OnRunnerStatusChanged;
             _logger.LogDebug("MainViewModel disposed");
         }
 
@@ -169,6 +172,20 @@ namespace Lazarus.Desktop.ViewModels
             {
                 _logger.LogDebug(ex, "Failed to refresh runner status");
             }
+        }
+
+        private async void OnRunnerStatusChanged(object? sender, RunnerProcessStatus e)
+        {
+            try
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    IsRunnerRunning = e.IsRunning;
+                    LoadedModelName = string.IsNullOrWhiteSpace(e.ModelPath) ? null : System.IO.Path.GetFileNameWithoutExtension(e.ModelPath);
+                    OnPropertyChanged(nameof(RunnerStatusTooltip));
+                });
+            }
+            catch { }
         }
     }
 }

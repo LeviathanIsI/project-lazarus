@@ -8,6 +8,7 @@ public interface IOrchestratorRunnerClient : IDisposable
     Task<bool> UnloadAsync(CancellationToken cancellationToken = default);
     Task<RunnerProcessStatus> GetStatusAsync(CancellationToken cancellationToken = default);
     string? LastError { get; }
+    event EventHandler<RunnerProcessStatus>? RunnerStatusChanged;
 }
 
 public sealed record RunnerProcessStatus(

@@ -50,9 +50,9 @@ public sealed class ModelsViewModel : ViewModelBase
     private BaseModelInfo? _selectedModel;
     public BaseModelInfo? SelectedModel { get => _selectedModel; set { _selectedModel = value; OnPropertyChanged(); } }
 
-    // Legacy checkbox selection support alongside explicit list
-    public ObservableCollection<SelectableAdapter> LoRAs { get; } = new();
-    public ObservableCollection<AdapterInfo> SelectedLoras { get; } = new();
+    // Selected single LoRA adapter for now
+    private AdapterInfo? _selectedLora;
+    public AdapterInfo? SelectedLora { get => _selectedLora; set => SetProperty(ref _selectedLora, value); }
 
     private TokenizerInfo? _selectedTokenizer;
     public TokenizerInfo? SelectedTokenizer
@@ -153,10 +153,8 @@ public sealed class ModelsViewModel : ViewModelBase
 
         BaseModels.SmartReset(inv.BaseModels);
 
-        // Populate both raw adapter list and checkbox-friendly list
+        // Populate adapters list
         Loras.SmartReset(inv.Loras);
-        LoRAs.Clear();
-        foreach (var l in inv.Loras) LoRAs.Add(_adapterFactory(l));
 
         Tokenizers.SmartReset(inv.Tokenizers);
 
@@ -165,7 +163,7 @@ public sealed class ModelsViewModel : ViewModelBase
         PresetNames.SmartReset(_presets.List());
 
         OnPropertyChanged(nameof(BaseModels));
-        OnPropertyChanged(nameof(LoRAs));
+        // no checkbox list anymore
         OnPropertyChanged(nameof(Tokenizers));
         OnPropertyChanged(nameof(Embeddings));
         OnPropertyChanged(nameof(PresetNames));
@@ -180,7 +178,7 @@ public sealed class ModelsViewModel : ViewModelBase
         var preset = new ModelPreset(
             Name: NewPresetName!.Trim(),
             BaseModelKey: baseKey,
-            Loras: (SelectedLoras.Any() ? SelectedLoras.Select(x => x.Name) : LoRAs.Where(l => l.IsSelected).Select(l => l.Info.Name)).ToList(),
+            Loras: (_selectedLora is not null ? new System.Collections.Generic.List<string> { _selectedLora.Name } : new System.Collections.Generic.List<string>()),
             Tokenizer: SelectedTokenizer?.Name,
             Embedding: SelectedEmbedding?.Name,
             Params: new ModelParams(Temperature, TopP, MaxTokens, RepeatPenalty, Mirostat)
@@ -248,14 +246,8 @@ public sealed class ModelsViewModel : ViewModelBase
         SelectedTokenizer = Tokenizers.FirstOrDefault(m => string.Equals(m.Name, preset.Tokenizer, StringComparison.OrdinalIgnoreCase));
         SelectedEmbedding = Embeddings.FirstOrDefault(m => string.Equals(m.Name, preset.Embedding, StringComparison.OrdinalIgnoreCase));
 
-        SelectedLoras.Clear();
-        foreach (var name in preset.Loras)
-        {
-            var match = Loras.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (match != null) SelectedLoras.Add(match);
-        }
-        // Keep checkbox list in sync if UI uses it
-        foreach (var l in LoRAs) l.IsSelected = preset.Loras.Any(name => string.Equals(name, l.Info.Name, StringComparison.OrdinalIgnoreCase));
+        _selectedLora = Loras.FirstOrDefault(a => preset.Loras.Any(name => string.Equals(name, a.Name, StringComparison.OrdinalIgnoreCase)));
+        OnPropertyChanged(nameof(SelectedLora));
 
         Temperature = preset.Params.Temperature;
         TopP = preset.Params.TopP;

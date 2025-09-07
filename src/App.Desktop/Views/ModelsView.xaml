@@ -85,6 +85,8 @@
                                               SelectedItem="{Binding SelectedTokenizer}"
                                               DisplayMemberPath="Name"
                                               Margin="0,8,0,0"/>
+                                    <TextBlock Text="Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{Binding SelectedTokenizer.FilePath}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource GlassCardStyle}" Padding="16" Grid.Column="1" Margin="8,0,0,0">
@@ -94,6 +96,8 @@
                                               SelectedItem="{Binding SelectedEmbedding}"
                                               DisplayMemberPath="Name"
                                               Margin="0,8,0,0"/>
+                                    <TextBlock Text="Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{Binding SelectedEmbedding.FilePath}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
