@@ -36,7 +36,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Import Data"
-                                Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                Style="{StaticResource SecondaryGlassButtonStyle}"
                                 Margin="0,0,12,0"
                                 AutomationProperties.Name="Import data for analysis"
                                 AutomationProperties.HelpText="Import documents or datasets for entity extraction"/>

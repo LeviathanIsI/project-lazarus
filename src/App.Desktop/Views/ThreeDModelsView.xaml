@@ -36,7 +36,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Import Models"
-                                Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                Style="{StaticResource SecondaryGlassButtonStyle}"
                                 Margin="0,0,12,0"
                                 AutomationProperties.Name="Import 3D model files"
                                 AutomationProperties.HelpText="Import existing 3D models for viewing and editing"/>
