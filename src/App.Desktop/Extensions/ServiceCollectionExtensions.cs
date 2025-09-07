@@ -234,7 +234,7 @@ internal sealed class ApplicationHostService : IHostedService
 
                     // Load user settings early
                     var settings = _serviceProvider.GetRequiredService<ISettingsService>();
-                    await settings.LoadAsync(cancellationToken).ConfigureAwait(false);
+                    await settings.LoadAsync().ConfigureAwait(false);
 
                     // Ensure database is ready
                     await _serviceProvider.EnsureDatabaseAsync(cancellationToken: cancellationToken)

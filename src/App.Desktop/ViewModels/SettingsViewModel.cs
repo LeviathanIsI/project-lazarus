@@ -32,23 +32,10 @@ public sealed class SettingsViewModel : ViewModelBase
         _llamaUseCuda = s.LlamaCpp.UseCuda;
 
         SaveCommand = new RelayCommand(async () => await _settingsService.SaveAsync().ConfigureAwait(false));
-        ResetCommand = new RelayCommand(async () => await _settingsService.ResetToDefaultsAsync().ConfigureAwait(false));
-        ImportCommand = new RelayCommand<string?>(async path =>
-        {
-            if (!string.IsNullOrWhiteSpace(path))
-                await _settingsService.ImportAsync(path!).ConfigureAwait(false);
-        });
-        ExportCommand = new RelayCommand<string?>(async path =>
-        {
-            if (!string.IsNullOrWhiteSpace(path))
-                await _settingsService.ExportAsync(path!).ConfigureAwait(false);
-        });
     }
 
     public RelayCommand SaveCommand { get; }
-    public RelayCommand ResetCommand { get; }
-    public RelayCommand<string?> ImportCommand { get; }
-    public RelayCommand<string?> ExportCommand { get; }
+    
 
     private string _preferredTheme;
     public string PreferredTheme
@@ -144,21 +131,20 @@ public sealed class SettingsViewModel : ViewModelBase
     private void OnChangedPersist()
     {
         // Push values into the settings service and schedule a save.
-        _settingsService.Update(s =>
-        {
-            s.PreferredTheme = PreferredTheme;
-            s.Language = Language;
-            s.CheckForUpdatesOnStart = CheckForUpdatesOnStart;
-            s.ModelsDirectory = ModelsDirectory;
-            s.CacheDirectory = CacheDirectory;
-            s.OrchestratorBaseUrl = OrchestratorBaseUrl;
-            s.OrchestratorStartupTimeoutSec = OrchestratorStartupTimeoutSec;
-            s.ActiveRunner = ActiveRunner;
-            s.LlamaCpp.ServerExecutablePath = LlamaServerExecutablePath;
-            s.LlamaCpp.AdditionalArgs = LlamaAdditionalArgs ?? string.Empty;
-            s.LlamaCpp.Port = LlamaPort;
-            s.LlamaCpp.GpuLayers = LlamaGpuLayers;
-            s.LlamaCpp.UseCuda = LlamaUseCuda;
-        });
+        var s = _settingsService.Current;
+        s.PreferredTheme = PreferredTheme;
+        s.Language = Language;
+        s.CheckForUpdatesOnStart = CheckForUpdatesOnStart;
+        s.ModelsDirectory = ModelsDirectory;
+        s.CacheDirectory = CacheDirectory;
+        s.OrchestratorBaseUrl = OrchestratorBaseUrl;
+        s.OrchestratorStartupTimeoutSec = OrchestratorStartupTimeoutSec;
+        s.ActiveRunner = ActiveRunner;
+        s.LlamaCpp.ServerExecutablePath = LlamaServerExecutablePath;
+        s.LlamaCpp.AdditionalArgs = LlamaAdditionalArgs ?? string.Empty;
+        s.LlamaCpp.Port = LlamaPort;
+        s.LlamaCpp.GpuLayers = LlamaGpuLayers;
+        s.LlamaCpp.UseCuda = LlamaUseCuda;
+        _ = _settingsService.SaveAsync();
     }
 }

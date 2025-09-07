@@ -81,7 +81,6 @@
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" >
             <Button Margin="4,0" Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-            <Button Margin="4,0" Content="Reset" Command="{Binding ResetCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -8,14 +8,18 @@ namespace Lazarus.Shared.Settings;
 public static class SettingsPaths
 {
     /// <summary>
-    /// Absolute path to the settings JSON file.
-    /// %LOCALAPPDATA%\Lazarus\settings.json (or LAZARUS_HOME if set).
+    /// %LOCALAPPDATA%\Lazarus root for app data.
     /// </summary>
-    public static string SettingsFile => Path.Combine(Lazarus.Shared.LazarusPaths.Root, "settings.json");
+    public static string AppDataRoot =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lazarus");
+
+    /// <summary>
+    /// Absolute path to the settings JSON file.
+    /// </summary>
+    public static string SettingsFile => Path.Combine(AppDataRoot, "settings.json");
 
     /// <summary>
     /// Absolute path to a temporary settings file used during safe writes.
     /// </summary>
     public static string TempFile => SettingsFile + ".tmp";
 }
-

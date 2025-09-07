@@ -16,7 +16,8 @@ public sealed class SettingsService : ISettingsService
     private readonly ILogger<SettingsService> _logger;
     private readonly object _gate = new();
     private AppSettings _current;
-    private CancellationTokenSource? _saveDebounceCts;
+    // reserved for future debounce implementation
+    // private CancellationTokenSource? _saveDebounceCts;
 
     /// <summary>
     /// Initializes a new instance of <see cref="SettingsService"/>.
@@ -37,13 +38,11 @@ public sealed class SettingsService : ISettingsService
     }
 
     /// <inheritdoc />
-    public string SettingsFilePath => SettingsPaths.SettingsFile;
-
     /// <inheritdoc />
     public event EventHandler<AppSettings>? SettingsChanged;
 
     /// <inheritdoc />
-    public async Task<AppSettings> LoadAsync(CancellationToken cancellationToken = default)
+    public async Task<AppSettings> LoadAsync()
     {
         try
         {
@@ -52,13 +51,13 @@ public sealed class SettingsService : ISettingsService
             if (!File.Exists(SettingsPaths.SettingsFile))
             {
                 _logger.LogInformation("Settings file not found; creating defaults at {File}", SettingsPaths.SettingsFile);
-                await SaveInternalAsync(_current, cancellationToken).ConfigureAwait(false);
+                await SaveInternalAsync(_current, CancellationToken.None).ConfigureAwait(false);
                 OnSettingsChanged(_current);
                 return Current;
             }
 
             await using var stream = File.Open(SettingsPaths.SettingsFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var loaded = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOptions(), cancellationToken).ConfigureAwait(false)
+            var loaded = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOptions(), CancellationToken.None).ConfigureAwait(false)
                 ?? AppSettings.CreateDefault();
 
             UpgradeIfNeeded(loaded);
@@ -77,82 +76,16 @@ public sealed class SettingsService : ISettingsService
     }
 
     /// <inheritdoc />
-    public Task SaveAsync(CancellationToken cancellationToken = default)
+    public Task SaveAsync(AppSettings? settings = null)
     {
-        AppSettings snapshot;
-        lock (_gate) snapshot = _current;
-        return SaveInternalAsync(snapshot, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public void SaveSoon()
-    {
-        // Debounce saves (~2s default for MVP)
-        var delay = TimeSpan.FromSeconds(2);
-
-        var pending = Interlocked.Exchange(ref _saveDebounceCts, new CancellationTokenSource());
-        pending?.Cancel();
-        var cts = _saveDebounceCts!;
-
-        _ = Task.Run(async () =>
+        if (settings is not null)
         {
-            try
-            {
-                await Task.Delay(delay, cts.Token).ConfigureAwait(false);
-                await SaveAsync(cts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Debounced settings save failed");
-            }
-        });
-    }
-
-    /// <inheritdoc />
-    public void Update(Action<AppSettings> apply)
-    {
-        if (apply is null) throw new ArgumentNullException(nameof(apply));
-        lock (_gate)
-        {
-            apply(_current);
+            lock (_gate) _current = settings;
+            OnSettingsChanged(_current);
         }
-        OnSettingsChanged(Current);
-        SaveSoon();
-    }
-
-    /// <inheritdoc />
-    public async Task ResetToDefaultsAsync(CancellationToken cancellationToken = default)
-    {
-        var defaults = AppSettings.CreateDefault();
-        lock (_gate) _current = defaults;
-        OnSettingsChanged(defaults);
-        await SaveInternalAsync(defaults, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task ImportAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException(nameof(filePath));
-        await using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        var imported = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOptions(), cancellationToken).ConfigureAwait(false)
-            ?? AppSettings.CreateDefault();
-        UpgradeIfNeeded(imported);
-        lock (_gate) _current = imported;
-        OnSettingsChanged(imported);
-        await SaveInternalAsync(imported, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task ExportAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException(nameof(filePath));
         AppSettings snapshot;
         lock (_gate) snapshot = _current;
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        await using var stream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await JsonSerializer.SerializeAsync(stream, snapshot, JsonOptions(), cancellationToken).ConfigureAwait(false);
-        await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        return SaveInternalAsync(snapshot, CancellationToken.None);
     }
 
     private async Task SaveInternalAsync(AppSettings settings, CancellationToken cancellationToken)
@@ -164,8 +97,8 @@ public sealed class SettingsService : ISettingsService
             // Write to a tmp file then atomically replace
             await using (var tmpStream = File.Open(SettingsPaths.TempFile, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                await JsonSerializer.SerializeAsync(tmpStream, settings, JsonOptions(), cancellationToken).ConfigureAwait(false);
-                await tmpStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                await JsonSerializer.SerializeAsync(tmpStream, settings, JsonOptions(), CancellationToken.None).ConfigureAwait(false);
+                await tmpStream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
             }
 
 #if NET6_0_OR_GREATER
