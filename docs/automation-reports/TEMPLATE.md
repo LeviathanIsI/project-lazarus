@@ -1,7 +1,7 @@
 # Automation Report <Task Title>
 
 - **Date:** <YYYY-MM-DD HH:mm>
-- **Agents:** <codex>
+- **Agents:** <codex >
 - **Branch:** <branch-or-unknown>
 - **Before SHA:** <before-or-uncommitted>
 - **After SHA:** <after-or-uncommitted>
