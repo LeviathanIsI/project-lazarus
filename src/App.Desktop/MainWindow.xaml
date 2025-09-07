@@ -374,25 +374,7 @@
                             </Grid>
                         </Button>
 
-                        <!-- Models (LLMs) -->
-                        <Button Style="{StaticResource RainbowNavButtonStyle}"
-                                Command="{Binding Navigation.NavigateCommand}"
-                                CommandParameter="Models"
-                                Tag="{Binding Navigation.SelectedView, Converter={StaticResource ViewToTagConverter}, ConverterParameter=Models}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Viewbox Grid.Column="0" Width="20" Height="20">
-                                    <Canvas Width="24" Height="24">
-                                        <Path Data="M3 5H21V7H3V5ZM3 9H21V11H3V9ZM3 13H15V15H3V13ZM3 17H15V19H3V17Z"
-                                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                    </Canvas>
-                                </Viewbox>
-                                <TextBlock Grid.Column="1" Text="Models" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            </Grid>
-                        </Button>
+                        
 
                         <!-- 3D Models -->
                         <Button Style="{StaticResource RainbowNavButtonStyle}"
