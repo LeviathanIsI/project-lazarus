@@ -344,8 +344,25 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             _logger.LogError("Unable to locate llama-server.exe. Configure Orchestrator:Runner:BinaryDir or LAZARUS_BINARIES.");
             return false;
         }
+        // Prefer GPU offload when hardware seems available; otherwise default to CPU-only.
+        var preferGpu = HasCuda() || exe.Contains("cu", StringComparison.OrdinalIgnoreCase) || exe.Contains("cuda", StringComparison.OrdinalIgnoreCase);
 
-        var args = $"--api --host 127.0.0.1 --port {Port} --n-gpu-layers 999 --model \"{modelPath}\"";
+        if (await StartOnceAsync(exe, modelPath, preferGpu ? 999 : 0, cancellationToken).ConfigureAwait(false))
+            return true;
+
+        // If GPU attempt failed quickly, retry with CPU-only as a fallback.
+        if (preferGpu)
+        {
+            _logger.LogWarning("GPU-start failed; retrying llama-server with CPU-only (n-gpu-layers=0)");
+            return await StartOnceAsync(exe, modelPath, 0, cancellationToken).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    private async Task<bool> StartOnceAsync(string exe, string modelPath, int gpuLayers, CancellationToken cancellationToken)
+    {
+        var args = $"--api --host 127.0.0.1 --port {Port} --n-gpu-layers {gpuLayers} --model \"{modelPath}\"";
 
         try
         {
@@ -375,6 +392,7 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
                 _logger.LogWarning(ex, "Failed to create runner log files; continuing without file logging");
             }
 
+            _logger.LogInformation("Starting llama-server: {Exe} {Args}", exe, args);
             _process = Process.Start(psi);
             if (_process is null)
             {
@@ -422,6 +440,13 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
                     // ignore transient errors during startup
                 }
 
+                // If process died, stop early
+                if (_process.HasExited)
+                {
+                    _logger.LogWarning("llama-server exited with code {Code} during startup", _process.ExitCode);
+                    break;
+                }
+
                 await Task.Delay(500, cancellationToken).ConfigureAwait(false);
             }
 
@@ -435,6 +460,19 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             await UnloadAsync(cancellationToken).ConfigureAwait(false);
             return false;
         }
+    }
+
+    private static bool HasCuda()
+    {
+        try
+        {
+            var system32 = Environment.GetFolderPath(Environment.SpecialFolder.System);
+            var nvcuda = Path.Combine(system32, "nvcuda.dll");
+            if (File.Exists(nvcuda)) return true;
+        }
+        catch { }
+        var env = Environment.GetEnvironmentVariable("CUDA_PATH");
+        return !string.IsNullOrWhiteSpace(env);
     }
 
     public async Task UnloadAsync(CancellationToken cancellationToken)
