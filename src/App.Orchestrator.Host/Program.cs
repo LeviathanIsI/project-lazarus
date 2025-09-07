@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net;
-using System.Text.Json.Serialization;
 using Lazarus.Shared;
+using Lazarus.Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +11,9 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Listen(IPAddress.Loopback, 11711);
 });
 
-// Minimal extras for dev visibility
-builder.Services.AddEndpointsApiExplorer();
+// Backend services used by the host
+builder.Services.AddSingleton<IModelInventoryService, ModelInventoryService>();
+builder.Services.AddSingleton<IModelPresetService, ModelPresetService>();
 
 // Simple in-memory runner registry
 var runners = new ConcurrentDictionary<string, RunnerInfo>();
@@ -30,8 +31,41 @@ app.MapGet("/health", () => Results.Json(new
     timestamp = DateTimeOffset.UtcNow
 }));
 
-// Models list (placeholder: returns empty for now)
-app.MapGet("/api/models", () => Results.Json(Array.Empty<ModelInfo>()));
+// Models list (enumerated from LazarusPaths using backend service)
+app.MapGet("/api/models", (IModelInventoryService inventory) =>
+{
+    var inv = inventory.Scan();
+    var list = inv.BaseModels.Select(m => new ModelInfo
+    {
+        Id = m.ModelKey,
+        Name = m.DisplayName,
+        Path = m.FilePath,
+        SizeBytes = TrySize(m.FilePath),
+        Architecture = m.Format.ToString(),
+        SupportedRunners = SupportedRunnersFor(m.PreferredRunner)
+    });
+    return Results.Json(list);
+});
+
+// Presets: list, get, save, delete
+app.MapGet("/api/presets", (IModelPresetService presets) => Results.Json(presets.List()));
+app.MapGet("/api/presets/{name}", (string name, IModelPresetService presets) =>
+{
+    var p = presets.Load(name);
+    return p is null ? Results.NotFound() : Results.Json(p);
+});
+app.MapPost("/api/presets", (ModelPreset preset, IModelPresetService presets) =>
+{
+    presets.Save(preset);
+    return Results.Created($"/api/presets/{Uri.EscapeDataString(preset.Name)}", preset);
+});
+app.MapDelete("/api/presets/{name}", (string name, IModelPresetService presets) =>
+{
+    var concrete = presets as ModelPresetService;
+    if (concrete is null) return Results.StatusCode(501);
+    var ok = concrete.Delete(name);
+    return ok ? Results.NoContent() : Results.NotFound();
+});
 
 // Start runner (simulated)
 app.MapPost("/api/runners", (StartRunnerRequest req) =>
@@ -74,7 +108,49 @@ app.MapGet("/api/runners/status", () =>
     return Results.Json(statuses);
 });
 
+// List current runners
+app.MapGet("/api/runners", () => Results.Json(runners.Values));
+
+// Host info (paths, environment)
+app.MapGet("/api/info", () => Results.Json(new
+{
+    lazarusHome = LazarusPaths.Root,
+    modelsDir = LazarusPaths.Models.RootDir,
+    systemData = LazarusPaths.SystemData.RootDir,
+    timestamp = DateTimeOffset.UtcNow
+}));
+
 app.Run();
+
+static long TrySize(string path)
+{
+    try
+    {
+        if (File.Exists(path)) return new FileInfo(path).Length;
+        if (Directory.Exists(path))
+        {
+            long total = 0;
+            foreach (var f in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+            {
+                try { total += new FileInfo(f).Length; } catch { }
+            }
+            return total;
+        }
+    }
+    catch { }
+    return 0L;
+}
+
+static string[] SupportedRunnersFor(Lazarus.Shared.RunnerKind preferred)
+{
+    return preferred switch
+    {
+        Lazarus.Shared.RunnerKind.LlamaCpp => new[] { "LlamaCpp" },
+        Lazarus.Shared.RunnerKind.Vllm => new[] { "VLLM" },
+        Lazarus.Shared.RunnerKind.ExLlamaV2 => new[] { "ExLlamaV2" },
+        _ => Array.Empty<string>()
+    };
+}
 
 // DTOs mirroring Desktop client expectations (property names in camelCase)
 public sealed class ModelInfo
@@ -119,4 +195,3 @@ public sealed class RunnerStatus
     public DateTimeOffset LastHealthCheck { get; set; }
     public string? ErrorMessage { get; set; }
 }
-
