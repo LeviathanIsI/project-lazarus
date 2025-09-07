@@ -3,10 +3,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Net.Http;
+using System.IO;
 
 namespace Lazarus.Desktop.Services;
 
-#if DEBUG
 internal sealed class OrchestratorProcessService : IHostedService
 {
     private readonly ILogger<OrchestratorProcessService> _logger;
@@ -29,20 +29,38 @@ internal sealed class OrchestratorProcessService : IHostedService
                 return;
             }
 
+            ProcessStartInfo? psi = null;
+
+#if DEBUG
             var projectPath = TryResolveOrchestratorProjectPath();
             if (projectPath is null)
             {
                 _logger.LogWarning("Could not resolve App.Orchestrator.Host project path; skipping auto-start");
                 return;
             }
-
-            var psi = new ProcessStartInfo
+            psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
                 Arguments = $"run --project \"{projectPath}\" -c Debug",
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+#else
+            // RELEASE: try App.Orchestrator.Host.exe next to the app, then in \App.Orchestrator.Host\
+            var exe = TryResolveOrchestratorExePath();
+            if (exe is null)
+            {
+                _logger.LogInformation("Orchestrator executable not found near app; skipping auto-start");
+                return;
+            }
+            psi = new ProcessStartInfo
+            {
+                FileName = exe,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = Path.GetDirectoryName(exe) ?? AppContext.BaseDirectory,
+            };
+#endif
 
             _process = Process.Start(psi);
             if (_process is null)
@@ -127,6 +145,18 @@ internal sealed class OrchestratorProcessService : IHostedService
 
         return null;
     }
-}
-#endif
+    
+#if !DEBUG
+    private static string? TryResolveOrchestratorExePath()
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var c1 = Path.Combine(baseDir, "App.Orchestrator.Host.exe");
+        if (File.Exists(c1)) return c1;
 
+        var c2 = Path.Combine(baseDir, "App.Orchestrator.Host", "App.Orchestrator.Host.exe");
+        if (File.Exists(c2)) return c2;
+
+        return null;
+    }
+#endif
+}

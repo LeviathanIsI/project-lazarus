@@ -161,10 +161,9 @@ public static class ServiceCollectionExtensions
         // Add hosted services for background operations
         services.AddHostedService<HealthMonitorService>();
 
-#if DEBUG
-        // Development: auto-start local orchestrator host if not running
+        // Auto-start local orchestrator host if not running
+        // DEBUG: uses `dotnet run`; RELEASE: tries App.Orchestrator.Host.exe near the app
         services.AddHostedService<OrchestratorProcessService>();
-#endif
 
         return services;
     }
