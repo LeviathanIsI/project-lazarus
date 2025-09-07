@@ -55,6 +55,7 @@
       <Border Style="{StaticResource GlassCardStyle}" Margin="6" Padding="12">
         <StackPanel>
           <TextBlock Text="Settings" Style="{StaticResource SmallTextStyle}"/>
+          <Button Content="Import settings from JSON" Command="{Binding ImportSettingsCommand}" Margin="0,8,0,0" Style="{StaticResource SecondaryGlassButtonStyle}"/>
           <Button Content="Export settings to JSON" Command="{Binding ExportSettingsCommand}" Margin="0,8,0,0" Style="{StaticResource SecondaryGlassButtonStyle}"/>
           <Button Content="Reset all settings to defaults" Command="{Binding ResetSettingsCommand}" Margin="0,8,0,0" Style="{StaticResource SecondaryGlassButtonStyle}"/>
         </StackPanel>

@@ -107,6 +107,61 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
                 MessageBox.Show($"Failed to export settings:\n{ex.Message}", "Export Failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         });
+
+        ImportSettingsCommand = new RelayCommand(async () =>
+        {
+            try
+            {
+                var dlg = new OpenFileDialog
+                {
+                    Title = "Import Lazarus Settings",
+                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    CheckFileExists = true,
+                    CheckPathExists = true,
+                };
+                if (dlg.ShowDialog() != true) return;
+
+                var json = File.ReadAllText(dlg.FileName);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+                var imported = JsonSerializer.Deserialize<AppSettings>(json, options);
+                if (imported is null)
+                {
+                    MessageBox.Show("Selected file does not contain valid Lazarus settings.", "Import Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                var confirm = MessageBox.Show(
+                    $"Import settings from:\n{dlg.FileName}\n\nThis will overwrite your current settings.",
+                    "Confirm Import",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (confirm != MessageBoxResult.Yes) return;
+
+                try
+                {
+                    var dir = Path.GetDirectoryName(SettingsPaths.SettingsFile)!;
+                    Directory.CreateDirectory(dir);
+                    if (File.Exists(SettingsPaths.SettingsFile))
+                    {
+                        File.Copy(SettingsPaths.SettingsFile, SettingsPaths.SettingsFile + ".bak", overwrite: true);
+                    }
+                }
+                catch { }
+
+                var svc = App.ServiceProvider.GetRequiredService<ISettingsService>();
+                await svc.SaveAsync(imported).ConfigureAwait(false);
+                MessageBox.Show("Settings imported successfully. Some changes may require an app restart.", "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to import settings:\n{ex.Message}", "Import Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        });
     }
 
     public RelayCommand CheckUpdatesCommand { get; }
@@ -119,6 +174,7 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
     public RelayCommand OpenModelsFolderCommand { get; }
     public RelayCommand ResetSettingsCommand { get; }
     public RelayCommand ExportSettingsCommand { get; }
+    public RelayCommand ImportSettingsCommand { get; }
 
     private static void OpenFolder(string path)
     {
