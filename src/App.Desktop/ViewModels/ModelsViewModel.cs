@@ -31,7 +31,9 @@ public sealed class ModelsViewModel : ViewModelBase
         _presets.EnsureFolders();
 
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
-        LoadSelectedModelCommand = new RelayCommand(async () => await LoadSelectedModelAsync(), () => SelectedModel is not null && !IsDisposed);
+        LoadSelectedModelCommand = new RelayCommand(
+            async () => await LoadSelectedModelAsync(),
+            () => SelectedModel is not null && SelectedRunner is not null && !IsRunnerRunning && !IsDisposed);
         UnloadRunnerCommand = new RelayCommand(async () => await UnloadRunnerAsync(), () => !IsDisposed);
         RefreshRunnerStatusCommand = new RelayCommand(async () => { await RefreshRunnerStatusAsync(); await RefreshRunnersCatalogAsync(); }, () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
@@ -50,7 +52,7 @@ public sealed class ModelsViewModel : ViewModelBase
 
     // Selections
     private BaseModelInfo? _selectedModel;
-    public BaseModelInfo? SelectedModel { get => _selectedModel; set { _selectedModel = value; OnPropertyChanged(); } }
+    public BaseModelInfo? SelectedModel { get => _selectedModel; set { _selectedModel = value; OnPropertyChanged(); LoadSelectedModelCommand.RaiseCanExecuteChanged(); } }
 
     // Selected single LoRA adapter for now
     private AdapterInfo? _selectedLora;
