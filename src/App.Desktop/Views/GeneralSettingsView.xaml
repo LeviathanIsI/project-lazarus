@@ -2,12 +2,42 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel>
+    <!-- Default AI model -->
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Default AI model" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <ComboBox Width="320"
+                ItemsSource="{Binding DefaultModelChoices}"
+                DisplayMemberPath="Name"
+                SelectedValuePath="Path"
+                SelectedValue="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                ToolTip="This model loads by default for new chats. You can change it any time."/>
+    </StackPanel>
+    <!-- Default AI model -->
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Default AI model" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <ComboBox Width="320"
+                ItemsSource="{Binding DefaultModelChoices}"
+                DisplayMemberPath="Name"
+                SelectedValuePath="Path"
+                SelectedValue="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                ToolTip="This model loads by default for new chats. You can change it any time."/>
+    </StackPanel>
     <StackPanel Orientation="Horizontal" Margin="0,6">
       <TextBlock Width="200" VerticalAlignment="Center" Text="Language" Foreground="{StaticResource TextPrimaryBrush}"/>
       <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </StackPanel>
-    <CheckBox Margin="0,6" Content="Check for Lazarus updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Preview font size" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <Slider Width="200" Minimum="10" Maximum="22" Value="{Binding UiFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <Border Margin="12,0,0,0" Padding="8" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" Background="{StaticResource GlassCardBrush}">
+        <TextBlock Text="Aa Bb Cc" FontSize="{Binding UiFontSize}"/>
+      </Border>
+    </StackPanel>
+    <CheckBox Margin="0,6" Content="Check for Lazarus updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" ToolTip="When on, Lazarus checks an online feed to see if a new version is available. No downloads happen automatically." Foreground="{StaticResource TextPrimaryBrush}"/>
+    <CheckBox Margin="0,6" Content="Save my conversations automatically" IsChecked="{Binding AutoSaveConversations, Mode=TwoWay}"
+              ToolTip="When on, your chats are saved to your conversation history automatically." Foreground="{StaticResource TextPrimaryBrush}"/>
     <CheckBox Margin="0,6" Content="Start orchestrator with app" IsChecked="{Binding StartOrchestratorWithApp, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
     <CheckBox Margin="0,6" Content="Auto-start last runner" IsChecked="{Binding AutoStartLastRunner, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+    <Button Margin="0,12,0,0" Content="Reset this page to defaults" Command="{Binding ResetAllCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
   </StackPanel>
 </UserControl>

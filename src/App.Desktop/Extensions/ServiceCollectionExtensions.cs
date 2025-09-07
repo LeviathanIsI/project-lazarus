@@ -108,6 +108,8 @@ public static class ServiceCollectionExtensions
 
         // Settings service (JSON-backed under LazarusPaths.Root)
         services.AddSingleton<ISettingsService, SettingsService>();
+        // Models/presets
+        services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
         // Update service for checking latest releases
         services.AddSingleton<IUpdateService, UpdateService>();
 

@@ -9,6 +9,22 @@
       <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseRagDatabaseCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
     </StackPanel>
     <CheckBox Margin="0,6" Content="Use SQLite VSS" IsChecked="{Binding RagUseSQLiteVss, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Break documents into parts of" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="Higher numbers create larger chunks" Text="{Binding RagDocumentChunkTokens, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="tokens each"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Show results this similar or higher" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="0.0 to 1.0; higher means stricter matching" Text="{Binding RagSimilarityThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Storage engine" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <ComboBox Width="200" SelectedItem="{Binding RagStorageEngine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+        <ComboBoxItem Content="SQLite"/>
+        <ComboBoxItem Content="SQLite-VSS"/>
+        <ComboBoxItem Content="FAISS"/>
+      </ComboBox>
+    </StackPanel>
   </StackPanel>
 </UserControl>
-

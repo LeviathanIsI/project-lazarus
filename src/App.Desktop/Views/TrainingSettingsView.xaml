@@ -11,6 +11,19 @@
       <TextBox Width="320" Text="{Binding TrainingWorkingDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
       <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseTrainingWorkingDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
     </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Save progress every" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="Minutes between checkpoints" Text="{Binding TrainingCheckpointIntervalMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="minutes"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Use this much data" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="Percent of your dataset to use" Text="{Binding TrainingDataFractionPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="%"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Learning speed" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="Higher can learn faster but may be unstable" Text="{Binding TrainingLearningRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
   </StackPanel>
 </UserControl>
-

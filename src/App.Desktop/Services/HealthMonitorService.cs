@@ -9,20 +9,26 @@ namespace Lazarus.Desktop.Services;
 /// <summary>
 /// Background service that monitors the health of the orchestrator and runners.
 /// </summary>
-public sealed class HealthMonitorService : BackgroundService
+internal sealed class HealthMonitorService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<HealthMonitorService> _logger;
     private readonly IOptionsMonitor<OrchestratorOptions> _options;
+    private readonly Lazarus.Shared.Settings.ISettingsService _settings;
+    private readonly IOrchestratorProcessService _proc;
 
     public HealthMonitorService(
         IServiceScopeFactory scopeFactory,
         ILogger<HealthMonitorService> logger,
-        IOptionsMonitor<OrchestratorOptions> options)
+        IOptionsMonitor<OrchestratorOptions> options,
+        Lazarus.Shared.Settings.ISettingsService settings,
+        IOrchestratorProcessService proc)
     {
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _proc = proc ?? throw new ArgumentNullException(nameof(proc));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,7 +39,7 @@ public sealed class HealthMonitorService : BackgroundService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var interval = _options.CurrentValue.HealthCheckInterval;
+                var interval = TimeSpan.FromSeconds(Math.Max(1, _settings.Current.OrchestratorHealthCheckIntervalSec));
 
                 try
                 {
@@ -111,6 +117,11 @@ public sealed class HealthMonitorService : BackgroundService
         else
         {
             _logger.LogWarning("Orchestrator health check failed - skipping runner status checks");
+            if (_settings.Current.OrchestratorAutoRestartOnCrash)
+            {
+                _logger.LogInformation("Attempting auto-restart of orchestrator (enabled in settings)");
+                try { await _proc.StartIfNeededAsync(cancellationToken).ConfigureAwait(false); } catch { }
+            }
         }
     }
 

@@ -10,6 +10,11 @@
       <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
       <TextBox Width="100" ToolTip="Seconds to wait for runner health" Text="{Binding OrchestratorStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Health Check Every (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="How often Lazarus checks that things are running okay" Text="{Binding OrchestratorHealthCheckIntervalSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
+    <CheckBox Margin="0,6" Content="Try to restart automatically if something crashes" IsChecked="{Binding OrchestratorAutoRestartOnCrash, Mode=TwoWay}"
+              ToolTip="When on, Lazarus will try to start things back up if they stop unexpectedly" Foreground="{StaticResource TextPrimaryBrush}"/>
   </StackPanel>
 </UserControl>
-

@@ -12,17 +12,25 @@ namespace Lazarus.Desktop.ViewModels;
     public sealed class SettingsViewModel : ViewModelBase
     {
         private readonly ISettingsService _settingsService;
+        private readonly Lazarus.Backend.Services.IModelInventoryService? _inventory;
+        private readonly Lazarus.Data.Repositories.ISettingsRepository? _kvSettings;
     // private readonly Services.IOrchestratorClient? _orchestratorClient;
 
-        public SettingsViewModel(ISettingsService settingsService)
+        public SettingsViewModel(
+            ISettingsService settingsService,
+            Lazarus.Backend.Services.IModelInventoryService? inventory = null,
+            Lazarus.Data.Repositories.ISettingsRepository? kvSettings = null)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+            _inventory = inventory;
+            _kvSettings = kvSettings;
             // Initialize from current settings
             var s = _settingsService.Current;
         _preferredTheme = s.PreferredTheme ?? "Dark";
         _language = s.Language ?? "en-US";
         _checkForUpdatesOnStart = s.CheckForUpdatesOnStart;
         _startOrchestratorWithApp = s.StartOrchestratorWithApp;
+        _autoSaveConversations = s.AutoSaveConversations;
         _modelsDirectory = s.ModelsDirectory;
         _cacheDirectory = s.CacheDirectory;
         _orchestratorBaseUrl = s.OrchestratorBaseUrl;
@@ -49,15 +57,22 @@ namespace Lazarus.Desktop.ViewModels;
         BrowsePiperExecutableCommand = new RelayCommand(BrowsePiperExecutable);
         BrowseFasterWhisperExecutableCommand = new RelayCommand(BrowseFasterWhisperExecutable);
         BrowseRagDatabaseCommand = new RelayCommand(BrowseRagDatabase);
+        BrowseExportedChatsDirectoryCommand = new RelayCommand(BrowseExportedChatsDirectory);
 
-        Categories = new ObservableCollection<string>(new[] { "General", "Global Actions", "Paths", "Orchestrator", "Runners", "Models", "Audio", "RAG" });
+        Categories = new ObservableCollection<string>(new[] { "General", "Global Actions", "Paths", "Orchestrator", "Runners", "Models", "Audio", "RAG", "Training", "Logging", "Advanced" });
         SelectedCategory = "General";
+        
+        ResetAllCommand = new RelayCommand(async () => await _settingsService.SaveAsync(AppSettings.CreateDefault()).ConfigureAwait(false));
+        BrowseExportedChatsDirectoryCommand = new RelayCommand(BrowseExportedChatsDirectory);
+        BrowseTrainingWorkingDirectoryCommand = new RelayCommand(BrowseTrainingWorkingDirectory);
         // Keep this VM in sync if settings are changed externally (e.g., reset)
         _settingsService.SettingsChanged += (_, updated) =>
         {
             try { System.Windows.Application.Current.Dispatcher.Invoke(() => SyncFromService(updated)); }
             catch { SyncFromService(updated); }
         };
+
+        RefreshDefaultModelChoices();
         }
 
     public RelayCommand SaveCommand { get; }
@@ -68,6 +83,9 @@ namespace Lazarus.Desktop.ViewModels;
     public RelayCommand BrowsePiperExecutableCommand { get; }
     public RelayCommand BrowseFasterWhisperExecutableCommand { get; }
     public RelayCommand BrowseRagDatabaseCommand { get; }
+    public RelayCommand ResetAllCommand { get; }
+    public RelayCommand BrowseExportedChatsDirectoryCommand { get; }
+    public RelayCommand BrowseTrainingWorkingDirectoryCommand { get; }
     
 
     private string _preferredTheme;
@@ -84,11 +102,33 @@ namespace Lazarus.Desktop.ViewModels;
         set => SetProperty(ref _language, value, OnChangedPersist);
     }
 
+    // UI Font size for preview
+    private double _uiFontSize = 13.0;
+    public double UiFontSize
+    {
+        get => _uiFontSize;
+        set => SetProperty(ref _uiFontSize, value, OnChangedPersist);
+    }
+
     private bool _checkForUpdatesOnStart;
     public bool CheckForUpdatesOnStart
     {
         get => _checkForUpdatesOnStart;
         set => SetProperty(ref _checkForUpdatesOnStart, value, OnChangedPersist);
+    }
+
+    private bool _autoSaveConversations;
+    public bool AutoSaveConversations
+    {
+        get => _autoSaveConversations;
+        set
+        {
+            if (SetProperty(ref _autoSaveConversations, value, OnChangedPersist))
+            {
+                // Best-effort mirror into DB-backed settings for other layers to consume
+                try { _ = _kvSettings?.SetValueAsync("App.AutoSave", value); } catch { }
+            }
+        }
     }
 
     private bool _startOrchestratorWithApp;
@@ -103,6 +143,13 @@ namespace Lazarus.Desktop.ViewModels;
     {
         get => _modelsDirectory;
         set => SetProperty(ref _modelsDirectory, value, OnChangedPersist);
+    }
+    
+    private string _exportedChatsDirectory = string.Empty;
+    public string ExportedChatsDirectory
+    {
+        get => _exportedChatsDirectory;
+        set => SetProperty(ref _exportedChatsDirectory, value, OnChangedPersist);
     }
 
     private string _cacheDirectory;
@@ -124,6 +171,20 @@ namespace Lazarus.Desktop.ViewModels;
     {
         get => _orchestratorStartupTimeoutSec;
         set => SetProperty(ref _orchestratorStartupTimeoutSec, value, OnChangedPersist);
+    }
+    
+    private int _orchestratorHealthCheckIntervalSec = 10;
+    public int OrchestratorHealthCheckIntervalSec
+    {
+        get => _orchestratorHealthCheckIntervalSec;
+        set => SetProperty(ref _orchestratorHealthCheckIntervalSec, value, OnChangedPersist);
+    }
+    
+    private bool _orchestratorAutoRestartOnCrash;
+    public bool OrchestratorAutoRestartOnCrash
+    {
+        get => _orchestratorAutoRestartOnCrash;
+        set => SetProperty(ref _orchestratorAutoRestartOnCrash, value, OnChangedPersist);
     }
 
     private string _activeRunner;
@@ -218,6 +279,27 @@ namespace Lazarus.Desktop.ViewModels;
         set => SetProperty(ref _audioFasterWhisperExecutable, value, OnChangedPersist);
     }
 
+    private bool _audioNoiseSuppression = true;
+    public bool AudioNoiseSuppression
+    {
+        get => _audioNoiseSuppression;
+        set => SetProperty(ref _audioNoiseSuppression, value, OnChangedPersist);
+    }
+
+    private string _audioQuality = "Balanced";
+    public string AudioQuality
+    {
+        get => _audioQuality;
+        set => SetProperty(ref _audioQuality, value, OnChangedPersist);
+    }
+
+    private string _audioSpeechRecognition = "Faster-Whisper";
+    public string AudioSpeechRecognition
+    {
+        get => _audioSpeechRecognition;
+        set => SetProperty(ref _audioSpeechRecognition, value, OnChangedPersist);
+    }
+
     // --- Logging ---
     private string _loggingLevel = "Information";
     public string LoggingLevel
@@ -254,6 +336,54 @@ namespace Lazarus.Desktop.ViewModels;
         get => _ragUseSQLiteVss;
         set => SetProperty(ref _ragUseSQLiteVss, value, OnChangedPersist);
     }
+    
+    private int _ragDocumentChunkTokens;
+    public int RagDocumentChunkTokens { get => _ragDocumentChunkTokens; set => SetProperty(ref _ragDocumentChunkTokens, value, OnChangedPersist); }
+    
+    private double _ragSimilarityThreshold;
+    public double RagSimilarityThreshold { get => _ragSimilarityThreshold; set => SetProperty(ref _ragSimilarityThreshold, value, OnChangedPersist); }
+    
+    private string _ragStorageEngine = "SQLite";
+    public string RagStorageEngine { get => _ragStorageEngine; set => SetProperty(ref _ragStorageEngine, value, OnChangedPersist); }
+    
+    // --- Logging extras ---
+    private int _logRetentionDays = 7;
+    public int LogRetentionDays { get => _logRetentionDays; set => SetProperty(ref _logRetentionDays, value, OnChangedPersist); }
+    
+    private bool _sendCrashReports;
+    public bool SendCrashReports { get => _sendCrashReports; set => SetProperty(ref _sendCrashReports, value, OnChangedPersist); }
+    
+    // --- Runner limits/global ---
+    private int _maxConcurrentTasks = 2;
+    public int MaxConcurrentTasks { get => _maxConcurrentTasks; set => SetProperty(ref _maxConcurrentTasks, value, OnChangedPersist); }
+    
+    private int _llamaMemoryLimitPercent = 100;
+    public int LlamaMemoryLimitPercent { get => _llamaMemoryLimitPercent; set => SetProperty(ref _llamaMemoryLimitPercent, value, OnChangedPersist); }
+    
+    // --- Advanced ---
+    private bool _experimentalFeatures;
+    public bool ExperimentalFeatures { get => _experimentalFeatures; set => SetProperty(ref _experimentalFeatures, value, OnChangedPersist); }
+    
+    private int _memoryLimitMb;
+    public int MemoryLimitMb { get => _memoryLimitMb; set => SetProperty(ref _memoryLimitMb, value, OnChangedPersist); }
+    
+    private string? _networkProxy;
+    public string? NetworkProxy { get => _networkProxy; set => SetProperty(ref _networkProxy, value, OnChangedPersist); }
+    
+    private bool _developerMode;
+    public bool DeveloperMode { get => _developerMode; set => SetProperty(ref _developerMode, value, OnChangedPersist); }
+
+    // --- Training ---
+    private string _trainingDefaultTrainer = "llama-factory";
+    public string TrainingDefaultTrainer { get => _trainingDefaultTrainer; set => SetProperty(ref _trainingDefaultTrainer, value, OnChangedPersist); }
+    private string _trainingWorkingDirectory = string.Empty;
+    public string TrainingWorkingDirectory { get => _trainingWorkingDirectory; set => SetProperty(ref _trainingWorkingDirectory, value, OnChangedPersist); }
+    private int _trainingCheckpointIntervalMinutes = 15;
+    public int TrainingCheckpointIntervalMinutes { get => _trainingCheckpointIntervalMinutes; set => SetProperty(ref _trainingCheckpointIntervalMinutes, value, OnChangedPersist); }
+    private int _trainingDataFractionPercent = 100;
+    public int TrainingDataFractionPercent { get => _trainingDataFractionPercent; set => SetProperty(ref _trainingDataFractionPercent, value, OnChangedPersist); }
+    private double _trainingLearningRate = 0.0003;
+    public double TrainingLearningRate { get => _trainingLearningRate; set => SetProperty(ref _trainingLearningRate, value, OnChangedPersist); }
 
     private void SyncFromService(AppSettings s)
     {
@@ -263,14 +393,20 @@ namespace Lazarus.Desktop.ViewModels;
         _checkForUpdatesOnStart = s.CheckForUpdatesOnStart; OnPropertyChanged(nameof(CheckForUpdatesOnStart));
         _startOrchestratorWithApp = s.StartOrchestratorWithApp; OnPropertyChanged(nameof(StartOrchestratorWithApp));
         _autoStartLastRunner = s.AutoStartLastRunner; OnPropertyChanged(nameof(AutoStartLastRunner));
+        _autoSaveConversations = s.AutoSaveConversations; OnPropertyChanged(nameof(AutoSaveConversations));
+        _uiFontSize = s.Ui.FontSize; OnPropertyChanged(nameof(UiFontSize));
+        _autoSaveConversations = s.AutoSaveConversations; OnPropertyChanged(nameof(AutoSaveConversations));
 
         // Paths
         _modelsDirectory = s.ModelsDirectory; OnPropertyChanged(nameof(ModelsDirectory));
+        _exportedChatsDirectory = s.ExportedChatsDirectory; OnPropertyChanged(nameof(ExportedChatsDirectory));
         _cacheDirectory = s.CacheDirectory; OnPropertyChanged(nameof(CacheDirectory));
 
         // Orchestrator
         _orchestratorBaseUrl = s.OrchestratorBaseUrl; OnPropertyChanged(nameof(OrchestratorBaseUrl));
         _orchestratorStartupTimeoutSec = s.OrchestratorStartupTimeoutSec; OnPropertyChanged(nameof(OrchestratorStartupTimeoutSec));
+        _orchestratorHealthCheckIntervalSec = s.OrchestratorHealthCheckIntervalSec; OnPropertyChanged(nameof(OrchestratorHealthCheckIntervalSec));
+        _orchestratorAutoRestartOnCrash = s.OrchestratorAutoRestartOnCrash; OnPropertyChanged(nameof(OrchestratorAutoRestartOnCrash));
 
         // Runner
         _activeRunner = s.ActiveRunner; OnPropertyChanged(nameof(ActiveRunner));
@@ -296,6 +432,45 @@ namespace Lazarus.Desktop.ViewModels;
         _ragEnableVectorStore = s.Rag.EnableVectorStore; OnPropertyChanged(nameof(RagEnableVectorStore));
         _ragDatabasePath = s.Rag.DatabasePath; OnPropertyChanged(nameof(RagDatabasePath));
         _ragUseSQLiteVss = s.Rag.UseSQLiteVss; OnPropertyChanged(nameof(RagUseSQLiteVss));
+        _ragDocumentChunkTokens = s.Rag.DocumentChunkTokens; OnPropertyChanged(nameof(RagDocumentChunkTokens));
+        _ragSimilarityThreshold = s.Rag.SimilarityThreshold; OnPropertyChanged(nameof(RagSimilarityThreshold));
+        _ragStorageEngine = s.Rag.StorageEngine; OnPropertyChanged(nameof(RagStorageEngine));
+
+        _logRetentionDays = s.Logging.RetentionDays; OnPropertyChanged(nameof(LogRetentionDays));
+        _sendCrashReports = s.Logging.SendCrashReports; OnPropertyChanged(nameof(SendCrashReports));
+
+        _maxConcurrentTasks = s.MaxConcurrentTasks; OnPropertyChanged(nameof(MaxConcurrentTasks));
+        _llamaMemoryLimitPercent = s.LlamaCpp.MemoryLimitPercent; OnPropertyChanged(nameof(LlamaMemoryLimitPercent));
+
+        _experimentalFeatures = s.ExperimentalFeatures; OnPropertyChanged(nameof(ExperimentalFeatures));
+        _memoryLimitMb = s.MemoryLimitMb; OnPropertyChanged(nameof(MemoryLimitMb));
+        _networkProxy = s.NetworkProxy; OnPropertyChanged(nameof(NetworkProxy));
+        _developerMode = s.DeveloperMode; OnPropertyChanged(nameof(DeveloperMode));
+
+        _trainingDefaultTrainer = s.Training.DefaultTrainer; OnPropertyChanged(nameof(TrainingDefaultTrainer));
+        _trainingWorkingDirectory = s.Training.WorkingDirectory; OnPropertyChanged(nameof(TrainingWorkingDirectory));
+        _trainingCheckpointIntervalMinutes = s.Training.CheckpointIntervalMinutes; OnPropertyChanged(nameof(TrainingCheckpointIntervalMinutes));
+        _trainingDataFractionPercent = s.Training.DataFractionPercent; OnPropertyChanged(nameof(TrainingDataFractionPercent));
+        _trainingLearningRate = s.Training.LearningRate; OnPropertyChanged(nameof(TrainingLearningRate));
+    }
+
+    // --- Default model selection (for plain-English General page) ---
+    public sealed record ModelChoice(string Name, string Path);
+    public ObservableCollection<ModelChoice> DefaultModelChoices { get; } = new();
+    private void RefreshDefaultModelChoices()
+    {
+        DefaultModelChoices.Clear();
+        try
+        {
+            var inv = _inventory?.Scan();
+            if (inv?.BaseModels is not null)
+            {
+                foreach (var m in inv.BaseModels)
+                    DefaultModelChoices.Add(new ModelChoice(m.DisplayName, m.FilePath));
+            }
+        }
+        catch { }
+        OnPropertyChanged(nameof(DefaultModelChoices));
     }
 
     private void OnChangedPersist()
@@ -306,10 +481,14 @@ namespace Lazarus.Desktop.ViewModels;
         s.Language = Language;
         s.CheckForUpdatesOnStart = CheckForUpdatesOnStart;
         s.StartOrchestratorWithApp = StartOrchestratorWithApp;
+        s.AutoSaveConversations = AutoSaveConversations;
         s.ModelsDirectory = ModelsDirectory;
+        s.ExportedChatsDirectory = ExportedChatsDirectory;
         s.CacheDirectory = CacheDirectory;
         s.OrchestratorBaseUrl = OrchestratorBaseUrl;
         s.OrchestratorStartupTimeoutSec = OrchestratorStartupTimeoutSec;
+        s.OrchestratorHealthCheckIntervalSec = OrchestratorHealthCheckIntervalSec;
+        s.OrchestratorAutoRestartOnCrash = OrchestratorAutoRestartOnCrash;
         s.ActiveRunner = ActiveRunner;
         s.AutoStartLastRunner = AutoStartLastRunner;
         s.ActiveModelId = string.IsNullOrWhiteSpace(ActiveModelId) ? null : ActiveModelId;
@@ -318,16 +497,36 @@ namespace Lazarus.Desktop.ViewModels;
         s.LlamaCpp.Port = LlamaPort;
         s.LlamaCpp.GpuLayers = LlamaGpuLayers;
         s.LlamaCpp.UseCuda = LlamaUseCuda;
+        s.LlamaCpp.MemoryLimitPercent = LlamaMemoryLimitPercent;
         s.Audio.EnableTts = AudioEnableTts;
         s.Audio.PiperExecutable = AudioPiperExecutable;
         s.Audio.PiperVoice = AudioPiperVoice;
         s.Audio.EnableAsr = AudioEnableAsr;
         s.Audio.FasterWhisperExecutable = AudioFasterWhisperExecutable;
+        s.Audio.NoiseSuppression = AudioNoiseSuppression;
+        s.Audio.Quality = AudioQuality;
+        s.Audio.SpeechRecognition = AudioSpeechRecognition;
         s.Rag.EnableVectorStore = RagEnableVectorStore;
         s.Rag.DatabasePath = RagDatabasePath;
         s.Rag.UseSQLiteVss = RagUseSQLiteVss;
+        s.Rag.DocumentChunkTokens = RagDocumentChunkTokens;
+        s.Rag.SimilarityThreshold = RagSimilarityThreshold;
+        s.Rag.StorageEngine = RagStorageEngine;
+        s.Ui.FontSize = UiFontSize;
         s.Logging.Level = LoggingLevel;
         s.Logging.EnableStructured = LoggingEnableStructured;
+        s.Logging.RetentionDays = LogRetentionDays;
+        s.Logging.SendCrashReports = SendCrashReports;
+        s.MaxConcurrentTasks = MaxConcurrentTasks;
+        s.ExperimentalFeatures = ExperimentalFeatures;
+        s.MemoryLimitMb = MemoryLimitMb;
+        s.NetworkProxy = NetworkProxy;
+        s.DeveloperMode = DeveloperMode;
+        s.Training.DefaultTrainer = TrainingDefaultTrainer;
+        s.Training.WorkingDirectory = TrainingWorkingDirectory;
+        s.Training.CheckpointIntervalMinutes = TrainingCheckpointIntervalMinutes;
+        s.Training.DataFractionPercent = TrainingDataFractionPercent;
+        s.Training.LearningRate = TrainingLearningRate;
         _ = _settingsService.SaveAsync();
     }
 
@@ -384,6 +583,23 @@ namespace Lazarus.Desktop.ViewModels;
         {
             var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
             if (!string.IsNullOrWhiteSpace(dir)) CacheDirectory = dir!;
+        }
+    }
+
+    private void BrowseExportedChatsDirectory()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select Exported Chats folder",
+            CheckFileExists = false,
+            CheckPathExists = true,
+            ValidateNames = false,
+            FileName = "Select Folder"
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
+            if (!string.IsNullOrWhiteSpace(dir)) ExportedChatsDirectory = dir!;
         }
     }
 
@@ -447,6 +663,23 @@ namespace Lazarus.Desktop.ViewModels;
         if (dlg.ShowDialog() == true)
         {
             ActiveModelId = dlg.FileName;
+        }
+    }
+
+    private void BrowseTrainingWorkingDirectory()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select Training Working folder",
+            CheckFileExists = false,
+            CheckPathExists = true,
+            ValidateNames = false,
+            FileName = "Select Folder"
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            var dir = System.IO.Path.GetDirectoryName(dlg.FileName);
+            if (!string.IsNullOrWhiteSpace(dir)) TrainingWorkingDirectory = dir!;
         }
     }
 

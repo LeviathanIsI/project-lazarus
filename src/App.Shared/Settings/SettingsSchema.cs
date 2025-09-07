@@ -24,14 +24,18 @@ public sealed class AppSettings
     public string? PreferredTheme { get; set; } = "Dark"; // Dark | Light | System
     public string? Language { get; set; } = "en-US";
     public bool CheckForUpdatesOnStart { get; set; } = false; // future use
+    public bool AutoSaveConversations { get; set; } = true;
 
     // ---- Paths ----
     public string ModelsDirectory { get; set; } = @"D:\models"; // user can change
     public string CacheDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\cache";
+    public string ExportedChatsDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\exported-chats";
 
     // ---- Orchestrator ----
     public string OrchestratorBaseUrl { get; set; } = "http://127.0.0.1:11711";
     public int OrchestratorStartupTimeoutSec { get; set; } = 45;
+    public int OrchestratorHealthCheckIntervalSec { get; set; } = 10;
+    public bool OrchestratorAutoRestartOnCrash { get; set; } = true;
     public bool StartOrchestratorWithApp { get; set; } = true;
 
     // ---- Runner (active + per-runner opts) ----
@@ -50,6 +54,13 @@ public sealed class AppSettings
     public RagSettings Rag { get; set; } = new();
     public UiSettings Ui { get; set; } = new();
     public LoggingSettings Logging { get; set; } = new();
+    
+    // Global controls
+    public int MaxConcurrentTasks { get; set; } = 2;
+    public bool ExperimentalFeatures { get; set; } = false;
+    public int MemoryLimitMb { get; set; } = 0; // 0 = no limit
+    public string? NetworkProxy { get; set; } = null;
+    public bool DeveloperMode { get; set; } = false;
 
     /// <summary>
     /// Creates default settings aligned with the MVP schema.
@@ -67,6 +78,7 @@ public sealed class LlamaCppSettings
     public int Port { get; set; } = 8080;
     public int GpuLayers { get; set; } = 9999;
     public bool UseCuda { get; set; } = true;
+    public int MemoryLimitPercent { get; set; } = 100; // 10-100
 }
 
 /// <summary>
@@ -93,6 +105,9 @@ public sealed class TrainingSettings
 {
     public string DefaultTrainer { get; set; } = "llama-factory";
     public string WorkingDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\training";
+    public int CheckpointIntervalMinutes { get; set; } = 15;
+    public int DataFractionPercent { get; set; } = 100; // 1-100
+    public double LearningRate { get; set; } = 3e-4;
 }
 
 public sealed class AudioSettings
@@ -102,6 +117,9 @@ public sealed class AudioSettings
     public string PiperVoice { get; set; } = "en_US-amy-medium";
     public bool EnableAsr { get; set; } = false;
     public string FasterWhisperExecutable { get; set; } = @"%LOCALAPPDATA%\Lazarus\audio\faster-whisper.exe";
+    public bool NoiseSuppression { get; set; } = true;
+    public string Quality { get; set; } = "Balanced"; // Low | Balanced | High
+    public string SpeechRecognition { get; set; } = "Faster-Whisper"; // Faster-Whisper | System | None
 }
 
 public sealed class RagSettings
@@ -109,6 +127,9 @@ public sealed class RagSettings
     public bool EnableVectorStore { get; set; } = false;
     public string DatabasePath { get; set; } = @"%LOCALAPPDATA%\Lazarus\lazarus.db";
     public bool UseSQLiteVss { get; set; } = false;
+    public int DocumentChunkTokens { get; set; } = 512;
+    public double SimilarityThreshold { get; set; } = 0.75; // 0-1
+    public string StorageEngine { get; set; } = "SQLite"; // SQLite | SQLite-VSS | FAISS
 }
 
 public sealed class UiSettings
@@ -121,10 +142,15 @@ public sealed class UiSettings
 public sealed class HotkeySettings
 {
     public string NewScreenshot { get; set; } = "Ctrl+Shift+4";
+    public string NewChat { get; set; } = "Ctrl+N";
+    public string EmergencyStop { get; set; } = "Ctrl+Esc";
+    public string SearchSettings { get; set; } = "Ctrl+F";
 }
 
 public sealed class LoggingSettings
 {
     public string Level { get; set; } = "Information";
     public bool EnableStructured { get; set; } = true;
+    public int RetentionDays { get; set; } = 7;
+    public bool SendCrashReports { get; set; } = false;
 }

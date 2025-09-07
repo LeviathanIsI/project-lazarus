@@ -11,16 +11,25 @@
       <TextBlock Width="200" VerticalAlignment="Center" Text="Port" Foreground="{StaticResource TextPrimaryBrush}"/>
       <TextBox Width="100" ToolTip="Valid port: 1-65535" Text="{Binding LlamaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
+    <StackPanel Orientation="Horizontal" Margin="0,6" ToolTip="Use your graphics card (GPU) for faster responses when available">
       <TextBlock Width="200" VerticalAlignment="Center" Text="GPU Layers" Foreground="{StaticResource TextPrimaryBrush}"/>
       <TextBox Width="100" ToolTip="Number of layers to offload to GPU" Text="{Binding LlamaGpuLayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Use my graphics card (GPU)" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}" ToolTip="Turn off if you want to use your CPU instead"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="How many things can run at once" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="Limits how many tasks run in parallel" Text="{Binding MaxConcurrentTasks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Memory limit for AI (percent)" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" ToolTip="Keep some memory free for other apps" Text="{Binding LlamaMemoryLimitPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
     <Expander Margin="0,6" Header="Advanced">
       <StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0,6">
-          <TextBlock Width="200" VerticalAlignment="Center" Text="Use CUDA" Foreground="{StaticResource TextPrimaryBrush}"/>
-          <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}"/>
-        </StackPanel>
+        
         <StackPanel Orientation="Horizontal" Margin="0,6">
           <TextBlock Width="200" VerticalAlignment="Center" Text="Additional Args" Foreground="{StaticResource TextPrimaryBrush}"/>
           <TextBox Width="320" Text="{Binding LlamaAdditionalArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -29,4 +38,3 @@
     </Expander>
   </StackPanel>
 </UserControl>
-

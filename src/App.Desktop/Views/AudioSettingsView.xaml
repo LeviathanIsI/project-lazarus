@@ -18,6 +18,23 @@
       <TextBox Width="320" Text="{Binding AudioFasterWhisperExecutable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
       <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseFasterWhisperExecutableCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
     </StackPanel>
+    <CheckBox Margin="0,6" Content="Reduce background noise" IsChecked="{Binding AudioNoiseSuppression, Mode=TwoWay}"
+              ToolTip="Improves clarity by removing steady background sounds" Foreground="{StaticResource TextPrimaryBrush}"/>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Speech recognition" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <ComboBox Width="200" SelectedItem="{Binding AudioSpeechRecognition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+        <ComboBoxItem Content="Faster-Whisper"/>
+        <ComboBoxItem Content="System"/>
+        <ComboBoxItem Content="None"/>
+      </ComboBox>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Audio quality" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <ComboBox Width="200" SelectedItem="{Binding AudioQuality, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+        <ComboBoxItem Content="Low"/>
+        <ComboBoxItem Content="Balanced"/>
+        <ComboBoxItem Content="High"/>
+      </ComboBox>
+    </StackPanel>
   </StackPanel>
 </UserControl>
-

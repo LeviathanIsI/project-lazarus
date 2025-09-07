@@ -17,5 +17,10 @@
       <TextBox Width="320" Text="{Binding CacheDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
       <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseCacheDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
     </StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Exported Chats Folder" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="320" ToolTip="Where your exported chat files will be saved by default" Text="{Binding ExportedChatsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseExportedChatsDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+    </StackPanel>
   </StackPanel>
 </UserControl>

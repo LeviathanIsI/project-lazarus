@@ -4,9 +4,17 @@
   <StackPanel>
     <StackPanel Orientation="Horizontal" Margin="0,6">
       <TextBlock Width="200" VerticalAlignment="Center" Text="Level" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="200" Text="{Binding LoggingLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <ComboBox Width="200" SelectedItem="{Binding LoggingLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="How much detail to record">
+        <ComboBoxItem Content="Minimal"/>
+        <ComboBoxItem Content="Information"/>
+        <ComboBoxItem Content="Verbose"/>
+      </ComboBox>
     </StackPanel>
     <CheckBox Margin="0,6" Content="Enable Structured" IsChecked="{Binding LoggingEnableStructured, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+    <StackPanel Orientation="Horizontal" Margin="0,6">
+      <TextBlock Width="200" VerticalAlignment="Center" Text="Delete old logs after (days)" Foreground="{StaticResource TextPrimaryBrush}"/>
+      <TextBox Width="100" Text="{Binding LogRetentionDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
+    <CheckBox Margin="0,6" Content="Send crash reports" IsChecked="{Binding SendCrashReports, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
   </StackPanel>
 </UserControl>
-
