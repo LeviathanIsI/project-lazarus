@@ -1,4 +1,5 @@
 using Lazarus.Desktop.Extensions;
+using Lazarus.Shared;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,13 @@ namespace Lazarus.Desktop
         {
             try
             {
+                // Ensure first-run directory layout exists before host/logging initialization
+                // Uses %LOCALAPPDATA%\Lazarus (or LAZARUS_HOME if set)
+                DirectoryBootstrap.EnsureAll();
+                // Tiny debug output to console (if visible)
+                Console.WriteLine($"LAZARUS_HOME => {LazarusPaths.Root}");
+                Console.WriteLine($"Models => {LazarusPaths.Models.RootDir}");
+
                 // Build and start the host
                 _host = CreateHost(e.Args);
                 await _host.StartAsync().ConfigureAwait(true);
@@ -42,6 +50,12 @@ namespace Lazarus.Desktop
                 _logger = ServiceProvider.GetRequiredService<ILogger<App>>();
 
                 _logger.LogInformation("Lazarus Desktop application started successfully");
+
+                // Debug: log root and a few resolved paths (only if logging is available)
+                _logger.LogDebug("LazarusPaths.Root: {Root}", Lazarus.Shared.LazarusPaths.Root);
+                _logger.LogDebug("LazarusPaths.FlatLogs: {FlatLogs}", Lazarus.Shared.LazarusPaths.FlatLogs);
+                _logger.LogDebug("LazarusPaths.DatabaseFile: {DbFile}", Lazarus.Shared.LazarusPaths.DatabaseFile);
+                _logger.LogDebug("LazarusPaths.UserContent.GeneratedOutput: {GenOut}", Lazarus.Shared.LazarusPaths.UserContent.GeneratedOutput);
 
                 // Perform lightweight binary validation before UI initialization
                 await ValidateBinariesAsync().ConfigureAwait(true);
@@ -158,9 +172,7 @@ namespace Lazarus.Desktop
             // Configure WPF application properties
             ShutdownMode = ShutdownMode.OnMainWindowClose;
 
-            // Ensure logs directory exists
-            var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
-            Directory.CreateDirectory(logsPath);
+            // Logging is configured to use existing LocalAppData layout; do not create new folders here
         }
 
         /// <summary>

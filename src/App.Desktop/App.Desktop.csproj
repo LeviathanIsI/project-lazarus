@@ -30,6 +30,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\App.Data\App.Data.csproj" />
+    <ProjectReference Include="..\App.Shared\App.Shared.csproj" />
+    <ProjectReference Include="..\App.Backend\App.Backend.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -62,7 +62,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ContentControl">
                     <Grid>
-                        <Border CornerRadius="16" BorderThickness="2" Background="#1A1A1A">
+                        <Border CornerRadius="12" BorderThickness="2" Background="#1A1A1A">
                             <Border.BorderBrush>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                     <GradientStop Color="#FFEF4444" Offset="0.00"/>

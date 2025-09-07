@@ -32,6 +32,11 @@ public sealed class ViewModelLocator : IDisposable
     public NavigationViewModel NavigationViewModel => GetOrCreateSingleton<NavigationViewModel>();
 
     /// <summary>
+    /// Gets the models view model with singleton lifetime.
+    /// </summary>
+    public ModelsViewModel ModelsViewModel => GetOrCreateSingleton<ModelsViewModel>();
+
+    /// <summary>
     /// Creates a new instance of the specified ViewModel type.
     /// Use this for transient ViewModels that need fresh instances.
     /// </summary>

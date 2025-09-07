@@ -1,4 +1,5 @@
 using Lazarus.Desktop.Configuration;
+using Lazarus.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
@@ -24,6 +25,9 @@ public sealed class OrchestratorClient : IOrchestratorClient
         ILogger<OrchestratorClient> logger,
         IOptionsMonitor<OrchestratorOptions> options)
     {
+        // Optional but safe: ensure first-run directories exist when orchestrator client is constructed
+        DirectoryBootstrap.EnsureAll();
+
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? throw new ArgumentNullException(nameof(options));

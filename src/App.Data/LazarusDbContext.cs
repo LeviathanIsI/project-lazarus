@@ -169,13 +169,7 @@ public class LazarusDbContext : DbContext, IAsyncDisposable
 
     private static string GetDefaultConnectionString()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var lazarusPath = Path.Combine(appDataPath, "Lazarus");
-
-        // Ensure directory exists
-        Directory.CreateDirectory(lazarusPath);
-
-        var dbPath = Path.Combine(lazarusPath, "lazarus.db");
+        var dbPath = Lazarus.Shared.LazarusPaths.DatabaseFile;
         return $"Data Source={dbPath};Cache=Shared;";
     }
 

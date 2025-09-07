@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System;
+using System.IO;
 using System.Reflection;
 
 namespace Lazarus.Desktop.Extensions;
@@ -51,9 +53,25 @@ public static class ServiceCollectionExtensions
         // Add logging with Serilog
         services.AddLogging(builder =>
         {
-            var logger = new LoggerConfiguration()
+            // Respect fixed disk layout under %LOCALAPPDATA%\Lazarus\logs (text logs)
+            var logsDir = Lazarus.Shared.LazarusPaths.FlatLogs;
+            var logFilePath = Path.Combine(logsDir, "lazarus-.log");
+
+            var loggerConfig = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
-                .CreateLogger();
+                .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+
+            // Only write file logs if the expected directory already exists
+            if (Directory.Exists(logsDir))
+            {
+                loggerConfig = loggerConfig.WriteTo.File(
+                    path: logFilePath,
+                    rollingInterval: Serilog.RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}");
+            }
+
+            var logger = loggerConfig.CreateLogger();
 
             builder.ClearProviders();
             builder.AddSerilog(logger, dispose: true);
@@ -67,8 +85,13 @@ public static class ServiceCollectionExtensions
             httpClient.Timeout = options.RequestTimeout;
         });
 
-        // Add data layer services
-        services.AddLazarusData();
+        // Add data layer services with shared path contract for DB location
+        var dbPath = Lazarus.Shared.LazarusPaths.DatabaseFile;
+        var connectionString = $"Data Source={dbPath};Cache=Shared;";
+        services.AddLazarusData(connectionString);
+
+        // Bootstrap filesystem layout (registered for use at startup)
+        services.AddSingleton<IFileSystemBootstrapService, FileSystemBootstrapService>();
 
         return services;
     }
@@ -78,12 +101,15 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddLazarusUI(this IServiceCollection services)
-    {
-        // Singleton services for app-wide state
-        services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IThemeService, ThemeService>();
+        public static IServiceCollection AddLazarusUI(this IServiceCollection services)
+        {
+            // Singleton services for app-wide state
+            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IBinaryValidationService, BinaryValidationService>();
+        services.AddSingleton<IModelCatalogService, ModelCatalogService>();
+        services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
+        services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();
 
         // Singleton ViewModelLocator for XAML binding support
         services.AddSingleton<ViewModelLocator>();
@@ -96,21 +122,25 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddLazarusViewModels(this IServiceCollection services)
-    {
-        // Register ViewModels with transient lifetime for fresh instances
-        // The ViewModelLocator will manage singleton instances as needed
-        services.AddTransient<MainViewModel>();
-        services.AddTransient<NavigationViewModel>();
+        public static IServiceCollection AddLazarusViewModels(this IServiceCollection services)
+        {
+            // Register ViewModels with transient lifetime for fresh instances
+            // The ViewModelLocator will manage singleton instances as needed
+            services.AddTransient<MainViewModel>();
+            services.AddTransient<NavigationViewModel>();
+            services.AddTransient<ModelsViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();
+        // Auto-register only true ViewModels by naming convention to avoid DI creating helper types
         var viewModelTypes = assembly.GetTypes()
             .Where(type => type.IsClass &&
                           !type.IsAbstract &&
                           type.IsSubclassOf(typeof(ViewModelBase)) &&
+                          type.Name.EndsWith("ViewModel", StringComparison.Ordinal) &&
                           type != typeof(MainViewModel) &&
-                          type != typeof(NavigationViewModel))
+                          type != typeof(NavigationViewModel) &&
+                          type != typeof(ModelsViewModel))
             .ToList();
 
         foreach (var viewModelType in viewModelTypes)
@@ -176,6 +206,10 @@ internal sealed class ApplicationHostService : IHostedService
             {
                 try
                 {
+                    // Ensure first-run filesystem layout exists before DB init
+                    var bootstrap = _serviceProvider.GetRequiredService<IFileSystemBootstrapService>();
+                    await bootstrap.EnsureLayoutAsync(cancellationToken).ConfigureAwait(false);
+
                     // Ensure database is ready
                     await _serviceProvider.EnsureDatabaseAsync(cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
