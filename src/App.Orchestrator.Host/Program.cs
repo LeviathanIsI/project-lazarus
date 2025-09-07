@@ -121,6 +121,35 @@ app.MapGet("/api/info", () => Results.Json(new
     timestamp = DateTimeOffset.UtcNow
 }));
 
+// OpenAI-compatible models list: proxy to runner if available; otherwise fallback
+app.MapGet("/v1/models", async (IModelInventoryService inventory) =>
+{
+    var active = runners.Values.FirstOrDefault(r => r.Port > 0);
+    if (active is not null)
+    {
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var url = $"http://127.0.0.1:{active.Port}/v1/models";
+            using var resp = await http.GetAsync(url);
+            if (resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync();
+                return Results.Content(body, "application/json");
+            }
+        }
+        catch
+        {
+            // fall through to local fallback
+        }
+    }
+
+    // Minimal fallback from local inventory
+    var inv = inventory.Scan();
+    var data = inv.BaseModels.Select(m => new { id = m.ModelKey, @object = "model" });
+    return Results.Json(new { data });
+});
+
 app.Run();
 
 static long TrySize(string path)
