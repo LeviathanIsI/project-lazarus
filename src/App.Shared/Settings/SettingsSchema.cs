@@ -37,6 +37,10 @@ public sealed class AppSettings
     public string ActiveRunner { get; set; } = "llama.cpp"; // llama.cpp | vllm | exllamav2
 
     public LlamaCppSettings LlamaCpp { get; set; } = new();
+    public VllmSettings Vllm { get; set; } = new();
+    public ExLlamaV2Settings ExLlamaV2 { get; set; } = new();
+
+    public string? ActiveModelId { get; set; } = null;
 
     /// <summary>
     /// Creates default settings aligned with the MVP schema.
@@ -68,4 +72,46 @@ public sealed class LlamaCppSettings
     /// Health endpoint path.
     /// </summary>
     public string HealthCheckEndpoint { get; set; } = "/health";
+}
+
+/// <summary>
+/// Minimal vLLM runner settings for MVP.
+/// </summary>
+public sealed class VllmSettings
+{
+    /// <summary>
+    /// Optional python interpreter path (e.g., "python").
+    /// </summary>
+    public string? PythonPath { get; set; }
+
+    /// <summary>
+    /// Optional module path (e.g., "vllm.entrypoints.api_server").
+    /// </summary>
+    public string? ModulePath { get; set; }
+
+    /// <summary>
+    /// Default port to use for vLLM.
+    /// </summary>
+    public int DefaultPort { get; set; } = 0;
+
+    /// <summary>
+    /// Startup timeout in seconds to wait for health.
+    /// </summary>
+    public int StartupTimeoutSec { get; set; } = 60;
+}
+
+/// <summary>
+/// Minimal ExLlamaV2 runner settings for MVP.
+/// </summary>
+public sealed class ExLlamaV2Settings
+{
+    /// <summary>
+    /// Default port to use for ExLlamaV2.
+    /// </summary>
+    public int DefaultPort { get; set; } = 0;
+
+    /// <summary>
+    /// Startup timeout in seconds to wait for health.
+    /// </summary>
+    public int StartupTimeoutSec { get; set; } = 60;
 }
