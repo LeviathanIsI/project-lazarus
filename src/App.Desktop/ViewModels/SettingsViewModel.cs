@@ -46,8 +46,9 @@ namespace Lazarus.Desktop.ViewModels;
         BrowseActiveModelCommand = new RelayCommand(BrowseActiveModel);
         BrowsePiperExecutableCommand = new RelayCommand(BrowsePiperExecutable);
         BrowseFasterWhisperExecutableCommand = new RelayCommand(BrowseFasterWhisperExecutable);
+        BrowseRagDatabaseCommand = new RelayCommand(BrowseRagDatabase);
 
-        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runners", "Models", "Audio" });
+        Categories = new ObservableCollection<string>(new[] { "General", "Paths", "Orchestrator", "Runners", "Models", "Audio", "RAG" });
         SelectedCategory = "General";
         }
 
@@ -58,6 +59,7 @@ namespace Lazarus.Desktop.ViewModels;
     public RelayCommand BrowseActiveModelCommand { get; }
     public RelayCommand BrowsePiperExecutableCommand { get; }
     public RelayCommand BrowseFasterWhisperExecutableCommand { get; }
+    public RelayCommand BrowseRagDatabaseCommand { get; }
     
 
     private string _preferredTheme;
@@ -194,6 +196,28 @@ namespace Lazarus.Desktop.ViewModels;
         set => SetProperty(ref _audioFasterWhisperExecutable, value, OnChangedPersist);
     }
 
+    // --- RAG ---
+    private bool _ragEnableVectorStore;
+    public bool RagEnableVectorStore
+    {
+        get => _ragEnableVectorStore;
+        set => SetProperty(ref _ragEnableVectorStore, value, OnChangedPersist);
+    }
+
+    private string _ragDatabasePath = string.Empty;
+    public string RagDatabasePath
+    {
+        get => _ragDatabasePath;
+        set => SetProperty(ref _ragDatabasePath, value, OnChangedPersist);
+    }
+
+    private bool _ragUseSQLiteVss;
+    public bool RagUseSQLiteVss
+    {
+        get => _ragUseSQLiteVss;
+        set => SetProperty(ref _ragUseSQLiteVss, value, OnChangedPersist);
+    }
+
     private void OnChangedPersist()
     {
         // Push values into the settings service and schedule a save.
@@ -217,6 +241,9 @@ namespace Lazarus.Desktop.ViewModels;
         s.Audio.PiperVoice = AudioPiperVoice;
         s.Audio.EnableAsr = AudioEnableAsr;
         s.Audio.FasterWhisperExecutable = AudioFasterWhisperExecutable;
+        s.Rag.EnableVectorStore = RagEnableVectorStore;
+        s.Rag.DatabasePath = RagDatabasePath;
+        s.Rag.UseSQLiteVss = RagUseSQLiteVss;
         _ = _settingsService.SaveAsync();
     }
 
@@ -303,6 +330,24 @@ namespace Lazarus.Desktop.ViewModels;
         if (dlg.ShowDialog() == true)
         {
             AudioFasterWhisperExecutable = dlg.FileName;
+        }
+    }
+
+    private void BrowseRagDatabase()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Select RAG Database (*.db)",
+            Filter = "SQLite DB (*.db;*.sqlite)|*.db;*.sqlite|All files (*.*)|*.*",
+            CheckPathExists = true,
+            CheckFileExists = false,
+            ValidateNames = false,
+            FileName = System.IO.Path.GetFileName(RagDatabasePath)
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            var chosen = dlg.FileName;
+            if (!string.IsNullOrWhiteSpace(chosen)) RagDatabasePath = chosen;
         }
     }
 

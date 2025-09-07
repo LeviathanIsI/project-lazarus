@@ -178,6 +178,27 @@
                                 <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseFasterWhisperExecutableCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
                             </StackPanel>
                         </StackPanel>
+
+                        <StackPanel x:Name="RagPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="RAG">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <CheckBox Margin="0,6" Content="Enable Vector Store" IsChecked="{Binding RagEnableVectorStore, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6">
+                                <TextBlock Width="200" VerticalAlignment="Center" Text="Database Path" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBox Width="320" Text="{Binding RagDatabasePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseRagDatabaseCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                            </StackPanel>
+                            <CheckBox Margin="0,6" Content="Use SQLite VSS" IsChecked="{Binding RagUseSQLiteVss, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        </StackPanel>
                     </Grid>
                 </ScrollViewer>
             </Grid>
