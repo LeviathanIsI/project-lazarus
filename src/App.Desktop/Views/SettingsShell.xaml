@@ -55,20 +55,7 @@
                             Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}"
                             HorizontalContentAlignment="Stretch"
                             VerticalContentAlignment="Stretch"
-                            Template="{StaticResource SafeContentControlTemplate}">
-                <!-- Debug ContentTemplate to prove layout and type; inner ContentPresenter applies VM->View templates -->
-                <ContentControl.ContentTemplate>
-                    <DataTemplate>
-                        <Border Padding="12" BorderThickness="2" BorderBrush="Tomato" Background="#20FF6347" CornerRadius="6">
-                            <StackPanel>
-                                <TextBlock Text="DEBUG: ContentTemplate is actually applied" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding Path=., StringFormat=VM Type: {0}}"/>
-                                <ContentPresenter Content="{Binding}"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ContentControl.ContentTemplate>
-            </ContentControl>
+                            Template="{StaticResource SafeContentControlTemplate}"/>
         </Border>
     </DockPanel>
 </UserControl>
