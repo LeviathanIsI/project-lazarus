@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,5 +48,10 @@ public sealed class SettingsShellViewModel : INotifyPropertyChanged
         Sections.Add(new AvatarsSettingsViewModel(settings));
 
         SelectedSectionVm = Sections.FirstOrDefault();
+
+        // Diagnostics to help verify DataTemplate wiring at runtime
+        Debug.WriteLine($"[Settings] Sections count: {Sections.Count}");
+        Debug.WriteLine($"[Settings] SelectedSectionVm = {SelectedSectionVm?.GetType().FullName}");
+        Debug.WriteLine($"[Settings] Settings VM instance = {settings?.GetType().FullName}");
     }
 }

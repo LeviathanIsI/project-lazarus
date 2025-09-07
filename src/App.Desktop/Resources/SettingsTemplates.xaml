@@ -3,6 +3,8 @@
                     xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
                     xmlns:views="clr-namespace:Lazarus.Desktop.Views">
 
+  
+
   <!-- Map section VMs to their views; force views to bind to SettingsViewModel -->
   <DataTemplate DataType="{x:Type vm:GeneralSettingsViewModel}">
     <views:GeneralSettingsView DataContext="{Binding Settings}"/>
