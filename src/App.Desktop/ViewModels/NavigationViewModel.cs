@@ -137,6 +137,7 @@ namespace Lazarus.Desktop.ViewModels
                 "Models" => new Views.ModelsView(),
                 "ThreeDModels" => new Views.ThreeDModelsView(),
                 "Audio" => new Views.AudioView(),
+                "Settings" => new Views.SettingsView(),
                 _ => new Views.DashboardView()
             };
 

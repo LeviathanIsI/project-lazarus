@@ -1,6 +1,8 @@
 using Lazarus.Data.Extensions;
 using Lazarus.Desktop.Configuration;
 using Lazarus.Desktop.Services;
+using Lazarus.Shared.Settings;
+using Lazarus.Backend.Services.Settings;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,6 +105,9 @@ public static class ServiceCollectionExtensions
         // Bootstrap filesystem layout (registered for use at startup)
         services.AddSingleton<IFileSystemBootstrapService, FileSystemBootstrapService>();
 
+        // Settings service (JSON-backed under LazarusPaths.Root)
+        services.AddSingleton<ISettingsService, SettingsService>();
+
         return services;
     }
 
@@ -114,12 +119,13 @@ public static class ServiceCollectionExtensions
         public static IServiceCollection AddLazarusUI(this IServiceCollection services)
         {
             // Singleton services for app-wide state
-            services.AddSingleton<INavigationService, NavigationService>();
-            services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IBinaryValidationService, BinaryValidationService>();
         services.AddSingleton<IModelCatalogService, ModelCatalogService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();
+        services.AddSingleton<UiDebounceDispatcher>();
 
         // Singleton ViewModelLocator for XAML binding support
         services.AddSingleton<ViewModelLocator>();
@@ -139,6 +145,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<MainViewModel>();
             services.AddTransient<NavigationViewModel>();
             services.AddTransient<ModelsViewModel>();
+            services.AddTransient<SettingsViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();
@@ -224,6 +231,10 @@ internal sealed class ApplicationHostService : IHostedService
                     // Ensure first-run filesystem layout exists before DB init
                     var bootstrap = _serviceProvider.GetRequiredService<IFileSystemBootstrapService>();
                     await bootstrap.EnsureLayoutAsync(cancellationToken).ConfigureAwait(false);
+
+                    // Load user settings early
+                    var settings = _serviceProvider.GetRequiredService<ISettingsService>();
+                    await settings.LoadAsync(cancellationToken).ConfigureAwait(false);
 
                     // Ensure database is ready
                     await _serviceProvider.EnsureDatabaseAsync(cancellationToken: cancellationToken)
