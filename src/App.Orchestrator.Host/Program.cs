@@ -122,6 +122,29 @@ app.MapGet("/api/info", () => Results.Json(new
     timestamp = DateTimeOffset.UtcNow
 }));
 
+// Simple runner status summary
+app.MapGet("/runner/status", (IModelInventoryService inventory) =>
+{
+    var active = runners.Values.FirstOrDefault();
+    string? modelPath = null;
+    int? pid = null; // Placeholder until real runner processes are managed
+
+    if (active is not null)
+    {
+        var inv = inventory.Scan();
+        var model = inv.BaseModels.FirstOrDefault(m => string.Equals(m.ModelKey, active.ModelId, StringComparison.OrdinalIgnoreCase));
+        modelPath = model?.FilePath;
+        // pid remains null in stub implementation
+    }
+
+    return Results.Json(new
+    {
+        isRunning = active is not null,
+        modelPath,
+        pid
+    });
+});
+
 // OpenAI-compatible models list: proxy to runner if available; otherwise fallback
 app.MapGet("/v1/models", async (IModelInventoryService inventory) =>
 {
