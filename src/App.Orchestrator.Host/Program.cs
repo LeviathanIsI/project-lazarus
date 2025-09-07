@@ -479,6 +479,12 @@ internal sealed class RunnerAutoStartService : IHostedService
             return;
         }
 
+        if (!File.Exists(modelPath))
+        {
+            _logger.LogWarning("Configured Runner ModelPath does not exist or is not a file: {ModelPath}", modelPath);
+            return;
+        }
+
         _logger.LogInformation("Attempting runner auto-start with model: {ModelPath}", modelPath);
         var ok = await _supervisor.LoadAsync(modelPath, cancellationToken).ConfigureAwait(false);
         if (!ok)

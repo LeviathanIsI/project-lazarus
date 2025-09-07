@@ -161,6 +161,11 @@ public static class ServiceCollectionExtensions
         // Add hosted services for background operations
         services.AddHostedService<HealthMonitorService>();
 
+#if DEBUG
+        // Development: auto-start local orchestrator host if not running
+        services.AddHostedService<OrchestratorProcessService>();
+#endif
+
         return services;
     }
 
