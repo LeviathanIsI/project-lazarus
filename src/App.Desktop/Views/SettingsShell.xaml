@@ -27,7 +27,35 @@
             </ListBox>
         </StackPanel>
         <Border Background="{StaticResource GlassCardBrush}" Padding="24" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" CornerRadius="8">
-            <ContentControl x:Name="SettingsContent" Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}"/>
+            <Border.Resources>
+                <!-- Safe template that always presents content; shows placeholder only when Content is null -->
+                <ControlTemplate x:Key="SafeContentControlTemplate" TargetType="ContentControl">
+                    <Grid>
+                        <TextBlock x:Name="Empty"
+                                   Text="No content"
+                                   Visibility="Collapsed"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,8"/>
+                        <ContentPresenter x:Name="Presenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                          ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Content" Value="{x:Null}">
+                            <Setter TargetName="Presenter" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="Empty" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Border.Resources>
+
+            <ContentControl x:Name="SettingsContent"
+                            Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Template="{StaticResource SafeContentControlTemplate}"/>
         </Border>
     </DockPanel>
 </UserControl>
