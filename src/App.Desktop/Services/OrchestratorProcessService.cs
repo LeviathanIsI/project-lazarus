@@ -43,13 +43,69 @@ internal sealed class OrchestratorProcessService : IOrchestratorProcessService
                 _logger.LogWarning("Could not resolve App.Orchestrator.Host project path; skipping auto-start");
                 return;
             }
-            psi = new ProcessStartInfo
+
+            // To avoid locking the project bin during builds, shadow-copy the built output to a cache folder
+            // and run the DLL from there via 'dotnet exec'.
+            var srcOutDir = Path.Combine(Path.GetDirectoryName(projectPath)!, "bin", "Debug", "net8.0");
+            var srcDll = Path.Combine(srcOutDir, "Lazarus.Orchestrator.Host.dll");
+            if (!File.Exists(srcDll))
             {
-                FileName = "dotnet",
-                Arguments = $"run --project \"{projectPath}\" -c Debug",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
+                _logger.LogInformation("Orchestrator output not found at {Path}; will attempt to run via 'dotnet run' as fallback", srcDll);
+                psi = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = $"run --project \"{projectPath}\" -c Debug",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+            else
+            {
+                var shadowDir = Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Cache, "OrchestratorHost");
+                Directory.CreateDirectory(shadowDir);
+                try
+                {
+                    MirrorDirectory(srcOutDir, shadowDir);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to mirror orchestrator output; falling back to 'dotnet run'");
+                    psi = new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = $"run --project \"{projectPath}\" -c Debug",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    };
+                }
+
+                if (psi is null)
+                {
+                    var shadowDll = Path.Combine(shadowDir, "Lazarus.Orchestrator.Host.dll");
+                    if (!File.Exists(shadowDll))
+                    {
+                        _logger.LogWarning("Shadow DLL not found at {Path}; using 'dotnet run' fallback", shadowDll);
+                        psi = new ProcessStartInfo
+                        {
+                            FileName = "dotnet",
+                            Arguments = $"run --project \"{projectPath}\" -c Debug",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                        };
+                    }
+                    else
+                    {
+                        psi = new ProcessStartInfo
+                        {
+                            FileName = "dotnet",
+                            Arguments = $"\"{shadowDll}\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            WorkingDirectory = shadowDir,
+                        };
+                    }
+                }
+            }
 #else
             // RELEASE: try App.Orchestrator.Host.exe next to the app, then in \App.Orchestrator.Host\
             var exe = TryResolveOrchestratorExePath();
@@ -151,6 +207,30 @@ internal sealed class OrchestratorProcessService : IOrchestratorProcessService
         return null;
     }
     
+    private static void MirrorDirectory(string sourceDir, string destDir)
+    {
+        foreach (var dir in Directory.EnumerateDirectories(sourceDir, "*", SearchOption.AllDirectories))
+        {
+            var rel = Path.GetRelativePath(sourceDir, dir);
+            var target = Path.Combine(destDir, rel);
+            Directory.CreateDirectory(target);
+        }
+
+        foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
+        {
+            var rel = Path.GetRelativePath(sourceDir, file);
+            var target = Path.Combine(destDir, rel);
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            try
+            {
+                File.Copy(file, target, overwrite: true);
+            }
+            catch
+            {
+                // Best-effort; if a file copy fails, continue. Shadow copy is only to avoid locks.
+            }
+        }
+    }
 #if !DEBUG
     private static string? TryResolveOrchestratorExePath()
     {
