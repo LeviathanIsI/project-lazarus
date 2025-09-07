@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Diagnostics;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
 
@@ -27,8 +28,8 @@ var app = builder.Build();
 app.MapGet("/health", () => Results.Json(new
 {
     status = "ok",
-    service = "orchestrator",
-    timestamp = DateTimeOffset.UtcNow
+    runner = runners.IsEmpty ? "idle" : "ok",
+    pid = Environment.ProcessId
 }));
 
 // Models list (enumerated from LazarusPaths using backend service)
