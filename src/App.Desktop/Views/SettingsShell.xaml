@@ -27,14 +27,7 @@
             </ListBox>
         </StackPanel>
         <Border Background="{StaticResource GlassCardBrush}" Padding="24" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" CornerRadius="8">
-            <ContentControl x:Name="SettingsContent" Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}">
-                <ContentControl.ContentTemplate>
-                    <!-- Template supplied in App resources via DataTemplates for section VMs -->
-                    <DataTemplate>
-                        <TextBlock Text="No content" Foreground="{StaticResource TextSecondaryBrush}"/>
-                    </DataTemplate>
-                </ContentControl.ContentTemplate>
-            </ContentControl>
+            <ContentControl x:Name="SettingsContent" Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}"/>
         </Border>
     </DockPanel>
 </UserControl>
