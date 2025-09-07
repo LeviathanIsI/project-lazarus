@@ -196,6 +196,21 @@ namespace Lazarus.Desktop.ViewModels;
         set => SetProperty(ref _audioFasterWhisperExecutable, value, OnChangedPersist);
     }
 
+    // --- Logging ---
+    private string _loggingLevel = "Information";
+    public string LoggingLevel
+    {
+        get => _loggingLevel;
+        set => SetProperty(ref _loggingLevel, value, OnChangedPersist);
+    }
+
+    private bool _loggingEnableStructured = true;
+    public bool LoggingEnableStructured
+    {
+        get => _loggingEnableStructured;
+        set => SetProperty(ref _loggingEnableStructured, value, OnChangedPersist);
+    }
+
     // --- RAG ---
     private bool _ragEnableVectorStore;
     public bool RagEnableVectorStore
@@ -244,6 +259,8 @@ namespace Lazarus.Desktop.ViewModels;
         s.Rag.EnableVectorStore = RagEnableVectorStore;
         s.Rag.DatabasePath = RagDatabasePath;
         s.Rag.UseSQLiteVss = RagUseSQLiteVss;
+        s.Logging.Level = LoggingLevel;
+        s.Logging.EnableStructured = LoggingEnableStructured;
         _ = _settingsService.SaveAsync();
     }
 
