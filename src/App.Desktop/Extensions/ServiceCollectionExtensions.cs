@@ -85,6 +85,14 @@ public static class ServiceCollectionExtensions
             httpClient.Timeout = options.RequestTimeout;
         });
 
+        // Add HTTP client for orchestrator runner control
+        services.AddHttpClient<IOrchestratorRunnerClient, OrchestratorRunnerClient>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<OrchestratorOptions>>().Value;
+            httpClient.BaseAddress = new Uri(options.BaseUrl);
+            httpClient.Timeout = options.RequestTimeout;
+        });
+
         // Add data layer services with shared path contract for DB location
         var dbPath = Lazarus.Shared.LazarusPaths.DatabaseFile;
         var connectionString = $"Data Source={dbPath};Cache=Shared;";
