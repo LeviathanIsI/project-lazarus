@@ -77,7 +77,6 @@ public sealed class ModelsViewModel : ViewModelBase
         {
             _selectedModel = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(VisibleBaseModels));
             OnPropertyChanged(nameof(VisibleRunnerCatalog));
             OnPropertyChanged(nameof(LoadDisabledReason));
             OnPropertyChanged(nameof(ShowRunnerHint));

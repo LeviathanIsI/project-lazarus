@@ -55,6 +55,8 @@
                                 <TextBlock Text="Base Model" Style="{StaticResource H3TextStyle}"/>
                                     <ComboBox ItemsSource="{Binding VisibleBaseModels}"
                                               SelectedItem="{Binding SelectedModel}"
+                                              IsTextSearchEnabled="True"
+                                              TextSearch.TextPath="DisplayName"
                                               Margin="0,8,0,0">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
@@ -238,7 +240,9 @@
                                     </StackPanel.Style>
                                     <ComboBox Width="260"
                                               ItemsSource="{Binding VisibleRunnerCatalog}"
-                                              SelectedItem="{Binding SelectedRunner}">
+                                              SelectedItem="{Binding SelectedRunner}"
+                                              IsTextSearchEnabled="True"
+                                              TextSearch.TextPath="DisplayName">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock>
