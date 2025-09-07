@@ -485,9 +485,19 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             if (!string.IsNullOrWhiteSpace(tsString) && TimeSpan.TryParse(tsString, out var ts) && ts > TimeSpan.Zero)
                 return ts;
 
+            // Fallback 0: Desktop-style key if present in this host's config
+            tsString = _config["Runners:LlamaCpp:StartupTimeout"];
+            if (!string.IsNullOrWhiteSpace(tsString) && TimeSpan.TryParse(tsString, out ts) && ts > TimeSpan.Zero)
+                return ts;
+
             // Fallback 1: milliseconds value (int)
             var msString = _config["Orchestrator:Runner:StartupTimeoutMs"] ?? _config["Runner.StartupTimeout"];
             if (!string.IsNullOrWhiteSpace(msString) && int.TryParse(msString, out var ms) && ms > 0)
+                return TimeSpan.FromMilliseconds(ms);
+
+            // Fallback 1b: Desktop-style milliseconds
+            msString = _config["Runners:LlamaCpp:StartupTimeoutMs"];
+            if (!string.IsNullOrWhiteSpace(msString) && int.TryParse(msString, out ms) && ms > 0)
                 return TimeSpan.FromMilliseconds(ms);
 
             // Fallback 2: environment variable (seconds)
