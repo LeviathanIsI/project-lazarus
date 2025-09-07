@@ -163,7 +163,8 @@ public static class ServiceCollectionExtensions
 
         // Auto-start local orchestrator host if not running
         // DEBUG: uses `dotnet run`; RELEASE: tries App.Orchestrator.Host.exe near the app
-        services.AddHostedService<OrchestratorProcessService>();
+        services.AddSingleton<IOrchestratorProcessService, OrchestratorProcessService>();
+        services.AddHostedService<OrchestratorBootstrapHostedService>();
 
         return services;
     }

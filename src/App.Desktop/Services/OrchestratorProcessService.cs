@@ -1,5 +1,4 @@
 using Lazarus.Desktop.Services;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Net.Http;
@@ -7,7 +6,13 @@ using System.IO;
 
 namespace Lazarus.Desktop.Services;
 
-internal sealed class OrchestratorProcessService : IHostedService
+internal interface IOrchestratorProcessService
+{
+    Task StartIfNeededAsync(CancellationToken cancellationToken);
+    Task StopIfOwnedAsync(CancellationToken cancellationToken);
+}
+
+internal sealed class OrchestratorProcessService : IOrchestratorProcessService
 {
     private readonly ILogger<OrchestratorProcessService> _logger;
     private readonly IServiceProvider _services;
@@ -19,7 +24,7 @@ internal sealed class OrchestratorProcessService : IHostedService
         _services = services;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartIfNeededAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -89,7 +94,7 @@ internal sealed class OrchestratorProcessService : IHostedService
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public Task StopIfOwnedAsync(CancellationToken cancellationToken)
     {
         try
         {
