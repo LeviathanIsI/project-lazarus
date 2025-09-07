@@ -15,7 +15,7 @@
                        Foreground="{StaticResource TextPrimaryBrush}"
                        Margin="16,24,16,16"/>
             <ListBox ItemsSource="{Binding Sections}"
-                     SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                     SelectedItem="{Binding SelectedSectionVm, Mode=TwoWay}"
                      BorderThickness="0"
                      Background="Transparent"
                      Foreground="{StaticResource TextPrimaryBrush}">
@@ -27,10 +27,11 @@
             </ListBox>
         </StackPanel>
         <Border Background="{StaticResource GlassCardBrush}" Padding="24" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" CornerRadius="8">
-            <ContentControl Content="{Binding SelectedSection}">
+            <ContentControl x:Name="SettingsContent" Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}">
                 <ContentControl.ContentTemplate>
-                    <DataTemplate DataType="{x:Type vm:SettingsSection}">
-                        <ContentPresenter Content="{Binding View}"/>
+                    <!-- Template supplied in App resources via DataTemplates for section VMs -->
+                    <DataTemplate>
+                        <TextBlock Text="No content" Foreground="{StaticResource TextSecondaryBrush}"/>
                     </DataTemplate>
                 </ContentControl.ContentTemplate>
             </ContentControl>

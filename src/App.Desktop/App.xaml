@@ -18,6 +18,8 @@
                 <ResourceDictionary Source="Themes/UXEnhancements.xaml"/>
                 <ResourceDictionary Source="Templates/EmptyStateTemplates.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ComboBoxes.xaml"/>
+                <!-- Settings section view templates -->
+                <ResourceDictionary Source="Resources/SettingsTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
