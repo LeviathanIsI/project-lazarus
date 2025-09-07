@@ -72,25 +72,10 @@ public sealed class LlamaCppSettings
 /// </summary>
 public sealed class VllmSettings
 {
-    /// <summary>
-    /// Optional python interpreter path (e.g., "python").
-    /// </summary>
-    public string? PythonPath { get; set; }
-
-    /// <summary>
-    /// Optional module path (e.g., "vllm.entrypoints.api_server").
-    /// </summary>
-    public string? ModulePath { get; set; }
-
-    /// <summary>
-    /// Default port to use for vLLM.
-    /// </summary>
-    public int DefaultPort { get; set; } = 0;
-
-    /// <summary>
-    /// Startup timeout in seconds to wait for health.
-    /// </summary>
-    public int StartupTimeoutSec { get; set; } = 60;
+    public string PythonEnvPath { get; set; } = @"%LOCALAPPDATA%\Lazarus\Runners\vllm\py";
+    public string Host { get; set; } = "127.0.0.1";
+    public int Port { get; set; } = 8000;
+    public string LaunchArgs { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -98,20 +83,46 @@ public sealed class VllmSettings
 /// </summary>
 public sealed class ExLlamaV2Settings
 {
-    /// <summary>
-    /// Default port to use for ExLlamaV2.
-    /// </summary>
-    public int DefaultPort { get; set; } = 0;
-
-    /// <summary>
-    /// Startup timeout in seconds to wait for health.
-    /// </summary>
-    public int StartupTimeoutSec { get; set; } = 60;
+    public string ServerPath { get; set; } = @"%LOCALAPPDATA%\Lazarus\Runners\exllamav2\server.exe";
+    public string LaunchArgs { get; set; } = string.Empty;
 }
 
-// Placeholder sections for MVP; extend as needed.
-public sealed class TrainingSettings { }
-public sealed class AudioSettings { }
-public sealed class RagSettings { }
-public sealed class UiSettings { }
-public sealed class LoggingSettings { }
+public sealed class TrainingSettings
+{
+    public string DefaultTrainer { get; set; } = "llama-factory";
+    public string WorkingDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\training";
+}
+
+public sealed class AudioSettings
+{
+    public bool EnableTts { get; set; } = false;
+    public string PiperExecutable { get; set; } = @"%LOCALAPPDATA%\Lazarus\audio\piper.exe";
+    public string PiperVoice { get; set; } = "en_US-amy-medium";
+    public bool EnableAsr { get; set; } = false;
+    public string FasterWhisperExecutable { get; set; } = @"%LOCALAPPDATA%\Lazarus\audio\faster-whisper.exe";
+}
+
+public sealed class RagSettings
+{
+    public bool EnableVectorStore { get; set; } = false;
+    public string DatabasePath { get; set; } = @"%LOCALAPPDATA%\Lazarus\lazarus.db";
+    public bool UseSQLiteVss { get; set; } = false;
+}
+
+public sealed class UiSettings
+{
+    public bool ShowTokenStream { get; set; } = true;
+    public double FontSize { get; set; } = 13.0;
+    public HotkeySettings Hotkeys { get; set; } = new();
+}
+
+public sealed class HotkeySettings
+{
+    public string NewScreenshot { get; set; } = "Ctrl+Shift+4";
+}
+
+public sealed class LoggingSettings
+{
+    public string Level { get; set; } = "Information";
+    public bool EnableStructured { get; set; } = true;
+}
