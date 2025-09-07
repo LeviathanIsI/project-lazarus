@@ -126,7 +126,7 @@ namespace Lazarus.Desktop.ViewModels
 
             SelectedView = e.ViewName;
 
-            // Create view instance based on navigation
+            // Create view instance based on navigation, with resilient Settings fallback
             CurrentView = e.ViewName switch
             {
                 "Dashboard" => new Views.DashboardView(),
@@ -137,12 +137,26 @@ namespace Lazarus.Desktop.ViewModels
                 "Models" => new Views.ModelsView(),
                 "ThreeDModels" => new Views.ThreeDModelsView(),
                 "Audio" => new Views.AudioView(),
-                "Settings" => new Views.SettingsShell(),
+                "Settings" => CreateSettingsViewSafe(),
                 _ => new Views.DashboardView()
             };
 
             // Notify property changes
             OnPropertyChanged(nameof(CurrentViewName));
+        }
+
+        private static object CreateSettingsViewSafe()
+        {
+            try
+            {
+                return new Views.SettingsShell();
+            }
+            catch (Exception ex)
+            {
+                // Fallback to legacy SettingsView to avoid blank content
+                System.Diagnostics.Debug.WriteLine("[Settings] Failed to create SettingsShell: " + ex);
+                return new Views.SettingsView();
+            }
         }
 
         private void OnNavigationServicePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
