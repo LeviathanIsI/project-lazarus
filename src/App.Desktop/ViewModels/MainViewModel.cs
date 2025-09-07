@@ -13,22 +13,30 @@ namespace Lazarus.Desktop.ViewModels
         private readonly INavigationService _navigationService;
         private readonly IThemeService _themeService;
         private readonly IOrchestratorClient _orchestratorClient;
+        private readonly IOrchestratorRunnerClient _runnerClient;
+        private readonly System.Threading.Timer _runnerTimer;
 
         public MainViewModel(
             ILogger<MainViewModel> logger,
             NavigationViewModel navigationViewModel,
             INavigationService navigationService,
             IThemeService themeService,
-            IOrchestratorClient orchestratorClient)
+            IOrchestratorClient orchestratorClient,
+            IOrchestratorRunnerClient runnerClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Navigation = navigationViewModel ?? throw new ArgumentNullException(nameof(navigationViewModel));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
             _orchestratorClient = orchestratorClient ?? throw new ArgumentNullException(nameof(orchestratorClient));
+            _runnerClient = runnerClient ?? throw new ArgumentNullException(nameof(runnerClient));
 
             // Subscribe to orchestrator health changes
             _orchestratorClient.HealthStatusChanged += OnOrchestratorHealthChanged;
+
+            // Prime runner status and start a light polling timer
+            _ = RefreshRunnerStatusAsync();
+            _runnerTimer = new System.Threading.Timer(async _ => await RefreshRunnerStatusAsync(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
 
             _logger.LogDebug("MainViewModel initialized");
         }
@@ -68,6 +76,25 @@ namespace Lazarus.Desktop.ViewModels
         /// </summary>
         public RelayCommand RefreshConnectionCommand => new(async () => await RefreshConnectionAsync(), () => !IsDisposed);
 
+        public bool IsRunnerRunning
+        {
+            get => _isRunnerRunning;
+            private set => SetProperty(ref _isRunnerRunning, value);
+        }
+        private bool _isRunnerRunning;
+
+        public string? LoadedModelName
+        {
+            get => _loadedModelName;
+            private set => SetProperty(ref _loadedModelName, value);
+        }
+        private string? _loadedModelName;
+
+        public string OrchestratorStatusTooltip => IsOrchestratorHealthy ? "Orchestrator: Healthy" : "Orchestrator: Unreachable";
+        public string RunnerStatusTooltip => IsOrchestratorHealthy
+            ? (IsRunnerRunning ? "Runner: Running" : "Runner: Idle")
+            : "Runner: Unknown (orchestrator offline)";
+
         private bool CanChangeTheme(string? themeName) =>
             !IsDisposed && !string.IsNullOrWhiteSpace(themeName) && _themeService.AvailableThemes.Contains(themeName);
 
@@ -103,6 +130,8 @@ namespace Lazarus.Desktop.ViewModels
         private void OnOrchestratorHealthChanged(object? sender, HealthStatusChangedEventArgs e)
         {
             OnPropertyChanged(nameof(IsOrchestratorHealthy));
+            OnPropertyChanged(nameof(OrchestratorStatusTooltip));
+            OnPropertyChanged(nameof(RunnerStatusTooltip));
 
             if (e.IsHealthy)
             {
@@ -116,8 +145,30 @@ namespace Lazarus.Desktop.ViewModels
 
         protected override void OnDisposing()
         {
+            try { _runnerTimer?.Dispose(); } catch { }
             _orchestratorClient.HealthStatusChanged -= OnOrchestratorHealthChanged;
             _logger.LogDebug("MainViewModel disposed");
+        }
+
+        private async Task RefreshRunnerStatusAsync()
+        {
+            try
+            {
+                var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
+                // Use dispatcher to update UI-bound properties
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    IsRunnerRunning = status.IsRunning;
+                    LoadedModelName = string.IsNullOrWhiteSpace(status.ModelPath)
+                        ? null
+                        : System.IO.Path.GetFileNameWithoutExtension(status.ModelPath);
+                    OnPropertyChanged(nameof(RunnerStatusTooltip));
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to refresh runner status");
+            }
         }
     }
 }

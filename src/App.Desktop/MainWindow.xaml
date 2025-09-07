@@ -69,6 +69,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         
         <!-- Custom Title Bar -->
@@ -521,6 +522,77 @@
             </Grid>
         </Border>
         </Grid>
+
+        <!-- Global Status Bar -->
+        <Border Grid.Row="2" Background="#1AFFFFFF" Padding="12,4">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <!-- Orchestrator Status -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse Width="10" Height="10" HorizontalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="Red"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOrchestratorHealthy}" Value="True">
+                                            <Setter Property="Fill" Value="LimeGreen"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text=" Orchestrator" Margin="6,0,0,0"/>
+                        <TextBlock Text="●" Foreground="Transparent">
+                            <TextBlock.ToolTip>
+                                <ToolTip Content="{Binding OrchestratorStatusTooltip}"/>
+                            </TextBlock.ToolTip>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Runner Status -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <Ellipse Width="10" Height="10" HorizontalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="Yellow"/>
+                                    <Style.Triggers>
+                                        <!-- Red when orchestrator not healthy -->
+                                        <DataTrigger Binding="{Binding IsOrchestratorHealthy}" Value="False">
+                                            <Setter Property="Fill" Value="Red"/>
+                                        </DataTrigger>
+                                        <!-- Green when running and orchestrator healthy -->
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsOrchestratorHealthy}" Value="True"/>
+                                                <Condition Binding="{Binding IsRunnerRunning}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Fill" Value="LimeGreen"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text=" Runner" Margin="6,0,0,0"/>
+                        <TextBlock Text="●" Foreground="Transparent">
+                            <TextBlock.ToolTip>
+                                <ToolTip Content="{Binding RunnerStatusTooltip}"/>
+                            </TextBlock.ToolTip>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Loaded Model -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <TextBlock Text="Model:" Style="{StaticResource SecondaryTextStyle}"/>
+                        <TextBlock Text=" "/>
+                        <TextBlock Text="{Binding LoadedModelName}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right-aligned info -->
+                <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Text="Lazarus" Opacity="0.6"/>
+            </DockPanel>
+        </Border>
     </Grid>
 
 </Window>
