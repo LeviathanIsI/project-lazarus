@@ -66,14 +66,29 @@
               <ToggleButton x:Name="ToggleButton"
                             Grid.Column="1"
                             Focusable="False"
+                            OverridesDefaultStyle="True"
                             IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                             Background="Transparent"
                             BorderBrush="Transparent">
-                <Path Data="M 0 0 L 6 6 L 12 0 Z"
-                      Fill="{StaticResource InputDarkForegroundBrush}"
-                      Stretch="Uniform"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"/>
+                <ToggleButton.Template>
+                  <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chip" Background="Transparent" CornerRadius="4" Margin="2">
+                      <Path Data="M 0 0 L 6 6 L 12 0 Z"
+                            Fill="{StaticResource InputDarkForegroundBrush}"
+                            Stretch="Uniform"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Chip" Property="Background" Value="{StaticResource InputDarkHoverBrush}"/>
+                      </Trigger>
+                      <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="Chip" Property="Background" Value="{StaticResource InputDarkSelectedBrush}"/>
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </ToggleButton.Template>
               </ToggleButton>
             </Grid>
 

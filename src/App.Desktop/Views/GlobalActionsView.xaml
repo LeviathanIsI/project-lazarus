@@ -15,9 +15,8 @@
         <Style x:Key="SecondaryGlassButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryGlassButtonStyle}">
             <Setter Property="Padding" Value="12,6"/>
         </Style>
-        <Style x:Key="PrimaryGlassButtonStyle" TargetType="Button" BasedOn="{x:Null}">
+        <Style x:Key="PrimaryGlassButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryGlassButtonStyle}">
             <Setter Property="Background" Value="#333333"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="12,6"/>
         </Style>
