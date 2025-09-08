@@ -11,11 +11,8 @@
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A0A0A0"/>
         <SolidColorBrush x:Key="BorderBrush" Color="#2D2D2D"/>
-        <Style x:Key="SecondaryGlassButtonStyle" TargetType="Button" BasedOn="{x:Null}">
-            <Setter Property="Background" Value="#1A1A1A"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#30FFFFFF"/>
-            <Setter Property="BorderThickness" Value="1"/>
+        <!-- Inherit the global secondary button style so hover/press are dark, then tweak padding locally -->
+        <Style x:Key="SecondaryGlassButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryGlassButtonStyle}">
             <Setter Property="Padding" Value="12,6"/>
         </Style>
         <Style x:Key="PrimaryGlassButtonStyle" TargetType="Button" BasedOn="{x:Null}">
