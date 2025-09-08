@@ -78,14 +78,34 @@ public class PathsSettingsViewModel : SettingsSectionBase
     private int _cacheMaxSizeMB;
     private string _tempFilesLocation = "";
     private string _exportPath = "";
+    // Additional paths surfaced in XAML (not persisted yet)
+    private string _downloadDirectory = "";
+    private string _quantizedModelsDirectory = "";
+    private string _databasePath = "";
+    private string _conversationsDirectory = "";
+    private string _backupDirectory = "";
+    private string _importDirectory = "";
+    private string _templatesDirectory = "";
+    private string _logsDirectory = "";
+    private string _pluginsDirectory = "";
 
     public PathsSettingsViewModel(SettingsViewModel settings) : base(settings, "Paths")
     {
         SectionDescription = "Configure directories and file locations";
         BrowseModelsCommand = new RelayCommand(() => BrowseFolder(path => ModelsDirectory = path));
         BrowseCacheCommand = new RelayCommand(() => BrowseFolder(path => CacheDirectory = path));
-        BrowseTempCommand = new RelayCommand(() => BrowseFolder(path => TempFilesLocation = path));
-        BrowseExportCommand = new RelayCommand(() => BrowseFolder(path => ExportPath = path));
+        BrowseTempCommand = new RelayCommand(() => BrowseFolder(path => TempDirectory = path));
+        BrowseExportCommand = new RelayCommand(() => BrowseFolder(path => ExportDirectory = path));
+        // Additional browse commands used by the XAML
+        BrowseDownloadCommand = new RelayCommand(() => BrowseFolder(path => DownloadDirectory = path));
+        BrowseQuantizedCommand = new RelayCommand(() => BrowseFolder(path => QuantizedModelsDirectory = path));
+        BrowseDatabaseCommand = new RelayCommand(() => BrowseFolder(path => DatabasePath = path));
+        BrowseConversationsCommand = new RelayCommand(() => BrowseFolder(path => ConversationsDirectory = path));
+        BrowseBackupCommand = new RelayCommand(() => BrowseFolder(path => BackupDirectory = path));
+        BrowseImportCommand = new RelayCommand(() => BrowseFolder(path => ImportDirectory = path));
+        BrowseTemplatesCommand = new RelayCommand(() => BrowseFolder(path => TemplatesDirectory = path));
+        BrowseLogsCommand = new RelayCommand(() => BrowseFolder(path => LogsDirectory = path));
+        BrowsePluginsCommand = new RelayCommand(() => BrowseFolder(path => PluginsDirectory = path));
         
         // Initialize with default values immediately
         ResetToDefault();
@@ -123,10 +143,86 @@ public class PathsSettingsViewModel : SettingsSectionBase
         set { if (SetProperty(ref _exportPath, value)) MarkAsChanged(); }
     }
 
+    // Aliases/additional properties required by XAML
+    public string TempDirectory
+    {
+        get => _tempFilesLocation;
+        set { if (SetProperty(ref _tempFilesLocation, value)) MarkAsChanged(); }
+    }
+
+    public string DownloadDirectory
+    {
+        get => _downloadDirectory;
+        set { if (SetProperty(ref _downloadDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string QuantizedModelsDirectory
+    {
+        get => _quantizedModelsDirectory;
+        set { if (SetProperty(ref _quantizedModelsDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string DatabasePath
+    {
+        get => _databasePath;
+        set { if (SetProperty(ref _databasePath, value)) MarkAsChanged(); }
+    }
+
+    public string ConversationsDirectory
+    {
+        get => _conversationsDirectory;
+        set { if (SetProperty(ref _conversationsDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string BackupDirectory
+    {
+        get => _backupDirectory;
+        set { if (SetProperty(ref _backupDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string ExportDirectory
+    {
+        get => _exportPath;
+        set { if (SetProperty(ref _exportPath, value)) MarkAsChanged(); }
+    }
+
+    public string ImportDirectory
+    {
+        get => _importDirectory;
+        set { if (SetProperty(ref _importDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string TemplatesDirectory
+    {
+        get => _templatesDirectory;
+        set { if (SetProperty(ref _templatesDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string LogsDirectory
+    {
+        get => _logsDirectory;
+        set { if (SetProperty(ref _logsDirectory, value)) MarkAsChanged(); }
+    }
+
+    public string PluginsDirectory
+    {
+        get => _pluginsDirectory;
+        set { if (SetProperty(ref _pluginsDirectory, value)) MarkAsChanged(); }
+    }
+
     public ICommand BrowseModelsCommand { get; }
     public ICommand BrowseCacheCommand { get; }
     public ICommand BrowseTempCommand { get; }
     public ICommand BrowseExportCommand { get; }
+    public ICommand BrowseDownloadCommand { get; }
+    public ICommand BrowseQuantizedCommand { get; }
+    public ICommand BrowseDatabaseCommand { get; }
+    public ICommand BrowseConversationsCommand { get; }
+    public ICommand BrowseBackupCommand { get; }
+    public ICommand BrowseImportCommand { get; }
+    public ICommand BrowseTemplatesCommand { get; }
+    public ICommand BrowseLogsCommand { get; }
+    public ICommand BrowsePluginsCommand { get; }
 
     private void BrowseFolder(Action<string> setPath)
     {
@@ -153,20 +249,31 @@ public class PathsSettingsViewModel : SettingsSectionBase
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
-        // Fallback to AppData defaults when empty
+        // Fallback to AppData defaults when empty (use LazarusPaths where appropriate)
         ModelsDirectory = string.IsNullOrWhiteSpace(settings.ModelsDirectory)
-            ? Lazarus.Shared.Settings.SettingsPaths.ModelsDirectory
+            ? Lazarus.Shared.LazarusPaths.Models.RootDir
             : settings.ModelsDirectory;
         CacheDirectory = string.IsNullOrWhiteSpace(settings.CacheDirectory)
-            ? Lazarus.Shared.Settings.SettingsPaths.CacheDirectory
+            ? Lazarus.Shared.LazarusPaths.SystemData.Cache
             : settings.CacheDirectory;
         CacheMaxSizeMB = settings.CacheMaxSizeMB;
         TempFilesLocation = string.IsNullOrWhiteSpace(settings.TempFilesLocation)
-            ? Lazarus.Shared.Settings.SettingsPaths.TempDirectory
+            ? Lazarus.Shared.LazarusPaths.SystemData.Cache
             : settings.TempFilesLocation;
         ExportPath = string.IsNullOrWhiteSpace(settings.ExportPath)
-            ? Lazarus.Shared.Settings.SettingsPaths.ExportsDirectory
+            ? System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export")
             : settings.ExportPath;
+
+        // Populate non-persisted fields with sensible defaults
+        DownloadDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Cache, "Downloads");
+        QuantizedModelsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Models.RootDir, "Quantized");
+        DatabasePath = Lazarus.Shared.LazarusPaths.DatabaseFile;
+        ConversationsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Conversations");
+        BackupDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Backups");
+        ImportDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Import");
+        TemplatesDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.RootDir, "Templates");
+        LogsDirectory = Lazarus.Shared.LazarusPaths.SystemData.Logs;
+        PluginsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Plugins");
     }
 
     public override async Task ApplySettingsAsync()
@@ -183,12 +290,22 @@ public class PathsSettingsViewModel : SettingsSectionBase
     protected override void ResetToDefault()
     {
         // Ensure AppData tree exists and use it for defaults
-        try { Lazarus.Shared.Settings.SettingsPaths.EnsureDirectoriesExist(); } catch { }
-        ModelsDirectory = Lazarus.Shared.Settings.SettingsPaths.ModelsDirectory;
-        CacheDirectory = Lazarus.Shared.Settings.SettingsPaths.CacheDirectory;
+        try { foreach (var d in Lazarus.Shared.LazarusPaths.EnumerateAllDirectories()) System.IO.Directory.CreateDirectory(d); } catch { }
+        ModelsDirectory = Lazarus.Shared.LazarusPaths.Models.RootDir;
+        CacheDirectory = Lazarus.Shared.LazarusPaths.SystemData.Cache;
         CacheMaxSizeMB = 2048;
-        TempFilesLocation = Lazarus.Shared.Settings.SettingsPaths.TempDirectory;
-        ExportPath = Lazarus.Shared.Settings.SettingsPaths.ExportsDirectory;
+        TempFilesLocation = Lazarus.Shared.LazarusPaths.SystemData.Cache;
+        ExportPath = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export");
+
+        DownloadDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Cache, "Downloads");
+        QuantizedModelsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Models.RootDir, "Quantized");
+        DatabasePath = Lazarus.Shared.LazarusPaths.DatabaseFile;
+        ConversationsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Conversations");
+        BackupDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Backups");
+        ImportDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Import");
+        TemplatesDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.RootDir, "Templates");
+        LogsDirectory = Lazarus.Shared.LazarusPaths.SystemData.Logs;
+        PluginsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Plugins");
     }
 }
 
