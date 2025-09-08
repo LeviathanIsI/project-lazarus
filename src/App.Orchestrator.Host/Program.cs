@@ -350,7 +350,10 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         // Prefer GPU offload when hardware seems available; otherwise default to CPU-only.
         var preferGpu = HasCuda() || exe.Contains("cu", StringComparison.OrdinalIgnoreCase) || exe.Contains("cuda", StringComparison.OrdinalIgnoreCase);
 
-        if (await StartOnceAsync(exe, modelPath, preferGpu ? 999 : 0, cancellationToken).ConfigureAwait(false))
+        // Resolve a sane initial GPU layer count (user-configurable). Avoid extreme values to reduce startup failures.
+        var initialGpuLayers = ResolveGpuLayers(preferGpu);
+
+        if (await StartOnceAsync(exe, modelPath, initialGpuLayers, cancellationToken).ConfigureAwait(false))
             return true;
 
         // If GPU attempt failed quickly, retry with CPU-only as a fallback.
@@ -507,8 +510,37 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         }
         catch { }
 
-        // Sensible default: 2 minutes
-        return TimeSpan.FromMinutes(2);
+        // Sensible default: 4 minutes (large models + CPU fallback can take longer)
+        return TimeSpan.FromMinutes(4);
+    }
+
+    private int ResolveGpuLayers(bool preferGpu)
+    {
+        // 1) Explicit config value wins
+        try
+        {
+            var v = _config["Orchestrator:Runner:GpuLayers"];
+            if (!string.IsNullOrWhiteSpace(v) && int.TryParse(v, out var parsed) && parsed >= 0 && parsed <= 32768)
+                return parsed;
+
+            // Alternate key (desktop-style if provided)
+            v = _config["Runners:LlamaCpp:GpuLayers"];
+            if (!string.IsNullOrWhiteSpace(v) && int.TryParse(v, out parsed) && parsed >= 0 && parsed <= 32768)
+                return parsed;
+        }
+        catch { }
+
+        // 2) Environment variable override
+        try
+        {
+            var env = Environment.GetEnvironmentVariable("LAZARUS_RUNNER_GPU_LAYERS");
+            if (!string.IsNullOrWhiteSpace(env) && int.TryParse(env, out var eparsed) && eparsed >= 0 && eparsed <= 32768)
+                return eparsed;
+        }
+        catch { }
+
+        // 3) Heuristic default: moderate offload when GPU is present, else CPU-only
+        return preferGpu ? 60 : 0;
     }
 
     private static bool HasCuda()
