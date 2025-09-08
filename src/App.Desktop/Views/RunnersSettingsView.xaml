@@ -198,12 +198,9 @@
                           Foreground="{StaticResource TextPrimaryBrush}"/>
                 
                 <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         ItemsSource="{Binding GpuDevices}"
                          SelectedItem="{Binding GpuDevice, Mode=TwoWay}"
-                         ToolTip="Select GPU device for inference">
-                    <ComboBoxItem Content="GPU 0 - NVIDIA RTX 4090"/>
-                    <ComboBoxItem Content="GPU 1 - NVIDIA RTX 3080"/>
-                    <ComboBoxItem Content="Auto Select"/>
-                </ComboBox>
+                         ToolTip="Select GPU device for inference"/>
             </Grid>
 
             <!-- GPU Memory Limit -->

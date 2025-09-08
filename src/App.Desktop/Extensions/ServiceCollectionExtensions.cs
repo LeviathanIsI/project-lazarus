@@ -127,6 +127,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IBinaryValidationService, BinaryValidationService>();
+        services.AddSingleton<IHardwareInfoService, HardwareInfoService>();
         services.AddSingleton<IModelCatalogService, ModelCatalogService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();

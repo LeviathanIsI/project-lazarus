@@ -11,14 +11,16 @@ namespace Lazarus.Desktop.ViewModels;
 public class SettingsViewModel : ViewModelBase
 {
     private readonly ISettingsService _settingsService;
+    private readonly Lazarus.Desktop.Services.IHardwareInfoService _hardwareInfoService;
     private AppSettings _settings;
     private bool _hasUnsavedChanges;
     private SettingsSectionBase? _selectedSection;
     private string _searchText = string.Empty;
 
-    public SettingsViewModel(ISettingsService settingsService)
+    public SettingsViewModel(ISettingsService settingsService, Lazarus.Desktop.Services.IHardwareInfoService hardwareInfoService)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _hardwareInfoService = hardwareInfoService ?? throw new ArgumentNullException(nameof(hardwareInfoService));
         _settings = _settingsService.Current;
 
         // Initialize sections
@@ -27,7 +29,7 @@ public class SettingsViewModel : ViewModelBase
             new GeneralSettingsViewModel(this),
             new PathsSettingsViewModel(this),
             new OrchestratorSettingsViewModel(this),
-            new RunnersSettingsViewModel(this),
+            new RunnersSettingsViewModel(this, _hardwareInfoService),
             new ModelsSettingsViewModel(this),
             new AudioSettingsViewModel(this),
             new RagSettingsViewModel(this),

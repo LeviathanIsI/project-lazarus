@@ -178,9 +178,10 @@ namespace Lazarus.Desktop.ViewModels
                 try
                 {
                     var settingsService = App.ServiceProvider.GetService<Lazarus.Shared.Settings.ISettingsService>();
-                    if (settingsService != null)
+                    var hardwareInfoService = App.ServiceProvider.GetService<Lazarus.Desktop.Services.IHardwareInfoService>();
+                    if (settingsService != null && hardwareInfoService != null)
                     {
-                        errorView.DataContext = new SettingsViewModel(settingsService);
+                        errorView.DataContext = new SettingsViewModel(settingsService, hardwareInfoService);
                     }
                 }
                 catch

@@ -1,6 +1,8 @@
 using System.Windows.Input;
 using Lazarus.Shared.Settings;
 using Microsoft.Win32;
+using Lazarus.Desktop.Services;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lazarus.Desktop.ViewModels;
@@ -88,6 +90,7 @@ public class PathsSettingsViewModel : SettingsSectionBase
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
+        //
     }
 
     public string ModelsDirectory
@@ -254,6 +257,7 @@ public class OrchestratorSettingsViewModel : SettingsSectionBase
 /// </summary>
 public class RunnersSettingsViewModel : SettingsSectionBase
 {
+    private readonly IHardwareInfoService _hardwareInfoService;
     private string _executionMode = "CPU";
     private int _cpuThreads;
     private int _gpuMemoryLimitGB;
@@ -263,6 +267,8 @@ public class RunnersSettingsViewModel : SettingsSectionBase
     private int _cpuBatchSize = 32;
     private bool _useBlas = true;
     private string _gpuDevice = "Auto Select";
+    private string _cpuName = string.Empty;
+    public ObservableCollection<string> GpuDevices { get; } = new();
     private int _gpuLayers = 32;
     private bool _useFlashAttention;
     private int _contextSize = 4096;
@@ -273,8 +279,9 @@ public class RunnersSettingsViewModel : SettingsSectionBase
     private bool _logTokenTiming;
     private int _responseTimeoutSeconds = 120;
 
-    public RunnersSettingsViewModel(SettingsViewModel settings) : base(settings, "Runners")
+    public RunnersSettingsViewModel(SettingsViewModel settings, IHardwareInfoService hardwareInfoService) : base(settings, "Runners")
     {
+        _hardwareInfoService = hardwareInfoService;
         SectionDescription = "Configure model execution and hardware utilization";
         DetectHardwareCommand = new RelayCommand(DetectHardware);
         TestRunnerCommand = new RelayCommand(TestRunner);
@@ -325,6 +332,12 @@ public class RunnersSettingsViewModel : SettingsSectionBase
     {
         get => _gpuDevice;
         set { if (SetProperty(ref _gpuDevice, value)) MarkAsChanged(); }
+    }
+
+    public string CpuName
+    {
+        get => _cpuName;
+        private set => SetProperty(ref _cpuName, value);
     }
 
     public int GpuMemoryLimitGB
@@ -401,8 +414,84 @@ public class RunnersSettingsViewModel : SettingsSectionBase
 
     private void DetectHardware()
     {
-        // TODO: Detect available hardware
-        CpuThreads = Environment.ProcessorCount;
+        // Execute on background thread to avoid blocking UI
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var info = await _hardwareInfoService.GetHardwareInfoAsync();
+
+                // CPU
+                if (info.Cpu != null)
+                {
+                    CpuName = info.Cpu.Name;
+                    // Suggest threads = min(current, logical processors)
+                    var logical = Math.Max(1, info.Cpu.LogicalProcessors);
+                    var suggested = Math.Clamp(CpuThreads > 0 ? CpuThreads : logical / 2, 1, logical);
+                    CpuThreads = suggested;
+                }
+
+                // GPUs
+                var anyGpu = info.Gpus != null && info.Gpus.Count > 0;
+
+                // Rebuild list on UI thread via property change marshal
+                var items = new List<string>();
+                if (anyGpu)
+                {
+                    items.Add("Auto Select");
+                    foreach (var g in info.Gpus!)
+                    {
+                        double gb = g.AdapterRamBytes > 0 ? g.AdapterRamBytes / 1024d / 1024d / 1024d : 0;
+                        var label = gb > 0 ? $"GPU {g.Index} - {g.Name} ({gb:F0} GB)" : $"GPU {g.Index} - {g.Name}";
+                        items.Add(label);
+                    }
+                }
+                else
+                {
+                    items.Add("No GPU detected");
+                }
+
+                // Update ItemsSource
+                System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    GpuDevices.Clear();
+                    foreach (var s in items) GpuDevices.Add(s);
+                });
+
+                // Select default
+                if (anyGpu)
+                {
+                    GpuDevice = "Auto Select";
+                    ExecutionMode = string.IsNullOrEmpty(ExecutionMode) || ExecutionMode == "CPU" ? "Auto" : ExecutionMode;
+
+                    // Heuristic for GPU memory limit: up to (VRAM-1) GB clamped 1..64
+                    var first = info.Gpus![0];
+                    if (first.AdapterRamBytes > 0)
+                    {
+                        var vramGb = (int)Math.Max(1, Math.Round(first.AdapterRamBytes / 1024d / 1024d / 1024d));
+                        GpuMemoryLimitGB = Math.Clamp(Math.Max(1, vramGb - 1), 1, 64);
+                    }
+                }
+                else
+                {
+                    GpuDevice = "No GPU detected";
+                    ExecutionMode = "CPU";
+                }
+            }
+            catch
+            {
+                // Fallbacks on error
+                CpuThreads = Environment.ProcessorCount;
+                if (GpuDevices.Count == 0)
+                {
+                    System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+                    {
+                        GpuDevices.Clear();
+                        GpuDevices.Add("Auto Select");
+                    });
+                }
+            }
+        });
     }
 
     private void TestRunner()
