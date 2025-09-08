@@ -477,18 +477,21 @@
                     <WrapPanel>
                         <Button Content="Kill All Processes" 
                                Command="{Binding KillAllProcessesCommand}"
+                               Style="{StaticResource ColoredActionButton}"
                                Background="#CCFF0000"
                                Margin="0,0,8,0" Padding="16,8"
                                ToolTip="Forcefully terminate all runner processes"/>
                         
                         <Button Content="Safe Mode" 
                                Command="{Binding EnterSafeModeCommand}"
+                               Style="{StaticResource ColoredActionButton}"
                                Background="#CCFF8800"
                                Margin="0,0,8,0" Padding="16,8"
                                ToolTip="Restart in safe mode with minimal features"/>
                         
                         <Button Content="Factory Reset" 
                                Command="{Binding FactoryResetCommand}"
+                               Style="{StaticResource ColoredActionButton}"
                                Background="#CCFF0000"
                                Padding="16,8"
                                ToolTip="Reset everything to factory defaults (WARNING: Deletes all data)"/>
