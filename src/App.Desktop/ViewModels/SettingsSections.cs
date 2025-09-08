@@ -153,11 +153,20 @@ public class PathsSettingsViewModel : SettingsSectionBase
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
-        ModelsDirectory = settings.ModelsDirectory;
-        CacheDirectory = settings.CacheDirectory;
+        // Fallback to AppData defaults when empty
+        ModelsDirectory = string.IsNullOrWhiteSpace(settings.ModelsDirectory)
+            ? Lazarus.Shared.Settings.SettingsPaths.ModelsDirectory
+            : settings.ModelsDirectory;
+        CacheDirectory = string.IsNullOrWhiteSpace(settings.CacheDirectory)
+            ? Lazarus.Shared.Settings.SettingsPaths.CacheDirectory
+            : settings.CacheDirectory;
         CacheMaxSizeMB = settings.CacheMaxSizeMB;
-        TempFilesLocation = settings.TempFilesLocation;
-        ExportPath = settings.ExportPath;
+        TempFilesLocation = string.IsNullOrWhiteSpace(settings.TempFilesLocation)
+            ? Lazarus.Shared.Settings.SettingsPaths.TempDirectory
+            : settings.TempFilesLocation;
+        ExportPath = string.IsNullOrWhiteSpace(settings.ExportPath)
+            ? Lazarus.Shared.Settings.SettingsPaths.ExportsDirectory
+            : settings.ExportPath;
     }
 
     public override async Task ApplySettingsAsync()
@@ -173,11 +182,13 @@ public class PathsSettingsViewModel : SettingsSectionBase
 
     protected override void ResetToDefault()
     {
-        ModelsDirectory = @"C:\Lazarus\Models";
-        CacheDirectory = @"C:\Lazarus\Cache";
+        // Ensure AppData tree exists and use it for defaults
+        try { Lazarus.Shared.Settings.SettingsPaths.EnsureDirectoriesExist(); } catch { }
+        ModelsDirectory = Lazarus.Shared.Settings.SettingsPaths.ModelsDirectory;
+        CacheDirectory = Lazarus.Shared.Settings.SettingsPaths.CacheDirectory;
         CacheMaxSizeMB = 2048;
-        TempFilesLocation = @"C:\Lazarus\Temp";
-        ExportPath = @"C:\Lazarus\Exports";
+        TempFilesLocation = Lazarus.Shared.Settings.SettingsPaths.TempDirectory;
+        ExportPath = Lazarus.Shared.Settings.SettingsPaths.ExportsDirectory;
     }
 }
 
