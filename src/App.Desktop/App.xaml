@@ -5,7 +5,8 @@
         <ResourceDictionary
             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
             xmlns:views="clr-namespace:Lazarus.Desktop.Views"
-            xmlns:converters="clr-namespace:Lazarus.Desktop.Converters">
+            xmlns:converters="clr-namespace:Lazarus.Desktop.Converters"
+            xmlns:behaviors="clr-namespace:Lazarus.Desktop.Behaviors">
             <ResourceDictionary.MergedDictionaries>
                 <!-- Load in dependency order -->
                 <ResourceDictionary Source="Themes/BaseResources.xaml"/>
@@ -28,6 +29,12 @@
             <!-- Value Converters -->
             <converters:StringToBooleanConverter x:Key="StringToBooleanConverter"/>
             <converters:MillisecondsToSecondsConverter x:Key="MillisecondsToSecondsConverter"/>
+
+            <!-- Ensure all ScrollViewers respond to mouse wheel scrolling -->
+            <Style TargetType="ScrollViewer">
+                <Setter Property="behaviors:MouseWheelScrollBehavior.Enable" Value="True"/>
+                <Setter Property="PanningMode" Value="VerticalFirst"/>
+            </Style>
 
             <!-- Keyless, global DataTemplates mapping section VMs to Views -->
             <DataTemplate DataType="{x:Type vm:GeneralSettingsViewModel}">
@@ -76,4 +83,3 @@
         </ResourceDictionary>
     </Application.Resources>
 </Application>
-
