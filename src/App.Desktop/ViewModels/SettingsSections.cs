@@ -4,6 +4,8 @@ using Microsoft.Win32;
 using Lazarus.Desktop.Services;
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -249,20 +251,12 @@ public class PathsSettingsViewModel : SettingsSectionBase
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
-        // Fallback to AppData defaults when empty (use LazarusPaths where appropriate)
-        ModelsDirectory = string.IsNullOrWhiteSpace(settings.ModelsDirectory)
-            ? Lazarus.Shared.LazarusPaths.Models.RootDir
-            : settings.ModelsDirectory;
-        CacheDirectory = string.IsNullOrWhiteSpace(settings.CacheDirectory)
-            ? Lazarus.Shared.LazarusPaths.SystemData.Cache
-            : settings.CacheDirectory;
+        // Normalize existing values into AppData defaults when blank or pointing to old C:\Lazarus paths
+        ModelsDirectory = NormalizePathToAppData(settings.ModelsDirectory, Lazarus.Shared.LazarusPaths.Models.RootDir);
+        CacheDirectory = NormalizePathToAppData(settings.CacheDirectory, Lazarus.Shared.LazarusPaths.SystemData.Cache);
         CacheMaxSizeMB = settings.CacheMaxSizeMB;
-        TempFilesLocation = string.IsNullOrWhiteSpace(settings.TempFilesLocation)
-            ? Lazarus.Shared.LazarusPaths.SystemData.Cache
-            : settings.TempFilesLocation;
-        ExportPath = string.IsNullOrWhiteSpace(settings.ExportPath)
-            ? System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export")
-            : settings.ExportPath;
+        TempFilesLocation = NormalizePathToAppData(settings.TempFilesLocation, Lazarus.Shared.LazarusPaths.SystemData.Cache);
+        ExportPath = NormalizePathToAppData(settings.ExportPath, Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export"));
 
         // Populate non-persisted fields with sensible defaults
         DownloadDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Cache, "Downloads");
@@ -290,22 +284,48 @@ public class PathsSettingsViewModel : SettingsSectionBase
     protected override void ResetToDefault()
     {
         // Ensure AppData tree exists and use it for defaults
-        try { foreach (var d in Lazarus.Shared.LazarusPaths.EnumerateAllDirectories()) System.IO.Directory.CreateDirectory(d); } catch { }
+        try { foreach (var d in Lazarus.Shared.LazarusPaths.EnumerateAllDirectories()) Directory.CreateDirectory(d); } catch { }
         ModelsDirectory = Lazarus.Shared.LazarusPaths.Models.RootDir;
         CacheDirectory = Lazarus.Shared.LazarusPaths.SystemData.Cache;
         CacheMaxSizeMB = 2048;
         TempFilesLocation = Lazarus.Shared.LazarusPaths.SystemData.Cache;
-        ExportPath = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export");
+        ExportPath = Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export");
 
-        DownloadDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Cache, "Downloads");
-        QuantizedModelsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Models.RootDir, "Quantized");
+        DownloadDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Cache, "Downloads");
+        QuantizedModelsDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.Models.RootDir, "Quantized");
         DatabasePath = Lazarus.Shared.LazarusPaths.DatabaseFile;
-        ConversationsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Conversations");
-        BackupDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Backups");
-        ImportDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Import");
-        TemplatesDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.RootDir, "Templates");
+        ConversationsDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Conversations");
+        BackupDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Backups");
+        ImportDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Import");
+        TemplatesDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.RootDir, "Templates");
         LogsDirectory = Lazarus.Shared.LazarusPaths.SystemData.Logs;
-        PluginsDirectory = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Plugins");
+        PluginsDirectory = Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Plugins");
+    }
+
+    private static string NormalizePathToAppData(string? existing, string appDataDefault)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(existing))
+                return appDataDefault;
+
+            var full = Path.GetFullPath(existing);
+            var appLocal = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            // Already under AppData
+            if (full.StartsWith(appLocal, StringComparison.OrdinalIgnoreCase))
+                return full;
+
+            // Migrate legacy C:\Lazarus or any non-AppData Lazarus root
+            if (full.StartsWith(@"C:\Lazarus\", StringComparison.OrdinalIgnoreCase) ||
+                full.IndexOf(@"\Lazarus\", StringComparison.OrdinalIgnoreCase) >= 0)
+                return appDataDefault;
+
+            return full;
+        }
+        catch
+        {
+            return appDataDefault;
+        }
     }
 }
 
