@@ -50,6 +50,8 @@
                     <ComboBoxItem Content="Voyage AI"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Service or library used to compute text embeddings."/>
 
             <!-- Embedding Model -->
             <Grid Margin="0,8">
@@ -74,6 +76,8 @@
                     <ComboBoxItem Content="bge-large-en-v1.5"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Pick an embedding model. Larger models are slower but often more accurate."/>
 
             <!-- Embedding Dimensions -->
             <Grid Margin="0,8">
@@ -98,6 +102,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Vector size for embeddings. Must match the model’s output dimensions."/>
 
             <!-- Vector Database Group -->
             <TextBlock Text="Vector Database" FontSize="16" FontWeight="SemiBold"
@@ -198,6 +204,8 @@
                     <ComboBoxItem Content="Token-based"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How documents are split before embedding (fixed size, sentence, paragraph, etc.)."/>
 
             <!-- Chunk Size -->
             <Grid Margin="0,8">
@@ -222,6 +230,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Tokens per chunk. Larger chunks keep more context but cost more to process."/>
 
             <!-- Chunk Overlap -->
             <Grid Margin="0,8">
@@ -246,6 +256,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Overlap helps preserve continuity between chunks."/>
 
             <!-- Retrieval Settings Group -->
             <TextBlock Text="Retrieval Settings" FontSize="16" FontWeight="SemiBold"
@@ -273,6 +285,8 @@
                     <ComboBoxItem Content="MaxSim"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Similarity metric used to find the closest matches."/>
 
             <!-- Top K Results -->
             <Grid Margin="0,8">
@@ -297,6 +311,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How many passages to retrieve for each query."/>
 
             <!-- Similarity Threshold -->
             <Grid Margin="0,8">
@@ -321,6 +337,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Filter out results below this score to reduce noise."/>
 
             <!-- Reranking -->
             <Grid Margin="0,8">
@@ -340,6 +358,8 @@
                          ToolTip="Use a reranker model to improve result relevance"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Optionally reorder retrieved results using a reranker model."/>
 
             <!-- Use SQLite VSS -->
             <Grid Margin="0,8">
@@ -359,6 +379,8 @@
                          ToolTip="Enable SQLite Vector Similarity Search extension"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Uses SQLite’s Vector Search extension for fast local retrieval."/>
 
             <!-- Data Sources Group -->
             <TextBlock Text="Data Sources" FontSize="16" FontWeight="SemiBold"
@@ -387,6 +409,8 @@
                        Style="{StaticResource SecondaryGlassButtonStyle}"
                        Padding="8,4"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Folder containing files to index for search."/>
 
             <!-- File Types -->
             <Grid Margin="0,8">

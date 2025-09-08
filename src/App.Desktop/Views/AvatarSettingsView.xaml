@@ -44,6 +44,8 @@
                             <ComboBoxItem Content="Custom Avatar 2"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Choose the avatar style you prefer. 'None' hides visuals but keeps voice."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -66,6 +68,8 @@
                             <ComboBoxItem Content="None (Voice Only)"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Where the avatar appears on screen."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -84,6 +88,8 @@
                                  ToolTip="Display the avatar in the interface"
                                  VerticalAlignment="Center"/>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Lower opacity makes the avatar less distracting; higher is more visible."/>
                 </StackPanel>
             </Border>
 
@@ -113,6 +119,8 @@
                             <ComboBoxItem Content="Full Screen"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Match the avatar’s colors to your theme or pick a custom scheme."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -135,6 +143,8 @@
                             <ComboBoxItem Content="Floating"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Turns on motion for the avatar. Disable if you prefer a static look."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -158,6 +168,8 @@
                                   VerticalAlignment="Center" Margin="8,0,0,0"
                                   Foreground="{StaticResource TextSecondaryBrush}"/>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="How the avatar moves — natural and smooth are good defaults."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -181,6 +193,8 @@
                             <ComboBoxItem Content="Custom"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Faster feels more lively; slower feels calmer."/>
                 </StackPanel>
             </Border>
 
@@ -208,6 +222,8 @@
                                  ToolTip="Enable avatar animation effects"
                                  VerticalAlignment="Center"/>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Choose subtle idle motions to keep the avatar feeling present."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -229,6 +245,8 @@
                             <ComboBoxItem Content="Robotic"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Mouth movement synced to speech for a more lifelike effect."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -503,6 +521,8 @@
                                    Margin="8,0,0,0" Padding="8,4"/>
                         </Grid>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Select a custom model file (e.g., GLB/FBX)."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -530,6 +550,8 @@
                                    Margin="8,0,0,0" Padding="8,4"/>
                         </Grid>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Optional: supply a texture image for your custom model."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -552,6 +574,8 @@
                             <ComboBoxItem Content="Custom"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"
+                               Text="Pick an animation set that matches your custom rig."/>
                 </StackPanel>
             </Border>
 

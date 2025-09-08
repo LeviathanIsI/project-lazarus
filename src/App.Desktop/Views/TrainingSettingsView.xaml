@@ -43,6 +43,8 @@
                     <ComboBoxItem Content="Full Training"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Fine-tuning updates all weights; LoRA/QLoRA are lighter and need less VRAM."/>
 
             <!-- Base Model -->
             <Grid Margin="0,8">
@@ -66,6 +68,8 @@
                        Style="{StaticResource SecondaryGlassButtonStyle}"
                        Padding="8,4"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Start from a base model file or folder."/>
 
             <!-- Dataset Path -->
             <Grid Margin="0,8">
@@ -89,6 +93,8 @@
                        Style="{StaticResource SecondaryGlassButtonStyle}"
                        Padding="8,4"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Your training data (JSON/CSV/text files)."/>
 
             <!-- Hyperparameters Group -->
             <TextBlock Text="Hyperparameters" FontSize="16" FontWeight="SemiBold"
@@ -117,6 +123,8 @@
                           Foreground="{StaticResource TextSecondaryBrush}"
                           FontSize="11"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How fast the model learns. Too high can destabilize training."/>
 
             <!-- Batch Size -->
             <Grid Margin="0,8">
@@ -141,6 +149,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Samples processed together. Larger is faster but needs more memory."/>
 
             <!-- Gradient Accumulation -->
             <Grid Margin="0,8">
@@ -165,6 +175,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Accumulate several mini-batches to emulate a bigger batch size."/>
 
             <!-- Epochs -->
             <Grid Margin="0,8">
@@ -189,6 +201,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How many passes over the dataset. Too many can overfit."/>
 
             <!-- Warmup Steps -->
             <Grid Margin="0,8">
@@ -213,6 +227,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Gently ramps up the learning rate at the start of training."/>
 
             <!-- Weight Decay -->
             <Grid Margin="0,8">
@@ -236,6 +252,8 @@
                           Foreground="{StaticResource TextSecondaryBrush}"
                           FontSize="11"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Regularization to reduce overfitting. Small values are typical."/>
 
             <!-- LoRA Settings Group -->
             <TextBlock Text="LoRA Configuration" FontSize="16" FontWeight="SemiBold"
@@ -485,6 +503,8 @@
                        Style="{StaticResource SecondaryGlassButtonStyle}"
                        Padding="8,4"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Where checkpoints and artifacts are saved."/>
 
             <!-- Checkpoint Frequency -->
             <Grid Margin="0,8">
@@ -509,6 +529,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How often to save progress during training."/>
 
             <!-- Max Checkpoints -->
             <Grid Margin="0,8">
@@ -533,6 +555,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Old checkpoints beyond this limit will be removed."/>
 
             <!-- Resume from Checkpoint -->
             <Grid Margin="0,8">

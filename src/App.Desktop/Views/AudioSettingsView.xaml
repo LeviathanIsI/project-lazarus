@@ -45,6 +45,7 @@
                     <ComboBoxItem Content="Tortoise TTS"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Choose where speech is generated from text."/>
 
             <!-- Voice Selection -->
             <Grid Margin="0,8">
@@ -69,6 +70,7 @@
                     <ComboBoxItem Content="Custom Voice"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Pick a voice style that fits your use case."/>
 
             <!-- Speech Rate -->
             <Grid Margin="0,8">
@@ -93,6 +95,7 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="How fast the voice speaks. 1.0 is normal speed."/>
 
             <!-- Voice Pitch -->
             <Grid Margin="0,8">
@@ -117,6 +120,7 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Raise or lower the voice pitch for tone and character."/>
 
             <!-- Speech-to-Text Group -->
             <TextBlock Text="Speech-to-Text (STT)" FontSize="16" FontWeight="SemiBold"
@@ -171,6 +175,7 @@
                     <ComboBoxItem Content="Large-v3"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Model size: larger models are more accurate but heavier."/>
 
             <!-- Language -->
             <Grid Margin="0,8">
@@ -199,6 +204,7 @@
                     <ComboBoxItem Content="Korean"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Primary language for recognition and voice output."/>
 
             <!-- Audio Input Group -->
             <TextBlock Text="Audio Input" FontSize="16" FontWeight="SemiBold"
@@ -225,6 +231,7 @@
                     <ComboBoxItem Content="Headset"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Pick which microphone to use."/>
 
             <!-- Noise Reduction -->
             <Grid Margin="0,8">
@@ -244,6 +251,7 @@
                          ToolTip="Reduce background noise in voice input"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Helps remove background noise for cleaner input."/>
 
             <!-- Voice Activity Detection -->
             <Grid Margin="0,8">
@@ -263,6 +271,7 @@
                          ToolTip="Automatically detect when you're speaking"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Automatically detects when you’re speaking to start/stop capture."/>
 
             <!-- Sensitivity -->
             <Grid Margin="0,8">
@@ -287,6 +296,7 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="If speech isn’t detected, raise sensitivity; if it triggers too easily, lower it."/>
 
             <!-- Audio Output Group -->
             <TextBlock Text="Audio Output" FontSize="16" FontWeight="SemiBold"
@@ -313,6 +323,7 @@
                     <ComboBoxItem Content="External Speakers"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Choose where audio is played."/>
 
             <!-- Output Volume -->
             <Grid Margin="0,8">
@@ -337,6 +348,7 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Overall loudness for TTS playback."/>
 
             <!-- Audio Quality -->
             <Grid Margin="0,8">
@@ -368,6 +380,7 @@
                                ToolTip="Maximum quality"/>
                 </StackPanel>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Tradeoff between clarity and performance/storage usage."/>
 
             <!-- Advanced Audio Group -->
             <TextBlock Text="Advanced Settings" FontSize="16" FontWeight="SemiBold"
@@ -394,6 +407,7 @@
                     <ComboBoxItem Content="48000 Hz"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Higher sample rates sound crisper but use more CPU/bandwidth."/>
 
             <!-- Buffer Size -->
             <Grid Margin="0,8">
@@ -418,6 +432,7 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8" Text="Larger buffers are safer but add latency; smaller buffers reduce delay."/>
 
             <!-- Wake Word -->
             <Grid Margin="0,8">
@@ -434,6 +449,7 @@
                         Text="{Binding WakeWord, Mode=TwoWay}"
                         ToolTip="Voice activation wake word"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" Text="Phrase that wakes Lazarus for voice commands (if enabled)."/>
 
             <!-- Features -->
             <Grid Margin="0,8">
