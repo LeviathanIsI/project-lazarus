@@ -68,6 +68,8 @@
                     <ComboBoxItem Content="Critical"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Choose how much detail to write to logs. Debug/Verbose are very chatty."/>
 
             <!-- Log Format -->
             <Grid Margin="0,8">
@@ -95,6 +97,8 @@
                                ToolTip="Structured XML format"/>
                 </StackPanel>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Plain Text is easy to read. JSON/XML help with automated analysis."/>
 
             <!-- File Logging Settings Group -->
             <TextBlock Text="File Logging" FontSize="16" FontWeight="SemiBold"
@@ -142,6 +146,8 @@
                        Style="{StaticResource SecondaryGlassButtonStyle}"
                        Padding="8,4"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Where log files are saved on disk."/>
 
             <!-- Max File Size -->
             <Grid Margin="0,8">
@@ -166,6 +172,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Creates a new file when the current log reaches this size."/>
 
             <!-- File Rotation -->
             <Grid Margin="0,8">
@@ -188,6 +196,8 @@
                     <ComboBoxItem Content="When size limit reached"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How often to start a fresh log file."/>
 
             <!-- Retention Days -->
             <Grid Margin="0,8">
@@ -212,6 +222,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"
+                       Text="Old logs older than this will be removed automatically."/>
 
             <!-- Performance Logging Group -->
             <TextBlock Text="Performance &amp; Metrics" FontSize="16" FontWeight="SemiBold"

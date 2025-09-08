@@ -127,6 +127,8 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Controls background worker threads. Leave at Auto unless tuning performance."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -182,6 +184,8 @@
                             <ComboBoxItem Content="Realtime"/>
                         </ComboBox>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Higher priority can make Lazarus more responsive, but may affect other apps."/>
 
                     <Grid Margin="0,8">
                         <Grid.ColumnDefinitions>
@@ -198,6 +202,8 @@
                                 ToolTip="Hexadecimal CPU affinity mask (empty = all cores)"
                                 MaxWidth="250" HorizontalAlignment="Left"/>
                     </Grid>
+                    <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                               Text="Pin the process to specific CPU cores (advanced). Leave blank to use all cores."/>
                 </StackPanel>
             </Border>
 

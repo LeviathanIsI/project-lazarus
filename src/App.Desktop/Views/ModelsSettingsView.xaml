@@ -74,6 +74,8 @@
                     <ComboBoxItem Content="Core ML"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Type of model file. GGUF is common for llama.cpp; SafeTensors/PyTorch for Transformers."/>
 
             <!-- Auto-load on Startup -->
             <Grid Margin="0,8">
@@ -93,6 +95,8 @@
                          ToolTip="Load the selected model when application starts"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Automatically loads your chosen model when Lazarus starts."/>
 
             <!-- Quantization Group -->
             <TextBlock Text="Quantization &amp; Optimization" FontSize="16" FontWeight="SemiBold"
@@ -143,6 +147,8 @@
                          ToolTip="Load model using memory mapping for faster startup"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Faster startup for large models on supported filesystems."/>
 
             <!-- Use MLock -->
             <Grid Margin="0,8">
@@ -162,6 +168,8 @@
                          ToolTip="Prevent model from being swapped to disk"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Keeps the model in RAM to avoid slow disk swapping (uses more memory)."/>
 
             <!-- Context & Memory Group -->
             <TextBlock Text="Context &amp; Memory" FontSize="16" FontWeight="SemiBold"
@@ -191,6 +199,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How much recent conversation the model can see. Larger uses more memory."/>
 
             <!-- Batch Size -->
             <Grid Margin="0,8">
@@ -215,6 +225,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"
+                       Text="Number of items processed together for speed. Larger needs more memory."/>
 
             <!-- Rope Frequency Base -->
             <Grid Margin="0,8">

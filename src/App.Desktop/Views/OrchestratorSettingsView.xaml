@@ -35,6 +35,8 @@
                         Text="{Binding ServiceUrl, Mode=TwoWay}"
                         ToolTip="Orchestrator service endpoint URL"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Where the background Orchestrator runs. Leave default unless you host it elsewhere."/>
 
             <!-- Port -->
             <Grid Margin="0,8">
@@ -58,6 +60,8 @@
                           Foreground="{StaticResource TextSecondaryBrush}"
                           FontSize="11"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Network port used to talk to the Orchestrator."/>
 
             <!-- Use HTTPS -->
             <Grid Margin="0,8">
@@ -77,6 +81,8 @@
                          ToolTip="Enable encrypted communication"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Encrypts traffic between the app and Orchestrator."/>
 
             <!-- Connection Timeout -->
             <Grid Margin="0,8">
@@ -101,6 +107,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How long we wait when connecting before giving up."/>
 
             <!-- Request Processing Group -->
             <TextBlock Text="Request Processing" FontSize="16" FontWeight="SemiBold"
@@ -130,6 +138,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Max time allowed for a single request to finish."/>
 
             <!-- Max Concurrent Requests -->
             <Grid Margin="0,8">
@@ -154,6 +164,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How many requests can be processed at the same time."/>
 
             <!-- Request Buffer Size -->
             <Grid Margin="0,8">
@@ -178,6 +190,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Maximum request payload size. Larger uploads may need a higher value."/>
 
             <!-- Queue Management Group -->
             <TextBlock Text="Queue Management" FontSize="16" FontWeight="SemiBold"
@@ -207,6 +221,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How many requests can wait in line before new ones are refused."/>
 
             <!-- Queue Timeout -->
             <Grid Margin="0,8">
@@ -231,6 +247,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How long a request can sit in the queue before timing out."/>
 
             <!-- Priority Queuing -->
             <Grid Margin="0,8">
@@ -250,6 +268,8 @@
                          ToolTip="Process high-priority requests first"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Lets urgent work jump the line when enabled."/>
 
             <!-- Health Monitoring Group -->
             <TextBlock Text="Health Monitoring" FontSize="16" FontWeight="SemiBold"
@@ -279,6 +299,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How often Lazarus checks that services are alive and responsive."/>
 
             <!-- Auto-restart -->
             <Grid Margin="0,8">
@@ -298,6 +320,8 @@
                          ToolTip="Restart services that fail health checks"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="If a service looks unhealthy, automatically restart it."/>
 
             <!-- Max Restart Attempts -->
             <Grid Margin="0,8">
@@ -322,6 +346,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How many times we try to restart before giving up."/>
 
             <!-- Resource Management Group -->
             <TextBlock Text="Resource Management" FontSize="16" FontWeight="SemiBold"
@@ -373,6 +399,8 @@
                     <ComboBoxItem Content="High"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Sets how aggressively Windows schedules CPU time for the process."/>
 
             <!-- Load Balancing Group -->
             <TextBlock Text="Load Balancing" FontSize="16" FontWeight="SemiBold"
@@ -397,6 +425,8 @@
                          ToolTip="Enable automatic load distribution"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Spread work across multiple runners if available."/>
 
             <!-- Load Balancing Strategy -->
             <Grid Margin="0,8">
@@ -419,6 +449,8 @@
                     <ComboBoxItem Content="Response Time"/>
                 </ComboBox>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"
+                       Text="How to choose which runner handles the next job."/>
 
             <!-- Action Buttons -->
             <StackPanel Orientation="Horizontal" Margin="0,24,0,0">

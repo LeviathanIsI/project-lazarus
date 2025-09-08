@@ -83,6 +83,8 @@
                                ToolTip="Automatically select best mode"/>
                 </StackPanel>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Choose where to run models: CPU (compatibility), GPU (fast), Hybrid (both), or Auto (let Lazarus pick)."/>
 
             <!-- Auto-start Runners -->
             <Grid Margin="0,8">
@@ -137,6 +139,8 @@
                     </TextBlock.Text>
                 </TextBlock>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How many CPU threads to use. Higher can be faster up to your core count."/>
 
             <!-- CPU Batch Size -->
             <Grid Margin="0,8">
@@ -161,6 +165,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How many tokens/samples to process at once on CPU. Larger uses more RAM."/>
 
             <!-- Use BLAS -->
             <Grid Margin="0,8">
@@ -180,6 +186,8 @@
                          ToolTip="Enable BLAS acceleration for faster CPU inference"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Speeds up CPU math using an optimized library. Keep on unless troubleshooting."/>
 
             <!-- GPU Configuration Group -->
             <TextBlock Text="GPU Configuration" FontSize="16" FontWeight="SemiBold"
@@ -202,6 +210,8 @@
                          SelectedItem="{Binding GpuDevice, Mode=TwoWay}"
                          ToolTip="Select GPU device for inference"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Pick which graphics card to use. Auto picks the best one."/>
 
             <!-- GPU Memory Limit -->
             <Grid Margin="0,8">
@@ -226,6 +236,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Caps how much VRAM the runner can use. Lower this if other apps need GPU memory."/>
 
             <!-- GPU Layers -->
             <Grid Margin="0,8">
@@ -250,6 +262,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How many model layers to offload to the GPU. More layers = faster but uses more VRAM."/>
 
             <!-- Flash Attention -->
             <Grid Margin="0,8">
@@ -269,6 +283,8 @@
                          ToolTip="Use Flash Attention for faster inference"
                          VerticalAlignment="Center"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="Advanced GPU optimization. Turn on only if your runner/model supports it."/>
 
             <!-- Performance Group -->
             <TextBlock Text="Performance Settings" FontSize="16" FontWeight="SemiBold"
@@ -298,6 +314,8 @@
                           VerticalAlignment="Center" Margin="10,0,0,0"
                           Foreground="{StaticResource TextSecondaryBrush}"/>
             </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,8"
+                       Text="How much recent conversation the model can see. Larger uses more memory."/>
 
             <!-- Max Tokens -->
             <Grid Margin="0,8">
