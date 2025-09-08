@@ -354,6 +354,16 @@
                                 <TextBlock Text="{Binding RunnerModelPath}" TextWrapping="Wrap"/>
                                 <TextBlock Text="PID:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding RunnerPid}"/>
+                                
+                                <!-- Diagnostics -->
+                                <TextBlock Text="Binary:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerExePath}" TextWrapping="Wrap"/>
+                                <TextBlock Text="Port:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerPort}"/>
+                                <TextBlock Text="Err Log:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerErrLog}" TextWrapping="Wrap"/>
+                                <TextBlock Text="Out Log:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding RunnerOutLog}" TextWrapping="Wrap"/>
                                 <TextBlock Text="Message:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding RunnerStatusMessage}" TextWrapping="Wrap"/>
                             </StackPanel>

@@ -205,6 +205,18 @@ public sealed class ModelsViewModel : ViewModelBase
     private string? _runnerStatusMessage;
     public string? RunnerStatusMessage { get => _runnerStatusMessage; private set => SetProperty(ref _runnerStatusMessage, value); }
 
+    private string? _runnerExePath;
+    public string? RunnerExePath { get => _runnerExePath; private set => SetProperty(ref _runnerExePath, value); }
+
+    private int? _runnerPort;
+    public int? RunnerPort { get => _runnerPort; private set => SetProperty(ref _runnerPort, value); }
+
+    private string? _runnerErrLog;
+    public string? RunnerErrLog { get => _runnerErrLog; private set => SetProperty(ref _runnerErrLog, value); }
+
+    private string? _runnerOutLog;
+    public string? RunnerOutLog { get => _runnerOutLog; private set => SetProperty(ref _runnerOutLog, value); }
+
     // Orchestrator health for enablement/messaging
     public bool IsOrchestratorHealthy => _orchestratorClient.IsHealthy;
 
@@ -332,9 +344,17 @@ public sealed class ModelsViewModel : ViewModelBase
         IsRunnerRunning = status.IsRunning;
         RunnerModelPath = status.ModelPath;
         RunnerPid = status.Pid;
+        RunnerPort = status.Port;
+        RunnerExePath = status.ExePath;
+        RunnerErrLog = status.ErrLog;
+        RunnerOutLog = status.OutLog;
         OnPropertyChanged(nameof(IsRunnerRunning));
         OnPropertyChanged(nameof(RunnerModelPath));
         OnPropertyChanged(nameof(RunnerPid));
+        OnPropertyChanged(nameof(RunnerPort));
+        OnPropertyChanged(nameof(RunnerExePath));
+        OnPropertyChanged(nameof(RunnerErrLog));
+        OnPropertyChanged(nameof(RunnerOutLog));
         LoadSelectedModelCommand.RaiseCanExecuteChanged();
         OnPropertyChanged(nameof(LoadDisabledReason));
     }

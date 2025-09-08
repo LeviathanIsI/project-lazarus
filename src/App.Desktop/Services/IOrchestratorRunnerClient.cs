@@ -14,5 +14,9 @@ public interface IOrchestratorRunnerClient : IDisposable
 public sealed record RunnerProcessStatus(
     bool IsRunning,
     string? ModelPath,
-    int? Pid
+    int? Pid,
+    int? Port = null,
+    string? ExePath = null,
+    string? OutLog = null,
+    string? ErrLog = null
 );

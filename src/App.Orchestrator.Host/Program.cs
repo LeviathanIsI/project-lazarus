@@ -154,7 +154,7 @@ app.MapGet("/api/info", () => Results.Json(new
 app.MapGet("/runner/status", (IRunnerSupervisor sup, IModelInventoryService inventory) =>
 {
     var modelPath = sup.CurrentModelPath;
-    return Results.Json(new { isRunning = sup.IsRunning, modelPath, pid = sup.ProcessId });
+    return Results.Json(new { isRunning = sup.IsRunning, modelPath, pid = sup.ProcessId, port = sup.Port, exePath = sup.RunnerExePath, outLog = sup.LastOutLogPath, errLog = sup.LastErrLogPath });
 });
 
 // OpenAI-compatible models list: proxy to runner if available; otherwise fallback
@@ -310,6 +310,9 @@ public interface IRunnerSupervisor
     int? ProcessId { get; }
     string? CurrentModelPath { get; }
     int Port { get; }
+    string? RunnerExePath { get; }
+    string? LastOutLogPath { get; }
+    string? LastErrLogPath { get; }
     Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken);
     Task UnloadAsync(CancellationToken cancellationToken);
 }
@@ -320,10 +323,16 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
     private readonly ILogger<LlamaCppSupervisor> _logger;
     private Process? _process;
     private string? _currentModelPath;
+    private string? _runnerExePath;
     private StreamWriter? _stdoutWriter;
     private StreamWriter? _stderrWriter;
+    private string? _outLogPath;
+    private string? _errLogPath;
     private int _port;
     public int Port => _port;
+    public string? RunnerExePath => _runnerExePath;
+    public string? LastOutLogPath => _outLogPath;
+    public string? LastErrLogPath => _errLogPath;
 
     public LlamaCppSupervisor(IConfiguration config, ILogger<LlamaCppSupervisor> logger)
     {
@@ -347,6 +356,7 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             _logger.LogError("Unable to locate llama-server.exe. Configure Orchestrator:Runner:BinaryDir or LAZARUS_BINARIES.");
             return false;
         }
+        _runnerExePath = exe;
         // Prefer GPU offload when hardware seems available; otherwise default to CPU-only.
         var preferGpu = HasCuda() || exe.Contains("cu", StringComparison.OrdinalIgnoreCase) || exe.Contains("cuda", StringComparison.OrdinalIgnoreCase);
 
@@ -397,10 +407,10 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
             {
                 Directory.CreateDirectory(LazarusPaths.SystemData.Logs);
                 var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-                var outPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.out.log");
-                var errPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.err.log");
-                _stdoutWriter = new StreamWriter(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
-                _stderrWriter = new StreamWriter(new FileStream(errPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
+                _outLogPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.out.log");
+                _errLogPath = Path.Combine(LazarusPaths.SystemData.Logs, $"llama-server-{stamp}.err.log");
+                _stdoutWriter = new StreamWriter(new FileStream(_outLogPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
+                _stderrWriter = new StreamWriter(new FileStream(_errLogPath, FileMode.Create, FileAccess.Write, FileShare.Read)) { AutoFlush = true };
             }
             catch (Exception ex)
             {
