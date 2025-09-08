@@ -387,7 +387,9 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         }
         _port = selected;
 
-        var args = $"--api --host 127.0.0.1 --port {Port} --n-gpu-layers {gpuLayers} --model \"{modelPath}\"";
+        // Many llama-server builds expose the HTTP UI/API by default; some reject the legacy --api flag.
+        // Launch without --api for broad compatibility.
+        var args = $"--host 127.0.0.1 --port {Port} --n-gpu-layers {gpuLayers} --model \"{modelPath}\"";
 
         try
         {
