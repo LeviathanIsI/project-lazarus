@@ -1,43 +1,283 @@
 <UserControl x:Class="Lazarus.Desktop.Views.GeneralSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <!-- Default AI model -->
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Default AI model" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <ComboBox Width="320"
-                ItemsSource="{Binding DefaultModelChoices}"
-                DisplayMemberPath="Name"
-                SelectedValuePath="Path"
-                SelectedValue="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                ToolTip="This model loads by default for new chats. You can change it any time."/>
-    </StackPanel>
-    <!-- Default AI model -->
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Default AI model" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <ComboBox Width="320"
-                ItemsSource="{Binding DefaultModelChoices}"
-                DisplayMemberPath="Name"
-                SelectedValuePath="Path"
-                SelectedValue="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                ToolTip="This model loads by default for new chats. You can change it any time."/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Language" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Preview font size" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <Slider Width="200" Minimum="10" Maximum="22" Value="{Binding UiFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Border Margin="12,0,0,0" Padding="8" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" Background="{StaticResource GlassCardBrush}">
-        <TextBlock Text="Aa Bb Cc" FontSize="{Binding UiFontSize}"/>
-      </Border>
-    </StackPanel>
-    <CheckBox Margin="0,6" Content="Check for Lazarus updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" ToolTip="When on, Lazarus checks an online feed to see if a new version is available. No downloads happen automatically." Foreground="{StaticResource TextPrimaryBrush}"/>
-    <CheckBox Margin="0,6" Content="Save my conversations automatically" IsChecked="{Binding AutoSaveConversations, Mode=TwoWay}"
-              ToolTip="When on, your chats are saved to your conversation history automatically." Foreground="{StaticResource TextPrimaryBrush}"/>
-    <CheckBox Margin="0,6" Content="Start orchestrator with app" IsChecked="{Binding StartOrchestratorWithApp, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <CheckBox Margin="0,6" Content="Auto-start last runner" IsChecked="{Binding AutoStartLastRunner, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <Button Margin="0,12,0,0" Content="Reset this page to defaults" Command="{Binding ResetAllCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-  </StackPanel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:GeneralSettingsViewModel}">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Application Settings Group -->
+            <TextBlock Text="Application" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Language -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Language" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding Language, Mode=TwoWay}"
+                         ToolTip="Select the application display language">
+                    <ComboBoxItem Content="English"/>
+                    <ComboBoxItem Content="Spanish"/>
+                    <ComboBoxItem Content="French"/>
+                    <ComboBoxItem Content="German"/>
+                    <ComboBoxItem Content="Japanese"/>
+                    <ComboBoxItem Content="Chinese (Simplified)"/>
+                    <ComboBoxItem Content="Korean"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Theme -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Theme" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding Theme, Mode=TwoWay}"
+                         ToolTip="Select the application color theme">
+                    <ComboBoxItem Content="Dark"/>
+                    <ComboBoxItem Content="Light"/>
+                    <ComboBoxItem Content="System Default"/>
+                    <ComboBoxItem Content="Cyberpunk"/>
+                    <ComboBoxItem Content="Minimal"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Startup Options -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Startup" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding StartWithWindows, Mode=TwoWay}"
+                             Content="Start with Windows"
+                             ToolTip="Launch Lazarus when Windows starts"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding StartMinimized, Mode=TwoWay}"
+                             Content="Start minimized to system tray"
+                             ToolTip="Start the application minimized"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding RestoreLastSession, Mode=TwoWay}"
+                             Content="Restore last session on startup"
+                             ToolTip="Automatically restore your last conversation when starting"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- AI Model Settings Group -->
+            <TextBlock Text="AI Model" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Default Model -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Default Model" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding DefaultModel, Mode=TwoWay}"
+                         ToolTip="The AI model to load when the application starts">
+                    <ComboBoxItem Content="llama3.2"/>
+                    <ComboBoxItem Content="llama3.1"/>
+                    <ComboBoxItem Content="llama2"/>
+                    <ComboBoxItem Content="mistral"/>
+                    <ComboBoxItem Content="phi3"/>
+                    <ComboBoxItem Content="gemma2"/>
+                    <ComboBoxItem Content="qwen2.5"/>
+                    <ComboBoxItem Content="claude"/>
+                    <ComboBoxItem Content="gpt-4"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Auto-load Model -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-load Model" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding AutoLoadModel, Mode=TwoWay}"
+                         Content="Automatically load default model on startup"
+                         ToolTip="Load the default model when the application starts"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Conversation Settings Group -->
+            <TextBlock Text="Conversations" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Auto-save Conversations -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-save" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding AutoSaveConversations, Mode=TwoWay}"
+                         Content="Automatically save chat history"
+                         ToolTip="Save conversations automatically to prevent data loss"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Auto-save Interval -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-save Interval" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                        Minimum="1" Maximum="60" 
+                        Value="{Binding AutoSaveInterval, Mode=TwoWay}"
+                        TickFrequency="5" IsSnapToTickEnabled="True"
+                        ToolTip="How often to auto-save (in minutes)"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding AutoSaveInterval, StringFormat='{}{0} minutes'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Conversation History Limit -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="History Limit" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                        Minimum="10" Maximum="1000" 
+                        Value="{Binding HistoryLimit, Mode=TwoWay}"
+                        TickFrequency="50" IsSnapToTickEnabled="True"
+                        ToolTip="Maximum number of conversations to keep"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding HistoryLimit, StringFormat='{}{0} conversations'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Privacy Settings Group -->
+            <TextBlock Text="Privacy &amp; Updates" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Auto Update Check -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Updates" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding AutoUpdateCheck, Mode=TwoWay}"
+                             Content="Check for updates automatically"
+                             ToolTip="Check for new versions when the application starts"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding AutoDownloadUpdates, Mode=TwoWay}"
+                             Content="Download updates automatically"
+                             ToolTip="Download updates in the background"
+                             Margin="0,0,0,4"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Telemetry -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Telemetry" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SendAnonymousUsage, Mode=TwoWay}"
+                             Content="Send anonymous usage statistics"
+                             ToolTip="Help improve Lazarus by sending anonymous usage data"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SendCrashReports, Mode=TwoWay}"
+                             Content="Send crash reports"
+                             ToolTip="Automatically send crash reports to help fix issues"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Reset Section Button -->
+            <Button Content="Reset to Defaults" 
+                   Command="{Binding ResetToDefaultCommand}"
+                   Style="{StaticResource SecondaryGlassButtonStyle}"
+                   HorizontalAlignment="Left"
+                   Margin="0,24,0,0"
+                   Padding="12,6"/>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

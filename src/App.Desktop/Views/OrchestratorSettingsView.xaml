@@ -1,20 +1,444 @@
 <UserControl x:Class="Lazarus.Desktop.Views.OrchestratorSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Base URL" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="380" ToolTip="http://127.0.0.1:11711" Text="{Binding OrchestratorBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="Seconds to wait for runner health" Text="{Binding OrchestratorStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Health Check Every (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="How often Lazarus checks that things are running okay" Text="{Binding OrchestratorHealthCheckIntervalSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <CheckBox Margin="0,6" Content="Try to restart automatically if something crashes" IsChecked="{Binding OrchestratorAutoRestartOnCrash, Mode=TwoWay}"
-              ToolTip="When on, Lazarus will try to start things back up if they stop unexpectedly" Foreground="{StaticResource TextPrimaryBrush}"/>
-  </StackPanel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:OrchestratorSettingsViewModel}">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Connection Settings Group -->
+            <TextBlock Text="Connection Settings" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Service URL -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Service URL" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding ServiceUrl, Mode=TwoWay}"
+                        ToolTip="Orchestrator service endpoint URL"/>
+            </Grid>
+
+            <!-- Port -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Port" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding Port, Mode=TwoWay}"
+                        ToolTip="Port number for the service (1-65535)"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="(1-65535)"
+                          VerticalAlignment="Center" Margin="8,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"
+                          FontSize="11"/>
+            </Grid>
+
+            <!-- Use HTTPS -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Security" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding UseHttps, Mode=TwoWay}"
+                         Content="Use HTTPS for secure connections"
+                         ToolTip="Enable encrypted communication"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Connection Timeout -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Connection Timeout" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding ConnectionTimeoutSeconds, Mode=TwoWay}"
+                       Minimum="5" Maximum="300"
+                       TickFrequency="15" IsSnapToTickEnabled="True"
+                       ToolTip="Timeout for establishing connections"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding ConnectionTimeoutSeconds, StringFormat='{}{0} seconds'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Request Processing Group -->
+            <TextBlock Text="Request Processing" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Request Timeout -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Request Timeout" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding RequestTimeoutMinutes, Mode=TwoWay}"
+                       Minimum="1" Maximum="60"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum time for request completion"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding RequestTimeoutMinutes, StringFormat='{}{0} minutes'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Max Concurrent Requests -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Max Concurrent Requests" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding MaxConcurrentRequests, Mode=TwoWay}"
+                       Minimum="1" Maximum="32"
+                       TickFrequency="1" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum simultaneous requests"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding MaxConcurrentRequests}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Request Buffer Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Request Buffer Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding RequestBufferSizeMB, Mode=TwoWay}"
+                       Minimum="1" Maximum="256"
+                       TickFrequency="16" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum request payload size"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding RequestBufferSizeMB, StringFormat='{}{0} MB'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Queue Management Group -->
+            <TextBlock Text="Queue Management" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Queue Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Maximum Queue Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding MaxQueueSize, Mode=TwoWay}"
+                       Minimum="10" Maximum="1000"
+                       TickFrequency="50" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum number of queued requests"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding MaxQueueSize, StringFormat='{}{0} requests'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Queue Timeout -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Queue Timeout" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding QueueTimeoutSeconds, Mode=TwoWay}"
+                       Minimum="5" Maximum="300"
+                       TickFrequency="15" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum time in queue before timeout"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding QueueTimeoutSeconds, StringFormat='{}{0} seconds'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Priority Queuing -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Priority Queuing" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding EnablePriorityQueuing, Mode=TwoWay}"
+                         Content="Enable priority-based request queuing"
+                         ToolTip="Process high-priority requests first"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Health Monitoring Group -->
+            <TextBlock Text="Health Monitoring" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Health Check Interval -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Health Check Interval" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding HealthCheckIntervalSeconds, Mode=TwoWay}"
+                       Minimum="5" Maximum="300"
+                       TickFrequency="15" IsSnapToTickEnabled="True"
+                       ToolTip="How often to check service health"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding HealthCheckIntervalSeconds, StringFormat='{}{0} seconds'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Auto-restart -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-restart" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding AutoRestart, Mode=TwoWay}"
+                         Content="Automatically restart failed services"
+                         ToolTip="Restart services that fail health checks"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Max Restart Attempts -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Max Restart Attempts" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding MaxRestartAttempts, Mode=TwoWay}"
+                       Minimum="0" Maximum="10"
+                       TickFrequency="1" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum restart attempts before giving up"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding MaxRestartAttempts}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Resource Management Group -->
+            <TextBlock Text="Resource Management" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Max Memory Usage -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Max Memory Usage" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding MaxMemoryGB, Mode=TwoWay}"
+                       Minimum="1" Maximum="64"
+                       TickFrequency="4" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum memory allocation"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding MaxMemoryGB, StringFormat='{}{0} GB'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- CPU Priority -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="CPU Priority" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding CpuPriority, Mode=TwoWay}"
+                         ToolTip="Process priority for CPU scheduling">
+                    <ComboBoxItem Content="Low"/>
+                    <ComboBoxItem Content="Below Normal"/>
+                    <ComboBoxItem Content="Normal"/>
+                    <ComboBoxItem Content="Above Normal"/>
+                    <ComboBoxItem Content="High"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Load Balancing Group -->
+            <TextBlock Text="Load Balancing" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Enable Load Balancing -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Load Balancing" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding EnableLoadBalancing, Mode=TwoWay}"
+                         Content="Distribute load across multiple runners"
+                         ToolTip="Enable automatic load distribution"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Load Balancing Strategy -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Balancing Strategy" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding LoadBalancingStrategy, Mode=TwoWay}"
+                         ToolTip="How to distribute load">
+                    <ComboBoxItem Content="Round Robin"/>
+                    <ComboBoxItem Content="Least Connections"/>
+                    <ComboBoxItem Content="Weighted"/>
+                    <ComboBoxItem Content="Resource Based"/>
+                    <ComboBoxItem Content="Response Time"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Content="Test Connection" 
+                       Command="{Binding TestConnectionCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="View Logs" 
+                       Command="{Binding ViewLogsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Reset to Defaults" 
+                       Command="{Binding ResetToDefaultCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="12,6"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

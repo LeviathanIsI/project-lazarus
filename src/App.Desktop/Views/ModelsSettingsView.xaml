@@ -1,12 +1,451 @@
 <UserControl x:Class="Lazarus.Desktop.Views.ModelsSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Active Model" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseActiveModelCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-  </StackPanel>
-</UserControl>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:ModelsSettingsViewModel}">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
 
+            <!-- Model Selection Group -->
+            <TextBlock Text="Model Selection" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Active Model -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Active Model" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" 
+                         SelectedItem="{Binding ActiveModel, Mode=TwoWay}"
+                         Margin="0,0,8,0"
+                         ToolTip="Currently loaded model">
+                    <ComboBoxItem Content="Llama 3.2 3B"/>
+                    <ComboBoxItem Content="Llama 3.1 8B"/>
+                    <ComboBoxItem Content="Llama 3.1 70B"/>
+                    <ComboBoxItem Content="Mistral 7B"/>
+                    <ComboBoxItem Content="Mixtral 8x7B"/>
+                    <ComboBoxItem Content="Phi-3 Mini"/>
+                    <ComboBoxItem Content="Qwen 2.5 72B"/>
+                    <ComboBoxItem Content="Custom Model"/>
+                </ComboBox>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseModelCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Model Format -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Model Format" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding ModelFormat, Mode=TwoWay}"
+                         ToolTip="Model file format">
+                    <ComboBoxItem Content="GGUF"/>
+                    <ComboBoxItem Content="SafeTensors"/>
+                    <ComboBoxItem Content="PyTorch"/>
+                    <ComboBoxItem Content="ONNX"/>
+                    <ComboBoxItem Content="TensorRT"/>
+                    <ComboBoxItem Content="Core ML"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Auto-load on Startup -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-load" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding AutoLoadModel, Mode=TwoWay}"
+                         Content="Automatically load model on startup"
+                         ToolTip="Load the selected model when application starts"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Quantization Group -->
+            <TextBlock Text="Quantization &amp; Optimization" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Quantization Type -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Quantization Type" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding QuantizationType, Mode=TwoWay}"
+                         ToolTip="Model quantization method">
+                    <ComboBoxItem Content="None (FP32)"/>
+                    <ComboBoxItem Content="FP16"/>
+                    <ComboBoxItem Content="INT8"/>
+                    <ComboBoxItem Content="Q8_0"/>
+                    <ComboBoxItem Content="Q5_K_M"/>
+                    <ComboBoxItem Content="Q4_K_M"/>
+                    <ComboBoxItem Content="Q4_0"/>
+                    <ComboBoxItem Content="Q3_K_M"/>
+                    <ComboBoxItem Content="Q2_K"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Use MMap -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Memory Mapping" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding UseMMap, Mode=TwoWay}"
+                         Content="Use memory-mapped model loading"
+                         ToolTip="Load model using memory mapping for faster startup"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Use MLock -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Memory Lock" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding UseMLock, Mode=TwoWay}"
+                         Content="Lock model in RAM"
+                         ToolTip="Prevent model from being swapped to disk"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Context & Memory Group -->
+            <TextBlock Text="Context &amp; Memory" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Context Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Context Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding ContextSize, Mode=TwoWay}"
+                       Minimum="512" Maximum="131072"
+                       TickFrequency="1024" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum context window size"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding ContextSize, StringFormat='{}{0:N0} tokens'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Batch Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Batch Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding BatchSize, Mode=TwoWay}"
+                       Minimum="1" Maximum="2048"
+                       TickFrequency="64" IsSnapToTickEnabled="True"
+                       ToolTip="Processing batch size"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding BatchSize}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Rope Frequency Base -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="RoPE Frequency Base" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding RopeFrequencyBase, Mode=TwoWay}"
+                        ToolTip="Rotary position embedding frequency base"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="(default: 10000)"
+                          VerticalAlignment="Center" Margin="8,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"
+                          FontSize="11"/>
+            </Grid>
+
+            <!-- Rope Frequency Scale -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="RoPE Frequency Scale" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding RopeFrequencyScale, Mode=TwoWay}"
+                        ToolTip="Rotary position embedding frequency scale"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="(default: 1.0)"
+                          VerticalAlignment="Center" Margin="8,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"
+                          FontSize="11"/>
+            </Grid>
+
+            <!-- Generation Parameters Group -->
+            <TextBlock Text="Generation Parameters" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Temperature -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Temperature" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding Temperature, Mode=TwoWay}"
+                       Minimum="0" Maximum="2"
+                       TickFrequency="0.1" IsSnapToTickEnabled="False"
+                       ToolTip="Randomness of responses (0=deterministic, 2=creative)"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding Temperature, StringFormat='{}{0:F1}'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Top P -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Top P" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding TopP, Mode=TwoWay}"
+                       Minimum="0" Maximum="1"
+                       TickFrequency="0.05" IsSnapToTickEnabled="False"
+                       ToolTip="Nucleus sampling threshold"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding TopP, StringFormat='{}{0:F2}'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Top K -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Top K" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding TopK, Mode=TwoWay}"
+                       Minimum="0" Maximum="100"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="Top-k sampling (0=disabled)"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding TopK}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Repeat Penalty -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Repeat Penalty" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding RepeatPenalty, Mode=TwoWay}"
+                       Minimum="0.5" Maximum="2"
+                       TickFrequency="0.1" IsSnapToTickEnabled="False"
+                       ToolTip="Penalty for repeating tokens"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding RepeatPenalty, StringFormat='{}{0:F1}'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Model Management Group -->
+            <TextBlock Text="Model Management" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Model Validation -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Validation" 
+                          VerticalAlignment="Top" Margin="0,5,0,0"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding ValidateOnLoad, Mode=TwoWay}"
+                             Content="Validate model integrity on load"
+                             ToolTip="Check model files for corruption"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding CheckForUpdates, Mode=TwoWay}"
+                             Content="Check for model updates"
+                             ToolTip="Check if newer model versions are available"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding AutoDownloadUpdates, Mode=TwoWay}"
+                             Content="Auto-download model updates"
+                             ToolTip="Automatically download newer model versions"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Model Cache -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Model Cache Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding ModelCacheSizeGB, Mode=TwoWay}"
+                       Minimum="1" Maximum="100"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum cache size for models"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding ModelCacheSizeGB, StringFormat='{}{0} GB'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Content="Download Models" 
+                       Command="{Binding DownloadModelsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Validate Model" 
+                       Command="{Binding ValidateModelCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Clear Cache" 
+                       Command="{Binding ClearCacheCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Reset to Defaults" 
+                       Command="{Binding ResetToDefaultCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="12,6"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

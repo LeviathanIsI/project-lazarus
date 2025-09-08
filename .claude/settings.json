@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**/*.cs)",
+      "Write(**/*.cs)",
+      "Edit(**/*.xaml)",
+      "Bash(dotnet :*)",
+      "Bash(git :*)"
+    ],
+    "deny": ["Read(./.env*)", "Read(./secrets/**)"]
+  }
+}

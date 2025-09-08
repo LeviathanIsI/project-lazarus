@@ -1,144 +1,259 @@
-using System;
-using System.IO;
+using System.Reflection;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Lazarus.Shared.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace Lazarus.Backend.Services.Settings;
 
 /// <summary>
-/// JSON-backed settings persistence service with schema versioning and safe writes.
+/// Service implementation for managing application settings
 /// </summary>
-public sealed class SettingsService : ISettingsService
+public class SettingsService : ISettingsService
 {
     private readonly ILogger<SettingsService> _logger;
-    private readonly object _gate = new();
+    private readonly SemaphoreSlim _saveLock = new(1, 1);
     private AppSettings _current;
-    // reserved for future debounce implementation
-    // private CancellationTokenSource? _saveDebounceCts;
+    private readonly JsonSerializerOptions _jsonOptions;
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="SettingsService"/>.
-    /// </summary>
+    public AppSettings Current => _current;
+
+    public event EventHandler<SettingsChangedEventArgs>? SettingsChanged;
+
     public SettingsService(ILogger<SettingsService> logger)
     {
         _logger = logger;
         _current = AppSettings.CreateDefault();
-    }
-
-    /// <inheritdoc />
-    public AppSettings Current
-    {
-        get
+        _jsonOptions = new JsonSerializerOptions
         {
-            lock (_gate) return _current;
-        }
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        // Ensure directories exist
+        SettingsPaths.EnsureDirectoriesExist();
     }
 
-    /// <inheritdoc />
-    /// <inheritdoc />
-    public event EventHandler<AppSettings>? SettingsChanged;
-
-    /// <inheritdoc />
-    public async Task<AppSettings> LoadAsync()
+    public async Task<AppSettings> LoadAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPaths.SettingsFile)!);
-
-            if (!File.Exists(SettingsPaths.SettingsFile))
+            if (File.Exists(SettingsPaths.SettingsFile))
             {
-                _logger.LogInformation("Settings file not found; creating defaults at {File}", SettingsPaths.SettingsFile);
-                await SaveInternalAsync(_current, CancellationToken.None).ConfigureAwait(false);
-                OnSettingsChanged(_current);
-                return Current;
+                var json = await File.ReadAllTextAsync(SettingsPaths.SettingsFile, cancellationToken);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
+                
+                if (settings != null)
+                {
+                    var oldSettings = _current;
+                    _current = settings;
+                    
+                    // Raise changed event
+                    var changedProps = GetChangedProperties(oldSettings, _current);
+                    if (changedProps.Any())
+                    {
+                        SettingsChanged?.Invoke(this, new SettingsChangedEventArgs(oldSettings, _current, changedProps));
+                    }
+                    
+                    _logger.LogInformation("Settings loaded from {Path}", SettingsPaths.SettingsFile);
+                    return _current;
+                }
             }
-
-            await using var stream = File.Open(SettingsPaths.SettingsFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var loaded = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOptions(), CancellationToken.None).ConfigureAwait(false)
-                ?? AppSettings.CreateDefault();
-
-            UpgradeIfNeeded(loaded);
-
-            lock (_gate) _current = loaded;
-            OnSettingsChanged(loaded);
-            return loaded;
+            else
+            {
+                _logger.LogInformation("No settings file found, using defaults");
+                await SaveAsync(_current, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load settings; using defaults");
-            lock (_gate) _current = AppSettings.CreateDefault();
-            OnSettingsChanged(_current);
-            return Current;
+            _logger.LogError(ex, "Failed to load settings, using defaults");
+            
+            // Try to restore from backup
+            if (File.Exists(SettingsPaths.SettingsBackupFile))
+            {
+                try
+                {
+                    var backupJson = await File.ReadAllTextAsync(SettingsPaths.SettingsBackupFile, cancellationToken);
+                    var backupSettings = JsonSerializer.Deserialize<AppSettings>(backupJson, _jsonOptions);
+                    if (backupSettings != null)
+                    {
+                        _current = backupSettings;
+                        _logger.LogInformation("Settings restored from backup");
+                        await SaveAsync(_current, cancellationToken);
+                        return _current;
+                    }
+                }
+                catch (Exception backupEx)
+                {
+                    _logger.LogError(backupEx, "Failed to restore from backup");
+                }
+            }
         }
+
+        return _current;
     }
 
-    /// <inheritdoc />
-    public Task SaveAsync(AppSettings? settings = null)
+    public async Task SaveAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
-        if (settings is not null)
+        await _saveLock.WaitAsync(cancellationToken);
+        try
         {
-            lock (_gate) _current = settings;
-            OnSettingsChanged(_current);
+            // Validate settings
+            var errors = settings.Validate();
+            if (errors.Any())
+            {
+                _logger.LogWarning("Settings validation warnings: {Errors}", string.Join(", ", errors));
+            }
+
+            // Create backup of existing settings
+            if (File.Exists(SettingsPaths.SettingsFile))
+            {
+                File.Copy(SettingsPaths.SettingsFile, SettingsPaths.SettingsBackupFile, true);
+            }
+
+            // Save new settings
+            var json = JsonSerializer.Serialize(settings, _jsonOptions);
+            await File.WriteAllTextAsync(SettingsPaths.SettingsFile, json, cancellationToken);
+
+            var oldSettings = _current;
+            _current = settings;
+
+            // Raise changed event
+            var changedProps = GetChangedProperties(oldSettings, _current);
+            if (changedProps.Any())
+            {
+                SettingsChanged?.Invoke(this, new SettingsChangedEventArgs(oldSettings, _current, changedProps));
+            }
+
+            _logger.LogInformation("Settings saved to {Path}", SettingsPaths.SettingsFile);
         }
-        AppSettings snapshot;
-        lock (_gate) snapshot = _current;
-        return SaveInternalAsync(snapshot, CancellationToken.None);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save settings");
+            throw;
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
     }
 
-    private async Task SaveInternalAsync(AppSettings settings, CancellationToken cancellationToken)
+    public async Task ResetToDefaultsAsync(CancellationToken cancellationToken = default)
+    {
+        var defaultSettings = AppSettings.CreateDefault();
+        await SaveAsync(defaultSettings, cancellationToken);
+        _logger.LogInformation("Settings reset to defaults");
+    }
+
+    public async Task ExportToJsonAsync(string filePath, CancellationToken cancellationToken = default)
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPaths.SettingsFile)!);
-
-            // Write to a tmp file then atomically replace
-            await using (var tmpStream = File.Open(SettingsPaths.TempFile, FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                await JsonSerializer.SerializeAsync(tmpStream, settings, JsonOptions(), CancellationToken.None).ConfigureAwait(false);
-                await tmpStream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-
-#if NET6_0_OR_GREATER
-            File.Move(SettingsPaths.TempFile, SettingsPaths.SettingsFile, overwrite: true);
-#else
-            if (File.Exists(SettingsPaths.SettingsFile)) File.Delete(SettingsPaths.SettingsFile);
-            File.Move(SettingsPaths.TempFile, SettingsPaths.SettingsFile);
-#endif
+            var json = JsonSerializer.Serialize(_current, _jsonOptions);
+            await File.WriteAllTextAsync(filePath, json, cancellationToken);
+            _logger.LogInformation("Settings exported to {Path}", filePath);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to save settings to {File}", SettingsPaths.SettingsFile);
-            // Best-effort: try to remove temp file if something failed
-            try { if (File.Exists(SettingsPaths.TempFile)) File.Delete(SettingsPaths.TempFile); } catch { }
+            _logger.LogError(ex, "Failed to export settings to {Path}", filePath);
             throw;
         }
     }
 
-    private static JsonSerializerOptions JsonOptions()
+    public async Task ImportFromJsonAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        return new JsonSerializerOptions
+        try
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            AllowTrailingCommas = true
-        };
-    }
+            var json = await File.ReadAllTextAsync(filePath, cancellationToken);
+            var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
+            
+            if (settings == null)
+            {
+                throw new InvalidOperationException("Failed to deserialize settings from JSON");
+            }
 
-    private void UpgradeIfNeeded(AppSettings settings)
-    {
-        if (settings.SchemaVersion < SettingsSchema.CurrentVersion)
+            // Validate imported settings
+            var errors = settings.Validate();
+            if (errors.Any())
+            {
+                _logger.LogWarning("Imported settings have validation warnings: {Errors}", string.Join(", ", errors));
+            }
+
+            await SaveAsync(settings, cancellationToken);
+            _logger.LogInformation("Settings imported from {Path}", filePath);
+        }
+        catch (Exception ex)
         {
-            // Placeholder for future migrations; keep it simple for MVP.
-            settings.SchemaVersion = SettingsSchema.CurrentVersion;
+            _logger.LogError(ex, "Failed to import settings from {Path}", filePath);
+            throw;
         }
     }
 
-    private void OnSettingsChanged(AppSettings settings)
+    public List<string> ValidateSettings(AppSettings settings)
     {
-        try { SettingsChanged?.Invoke(this, settings); } catch { }
+        return settings.Validate();
+    }
+
+    public T GetValue<T>(string key, T defaultValue)
+    {
+        try
+        {
+            var property = typeof(AppSettings).GetProperty(key);
+            if (property != null && property.PropertyType == typeof(T))
+            {
+                var value = property.GetValue(_current);
+                return value != null ? (T)value : defaultValue;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get setting value for key {Key}", key);
+        }
+
+        return defaultValue;
+    }
+
+    public async Task SetValueAsync<T>(string key, T value, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var property = typeof(AppSettings).GetProperty(key);
+            if (property != null && property.CanWrite)
+            {
+                property.SetValue(_current, value);
+                await SaveAsync(_current, cancellationToken);
+            }
+            else
+            {
+                _logger.LogWarning("Property {Key} not found or not writable", key);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set setting value for key {Key}", key);
+            throw;
+        }
+    }
+
+    private List<string> GetChangedProperties(AppSettings oldSettings, AppSettings newSettings)
+    {
+        var changed = new List<string>();
+        var properties = typeof(AppSettings).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var prop in properties)
+        {
+            if (prop.CanRead)
+            {
+                var oldValue = prop.GetValue(oldSettings);
+                var newValue = prop.GetValue(newSettings);
+
+                if (!Equals(oldValue, newValue))
+                {
+                    changed.Add(prop.Name);
+                }
+            }
+        }
+
+        return changed;
     }
 }

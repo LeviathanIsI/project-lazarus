@@ -1,4 +1,5 @@
 using Lazarus.Desktop.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Windows.Input;
 
@@ -149,13 +150,44 @@ namespace Lazarus.Desktop.ViewModels
         {
             try
             {
-                return new Views.SettingsShell();
+                // Create the ViewModels using DI
+                var settingsViewModel = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
+                
+                // Try to create SettingsShell first
+                try
+                {
+                    var settingsShell = new Views.SettingsShell();
+                    var settingsShellViewModel = new SettingsShellViewModel(settingsViewModel);
+                    settingsShell.DataContext = settingsShellViewModel;
+                    return settingsShell;
+                }
+                catch
+                {
+                    // Fallback to SettingsView if SettingsShell fails
+                    var settingsView = new Views.SettingsView();
+                    settingsView.DataContext = settingsViewModel;
+                    return settingsView;
+                }
             }
             catch (Exception ex)
             {
-                // Fallback to legacy SettingsView to avoid blank content
-                System.Diagnostics.Debug.WriteLine("[Settings] Failed to create SettingsShell: " + ex);
-                return new Views.SettingsView();
+                // If all else fails, return a view with an error message
+                System.Diagnostics.Debug.WriteLine("[Settings] Failed to create settings view: " + ex);
+                var errorView = new Views.SettingsView();
+                // Create a minimal SettingsViewModel manually if DI fails
+                try
+                {
+                    var settingsService = App.ServiceProvider.GetService<Lazarus.Shared.Settings.ISettingsService>();
+                    if (settingsService != null)
+                    {
+                        errorView.DataContext = new SettingsViewModel(settingsService);
+                    }
+                }
+                catch
+                {
+                    // Unable to create any valid DataContext
+                }
+                return errorView;
             }
         }
 

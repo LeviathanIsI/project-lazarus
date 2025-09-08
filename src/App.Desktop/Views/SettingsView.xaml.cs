@@ -1,15 +1,15 @@
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
-using Lazarus.Desktop.ViewModels;
 
-namespace Lazarus.Desktop.Views;
-
-public partial class SettingsView : UserControl
+namespace Lazarus.Desktop.Views
 {
-    public SettingsView()
+    /// <summary>
+    /// Interaction logic for SettingsView.xaml
+    /// </summary>
+    public partial class SettingsView : UserControl
     {
-        InitializeComponent();
-        DataContext = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
+        public SettingsView()
+        {
+            InitializeComponent();
+        }
     }
 }
-

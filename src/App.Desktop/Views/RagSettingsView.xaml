@@ -1,30 +1,538 @@
 <UserControl x:Class="Lazarus.Desktop.Views.RagSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <CheckBox Margin="0,6" Content="Enable Vector Store" IsChecked="{Binding RagEnableVectorStore, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Database Path" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding RagDatabasePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseRagDatabaseCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-    <CheckBox Margin="0,6" Content="Use SQLite VSS" IsChecked="{Binding RagUseSQLiteVss, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Break documents into parts of" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="Higher numbers create larger chunks" Text="{Binding RagDocumentChunkTokens, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="tokens each"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Show results this similar or higher" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="0.0 to 1.0; higher means stricter matching" Text="{Binding RagSimilarityThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Storage engine" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <ComboBox Width="200" SelectedItem="{Binding RagStorageEngine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-        <ComboBoxItem Content="SQLite"/>
-        <ComboBoxItem Content="SQLite-VSS"/>
-        <ComboBoxItem Content="FAISS"/>
-      </ComboBox>
-    </StackPanel>
-  </StackPanel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:RagSettingsViewModel}">
+    <UserControl.Resources>
+        <!-- Local converters and brush fallbacks to ensure view loads even if globals are missing -->
+        <local:StringToBooleanConverter x:Key="StringToBooleanConverter" xmlns:local="clr-namespace:Lazarus.Desktop.Converters"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A0A0A0"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2D2D2D"/>
+    </UserControl.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="RAG &amp; Embeddings" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="Configure retrieval-augmented generation and embedding settings" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Embedding Model Group -->
+            <TextBlock Text="Embedding Model" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Embedding Provider -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Embedding Provider" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding EmbeddingProvider, Mode=TwoWay}"
+                         ToolTip="Select the embedding model provider">
+                    <ComboBoxItem Content="OpenAI"/>
+                    <ComboBoxItem Content="Cohere"/>
+                    <ComboBoxItem Content="HuggingFace"/>
+                    <ComboBoxItem Content="Sentence Transformers"/>
+                    <ComboBoxItem Content="Local Model"/>
+                    <ComboBoxItem Content="Nomic"/>
+                    <ComboBoxItem Content="Voyage AI"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Embedding Model -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Model" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding EmbeddingModel, Mode=TwoWay}"
+                         ToolTip="Select the embedding model">
+                    <ComboBoxItem Content="text-embedding-3-large"/>
+                    <ComboBoxItem Content="text-embedding-3-small"/>
+                    <ComboBoxItem Content="text-embedding-ada-002"/>
+                    <ComboBoxItem Content="all-MiniLM-L6-v2"/>
+                    <ComboBoxItem Content="all-mpnet-base-v2"/>
+                    <ComboBoxItem Content="nomic-embed-text-v1.5"/>
+                    <ComboBoxItem Content="bge-large-en-v1.5"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Embedding Dimensions -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Embedding Dimensions" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding EmbeddingDimensions, Mode=TwoWay}"
+                       Minimum="128" Maximum="4096"
+                       TickFrequency="128" IsSnapToTickEnabled="True"
+                       ToolTip="Dimensionality of embedding vectors"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding EmbeddingDimensions}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Vector Database Group -->
+            <TextBlock Text="Vector Database" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Enable Vector Store -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Vector Store" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding RagEnableVectorStore, Mode=TwoWay}"
+                         Content="Enable vector store"
+                         ToolTip="Store document embeddings for retrieval"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Storage Engine -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Storage Engine" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding RagStorageEngine, Mode=TwoWay}"
+                         ToolTip="Select the vector storage backend">
+                    <ComboBoxItem Content="SQLite"/>
+                    <ComboBoxItem Content="SQLite-VSS"/>
+                    <ComboBoxItem Content="FAISS"/>
+                    <ComboBoxItem Content="ChromaDB"/>
+                    <ComboBoxItem Content="Pinecone"/>
+                    <ComboBoxItem Content="Weaviate"/>
+                    <ComboBoxItem Content="Qdrant"/>
+                    <ComboBoxItem Content="Milvus"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Database Path -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Database Path" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding RagDatabasePath, Mode=TwoWay}"
+                        ToolTip="Path to vector database"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseRagDatabaseCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Document Processing Group -->
+            <TextBlock Text="Document Processing" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Chunking Method -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Chunking Method" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding ChunkingMethod, Mode=TwoWay}"
+                         ToolTip="How to split documents into chunks">
+                    <ComboBoxItem Content="Fixed Size"/>
+                    <ComboBoxItem Content="Sentence-based"/>
+                    <ComboBoxItem Content="Paragraph-based"/>
+                    <ComboBoxItem Content="Semantic"/>
+                    <ComboBoxItem Content="Recursive"/>
+                    <ComboBoxItem Content="Token-based"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Chunk Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Chunk Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding RagDocumentChunkTokens, Mode=TwoWay}"
+                       Minimum="100" Maximum="4000"
+                       TickFrequency="100" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum tokens per chunk"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding RagDocumentChunkTokens, StringFormat='{}{0} tokens'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Chunk Overlap -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Chunk Overlap" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding ChunkOverlap, Mode=TwoWay}"
+                       Minimum="0" Maximum="500"
+                       TickFrequency="25" IsSnapToTickEnabled="True"
+                       ToolTip="Overlap between consecutive chunks"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding ChunkOverlap, StringFormat='{}{0} tokens'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Retrieval Settings Group -->
+            <TextBlock Text="Retrieval Settings" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Search Type -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Search Type" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding SearchType, Mode=TwoWay}"
+                         ToolTip="Type of similarity search">
+                    <ComboBoxItem Content="Cosine Similarity"/>
+                    <ComboBoxItem Content="Euclidean Distance"/>
+                    <ComboBoxItem Content="Dot Product"/>
+                    <ComboBoxItem Content="Hybrid (Dense + Sparse)"/>
+                    <ComboBoxItem Content="MaxSim"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Top K Results -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Top K Results" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding TopKResults, Mode=TwoWay}"
+                       Minimum="1" Maximum="20"
+                       TickFrequency="1" IsSnapToTickEnabled="True"
+                       ToolTip="Number of results to retrieve"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding TopKResults}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Similarity Threshold -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Similarity Threshold" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding RagSimilarityThreshold, Mode=TwoWay}"
+                       Minimum="0" Maximum="1"
+                       TickFrequency="0.05" IsSnapToTickEnabled="False"
+                       ToolTip="Minimum similarity score for results"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding RagSimilarityThreshold, StringFormat='{}{0:F2}'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Reranking -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Reranking" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding EnableReranking, Mode=TwoWay}"
+                         Content="Enable result reranking"
+                         ToolTip="Use a reranker model to improve result relevance"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Use SQLite VSS -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="SQLite VSS" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding RagUseSQLiteVss, Mode=TwoWay}"
+                         Content="Use SQLite VSS extension"
+                         ToolTip="Enable SQLite Vector Similarity Search extension"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Data Sources Group -->
+            <TextBlock Text="Data Sources" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Document Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Document Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding DocumentDirectory, Mode=TwoWay}"
+                        ToolTip="Directory containing documents to index"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseDocumentDirectoryCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- File Types -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Supported File Types" 
+                          VerticalAlignment="Top" Margin="0,5,0,0"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SupportPdf, Mode=TwoWay}"
+                             Content="PDF Documents"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SupportDocx, Mode=TwoWay}"
+                             Content="Word Documents"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SupportTxt, Mode=TwoWay}"
+                             Content="Text Files"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SupportMarkdown, Mode=TwoWay}"
+                             Content="Markdown Files"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SupportHtml, Mode=TwoWay}"
+                             Content="HTML Files"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SupportCsv, Mode=TwoWay}"
+                             Content="CSV Files"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Advanced Settings Group -->
+            <TextBlock Text="Advanced Settings" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Metadata Extraction -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Metadata" 
+                          VerticalAlignment="Top" Margin="0,5,0,0"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding ExtractMetadata, Mode=TwoWay}"
+                             Content="Extract document metadata"
+                             ToolTip="Extract title, author, date, etc."
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding UseMetadataFiltering, Mode=TwoWay}"
+                             Content="Enable metadata filtering"
+                             ToolTip="Filter search results by metadata"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding IndexMetadata, Mode=TwoWay}"
+                             Content="Include metadata in embeddings"
+                             ToolTip="Embed metadata along with content"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Batch Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Indexing Batch Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding IndexingBatchSize, Mode=TwoWay}"
+                       Minimum="1" Maximum="100"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="Documents to process at once"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding IndexingBatchSize}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Cache Settings -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Caching" 
+                          VerticalAlignment="Top" Margin="0,5,0,0"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding CacheEmbeddings, Mode=TwoWay}"
+                             Content="Cache computed embeddings"
+                             ToolTip="Store embeddings to avoid recomputation"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding CacheSearchResults, Mode=TwoWay}"
+                             Content="Cache search results"
+                             ToolTip="Cache recent search results"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Content="Index Documents" 
+                       Command="{Binding IndexDocumentsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Clear Index" 
+                       Command="{Binding ClearIndexCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Test Retrieval" 
+                       Command="{Binding TestRetrievalCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Reset to Defaults" 
+                       Command="{Binding ResetToDefaultCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="12,6"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

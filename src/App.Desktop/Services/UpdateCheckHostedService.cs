@@ -1,72 +1,90 @@
+using System;
+using System.IO;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Reflection;
-using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Lazarus.Shared.Settings;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Lazarus.Desktop.Configuration;
-using Lazarus.Shared.Settings;
 
 namespace Lazarus.Desktop.Services;
 
 /// <summary>
-/// Performs an optional update check at startup if enabled by settings.
-/// Does not download or install updates; logs availability only.
+/// Background service that checks for application updates on startup
 /// </summary>
-internal sealed class UpdateCheckHostedService : IHostedService
+public class UpdateCheckHostedService : BackgroundService
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<UpdateCheckHostedService> _logger;
-    private readonly ISettingsService _settings;
-    private readonly IUpdateService _updateService;
 
     public UpdateCheckHostedService(
-        ILogger<UpdateCheckHostedService> logger,
-        ISettingsService settings,
-        IUpdateService updateService)
+        IServiceProvider serviceProvider,
+        ILogger<UpdateCheckHostedService> logger)
     {
+        _serviceProvider = serviceProvider;
         _logger = logger;
-        _settings = settings;
-        _updateService = updateService;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Wait a bit for the application to fully start
+        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+
         try
         {
-            try { await _settings.LoadAsync().ConfigureAwait(false); } catch { }
+            // Check if auto-update check is enabled
+            var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+            var settings = settingsService.Current;
 
-            if (!_settings.Current.CheckForUpdatesOnStart)
+            if (!settings.AutoUpdateCheck)
             {
-                _logger.LogDebug("CheckForUpdatesOnStart disabled; skipping update check");
+                _logger.LogInformation("Auto-update check is disabled in settings");
                 return;
             }
 
-            var result = await _updateService.CheckAsync(cancellationToken).ConfigureAwait(false);
-            if (result.Latest is null)
+            _logger.LogInformation("Checking for application updates...");
+
+            var updateService = _serviceProvider.GetRequiredService<IUpdateService>();
+            var updateResult = await updateService.CheckAsync(stoppingToken);
+
+            if (updateResult.IsAvailable)
             {
-                _logger.LogInformation("Update check did not return a version from {Feed}", result.FeedUrl ?? "<unset>");
-                return;
-            }
-            if (result.IsAvailable)
-            {
-                _logger.LogInformation("New Lazarus version available: {Latest} (current {Current}). {Notes}", result.Latest, result.Current, result.ReleaseNotesUrl ?? string.Empty);
+                _logger.LogInformation("Update available: {Latest} (current: {Current})", 
+                    updateResult.Latest, updateResult.Current);
+
+                // Notify the user about the available update
+                // This could trigger a notification or update the UI
+                await NotifyUpdateAvailable(updateResult);
             }
             else
             {
-                _logger.LogInformation("Lazarus is up-to-date (version {Version})", result.Current);
+                _logger.LogInformation("Application is up to date: {Current}", updateResult.Current);
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
+            // Expected when cancellation is requested
+            _logger.LogDebug("Update check was cancelled");
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Update check failed");
+            _logger.LogError(ex, "Failed to check for updates");
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    private async Task NotifyUpdateAvailable(UpdateCheckResult updateResult)
+    {
+        // This method could be enhanced to show a notification to the user
+        // For now, we just log the information
+        _logger.LogInformation("New version {Version} is available. Current version: {Current}",
+            updateResult.Latest, updateResult.Current);
 
-    
+        // In the future, this could:
+        // - Show a system notification
+        // - Update a property that the UI binds to
+        // - Trigger an event that the main window subscribes to
+
+        await Task.CompletedTask;
+    }
 }

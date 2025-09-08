@@ -1,40 +1,431 @@
 <UserControl x:Class="Lazarus.Desktop.Views.RunnersSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Server Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding LlamaServerExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseLlamaServerCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Port" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="Valid port: 1-65535" Text="{Binding LlamaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6" ToolTip="Use your graphics card (GPU) for faster responses when available">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="GPU Layers" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="Number of layers to offload to GPU" Text="{Binding LlamaGpuLayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Use my graphics card (GPU)" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}" ToolTip="Turn off if you want to use your CPU instead"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="How many things can run at once" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="Limits how many tasks run in parallel" Text="{Binding MaxConcurrentTasks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Memory limit for AI (percent)" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="100" ToolTip="Keep some memory free for other apps" Text="{Binding LlamaMemoryLimitPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <Expander Margin="0,6" Header="Advanced">
-      <StackPanel>
-        
-        <StackPanel Orientation="Horizontal" Margin="0,6">
-          <TextBlock Width="200" VerticalAlignment="Center" Text="Additional Args" Foreground="{StaticResource TextPrimaryBrush}"/>
-          <TextBox Width="320" Text="{Binding LlamaAdditionalArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:RunnersSettingsViewModel}">
+    <UserControl.Resources>
+        <!-- Local converter fallback to avoid missing resource at runtime -->
+        <local:StringToBooleanConverter x:Key="StringToBooleanConverter" xmlns:local="clr-namespace:Lazarus.Desktop.Converters"/>
+
+        <!-- Brush fallbacks in case theme dictionaries haven't loaded yet -->
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A0A0A0"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2D2D2D"/>
+    </UserControl.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Runner Configuration Group -->
+            <TextBlock Text="Runner Configuration" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Default Runner -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Default Runner" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding DefaultRunner, Mode=TwoWay}"
+                         ToolTip="Select the default inference runner">
+                    <ComboBoxItem Content="llama.cpp"/>
+                    <ComboBoxItem Content="vLLM"/>
+                    <ComboBoxItem Content="ExLlamaV2"/>
+                    <ComboBoxItem Content="TensorRT-LLM"/>
+                    <ComboBoxItem Content="ONNX Runtime"/>
+                    <ComboBoxItem Content="Transformers"/>
+                    <ComboBoxItem Content="MLX"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Execution Mode -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Execution Mode" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <RadioButton Content="CPU" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=ExecutionMode, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=CPU}"
+                               Margin="0,0,16,0" ToolTip="Use CPU for model inference"/>
+                    <RadioButton Content="GPU" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=ExecutionMode, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=GPU}"
+                               Margin="0,0,16,0" ToolTip="Use GPU for accelerated inference"/>
+                    <RadioButton Content="Hybrid" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=ExecutionMode, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Hybrid}"
+                               Margin="0,0,16,0" ToolTip="Use both CPU and GPU"/>
+                    <RadioButton Content="Auto" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=ExecutionMode, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Auto}"
+                               ToolTip="Automatically select best mode"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Auto-start Runners -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-start" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding AutoStartRunners, Mode=TwoWay}"
+                         Content="Automatically start runners on application launch"
+                         ToolTip="Start selected runners when application starts"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- CPU Configuration Group -->
+            <TextBlock Text="CPU Configuration" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- CPU Threads -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="CPU Threads" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding CpuThreads, Mode=TwoWay}"
+                       Minimum="1" Maximum="{Binding MaxCpuThreads}"
+                       TickFrequency="1" IsSnapToTickEnabled="True"
+                       ToolTip="Number of CPU threads for processing"/>
+                
+                <TextBlock Grid.Column="2" 
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} / {1} threads">
+                            <Binding Path="CpuThreads"/>
+                            <Binding Path="MaxCpuThreads"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </Grid>
+
+            <!-- CPU Batch Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="CPU Batch Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding CpuBatchSize, Mode=TwoWay}"
+                       Minimum="1" Maximum="512"
+                       TickFrequency="16" IsSnapToTickEnabled="True"
+                       ToolTip="Batch size for CPU inference"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding CpuBatchSize}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Use BLAS -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="BLAS Acceleration" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding UseBlas, Mode=TwoWay}"
+                         Content="Use BLAS for matrix operations"
+                         ToolTip="Enable BLAS acceleration for faster CPU inference"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- GPU Configuration Group -->
+            <TextBlock Text="GPU Configuration" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- GPU Selection -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="GPU Device" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding GpuDevice, Mode=TwoWay}"
+                         ToolTip="Select GPU device for inference">
+                    <ComboBoxItem Content="GPU 0 - NVIDIA RTX 4090"/>
+                    <ComboBoxItem Content="GPU 1 - NVIDIA RTX 3080"/>
+                    <ComboBoxItem Content="Auto Select"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- GPU Memory Limit -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="GPU Memory Limit" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding GpuMemoryLimitGB, Mode=TwoWay}"
+                       Minimum="1" Maximum="48"
+                       TickFrequency="1" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum GPU memory to use"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding GpuMemoryLimitGB, StringFormat='{}{0} GB'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- GPU Layers -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="GPU Layers" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding GpuLayers, Mode=TwoWay}"
+                       Minimum="0" Maximum="100"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="Number of layers to offload to GPU"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding GpuLayers, StringFormat='{}{0} layers'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Flash Attention -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Flash Attention" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding UseFlashAttention, Mode=TwoWay}"
+                         Content="Enable Flash Attention 2"
+                         ToolTip="Use Flash Attention for faster inference"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Performance Group -->
+            <TextBlock Text="Performance Settings" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Context Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Context Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding ContextSize, Mode=TwoWay}"
+                       Minimum="512" Maximum="32768"
+                       TickFrequency="512" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum context window size"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding ContextSize, StringFormat='{}{0} tokens'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Max Tokens -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Max Output Tokens" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding MaxTokens, Mode=TwoWay}"
+                       Minimum="128" Maximum="4096"
+                       TickFrequency="128" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum tokens per response"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding MaxTokens, StringFormat='{}{0} tokens'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Process Priority -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Process Priority" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding ProcessPriority, Mode=TwoWay}"
+                         ToolTip="Process priority level">
+                    <ComboBoxItem Content="Low"/>
+                    <ComboBoxItem Content="Below Normal"/>
+                    <ComboBoxItem Content="Normal"/>
+                    <ComboBoxItem Content="Above Normal"/>
+                    <ComboBoxItem Content="High"/>
+                    <ComboBoxItem Content="Realtime"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Monitoring Group -->
+            <TextBlock Text="Monitoring &amp; Diagnostics" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Enable Metrics -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Performance Metrics" 
+                          VerticalAlignment="Top" Margin="0,5,0,0"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding EnableMetrics, Mode=TwoWay}"
+                             Content="Collect performance metrics"
+                             ToolTip="Track inference speed and resource usage"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding EnableProfiling, Mode=TwoWay}"
+                             Content="Enable detailed profiling"
+                             ToolTip="Collect detailed performance profiles"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding LogTokenTiming, Mode=TwoWay}"
+                             Content="Log token generation timing"
+                             ToolTip="Track time per token generation"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Timeout Settings -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Response Timeout" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding ResponseTimeoutSeconds, Mode=TwoWay}"
+                       Minimum="30" Maximum="600"
+                       TickFrequency="30" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum time to wait for response"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding ResponseTimeoutSeconds, StringFormat='{}{0} seconds'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Content="Detect Hardware" 
+                       Command="{Binding DetectHardwareCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Test Runner" 
+                       Command="{Binding TestRunnerCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Reset to Defaults" 
+                       Command="{Binding ResetToDefaultCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="12,6"/>
+            </StackPanel>
         </StackPanel>
-      </StackPanel>
-    </Expander>
-  </StackPanel>
+    </ScrollViewer>
 </UserControl>

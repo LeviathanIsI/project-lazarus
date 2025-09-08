@@ -1,14 +1,15 @@
-using System.Diagnostics;
 using System.Windows.Controls;
 
-namespace Lazarus.Desktop.Views;
-
-public partial class GeneralSettingsView : UserControl
+namespace Lazarus.Desktop.Views
 {
-    public GeneralSettingsView()
+    /// <summary>
+    /// Interaction logic for GeneralSettingsView.xaml
+    /// </summary>
+    public partial class GeneralSettingsView : UserControl
     {
-        InitializeComponent();
-        Debug.WriteLine("[VIEW] GeneralSettingsView constructed");
+        public GeneralSettingsView()
+        {
+            InitializeComponent();
+        }
     }
 }
-

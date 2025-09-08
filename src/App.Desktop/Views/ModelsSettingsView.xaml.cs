@@ -1,14 +1,15 @@
-using System.Diagnostics;
 using System.Windows.Controls;
 
-namespace Lazarus.Desktop.Views;
-
-public partial class ModelsSettingsView : UserControl
+namespace Lazarus.Desktop.Views
 {
-    public ModelsSettingsView()
+    /// <summary>
+    /// Interaction logic for ModelsSettingsView.xaml
+    /// </summary>
+    public partial class ModelsSettingsView : UserControl
     {
-        InitializeComponent();
-        Debug.WriteLine("[VIEW] ModelsSettingsView constructed");
+        public ModelsSettingsView()
+        {
+            InitializeComponent();
+        }
     }
 }
-

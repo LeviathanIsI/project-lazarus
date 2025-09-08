@@ -1,14 +1,15 @@
-using System.Diagnostics;
 using System.Windows.Controls;
 
-namespace Lazarus.Desktop.Views;
-
-public partial class PathsSettingsView : UserControl
+namespace Lazarus.Desktop.Views
 {
-    public PathsSettingsView()
+    /// <summary>
+    /// Interaction logic for PathsSettingsView.xaml
+    /// </summary>
+    public partial class PathsSettingsView : UserControl
     {
-        InitializeComponent();
-        Debug.WriteLine("[VIEW] PathsSettingsView constructed");
+        public PathsSettingsView()
+        {
+            InitializeComponent();
+        }
     }
 }
-

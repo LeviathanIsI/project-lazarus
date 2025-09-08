@@ -1,156 +1,482 @@
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Lazarus.Shared.Settings;
 
 /// <summary>
-/// Defines the strongly-typed, versioned settings schema for Lazarus.
+/// Comprehensive settings schema for Lazarus AI application
 /// </summary>
-public static class SettingsSchema
+public class AppSettings : INotifyPropertyChanged
 {
-    public const int CurrentVersion = 1;
-}
+    private string _defaultModel = "llama3.2";
+    private bool _autoSaveConversations = true;
+    private bool _autoUpdateCheck = true;
+    private string _modelsDirectory = @"C:\Lazarus\Models";
+    private string _cacheDirectory = @"C:\Lazarus\Cache";
+    private int _cacheMaxSizeMB = 2048;
+    private string _tempFilesLocation = @"C:\Lazarus\Temp";
+    private string _exportPath = @"C:\Lazarus\Exports";
+    private int _queueTimeoutSeconds = 30;
+    private int _healthCheckIntervalMs = 5000;
+    private int _maxParallelTasks = 4;
+    private int _retryAttempts = 3;
+    private string _executionMode = "CPU";
+    private int _cpuThreads = Environment.ProcessorCount / 2;
+    private int _gpuMemoryLimitGB = 4;
+    private string _priorityLevel = "Normal";
+    private string _activeModelId = "";
+    private string _quantizationLevel = "4-bit";
+    private int _contextWindow = 4096;
+    private bool _modelValidationOnLoad = true;
+    private string _ttsEngine = "System";
+    private string _sttProvider = "System";
+    private bool _noiseReduction = true;
+    private string _audioQuality = "Medium";
+    private string _vectorDbType = "SQLite";
+    private int _chunkSize = 512;
+    private int _overlapSize = 50;
+    private double _similarityThreshold = 0.7;
+    private int _checkpointFrequencyMinutes = 10;
+    private int _batchSize = 32;
+    private double _learningRate = 0.001;
+    private int _maxEpochs = 100;
+    private string _logLevel = "Information";
+    private int _maxLogSizeMB = 100;
+    private int _logRetentionDays = 30;
+    private bool _consoleOutput = false;
+    private bool _experimentalFeatures = false;
+    private int _memoryLimitOverrideGB = 0;
+    private string _gpuComputeMode = "Auto";
+    private string _proxyUrl = "";
+    private bool _startOrchestratorWithApp = true;
+    private bool _autoStartLastRunner = false;
+    private int _orchestratorHealthCheckIntervalSec = 5;
+    private int _orchestratorStartupTimeoutSec = 30;
+    private bool _orchestratorAutoRestartOnCrash = true;
 
-/// <summary>
-/// Root application settings object (flat MVP schema).
-/// </summary>
-public sealed class AppSettings
-{
-    // Always bump when the shape changes in a breaking way.
-    public int SchemaVersion { get; set; } = SettingsSchema.CurrentVersion;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-    // ---- General ----
-    public string? PreferredTheme { get; set; } = "Dark"; // Dark | Light | System
-    public string? Language { get; set; } = "en-US";
-    public bool CheckForUpdatesOnStart { get; set; } = false; // future use
-    public bool AutoSaveConversations { get; set; } = true;
+    // General Settings
+    [JsonPropertyName("defaultModel")]
+    [Description("Default AI model to load on startup")]
+    public string DefaultModel
+    {
+        get => _defaultModel;
+        set { _defaultModel = value; OnPropertyChanged(nameof(DefaultModel)); }
+    }
 
-    // ---- Paths ----
-    public string ModelsDirectory { get; set; } = @"D:\models"; // user can change
-    public string CacheDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\cache";
-    public string ExportedChatsDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\exported-chats";
+    [JsonPropertyName("autoSaveConversations")]
+    [Description("Automatically save conversation history")]
+    public bool AutoSaveConversations
+    {
+        get => _autoSaveConversations;
+        set { _autoSaveConversations = value; OnPropertyChanged(nameof(AutoSaveConversations)); }
+    }
 
-    // ---- Orchestrator ----
-    public string OrchestratorBaseUrl { get; set; } = "http://127.0.0.1:11711";
-    public int OrchestratorStartupTimeoutSec { get; set; } = 45;
-    public int OrchestratorHealthCheckIntervalSec { get; set; } = 10;
-    public bool OrchestratorAutoRestartOnCrash { get; set; } = true;
-    public bool StartOrchestratorWithApp { get; set; } = true;
+    [JsonPropertyName("autoUpdateCheck")]
+    [Description("Check for updates on startup")]
+    public bool AutoUpdateCheck
+    {
+        get => _autoUpdateCheck;
+        set { _autoUpdateCheck = value; OnPropertyChanged(nameof(AutoUpdateCheck)); }
+    }
 
-    // ---- Runner (active + per-runner opts) ----
-    public string ActiveRunner { get; set; } = "llama.cpp"; // llama.cpp | vllm | exllamav2
-    public bool AutoStartLastRunner { get; set; } = false;
+    // Paths Settings
+    [JsonPropertyName("modelsDirectory")]
+    [Description("Directory where AI models are stored")]
+    public string ModelsDirectory
+    {
+        get => _modelsDirectory;
+        set { _modelsDirectory = value; OnPropertyChanged(nameof(ModelsDirectory)); }
+    }
 
-    public LlamaCppSettings LlamaCpp { get; set; } = new();
-    public VllmSettings Vllm { get; set; } = new();
-    public ExLlamaV2Settings ExLlamaV2 { get; set; } = new();
+    [JsonPropertyName("cacheDirectory")]
+    [Description("Directory for temporary cache files")]
+    public string CacheDirectory
+    {
+        get => _cacheDirectory;
+        set { _cacheDirectory = value; OnPropertyChanged(nameof(CacheDirectory)); }
+    }
 
-    public string? ActiveModelId { get; set; } = null;
+    [JsonPropertyName("cacheMaxSizeMB")]
+    [Description("Maximum cache size in megabytes")]
+    public int CacheMaxSizeMB
+    {
+        get => _cacheMaxSizeMB;
+        set { _cacheMaxSizeMB = Math.Max(100, Math.Min(10240, value)); OnPropertyChanged(nameof(CacheMaxSizeMB)); }
+    }
 
-    // Additional sections
-    public TrainingSettings Training { get; set; } = new();
-    public AudioSettings Audio { get; set; } = new();
-    public RagSettings Rag { get; set; } = new();
-    public UiSettings Ui { get; set; } = new();
-    public LoggingSettings Logging { get; set; } = new();
-    
-    // Global controls
-    public int MaxConcurrentTasks { get; set; } = 2;
-    public bool ExperimentalFeatures { get; set; } = false;
-    public int MemoryLimitMb { get; set; } = 0; // 0 = no limit
-    public string? NetworkProxy { get; set; } = null;
-    public bool DeveloperMode { get; set; } = false;
+    [JsonPropertyName("tempFilesLocation")]
+    [Description("Location for temporary files")]
+    public string TempFilesLocation
+    {
+        get => _tempFilesLocation;
+        set { _tempFilesLocation = value; OnPropertyChanged(nameof(TempFilesLocation)); }
+    }
+
+    [JsonPropertyName("exportPath")]
+    [Description("Default path for exported files")]
+    public string ExportPath
+    {
+        get => _exportPath;
+        set { _exportPath = value; OnPropertyChanged(nameof(ExportPath)); }
+    }
+
+    // Orchestrator Settings
+    [JsonPropertyName("queueTimeoutSeconds")]
+    [Description("Timeout for queued operations in seconds")]
+    public int QueueTimeoutSeconds
+    {
+        get => _queueTimeoutSeconds;
+        set { _queueTimeoutSeconds = Math.Max(5, Math.Min(300, value)); OnPropertyChanged(nameof(QueueTimeoutSeconds)); }
+    }
+
+    [JsonPropertyName("healthCheckIntervalMs")]
+    [Description("Interval between health checks in milliseconds")]
+    public int HealthCheckIntervalMs
+    {
+        get => _healthCheckIntervalMs;
+        set { _healthCheckIntervalMs = Math.Max(1000, Math.Min(60000, value)); OnPropertyChanged(nameof(HealthCheckIntervalMs)); }
+    }
+
+    [JsonPropertyName("maxParallelTasks")]
+    [Description("Maximum number of parallel tasks")]
+    public int MaxParallelTasks
+    {
+        get => _maxParallelTasks;
+        set { _maxParallelTasks = Math.Max(1, Math.Min(16, value)); OnPropertyChanged(nameof(MaxParallelTasks)); }
+    }
+
+    [JsonPropertyName("retryAttempts")]
+    [Description("Number of retry attempts for failed operations")]
+    public int RetryAttempts
+    {
+        get => _retryAttempts;
+        set { _retryAttempts = Math.Max(0, Math.Min(10, value)); OnPropertyChanged(nameof(RetryAttempts)); }
+    }
+
+    // Runners Settings
+    [JsonPropertyName("executionMode")]
+    [Description("Execution mode for model inference")]
+    public string ExecutionMode
+    {
+        get => _executionMode;
+        set { _executionMode = value; OnPropertyChanged(nameof(ExecutionMode)); }
+    }
+
+    [JsonPropertyName("cpuThreads")]
+    [Description("Number of CPU threads to use")]
+    public int CpuThreads
+    {
+        get => _cpuThreads;
+        set { _cpuThreads = Math.Max(1, Math.Min(Environment.ProcessorCount, value)); OnPropertyChanged(nameof(CpuThreads)); }
+    }
+
+    [JsonPropertyName("gpuMemoryLimitGB")]
+    [Description("GPU memory limit in gigabytes")]
+    public int GpuMemoryLimitGB
+    {
+        get => _gpuMemoryLimitGB;
+        set { _gpuMemoryLimitGB = Math.Max(1, Math.Min(64, value)); OnPropertyChanged(nameof(GpuMemoryLimitGB)); }
+    }
+
+    [JsonPropertyName("priorityLevel")]
+    [Description("Process priority level")]
+    public string PriorityLevel
+    {
+        get => _priorityLevel;
+        set { _priorityLevel = value; OnPropertyChanged(nameof(PriorityLevel)); }
+    }
+
+    // Models Settings
+    [JsonPropertyName("activeModelId")]
+    [Description("Currently active model identifier")]
+    public string ActiveModelId
+    {
+        get => _activeModelId;
+        set { _activeModelId = value; OnPropertyChanged(nameof(ActiveModelId)); }
+    }
+
+    [JsonPropertyName("quantizationLevel")]
+    [Description("Model quantization level")]
+    public string QuantizationLevel
+    {
+        get => _quantizationLevel;
+        set { _quantizationLevel = value; OnPropertyChanged(nameof(QuantizationLevel)); }
+    }
+
+    [JsonPropertyName("contextWindow")]
+    [Description("Context window size in tokens")]
+    public int ContextWindow
+    {
+        get => _contextWindow;
+        set { _contextWindow = Math.Max(512, Math.Min(32768, value)); OnPropertyChanged(nameof(ContextWindow)); }
+    }
+
+    [JsonPropertyName("modelValidationOnLoad")]
+    [Description("Validate model integrity when loading")]
+    public bool ModelValidationOnLoad
+    {
+        get => _modelValidationOnLoad;
+        set { _modelValidationOnLoad = value; OnPropertyChanged(nameof(ModelValidationOnLoad)); }
+    }
+
+    // Audio Settings
+    [JsonPropertyName("ttsEngine")]
+    [Description("Text-to-speech engine")]
+    public string TtsEngine
+    {
+        get => _ttsEngine;
+        set { _ttsEngine = value; OnPropertyChanged(nameof(TtsEngine)); }
+    }
+
+    [JsonPropertyName("sttProvider")]
+    [Description("Speech-to-text provider")]
+    public string SttProvider
+    {
+        get => _sttProvider;
+        set { _sttProvider = value; OnPropertyChanged(nameof(SttProvider)); }
+    }
+
+    [JsonPropertyName("noiseReduction")]
+    [Description("Enable noise reduction for audio input")]
+    public bool NoiseReduction
+    {
+        get => _noiseReduction;
+        set { _noiseReduction = value; OnPropertyChanged(nameof(NoiseReduction)); }
+    }
+
+    [JsonPropertyName("audioQuality")]
+    [Description("Audio quality setting")]
+    public string AudioQuality
+    {
+        get => _audioQuality;
+        set { _audioQuality = value; OnPropertyChanged(nameof(AudioQuality)); }
+    }
+
+    // Embeddings/RAG Settings
+    [JsonPropertyName("vectorDbType")]
+    [Description("Vector database type for embeddings")]
+    public string VectorDbType
+    {
+        get => _vectorDbType;
+        set { _vectorDbType = value; OnPropertyChanged(nameof(VectorDbType)); }
+    }
+
+    [JsonPropertyName("chunkSize")]
+    [Description("Document chunk size in tokens")]
+    public int ChunkSize
+    {
+        get => _chunkSize;
+        set { _chunkSize = Math.Max(100, Math.Min(2000, value)); OnPropertyChanged(nameof(ChunkSize)); }
+    }
+
+    [JsonPropertyName("overlapSize")]
+    [Description("Overlap size between chunks in tokens")]
+    public int OverlapSize
+    {
+        get => _overlapSize;
+        set { _overlapSize = Math.Max(0, Math.Min(500, value)); OnPropertyChanged(nameof(OverlapSize)); }
+    }
+
+    [JsonPropertyName("similarityThreshold")]
+    [Description("Similarity threshold for retrieval (0.0-1.0)")]
+    public double SimilarityThreshold
+    {
+        get => _similarityThreshold;
+        set { _similarityThreshold = Math.Max(0.0, Math.Min(1.0, value)); OnPropertyChanged(nameof(SimilarityThreshold)); }
+    }
+
+    // Training Settings
+    [JsonPropertyName("checkpointFrequencyMinutes")]
+    [Description("Frequency of training checkpoints in minutes")]
+    public int CheckpointFrequencyMinutes
+    {
+        get => _checkpointFrequencyMinutes;
+        set { _checkpointFrequencyMinutes = Math.Max(1, Math.Min(60, value)); OnPropertyChanged(nameof(CheckpointFrequencyMinutes)); }
+    }
+
+    [JsonPropertyName("batchSize")]
+    [Description("Training batch size")]
+    public int BatchSize
+    {
+        get => _batchSize;
+        set { _batchSize = Math.Max(1, Math.Min(256, value)); OnPropertyChanged(nameof(BatchSize)); }
+    }
+
+    [JsonPropertyName("learningRate")]
+    [Description("Training learning rate")]
+    public double LearningRate
+    {
+        get => _learningRate;
+        set { _learningRate = Math.Max(0.00001, Math.Min(1.0, value)); OnPropertyChanged(nameof(LearningRate)); }
+    }
+
+    [JsonPropertyName("maxEpochs")]
+    [Description("Maximum training epochs")]
+    public int MaxEpochs
+    {
+        get => _maxEpochs;
+        set { _maxEpochs = Math.Max(1, Math.Min(10000, value)); OnPropertyChanged(nameof(MaxEpochs)); }
+    }
+
+    // Logging Settings
+    [JsonPropertyName("logLevel")]
+    [Description("Logging level")]
+    public string LogLevel
+    {
+        get => _logLevel;
+        set { _logLevel = value; OnPropertyChanged(nameof(LogLevel)); }
+    }
+
+    [JsonPropertyName("maxLogSizeMB")]
+    [Description("Maximum log file size in megabytes")]
+    public int MaxLogSizeMB
+    {
+        get => _maxLogSizeMB;
+        set { _maxLogSizeMB = Math.Max(1, Math.Min(1024, value)); OnPropertyChanged(nameof(MaxLogSizeMB)); }
+    }
+
+    [JsonPropertyName("logRetentionDays")]
+    [Description("Number of days to retain log files")]
+    public int LogRetentionDays
+    {
+        get => _logRetentionDays;
+        set { _logRetentionDays = Math.Max(1, Math.Min(365, value)); OnPropertyChanged(nameof(LogRetentionDays)); }
+    }
+
+    [JsonPropertyName("consoleOutput")]
+    [Description("Enable console output for logging")]
+    public bool ConsoleOutput
+    {
+        get => _consoleOutput;
+        set { _consoleOutput = value; OnPropertyChanged(nameof(ConsoleOutput)); }
+    }
+
+    // Advanced Settings
+    [JsonPropertyName("experimentalFeatures")]
+    [Description("Enable experimental features")]
+    public bool ExperimentalFeatures
+    {
+        get => _experimentalFeatures;
+        set { _experimentalFeatures = value; OnPropertyChanged(nameof(ExperimentalFeatures)); }
+    }
+
+    [JsonPropertyName("memoryLimitOverrideGB")]
+    [Description("Override memory limit in gigabytes (0 = auto)")]
+    public int MemoryLimitOverrideGB
+    {
+        get => _memoryLimitOverrideGB;
+        set { _memoryLimitOverrideGB = Math.Max(0, Math.Min(256, value)); OnPropertyChanged(nameof(MemoryLimitOverrideGB)); }
+    }
+
+    [JsonPropertyName("gpuComputeMode")]
+    [Description("GPU compute mode")]
+    public string GpuComputeMode
+    {
+        get => _gpuComputeMode;
+        set { _gpuComputeMode = value; OnPropertyChanged(nameof(GpuComputeMode)); }
+    }
+
+    [JsonPropertyName("proxyUrl")]
+    [Description("Proxy URL for network requests")]
+    public string ProxyUrl
+    {
+        get => _proxyUrl;
+        set { _proxyUrl = value; OnPropertyChanged(nameof(ProxyUrl)); }
+    }
+
+    // Additional Orchestrator Settings
+    [JsonPropertyName("startOrchestratorWithApp")]
+    [Description("Start orchestrator service with application")]
+    public bool StartOrchestratorWithApp
+    {
+        get => _startOrchestratorWithApp;
+        set { _startOrchestratorWithApp = value; OnPropertyChanged(nameof(StartOrchestratorWithApp)); }
+    }
+
+    [JsonPropertyName("autoStartLastRunner")]
+    [Description("Automatically start the last used runner")]
+    public bool AutoStartLastRunner
+    {
+        get => _autoStartLastRunner;
+        set { _autoStartLastRunner = value; OnPropertyChanged(nameof(AutoStartLastRunner)); }
+    }
+
+    [JsonPropertyName("orchestratorHealthCheckIntervalSec")]
+    [Description("Health check interval in seconds")]
+    public int OrchestratorHealthCheckIntervalSec
+    {
+        get => _orchestratorHealthCheckIntervalSec;
+        set { _orchestratorHealthCheckIntervalSec = Math.Max(1, Math.Min(60, value)); OnPropertyChanged(nameof(OrchestratorHealthCheckIntervalSec)); }
+    }
+
+    [JsonPropertyName("orchestratorStartupTimeoutSec")]
+    [Description("Orchestrator startup timeout in seconds")]
+    public int OrchestratorStartupTimeoutSec
+    {
+        get => _orchestratorStartupTimeoutSec;
+        set { _orchestratorStartupTimeoutSec = Math.Max(5, Math.Min(120, value)); OnPropertyChanged(nameof(OrchestratorStartupTimeoutSec)); }
+    }
+
+    [JsonPropertyName("orchestratorAutoRestartOnCrash")]
+    [Description("Automatically restart orchestrator if it crashes")]
+    public bool OrchestratorAutoRestartOnCrash
+    {
+        get => _orchestratorAutoRestartOnCrash;
+        set { _orchestratorAutoRestartOnCrash = value; OnPropertyChanged(nameof(OrchestratorAutoRestartOnCrash)); }
+    }
+
+    protected virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
     /// <summary>
-    /// Creates default settings aligned with the MVP schema.
+    /// Creates a default settings instance
     /// </summary>
     public static AppSettings CreateDefault() => new();
-}
 
-/// <summary>
-/// Minimal llama.cpp runner settings for MVP.
-/// </summary>
-public sealed class LlamaCppSettings
-{
-    public string ServerExecutablePath { get; set; } = @"%LOCALAPPDATA%\Lazarus\Runners\llama.cpp\llama-server.exe";
-    public string AdditionalArgs { get; set; } = string.Empty;
-    public int Port { get; set; } = 8080;
-    public int GpuLayers { get; set; } = 9999;
-    public bool UseCuda { get; set; } = true;
-    public int MemoryLimitPercent { get; set; } = 100; // 10-100
-}
+    /// <summary>
+    /// Validates all settings and returns error messages if any
+    /// </summary>
+    public List<string> Validate()
+    {
+        var errors = new List<string>();
 
-/// <summary>
-/// Minimal vLLM runner settings for MVP.
-/// </summary>
-public sealed class VllmSettings
-{
-    public string PythonEnvPath { get; set; } = @"%LOCALAPPDATA%\Lazarus\Runners\vllm\py";
-    public string Host { get; set; } = "127.0.0.1";
-    public int Port { get; set; } = 8000;
-    public string LaunchArgs { get; set; } = string.Empty;
-}
+        if (string.IsNullOrWhiteSpace(ModelsDirectory))
+            errors.Add("Models directory cannot be empty");
 
-/// <summary>
-/// Minimal ExLlamaV2 runner settings for MVP.
-/// </summary>
-public sealed class ExLlamaV2Settings
-{
-    public string ServerPath { get; set; } = @"%LOCALAPPDATA%\Lazarus\Runners\exllamav2\server.exe";
-    public string LaunchArgs { get; set; } = string.Empty;
-}
+        if (string.IsNullOrWhiteSpace(CacheDirectory))
+            errors.Add("Cache directory cannot be empty");
 
-public sealed class TrainingSettings
-{
-    public string DefaultTrainer { get; set; } = "llama-factory";
-    public string WorkingDirectory { get; set; } = @"%LOCALAPPDATA%\Lazarus\training";
-    public int CheckpointIntervalMinutes { get; set; } = 15;
-    public int DataFractionPercent { get; set; } = 100; // 1-100
-    public double LearningRate { get; set; } = 3e-4;
-}
+        if (CacheMaxSizeMB < 100)
+            errors.Add("Cache size must be at least 100 MB");
 
-public sealed class AudioSettings
-{
-    public bool EnableTts { get; set; } = false;
-    public string PiperExecutable { get; set; } = @"%LOCALAPPDATA%\Lazarus\audio\piper.exe";
-    public string PiperVoice { get; set; } = "en_US-amy-medium";
-    public bool EnableAsr { get; set; } = false;
-    public string FasterWhisperExecutable { get; set; } = @"%LOCALAPPDATA%\Lazarus\audio\faster-whisper.exe";
-    public bool NoiseSuppression { get; set; } = true;
-    public string Quality { get; set; } = "Balanced"; // Low | Balanced | High
-    public string SpeechRecognition { get; set; } = "Faster-Whisper"; // Faster-Whisper | System | None
-}
+        if (QueueTimeoutSeconds < 5)
+            errors.Add("Queue timeout must be at least 5 seconds");
 
-public sealed class RagSettings
-{
-    public bool EnableVectorStore { get; set; } = false;
-    public string DatabasePath { get; set; } = @"%LOCALAPPDATA%\Lazarus\lazarus.db";
-    public bool UseSQLiteVss { get; set; } = false;
-    public int DocumentChunkTokens { get; set; } = 512;
-    public double SimilarityThreshold { get; set; } = 0.75; // 0-1
-    public string StorageEngine { get; set; } = "SQLite"; // SQLite | SQLite-VSS | FAISS
-}
+        if (HealthCheckIntervalMs < 1000)
+            errors.Add("Health check interval must be at least 1000 ms");
 
-public sealed class UiSettings
-{
-    public bool ShowTokenStream { get; set; } = true;
-    public double FontSize { get; set; } = 13.0;
-    public HotkeySettings Hotkeys { get; set; } = new();
-}
+        if (MaxParallelTasks < 1)
+            errors.Add("Must allow at least 1 parallel task");
 
-public sealed class HotkeySettings
-{
-    public string NewScreenshot { get; set; } = "Ctrl+Shift+4";
-    public string NewChat { get; set; } = "Ctrl+N";
-    public string EmergencyStop { get; set; } = "Ctrl+Esc";
-    public string SearchSettings { get; set; } = "Ctrl+F";
-}
+        if (CpuThreads < 1 || CpuThreads > Environment.ProcessorCount)
+            errors.Add($"CPU threads must be between 1 and {Environment.ProcessorCount}");
 
-public sealed class LoggingSettings
-{
-    public string Level { get; set; } = "Information";
-    public bool EnableStructured { get; set; } = true;
-    public int RetentionDays { get; set; } = 7;
-    public bool SendCrashReports { get; set; } = false;
+        if (ContextWindow < 512 || ContextWindow > 32768)
+            errors.Add("Context window must be between 512 and 32768");
+
+        if (ChunkSize < 100 || ChunkSize > 2000)
+            errors.Add("Chunk size must be between 100 and 2000");
+
+        if (SimilarityThreshold < 0.0 || SimilarityThreshold > 1.0)
+            errors.Add("Similarity threshold must be between 0.0 and 1.0");
+
+        if (LearningRate <= 0.0 || LearningRate > 1.0)
+            errors.Add("Learning rate must be between 0.00001 and 1.0");
+
+        return errors;
+    }
 }

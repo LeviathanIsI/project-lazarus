@@ -4,7 +4,8 @@
     <Application.Resources>
         <ResourceDictionary
             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
-            xmlns:views="clr-namespace:Lazarus.Desktop.Views">
+            xmlns:views="clr-namespace:Lazarus.Desktop.Views"
+            xmlns:converters="clr-namespace:Lazarus.Desktop.Converters">
             <ResourceDictionary.MergedDictionaries>
                 <!-- Load in dependency order -->
                 <ResourceDictionary Source="Themes/BaseResources.xaml"/>
@@ -23,6 +24,10 @@
                 <!-- Settings section view templates -->
                 <ResourceDictionary Source="Resources/SettingsTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Value Converters -->
+            <converters:StringToBooleanConverter x:Key="StringToBooleanConverter"/>
+            <converters:MillisecondsToSecondsConverter x:Key="MillisecondsToSecondsConverter"/>
 
             <!-- Keyless, global DataTemplates mapping section VMs to Views -->
             <DataTemplate DataType="{x:Type vm:GeneralSettingsViewModel}">

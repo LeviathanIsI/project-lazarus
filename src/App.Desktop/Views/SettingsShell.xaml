@@ -4,58 +4,264 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
-             mc:Ignorable="d">
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Left"
-                    Width="220"
-                    Background="{StaticResource CardBackgroundBrush}">
-            <TextBlock Text="Settings"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimaryBrush}"
-                       Margin="16,24,16,16"/>
-            <ListBox ItemsSource="{Binding Sections}"
-                     SelectedItem="{Binding SelectedSectionVm, Mode=TwoWay}"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     Foreground="{StaticResource TextPrimaryBrush}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Title}" Padding="12,6"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </StackPanel>
-        <Border Background="{StaticResource GlassCardBrush}" Padding="24" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}" CornerRadius="8">
-            <Border.Resources>
-                <!-- Safe template that always presents content; shows placeholder only when Content is null -->
-                <ControlTemplate x:Key="SafeContentControlTemplate" TargetType="ContentControl">
-                    <Grid>
-                        <TextBlock x:Name="Empty"
-                                   Text="No content"
-                                   Visibility="Collapsed"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   Margin="0,0,0,8"/>
-                        <ContentPresenter x:Name="Presenter"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                          ContentStringFormat="{TemplateBinding ContentStringFormat}"/>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="Content" Value="{x:Null}">
-                            <Setter TargetName="Presenter" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="Empty" Property="Visibility" Value="Visible"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Border.Resources>
+             xmlns:views="clr-namespace:Lazarus.Desktop.Views"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1000"
+             d:DataContext="{d:DesignInstance Type=vm:SettingsShellViewModel}">
+    
+    <UserControl.Resources>
+        <!-- Settings Navigation Button Style -->
+        <Style x:Key="SettingsNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="16,0,16,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Margin="8,2">
+                            <Grid>
+                                <Rectangle x:Name="SelectedIndicator" 
+                                           Width="3" 
+                                           Fill="{StaticResource RainbowVerticalFlowBrush}"
+                                           HorizontalAlignment="Left"
+                                           Margin="-8,0,0,0"
+                                           RadiusX="1.5"
+                                           RadiusY="1.5"
+                                           Visibility="Collapsed"/>
+                                <TextBlock Text="{TemplateBinding Content}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"
+                                          Foreground="White"
+                                          FontWeight="Normal"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource SelectedBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="Selected">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource SelectedBrush}"/>
+                                <Setter TargetName="SelectedIndicator" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
-            <ContentControl x:Name="SettingsContent"
-                            Content="{Binding SelectedSectionVm, PresentationTraceSources.TraceLevel=High}"
-                            HorizontalContentAlignment="Stretch"
-                            VerticalContentAlignment="Stretch"
-                            Template="{StaticResource SafeContentControlTemplate}"/>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar Navigation -->
+        <Border Grid.Column="0" 
+                Background="{StaticResource SidebarBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" 
+                        Padding="16,16,16,8"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                    <TextBlock Text="Settings" 
+                              FontSize="20" 
+                              FontWeight="SemiBold"
+                              Foreground="{StaticResource TextPrimaryBrush}"/>
+                </Border>
+
+                <!-- Navigation Items -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Margin="0,8,0,8">
+                    <ItemsControl ItemsSource="{Binding Sections}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding Title}"
+                                        Style="{StaticResource SettingsNavButtonStyle}"
+                                        Command="{Binding DataContext.NavigateToSectionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
-    </DockPanel>
+
+        <!-- Content Area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with Search -->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource SurfaceBrush}" 
+                    BorderBrush="{StaticResource BorderBrush}" 
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="24,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" 
+                              Text="{Binding SelectedSection.Title}" 
+                              FontSize="24" 
+                              FontWeight="SemiBold"
+                              Foreground="{StaticResource TextPrimaryBrush}"
+                              VerticalAlignment="Center"/>
+
+                    <TextBox Grid.Column="1" 
+                            Width="250" 
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TextBox">
+                                            <Border Background="{StaticResource BackgroundBrush}"
+                                                    BorderBrush="{StaticResource BorderBrush}"
+                                                    BorderThickness="1" 
+                                                    CornerRadius="4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" 
+                                                              Text="🔍" 
+                                                              Margin="8,0,4,0" 
+                                                              VerticalAlignment="Center"
+                                                              Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                    <ScrollViewer Grid.Column="1" 
+                                                                  x:Name="PART_ContentHost" 
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="0,8,8,8"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                              Text="Search settings..." 
+                                                              Margin="0,8,8,8"
+                                                              VerticalAlignment="Center"
+                                                              Foreground="{StaticResource TextSecondaryBrush}"
+                                                              IsHitTestVisible="False">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </Grid>
+            </Border>
+
+            <!-- Settings Content -->
+            <ScrollViewer Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="24">
+                <ContentPresenter Content="{Binding SelectedSection}"/>
+            </ScrollViewer>
+
+            <!-- Footer with Action Buttons -->
+            <Border Grid.Row="2" 
+                    Background="{StaticResource SurfaceBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" 
+                    BorderThickness="0,1,0,0">
+                <Grid Margin="24,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Status Text -->
+                    <TextBlock Grid.Column="0" 
+                              VerticalAlignment="Center"
+                              Foreground="{StaticResource TextSecondaryBrush}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value=""/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasUnsavedChanges}" Value="True">
+                                        <Setter Property="Text" Value="⚠ Unsaved changes"/>
+                                        <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Column="1" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right">
+                        <Button Content="Reset All" 
+                                Command="{Binding ResetAllCommand}"
+                                Style="{StaticResource SecondaryGlassButtonStyle}"
+                                Margin="0,0,8,0" 
+                                Padding="12,6" 
+                                MinWidth="80"/>
+                        
+                        <Button Content="Cancel" 
+                                Command="{Binding CancelCommand}"
+                                Style="{StaticResource SecondaryGlassButtonStyle}"
+                                Margin="0,0,8,0" 
+                                Padding="12,6" 
+                                MinWidth="80"/>
+                        
+                        <Button Content="Apply" 
+                                Command="{Binding SaveCommand}"
+                                Style="{StaticResource RainbowAccentButton}"
+                                Padding="12,6" 
+                                MinWidth="80">
+                            <Button.IsEnabled>
+                                <Binding Path="HasUnsavedChanges"/>
+                            </Button.IsEnabled>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>

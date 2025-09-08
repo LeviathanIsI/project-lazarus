@@ -1,26 +1,430 @@
 <UserControl x:Class="Lazarus.Desktop.Views.PathsSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <TextBlock Text="Paths Settings View LOADED"
-               FontSize="18"
-               FontWeight="Bold"
-               Margin="0,0,0,12"
-               Foreground="{StaticResource TextPrimaryBrush}"/>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding ModelsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseModelsDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Cache Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding CacheDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseCacheDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Exported Chats Folder" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" ToolTip="Where your exported chat files will be saved by default" Text="{Binding ExportedChatsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseExportedChatsDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-  </StackPanel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:PathsSettingsViewModel}">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Model Storage Group -->
+            <TextBlock Text="Model Storage" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Models Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Models Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding ModelsDirectory, Mode=TwoWay}"
+                        ToolTip="Directory where AI models are stored"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseModelsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Model Downloads -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Download Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding DownloadDirectory, Mode=TwoWay}"
+                        ToolTip="Where to save downloaded models"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseDownloadCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Quantized Models Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Quantized Models" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding QuantizedModelsDirectory, Mode=TwoWay}"
+                        ToolTip="Directory for quantized model variants"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseQuantizedCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Cache Management Group -->
+            <TextBlock Text="Cache Management" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Cache Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Cache Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding CacheDirectory, Mode=TwoWay}"
+                        ToolTip="Directory for temporary cache files"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseCacheCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Cache Size Limit -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Cache Size Limit" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding CacheMaxSizeGB, Mode=TwoWay}"
+                       Minimum="1" Maximum="100"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="Maximum cache size in gigabytes"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding CacheMaxSizeGB, StringFormat='{}{0} GB'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Auto-cleanup -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Auto-cleanup" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding AutoCleanupCache, Mode=TwoWay}"
+                         Content="Automatically clean old cache files"
+                         ToolTip="Remove cache files older than retention period"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Cache Retention -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Cache Retention" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding CacheRetentionDays, Mode=TwoWay}"
+                       Minimum="1" Maximum="90"
+                       TickFrequency="7" IsSnapToTickEnabled="True"
+                       ToolTip="How long to keep cached files"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding CacheRetentionDays, StringFormat='{}{0} days'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Data Storage Group -->
+            <TextBlock Text="Data Storage" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Database Location -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Database Location" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding DatabasePath, Mode=TwoWay}"
+                        ToolTip="SQLite database file location"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseDatabaseCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Conversations Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Conversations" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding ConversationsDirectory, Mode=TwoWay}"
+                        ToolTip="Where conversation history is stored"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseConversationsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Backup Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Backup Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding BackupDirectory, Mode=TwoWay}"
+                        ToolTip="Location for automatic backups"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseBackupCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Export/Import Group -->
+            <TextBlock Text="Export &amp; Import" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Export Path -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Export Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding ExportDirectory, Mode=TwoWay}"
+                        ToolTip="Default directory for exported files"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseExportCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Import Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Import Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding ImportDirectory, Mode=TwoWay}"
+                        ToolTip="Default directory for importing files"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseImportCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Templates Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Templates" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding TemplatesDirectory, Mode=TwoWay}"
+                        ToolTip="Directory for prompt templates"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseTemplatesCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- System Paths Group -->
+            <TextBlock Text="System Paths" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Temp Files Location -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Temp Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding TempDirectory, Mode=TwoWay}"
+                        ToolTip="Location for temporary files"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseTempCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Logs Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Logs Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding LogsDirectory, Mode=TwoWay}"
+                        ToolTip="Where log files are stored"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowseLogsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Plugins Directory -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Plugins Directory" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" 
+                        Text="{Binding PluginsDirectory, Mode=TwoWay}"
+                        ToolTip="Location for extensions and plugins"
+                        Margin="0,0,8,0"/>
+                
+                <Button Grid.Column="2" Content="Browse" 
+                       Command="{Binding BrowsePluginsCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="8,4"/>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Content="Open Data Folder" 
+                       Command="{Binding OpenDataFolderCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Clean Cache" 
+                       Command="{Binding CleanCacheCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Reset to Defaults" 
+                       Command="{Binding ResetToDefaultCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="12,6"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

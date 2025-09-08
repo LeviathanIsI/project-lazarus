@@ -1,40 +1,499 @@
 <UserControl x:Class="Lazarus.Desktop.Views.AudioSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel>
-    <CheckBox Margin="0,6" Content="Enable TTS" IsChecked="{Binding AudioEnableTts, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Piper Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding AudioPiperExecutable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowsePiperExecutableCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Piper Voice" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="200" Text="{Binding AudioPiperVoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
-    <CheckBox Margin="0,6" Content="Enable ASR" IsChecked="{Binding AudioEnableAsr, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Faster-Whisper Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <TextBox Width="320" Text="{Binding AudioFasterWhisperExecutable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-      <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseFasterWhisperExecutableCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-    </StackPanel>
-    <CheckBox Margin="0,6" Content="Reduce background noise" IsChecked="{Binding AudioNoiseSuppression, Mode=TwoWay}"
-              ToolTip="Improves clarity by removing steady background sounds" Foreground="{StaticResource TextPrimaryBrush}"/>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Speech recognition" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <ComboBox Width="200" SelectedItem="{Binding AudioSpeechRecognition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-        <ComboBoxItem Content="Faster-Whisper"/>
-        <ComboBoxItem Content="System"/>
-        <ComboBoxItem Content="None"/>
-      </ComboBox>
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Margin="0,6">
-      <TextBlock Width="200" VerticalAlignment="Center" Text="Audio quality" Foreground="{StaticResource TextPrimaryBrush}"/>
-      <ComboBox Width="200" SelectedItem="{Binding AudioQuality, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-        <ComboBoxItem Content="Low"/>
-        <ComboBoxItem Content="Balanced"/>
-        <ComboBoxItem Content="High"/>
-      </ComboBox>
-    </StackPanel>
-  </StackPanel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AudioSettingsViewModel}">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                      Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Text-to-Speech Group -->
+            <TextBlock Text="Text-to-Speech (TTS)" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- TTS Engine -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="TTS Engine" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding TtsEngine, Mode=TwoWay}"
+                         ToolTip="Select the TTS engine for voice output">
+                    <ComboBoxItem Content="System Default"/>
+                    <ComboBoxItem Content="Microsoft Azure"/>
+                    <ComboBoxItem Content="Google Cloud"/>
+                    <ComboBoxItem Content="Amazon Polly"/>
+                    <ComboBoxItem Content="ElevenLabs"/>
+                    <ComboBoxItem Content="Coqui TTS"/>
+                    <ComboBoxItem Content="OpenAI TTS"/>
+                    <ComboBoxItem Content="Bark"/>
+                    <ComboBoxItem Content="Tortoise TTS"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Voice Selection -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Voice" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding TtsVoice, Mode=TwoWay}"
+                         ToolTip="Select the voice for TTS">
+                    <ComboBoxItem Content="Alloy"/>
+                    <ComboBoxItem Content="Echo"/>
+                    <ComboBoxItem Content="Fable"/>
+                    <ComboBoxItem Content="Onyx"/>
+                    <ComboBoxItem Content="Nova"/>
+                    <ComboBoxItem Content="Shimmer"/>
+                    <ComboBoxItem Content="Custom Voice"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Speech Rate -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Speech Rate" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding SpeechRate, Mode=TwoWay}"
+                       Minimum="0.5" Maximum="2.0"
+                       TickFrequency="0.1" IsSnapToTickEnabled="False"
+                       ToolTip="Speed of speech (1.0 = normal)"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding SpeechRate, StringFormat='{}{0:F1}x'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Voice Pitch -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Voice Pitch" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding VoicePitch, Mode=TwoWay}"
+                       Minimum="-12" Maximum="12"
+                       TickFrequency="1" IsSnapToTickEnabled="True"
+                       ToolTip="Voice pitch adjustment in semitones"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding VoicePitch, StringFormat='{}{0:+#;-#;0} semitones'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Speech-to-Text Group -->
+            <TextBlock Text="Speech-to-Text (STT)" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- STT Provider -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="STT Provider" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding SttProvider, Mode=TwoWay}"
+                         ToolTip="Select the STT provider for voice input">
+                    <ComboBoxItem Content="System Default"/>
+                    <ComboBoxItem Content="OpenAI Whisper"/>
+                    <ComboBoxItem Content="Whisper.cpp"/>
+                    <ComboBoxItem Content="Microsoft Azure"/>
+                    <ComboBoxItem Content="Google Cloud"/>
+                    <ComboBoxItem Content="Deepgram"/>
+                    <ComboBoxItem Content="AssemblyAI"/>
+                    <ComboBoxItem Content="Rev AI"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- STT Model -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="STT Model" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding SttModel, Mode=TwoWay}"
+                         ToolTip="Select the STT model size">
+                    <ComboBoxItem Content="Tiny"/>
+                    <ComboBoxItem Content="Base"/>
+                    <ComboBoxItem Content="Small"/>
+                    <ComboBoxItem Content="Medium"/>
+                    <ComboBoxItem Content="Large"/>
+                    <ComboBoxItem Content="Large-v2"/>
+                    <ComboBoxItem Content="Large-v3"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Language -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Language" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding AudioLanguage, Mode=TwoWay}"
+                         ToolTip="Primary language for STT/TTS">
+                    <ComboBoxItem Content="Auto-detect"/>
+                    <ComboBoxItem Content="English"/>
+                    <ComboBoxItem Content="Spanish"/>
+                    <ComboBoxItem Content="French"/>
+                    <ComboBoxItem Content="German"/>
+                    <ComboBoxItem Content="Italian"/>
+                    <ComboBoxItem Content="Portuguese"/>
+                    <ComboBoxItem Content="Russian"/>
+                    <ComboBoxItem Content="Chinese"/>
+                    <ComboBoxItem Content="Japanese"/>
+                    <ComboBoxItem Content="Korean"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Audio Input Group -->
+            <TextBlock Text="Audio Input" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Input Device -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Input Device" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding InputDevice, Mode=TwoWay}"
+                         ToolTip="Select microphone/input device">
+                    <ComboBoxItem Content="System Default"/>
+                    <ComboBoxItem Content="Built-in Microphone"/>
+                    <ComboBoxItem Content="USB Microphone"/>
+                    <ComboBoxItem Content="Headset"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Noise Reduction -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Noise Reduction" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding NoiseReduction, Mode=TwoWay}"
+                         Content="Enable noise reduction"
+                         ToolTip="Reduce background noise in voice input"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Voice Activity Detection -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Voice Activity Detection" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <CheckBox Grid.Column="1" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         IsChecked="{Binding VoiceActivityDetection, Mode=TwoWay}"
+                         Content="Enable VAD"
+                         ToolTip="Automatically detect when you're speaking"
+                         VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Sensitivity -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Input Sensitivity" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding InputSensitivity, Mode=TwoWay}"
+                       Minimum="0" Maximum="100"
+                       TickFrequency="10" IsSnapToTickEnabled="True"
+                       ToolTip="Microphone sensitivity level"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding InputSensitivity, StringFormat='{}{0}%'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Audio Output Group -->
+            <TextBlock Text="Audio Output" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Output Device -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Output Device" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding OutputDevice, Mode=TwoWay}"
+                         ToolTip="Select speaker/output device">
+                    <ComboBoxItem Content="System Default"/>
+                    <ComboBoxItem Content="Built-in Speakers"/>
+                    <ComboBoxItem Content="Headphones"/>
+                    <ComboBoxItem Content="External Speakers"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Output Volume -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Output Volume" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding OutputVolume, Mode=TwoWay}"
+                       Minimum="0" Maximum="100"
+                       TickFrequency="5" IsSnapToTickEnabled="True"
+                       ToolTip="TTS output volume"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding OutputVolume, StringFormat='{}{0}%'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Audio Quality -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Audio Quality" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <RadioButton Content="Low" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=AudioQuality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Low}"
+                               Margin="0,0,16,0" ToolTip="Lower quality, smaller file size"/>
+                    <RadioButton Content="Medium" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=AudioQuality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Medium}"
+                               Margin="0,0,16,0" ToolTip="Balanced quality and file size"/>
+                    <RadioButton Content="High" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=AudioQuality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=High}"
+                               Margin="0,0,16,0" ToolTip="Higher quality, larger file size"/>
+                    <RadioButton Content="Ultra" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               IsChecked="{Binding Path=AudioQuality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Ultra}"
+                               ToolTip="Maximum quality"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Advanced Audio Group -->
+            <TextBlock Text="Advanced Settings" FontSize="16" FontWeight="SemiBold"
+                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+
+            <!-- Sample Rate -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Sample Rate" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <ComboBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         SelectedItem="{Binding SampleRate, Mode=TwoWay}"
+                         ToolTip="Audio sample rate in Hz">
+                    <ComboBoxItem Content="16000 Hz"/>
+                    <ComboBoxItem Content="22050 Hz"/>
+                    <ComboBoxItem Content="44100 Hz"/>
+                    <ComboBoxItem Content="48000 Hz"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Buffer Size -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Buffer Size" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <Slider Grid.Column="1" 
+                       Value="{Binding BufferSize, Mode=TwoWay}"
+                       Minimum="64" Maximum="2048"
+                       TickFrequency="64" IsSnapToTickEnabled="True"
+                       ToolTip="Audio buffer size in samples"/>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="{Binding BufferSize, StringFormat='{}{0} samples'}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"
+                          Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+
+            <!-- Wake Word -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Wake Word" 
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <TextBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                        Text="{Binding WakeWord, Mode=TwoWay}"
+                        ToolTip="Voice activation wake word"/>
+            </Grid>
+
+            <!-- Features -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Features" 
+                          VerticalAlignment="Top" Margin="0,5,0,0"
+                          Foreground="{StaticResource TextPrimaryBrush}"/>
+                
+                <StackPanel Grid.Column="1">
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding EnableWakeWord, Mode=TwoWay}"
+                             Content="Enable wake word detection"
+                             ToolTip="Activate with voice command"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding StreamAudio, Mode=TwoWay}"
+                             Content="Stream audio output"
+                             ToolTip="Stream TTS as it's generated"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding SaveAudioFiles, Mode=TwoWay}"
+                             Content="Save audio recordings"
+                             ToolTip="Save STT input and TTS output"
+                             Margin="0,0,0,4"/>
+                    <CheckBox Foreground="{StaticResource TextPrimaryBrush}"
+                             IsChecked="{Binding EnableHotkeys, Mode=TwoWay}"
+                             Content="Enable push-to-talk hotkeys"
+                             ToolTip="Use keyboard shortcuts for voice input"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Content="Test Microphone" 
+                       Command="{Binding TestMicrophoneCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Test Speaker" 
+                       Command="{Binding TestSpeakerCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Calibrate" 
+                       Command="{Binding CalibrateCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Margin="0,0,8,0"
+                       Padding="12,6"/>
+                
+                <Button Content="Reset to Defaults" 
+                       Command="{Binding ResetToDefaultCommand}"
+                       Style="{StaticResource SecondaryGlassButtonStyle}"
+                       Padding="12,6"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

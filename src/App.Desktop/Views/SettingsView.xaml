@@ -4,210 +4,204 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
-             mc:Ignorable="d">
-    <Grid Margin="16" Background="{StaticResource BackgroundBrush}">
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}">
+    
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Settings" Style="{StaticResource H2TextStyle}" />
-
-        <Border Grid.Row="1" Margin="0,12,0,12" Background="{StaticResource GlassCardBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="8">
-            <Grid>
+        <!-- Header with Search -->
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" 
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Grid Margin="16,12">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="0,0,1,0">
-                    <ListBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"/>
-                </Border>
-                <ScrollViewer Grid.Column="1">
-                    <Grid Margin="12">
-                        <Grid.Resources>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Style>
-                        </Grid.Resources>
-                        <StackPanel x:Name="GeneralPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="General">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Language" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="200" Text="{Binding Language, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                            <CheckBox Margin="0,6" Content="Check for Lazarus updates on start" IsChecked="{Binding CheckForUpdatesOnStart, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <CheckBox Margin="0,6" Content="Start orchestrator with app" IsChecked="{Binding StartOrchestratorWithApp, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <CheckBox Margin="0,6" Content="Auto-start last runner" IsChecked="{Binding AutoStartLastRunner, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        </StackPanel>
 
-                        <StackPanel x:Name="PathsPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Paths">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Models Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding ModelsDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseModelsDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Cache Directory" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding CacheDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseCacheDirectoryCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                        </StackPanel>
+                <TextBlock Grid.Column="0" Text="Settings" 
+                          FontSize="24" FontWeight="SemiBold"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          VerticalAlignment="Center"/>
 
-                        <StackPanel x:Name="OrchestratorPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Orchestrator">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Base URL" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="380" ToolTip="http://127.0.0.1:11711" Text="{Binding OrchestratorBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Startup Timeout (sec)" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="100" ToolTip="Seconds to wait for runner health" Text="{Binding OrchestratorStartupTimeoutSec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel x:Name="RunnersPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Runners">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Server Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding LlamaServerExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseLlamaServerCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Port" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="100" ToolTip="Valid port: 1-65535" Text="{Binding LlamaPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="GPU Layers" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="100" ToolTip="Number of layers to offload to GPU" Text="{Binding LlamaGpuLayers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                            <Expander Margin="0,6" Header="Advanced">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                                        <TextBlock Width="200" VerticalAlignment="Center" Text="Use CUDA" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                        <CheckBox IsChecked="{Binding LlamaUseCuda, Mode=TwoWay}"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,6">
-                                        <TextBlock Width="200" VerticalAlignment="Center" Text="Additional Args" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                        <TextBox Width="320" Text="{Binding LlamaAdditionalArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Expander>
-                        </StackPanel>
-
-                        <StackPanel x:Name="ModelsPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Models">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Active Model" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding ActiveModelId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseActiveModelCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel x:Name="AudioPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Audio">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-
-                            <CheckBox Margin="0,6" Content="Enable TTS" IsChecked="{Binding AudioEnableTts, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Piper Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding AudioPiperExecutable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowsePiperExecutableCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Piper Voice" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="200" Text="{Binding AudioPiperVoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-
-                            <CheckBox Margin="0,6" Content="Enable ASR" IsChecked="{Binding AudioEnableAsr, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Faster-Whisper Executable" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding AudioFasterWhisperExecutable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseFasterWhisperExecutableCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel x:Name="RagPanel">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="RAG">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-
-                            <CheckBox Margin="0,6" Content="Enable Vector Store" IsChecked="{Binding RagEnableVectorStore, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,6">
-                                <TextBlock Width="200" VerticalAlignment="Center" Text="Database Path" Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBox Width="320" Text="{Binding RagDatabasePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Margin="8,0,0,0" Content="Browse" Command="{Binding BrowseRagDatabaseCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-                            </StackPanel>
-                            <CheckBox Margin="0,6" Content="Use SQLite VSS" IsChecked="{Binding RagUseSQLiteVss, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        </StackPanel>
-                    </Grid>
-                </ScrollViewer>
+                <TextBox Grid.Column="2" Width="250" 
+                        x:Name="SearchBox"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        VerticalAlignment="Center">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border Background="{StaticResource BackgroundBrush}"
+                                                BorderBrush="{StaticResource BorderBrush}"
+                                                BorderThickness="1" CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="🔍" 
+                                                          Margin="8,0" VerticalAlignment="Center"
+                                                          Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                <ScrollViewer Grid.Column="1" x:Name="PART_ContentHost"
+                                                            VerticalAlignment="Center" Margin="0,8"/>
+                                                <TextBlock Grid.Column="1" Text="Search settings..."
+                                                          Margin="0,8" VerticalAlignment="Center"
+                                                          Foreground="{StaticResource TextSecondaryBrush}"
+                                                          IsHitTestVisible="False">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
             </Grid>
         </Border>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" >
-            <Button Margin="4,0" Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource SecondaryGlassButtonStyle}"/>
-        </StackPanel>
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Navigation Sidebar -->
+            <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Sections}" Margin="0,8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton GroupName="SettingsSections"
+                                           IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
+                                           Command="{Binding DataContext.SelectSectionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                           CommandParameter="{Binding}">
+                                    <RadioButton.Style>
+                                        <Style TargetType="RadioButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="RadioButton">
+                                                        <Border x:Name="Border" 
+                                                              Background="Transparent"
+                                                              Padding="16,12"
+                                                              Cursor="Hand">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                
+                                                                <TextBlock Grid.Column="0" 
+                                                                         Text="{Binding SectionTitle}"
+                                                                         FontSize="14"
+                                                                         Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                                
+                                                                <Ellipse Grid.Column="1" Width="8" Height="8"
+                                                                       Fill="{StaticResource AccentBrush}"
+                                                                       Visibility="Collapsed"
+                                                                       x:Name="ChangedIndicator"/>
+                                                            </Grid>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter TargetName="Border" Property="Background" 
+                                                                      Value="{StaticResource BackgroundBrush}"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Border" Property="Background" 
+                                                                      Value="{StaticResource BackgroundHoverBrush}"/>
+                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding HasUnsavedChanges}" Value="True">
+                                                                <Setter TargetName="ChangedIndicator" Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </RadioButton.Style>
+                                </RadioButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Content Area -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" 
+                        HorizontalScrollBarVisibility="Disabled"
+                        Padding="24">
+                <ContentPresenter Content="{Binding SelectedSection}"/>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Footer with Action Buttons -->
+        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid Margin="16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Status Text -->
+                <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                         Foreground="{StaticResource TextSecondaryBrush}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text" Value=""/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasUnsavedChanges}" Value="True">
+                                    <Setter Property="Text" Value="⚠ You have unsaved changes"/>
+                                    <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Reset All" 
+                          Command="{Binding ResetAllCommand}"
+                          Style="{StaticResource SecondaryGlassButtonStyle}"
+                          Margin="0,0,8,0" Padding="12,6" MinWidth="80"/>
+                    
+                    <Button Content="Cancel" 
+                          Command="{Binding CancelCommand}"
+                          Style="{StaticResource SecondaryGlassButtonStyle}"
+                          Margin="0,0,8,0" Padding="12,6" MinWidth="80"/>
+                    
+                    <Button Content="Apply" 
+                          Command="{Binding SaveCommand}"
+                          Style="{StaticResource RainbowAccentButton}"
+                          Padding="12,6" MinWidth="80">
+                        <Button.IsEnabled>
+                            <Binding Path="HasUnsavedChanges"/>
+                        </Button.IsEnabled>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
