@@ -126,6 +126,13 @@ public sealed class ChatSessionsViewModel : ViewModelBase
 
         Messages = new ObservableCollection<MessageVm>();
 
+        // React to settings changes to update display names
+        _settingsService.SettingsChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(UserDisplayName));
+            OnPropertyChanged(nameof(AssistantDisplayName));
+        };
+
         // Commands
         SendMessageCommand = new RelayCommand(
             async () => await SendMessageAsync(),
@@ -209,6 +216,9 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         get => _hasConversations;
         private set => SetProperty(ref _hasConversations, value);
     }
+
+    public string UserDisplayName => string.IsNullOrWhiteSpace(_settingsService.Current.UserName) ? "You" : _settingsService.Current.UserName;
+    public string AssistantDisplayName => string.IsNullOrWhiteSpace(_settingsService.Current.AssistantName) ? "Assistant" : _settingsService.Current.AssistantName;
 
     public ChatItemViewModel? SelectedConversation
     {
@@ -588,6 +598,10 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     {
         var messages = new System.Collections.Generic.List<object>();
 
+        // Prepend synthesized system message from settings
+        var sys = BuildSystemPrompt();
+        messages.Add(new { role = "system", content = sys });
+
         // Add conversation history (excluding the current streaming message)
         foreach (var msg in Messages.Where(m => !m.IsStreaming))
         {
@@ -601,6 +615,19 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         }
 
         return messages.ToArray();
+    }
+
+    private string BuildSystemPrompt()
+    {
+        var s = _settingsService.Current;
+        var user = string.IsNullOrWhiteSpace(s.UserName) ? "You" : s.UserName.Trim();
+        var asst = string.IsNullOrWhiteSpace(s.AssistantName) ? "Assistant" : s.AssistantName.Trim();
+        var extra = s.SystemPrompt ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(extra))
+        {
+            return $"Your name is \"{asst}\". The user's name is \"{user}\". Answer helpfully and concisely.";
+        }
+        return $"Your name is \"{asst}\". The user's name is \"{user}\".\n\n{extra}";
     }
 
     protected override void Dispose(bool disposing)

@@ -8,6 +8,10 @@ namespace Lazarus.Shared.Settings;
 /// </summary>
 public class AppSettings : INotifyPropertyChanged
 {
+    // Chat persona defaults
+    private string _userName = "You";
+    private string _assistantName = "Assistant";
+    private string _systemPrompt = string.Empty;
     private string _defaultModel = "llama3.2";
     private bool _autoSaveConversations = true;
     private bool _autoUpdateCheck = true;
@@ -79,6 +83,31 @@ public class AppSettings : INotifyPropertyChanged
     {
         get => _autoUpdateCheck;
         set { _autoUpdateCheck = value; OnPropertyChanged(nameof(AutoUpdateCheck)); }
+    }
+
+    // Chat Persona Settings
+    [JsonPropertyName("userName")]
+    [Description("Display name shown for the user in chats")] 
+    public string UserName
+    {
+        get => string.IsNullOrWhiteSpace(_userName) ? "You" : _userName;
+        set { _userName = string.IsNullOrWhiteSpace(value) ? "You" : value.Trim(); OnPropertyChanged(nameof(UserName)); }
+    }
+
+    [JsonPropertyName("assistantName")]
+    [Description("Display name shown for the assistant in chats")] 
+    public string AssistantName
+    {
+        get => string.IsNullOrWhiteSpace(_assistantName) ? "Assistant" : _assistantName;
+        set { _assistantName = string.IsNullOrWhiteSpace(value) ? "Assistant" : value.Trim(); OnPropertyChanged(nameof(AssistantName)); }
+    }
+
+    [JsonPropertyName("systemPrompt")]
+    [Description("Custom system prompt injected into each chat request")] 
+    public string SystemPrompt
+    {
+        get => _systemPrompt ?? string.Empty;
+        set { _systemPrompt = value?.Trim() ?? string.Empty; OnPropertyChanged(nameof(SystemPrompt)); }
     }
 
     // Paths Settings

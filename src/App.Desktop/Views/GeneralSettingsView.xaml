@@ -150,6 +150,43 @@
                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,24,0,8"/>
             <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
 
+            <!-- User Name -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="User Name" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         ToolTip="Display name for your messages"/>
+            </Grid>
+
+            <!-- Assistant Name -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Assistant Name" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBox Grid.Column="1" MaxWidth="300" HorizontalAlignment="Left"
+                         Text="{Binding AssistantName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         ToolTip="Display name for the assistant"/>
+            </Grid>
+
+            <!-- System Prompt -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="System Prompt" VerticalAlignment="Top" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBox Grid.Column="1" MinWidth="300" Height="100" HorizontalAlignment="Left"
+                         Text="{Binding SystemPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                         ToolTip="Custom behavior and instructions injected into every chat"/>
+            </Grid>
+
             <!-- Auto-save Conversations -->
             <Grid Margin="0,8">
                 <Grid.ColumnDefinitions>

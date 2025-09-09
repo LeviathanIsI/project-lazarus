@@ -17,6 +17,9 @@ public class GeneralSettingsViewModel : SettingsSectionBase
     private string _defaultModel = "";
     private bool _autoSaveConversations;
     private bool _autoUpdateCheck;
+    private string _userName = "You";
+    private string _assistantName = "Assistant";
+    private string _systemPrompt = string.Empty;
 
     public GeneralSettingsViewModel(SettingsViewModel settings) : base(settings, "General")
     {
@@ -45,12 +48,34 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         set { if (SetProperty(ref _autoUpdateCheck, value)) MarkAsChanged(); }
     }
 
+    // Chat persona fields
+    public string UserName
+    {
+        get => _userName;
+        set { if (SetProperty(ref _userName, value?.Trim() ?? "You")) MarkAsChanged(); }
+    }
+
+    public string AssistantName
+    {
+        get => _assistantName;
+        set { if (SetProperty(ref _assistantName, value?.Trim() ?? "Assistant")) MarkAsChanged(); }
+    }
+
+    public string SystemPrompt
+    {
+        get => _systemPrompt;
+        set { if (SetProperty(ref _systemPrompt, value ?? string.Empty)) MarkAsChanged(); }
+    }
+
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
         DefaultModel = settings.DefaultModel;
         AutoSaveConversations = settings.AutoSaveConversations;
         AutoUpdateCheck = settings.AutoUpdateCheck;
+        UserName = settings.UserName;
+        AssistantName = settings.AssistantName;
+        SystemPrompt = settings.SystemPrompt;
     }
 
     public override async Task ApplySettingsAsync()
@@ -59,6 +84,9 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         settings.DefaultModel = DefaultModel;
         settings.AutoSaveConversations = AutoSaveConversations;
         settings.AutoUpdateCheck = AutoUpdateCheck;
+        settings.UserName = string.IsNullOrWhiteSpace(UserName) ? "You" : UserName.Trim();
+        settings.AssistantName = string.IsNullOrWhiteSpace(AssistantName) ? "Assistant" : AssistantName.Trim();
+        settings.SystemPrompt = SystemPrompt ?? string.Empty;
         await Task.CompletedTask;
     }
 
@@ -67,6 +95,9 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         DefaultModel = "llama3.2";
         AutoSaveConversations = true;
         AutoUpdateCheck = true;
+        UserName = "You";
+        AssistantName = "Assistant";
+        SystemPrompt = string.Empty;
     }
 }
 

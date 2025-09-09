@@ -185,6 +185,8 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
+                                <TextBlock Text="  •  " Style="{StaticResource SmallTextStyle}"/>
+                                <TextBlock Text="{Binding AssistantDisplayName}" Style="{StaticResource SmallTextStyle}"/>
                             </StackPanel>
                         </StackPanel>
                         
@@ -275,10 +277,10 @@
                                                        Margin="0,0,0,8">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock" BasedOn="{StaticResource SmallTextStyle}">
-                                                        <Setter Property="Text" Value="Assistant"/>
+                                                        <Setter Property="Text" Value="{Binding DataContext.AssistantDisplayName, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Role}" Value="user">
-                                                                <Setter Property="Text" Value="You"/>
+                                                                <Setter Property="Text" Value="{Binding DataContext.UserDisplayName, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
