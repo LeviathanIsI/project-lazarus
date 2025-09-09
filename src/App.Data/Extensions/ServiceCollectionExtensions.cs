@@ -43,12 +43,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRepository<Entities.Message>, Repository<Entities.Message>>();
         services.AddScoped<IRepository<Entities.Model>, Repository<Entities.Model>>();
         services.AddScoped<IRepository<Entities.Settings>, Repository<Entities.Settings>>();
+        services.AddScoped<IRepository<Entities.ImageJob>, Repository<Entities.ImageJob>>();
 
         // Configure specialized repositories
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IModelRepository, ModelRepository>();
         services.AddScoped<ISettingsRepository, SettingsRepository>();
+        services.AddScoped<IImageJobRepository, ImageJobRepository>();
+        services.AddScoped<ImageJobRepository>();
 
         return services;
     }
@@ -69,12 +72,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRepository<Entities.Message>, Repository<Entities.Message>>();
         services.AddScoped<IRepository<Entities.Model>, Repository<Entities.Model>>();
         services.AddScoped<IRepository<Entities.Settings>, Repository<Entities.Settings>>();
+        services.AddScoped<IRepository<Entities.ImageJob>, Repository<Entities.ImageJob>>();
 
         // Configure specialized repositories
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IModelRepository, ModelRepository>();
         services.AddScoped<ISettingsRepository, SettingsRepository>();
+        services.AddScoped<IImageJobRepository, ImageJobRepository>();
+        services.AddScoped<ImageJobRepository>();
 
         return services;
     }
