@@ -17,6 +17,17 @@ public class GeneralSettingsViewModel : SettingsSectionBase
     private string _defaultModel = "";
     private bool _autoSaveConversations;
     private bool _autoUpdateCheck;
+    private string _language = "English";
+    private string _theme = "Dark";
+    private bool _startWithWindows;
+    private bool _startMinimized;
+    private bool _restoreLastSession;
+    private bool _autoLoadModel;
+    private int _autoSaveInterval;
+    private int _historyLimit;
+    private bool _autoDownloadUpdates;
+    private bool _sendAnonymousUsage;
+    private bool _sendCrashReports;
     private string _userName = "You";
     private string _assistantName = "Assistant";
     private string _systemPrompt = string.Empty;
@@ -48,6 +59,72 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         set { if (SetProperty(ref _autoUpdateCheck, value)) MarkAsChanged(); }
     }
 
+    public string Language
+    {
+        get => _language;
+        set { if (SetProperty(ref _language, value)) MarkAsChanged(); }
+    }
+
+    public string Theme
+    {
+        get => _theme;
+        set { if (SetProperty(ref _theme, value)) MarkAsChanged(); }
+    }
+
+    public bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set { if (SetProperty(ref _startWithWindows, value)) MarkAsChanged(); }
+    }
+
+    public bool StartMinimized
+    {
+        get => _startMinimized;
+        set { if (SetProperty(ref _startMinimized, value)) MarkAsChanged(); }
+    }
+
+    public bool RestoreLastSession
+    {
+        get => _restoreLastSession;
+        set { if (SetProperty(ref _restoreLastSession, value)) MarkAsChanged(); }
+    }
+
+    public bool AutoLoadModel
+    {
+        get => _autoLoadModel;
+        set { if (SetProperty(ref _autoLoadModel, value)) MarkAsChanged(); }
+    }
+
+    public int AutoSaveInterval
+    {
+        get => _autoSaveInterval;
+        set { if (SetProperty(ref _autoSaveInterval, value)) MarkAsChanged(); }
+    }
+
+    public int HistoryLimit
+    {
+        get => _historyLimit;
+        set { if (SetProperty(ref _historyLimit, value)) MarkAsChanged(); }
+    }
+
+    public bool AutoDownloadUpdates
+    {
+        get => _autoDownloadUpdates;
+        set { if (SetProperty(ref _autoDownloadUpdates, value)) MarkAsChanged(); }
+    }
+
+    public bool SendAnonymousUsage
+    {
+        get => _sendAnonymousUsage;
+        set { if (SetProperty(ref _sendAnonymousUsage, value)) MarkAsChanged(); }
+    }
+
+    public bool SendCrashReports
+    {
+        get => _sendCrashReports;
+        set { if (SetProperty(ref _sendCrashReports, value)) MarkAsChanged(); }
+    }
+
     // Chat persona fields
     public string UserName
     {
@@ -73,6 +150,17 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         DefaultModel = settings.DefaultModel;
         AutoSaveConversations = settings.AutoSaveConversations;
         AutoUpdateCheck = settings.AutoUpdateCheck;
+        Language = settings.Language;
+        Theme = settings.UiTheme;
+        StartWithWindows = settings.StartWithWindows;
+        StartMinimized = settings.StartMinimized;
+        RestoreLastSession = settings.RestoreLastSession;
+        AutoLoadModel = settings.AutoLoadModel;
+        AutoSaveInterval = settings.AutoSaveIntervalMinutes;
+        HistoryLimit = settings.HistoryLimit;
+        AutoDownloadUpdates = settings.AutoDownloadUpdates;
+        SendAnonymousUsage = settings.SendAnonymousUsage;
+        SendCrashReports = settings.SendCrashReports;
         UserName = settings.UserName;
         AssistantName = settings.AssistantName;
         SystemPrompt = settings.SystemPrompt;
@@ -84,6 +172,17 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         settings.DefaultModel = DefaultModel;
         settings.AutoSaveConversations = AutoSaveConversations;
         settings.AutoUpdateCheck = AutoUpdateCheck;
+        settings.Language = string.IsNullOrWhiteSpace(Language) ? "English" : Language.Trim();
+        settings.UiTheme = string.IsNullOrWhiteSpace(Theme) ? "Dark" : Theme.Trim();
+        settings.StartWithWindows = StartWithWindows;
+        settings.StartMinimized = StartMinimized;
+        settings.RestoreLastSession = RestoreLastSession;
+        settings.AutoLoadModel = AutoLoadModel;
+        settings.AutoSaveIntervalMinutes = Math.Max(1, AutoSaveInterval);
+        settings.HistoryLimit = Math.Max(1, HistoryLimit);
+        settings.AutoDownloadUpdates = AutoDownloadUpdates;
+        settings.SendAnonymousUsage = SendAnonymousUsage;
+        settings.SendCrashReports = SendCrashReports;
         settings.UserName = string.IsNullOrWhiteSpace(UserName) ? "You" : UserName.Trim();
         settings.AssistantName = string.IsNullOrWhiteSpace(AssistantName) ? "Assistant" : AssistantName.Trim();
         settings.SystemPrompt = SystemPrompt ?? string.Empty;
@@ -95,6 +194,17 @@ public class GeneralSettingsViewModel : SettingsSectionBase
         DefaultModel = "llama3.2";
         AutoSaveConversations = true;
         AutoUpdateCheck = true;
+        Language = "English";
+        Theme = "Dark";
+        StartWithWindows = false;
+        StartMinimized = false;
+        RestoreLastSession = false;
+        AutoLoadModel = false;
+        AutoSaveInterval = 5;
+        HistoryLimit = 200;
+        AutoDownloadUpdates = false;
+        SendAnonymousUsage = false;
+        SendCrashReports = false;
         UserName = "You";
         AssistantName = "Assistant";
         SystemPrompt = string.Empty;

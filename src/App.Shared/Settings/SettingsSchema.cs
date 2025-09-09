@@ -57,6 +57,18 @@ public class AppSettings : INotifyPropertyChanged
     private int _orchestratorHealthCheckIntervalSec = 5;
     private int _orchestratorStartupTimeoutSec = 30;
     private bool _orchestratorAutoRestartOnCrash = true;
+    // Additional UI & General fields
+    private string _language = "English";
+    private string _uiTheme = "Dark";
+    private bool _startWithWindows;
+    private bool _startMinimized;
+    private bool _restoreLastSession;
+    private bool _autoLoadModel;
+    private int _autoSaveIntervalMinutes = 5;
+    private int _historyLimit = 200;
+    private bool _autoDownloadUpdates;
+    private bool _sendAnonymousUsage;
+    private bool _sendCrashReports;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -454,6 +466,84 @@ public class AppSettings : INotifyPropertyChanged
     {
         get => _orchestratorAutoRestartOnCrash;
         set { _orchestratorAutoRestartOnCrash = value; OnPropertyChanged(nameof(OrchestratorAutoRestartOnCrash)); }
+    }
+
+    // UI & General (additional)
+    [JsonPropertyName("language")]
+    public string Language
+    {
+        get => string.IsNullOrWhiteSpace(_language) ? "English" : _language;
+        set { _language = string.IsNullOrWhiteSpace(value) ? "English" : value.Trim(); OnPropertyChanged(nameof(Language)); }
+    }
+
+    [JsonPropertyName("uiTheme")]
+    public string UiTheme
+    {
+        get => string.IsNullOrWhiteSpace(_uiTheme) ? "Dark" : _uiTheme;
+        set { _uiTheme = string.IsNullOrWhiteSpace(value) ? "Dark" : value.Trim(); OnPropertyChanged(nameof(UiTheme)); }
+    }
+
+    [JsonPropertyName("startWithWindows")]
+    public bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set { _startWithWindows = value; OnPropertyChanged(nameof(StartWithWindows)); }
+    }
+
+    [JsonPropertyName("startMinimized")]
+    public bool StartMinimized
+    {
+        get => _startMinimized;
+        set { _startMinimized = value; OnPropertyChanged(nameof(StartMinimized)); }
+    }
+
+    [JsonPropertyName("restoreLastSession")]
+    public bool RestoreLastSession
+    {
+        get => _restoreLastSession;
+        set { _restoreLastSession = value; OnPropertyChanged(nameof(RestoreLastSession)); }
+    }
+
+    [JsonPropertyName("autoLoadModel")]
+    public bool AutoLoadModel
+    {
+        get => _autoLoadModel;
+        set { _autoLoadModel = value; OnPropertyChanged(nameof(AutoLoadModel)); }
+    }
+
+    [JsonPropertyName("autoSaveIntervalMinutes")]
+    public int AutoSaveIntervalMinutes
+    {
+        get => _autoSaveIntervalMinutes;
+        set { _autoSaveIntervalMinutes = Math.Max(1, Math.Min(1440, value)); OnPropertyChanged(nameof(AutoSaveIntervalMinutes)); }
+    }
+
+    [JsonPropertyName("historyLimit")]
+    public int HistoryLimit
+    {
+        get => _historyLimit;
+        set { _historyLimit = Math.Max(1, Math.Min(10000, value)); OnPropertyChanged(nameof(HistoryLimit)); }
+    }
+
+    [JsonPropertyName("autoDownloadUpdates")]
+    public bool AutoDownloadUpdates
+    {
+        get => _autoDownloadUpdates;
+        set { _autoDownloadUpdates = value; OnPropertyChanged(nameof(AutoDownloadUpdates)); }
+    }
+
+    [JsonPropertyName("sendAnonymousUsage")]
+    public bool SendAnonymousUsage
+    {
+        get => _sendAnonymousUsage;
+        set { _sendAnonymousUsage = value; OnPropertyChanged(nameof(SendAnonymousUsage)); }
+    }
+
+    [JsonPropertyName("sendCrashReports")]
+    public bool SendCrashReports
+    {
+        get => _sendCrashReports;
+        set { _sendCrashReports = value; OnPropertyChanged(nameof(SendCrashReports)); }
     }
 
     protected virtual void OnPropertyChanged(string propertyName)
