@@ -35,9 +35,15 @@ public sealed class ChatService : IChatService
 
             if (items.Count == 0)
             {
+                // Try to hydrate DB from JSON exports
                 var imported = await TryImportFromFilesAsync(scope.ServiceProvider, cancellationToken).ConfigureAwait(false);
                 if (imported.Count > 0)
                     return imported;
+
+                // As a last resort, read directly from files (without DB)
+                var fileOnly = await LoadConversationsFromFilesAsync(cancellationToken).ConfigureAwait(false);
+                if (fileOnly.Count > 0)
+                    return fileOnly.OrderByDescending(c => c.LastMessageAt).ToList();
             }
 
             _useMemoryFallback = false; // DB is healthy
@@ -47,7 +53,18 @@ public sealed class ChatService : IChatService
         {
             _logger?.LogError(ex, "ChatService.GetAllAsync failed; switching to in-memory fallback");
             _useMemoryFallback = true;
-            return _memConversations.OrderByDescending(c => c.LastMessageAt).ToList();
+            var mem = _memConversations.OrderByDescending(c => c.LastMessageAt).ToList();
+            if (mem.Count == 0)
+            {
+                // Even in memory fallback, try to at least surface file-backed conversations
+                try
+                {
+                    var fileOnly = await LoadConversationsFromFilesAsync(cancellationToken).ConfigureAwait(false);
+                    if (fileOnly.Count > 0) return fileOnly.OrderByDescending(c => c.LastMessageAt).ToList();
+                }
+                catch { }
+            }
+            return mem;
         }
     }
 
@@ -164,7 +181,14 @@ public sealed class ChatService : IChatService
             var msgRepo = scope.ServiceProvider.GetRequiredService<IMessageRepository>();
             var items = await msgRepo.GetMessagesByConversationAsync(chatId, cancellationToken).ConfigureAwait(false);
             _useMemoryFallback = false; // DB is healthy
-            return items.ToList();
+            var list = items.ToList();
+            if (list.Count == 0)
+            {
+                // Read from file if DB has not been hydrated yet
+                var fileMsgs = await LoadMessagesFromFileAsync(chatId, cancellationToken).ConfigureAwait(false);
+                if (fileMsgs.Count > 0) return fileMsgs;
+            }
+            return list;
         }
         catch (Exception ex)
         {
@@ -172,6 +196,13 @@ public sealed class ChatService : IChatService
             _useMemoryFallback = true;
             if (_memMessages.TryGetValue(chatId, out var list))
                 return list.OrderBy(m => m.Timestamp).ToList();
+            // Fallback to file if available
+            try
+            {
+                var fileMsgs = await LoadMessagesFromFileAsync(chatId, cancellationToken).ConfigureAwait(false);
+                if (fileMsgs.Count > 0) return fileMsgs;
+            }
+            catch { }
             return new List<Message>();
         }
     }
@@ -293,6 +324,61 @@ public sealed class ChatService : IChatService
             }
         }
         catch { }
+    }
+
+    private async Task<List<Conversation>> LoadConversationsFromFilesAsync(CancellationToken ct)
+    {
+        var result = new List<Conversation>();
+        var dir = GetConversationsFolder();
+        if (!Directory.Exists(dir)) return result;
+        foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
+        {
+            try
+            {
+                var model = JsonSerializer.Deserialize<ConversationFile>(await File.ReadAllTextAsync(file, ct), _json);
+                if (model == null) continue;
+                result.Add(new Conversation
+                {
+                    Id = model.Id == Guid.Empty ? Guid.NewGuid() : model.Id,
+                    Title = string.IsNullOrWhiteSpace(model.Title) ? "New Chat" : model.Title!,
+                    CreatedAt = model.CreatedAt,
+                    LastMessageAt = model.UpdatedAt == default ? model.CreatedAt : model.UpdatedAt
+                });
+            }
+            catch { }
+        }
+        return result;
+    }
+
+    private async Task<List<Message>> LoadMessagesFromFileAsync(Guid chatId, CancellationToken ct)
+    {
+        var list = new List<Message>();
+        var file = GetConversationFilePath(chatId);
+        if (!File.Exists(file)) return list;
+        try
+        {
+            var model = JsonSerializer.Deserialize<ConversationFile>(await File.ReadAllTextAsync(file, ct), _json);
+            if (model?.Messages == null) return list;
+            foreach (var m in model.Messages.OrderBy(m => m.Timestamp))
+            {
+                var role = (m.Role ?? "user").ToLowerInvariant() switch
+                {
+                    "assistant" => MessageRole.Assistant,
+                    "system" => MessageRole.System,
+                    _ => MessageRole.User
+                };
+                list.Add(new Message
+                {
+                    Id = m.Id == Guid.Empty ? Guid.NewGuid() : m.Id,
+                    ConversationId = chatId,
+                    Role = role,
+                    Content = m.Content ?? string.Empty,
+                    Timestamp = m.Timestamp == default ? DateTime.UtcNow : m.Timestamp
+                });
+            }
+        }
+        catch { }
+        return list;
     }
 
     private void TryDeleteConversationFile(Guid chatId)
