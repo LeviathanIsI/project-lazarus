@@ -131,7 +131,7 @@ namespace Lazarus.Desktop.ViewModels
             CurrentView = e.ViewName switch
             {
                 "Dashboard" => new Views.DashboardView(),
-                "ChatSessions" => new Views.ChatSessionsView(),
+                "ChatSessions" => CreateChatSessionsView(),
                 "Images" => new Views.ImagesView(),
                 "Videos" => new Views.VideosView(),
                 "Entities" => new Views.EntitiesView(),
@@ -144,6 +144,31 @@ namespace Lazarus.Desktop.ViewModels
 
             // Notify property changes
             OnPropertyChanged(nameof(CurrentViewName));
+        }
+
+        private object CreateChatSessionsView()
+        {
+            try
+            {
+                var view = new Views.ChatSessionsView();
+                if (App.ServiceProvider != null)
+                {
+                    var locator = App.ServiceProvider.GetService<ViewModelLocator>();
+                    if (locator != null)
+                    {
+                        var vm = locator.ChatSessionsViewModel;
+                        view.DataContext = vm;
+                        // Trigger a refresh when navigating here in case DB was still initializing earlier
+                        _ = vm.RefreshConversationsAsync();
+                    }
+                }
+                return view;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to create ChatSessionsView");
+                return new Views.DashboardView();
+            }
         }
 
         private static object CreateSettingsViewSafe()

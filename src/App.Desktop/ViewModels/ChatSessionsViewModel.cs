@@ -82,6 +82,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private readonly ISettingsService _settingsService;
     private readonly IChatService _chatService;
     private readonly ILogger<ChatSessionsViewModel>? _logger;
+    private readonly IAppState _appState;
     private readonly HttpClient _httpClient;
     private CancellationTokenSource? _cts;
     private bool _disposed;
@@ -110,11 +111,13 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         RunnerStatusProvider runnerStatus,
         ISettingsService settingsService,
         IChatService chatService,
+        IAppState appState,
         ILogger<ChatSessionsViewModel> logger)
     {
         _runnerStatus = runnerStatus ?? throw new ArgumentNullException(nameof(runnerStatus));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _chatService = chatService ?? throw new ArgumentNullException(nameof(chatService));
+        _appState = appState ?? throw new ArgumentNullException(nameof(appState));
         _logger = logger;
         
         _httpClient = new HttpClient
@@ -162,6 +165,12 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     }
 
     public ObservableCollection<MessageVm> Messages { get; }
+    
+    // Allow navigation to trigger a fresh load after startup settles
+    public async Task RefreshConversationsAsync()
+    {
+        await InitializeAsync().ConfigureAwait(true);
+    }
 
     public ICommand SendMessageCommand { get; }
     public ICommand NewChatCommand { get; }
@@ -598,7 +607,8 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             top_k = TopK,
             max_tokens = MaxTokens,
             presence_penalty = PresencePenalty,
-            frequency_penalty = FrequencyPenalty
+            frequency_penalty = FrequencyPenalty,
+            adapters = BuildAdaptersObject()
         };
     }
 
@@ -622,6 +632,14 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             messages.Add(new { role = "user", content = userText });
         }
 
+        // Attachments (adapters) hint for runners that support them
+        var adapters = new System.Collections.Generic.Dictionary<string, object>();
+        if (!string.IsNullOrWhiteSpace(_appState.LoadedLora)) adapters["lora"] = _appState.LoadedLora!;
+        if (_appState.LoraScale.HasValue) adapters["lora_scale"] = _appState.LoraScale.Value;
+        if (!string.IsNullOrWhiteSpace(_appState.LoadedTokenizer)) adapters["tokenizer"] = _appState.LoadedTokenizer!;
+        if (!string.IsNullOrWhiteSpace(_appState.LoadedEmbedding)) adapters["embedding"] = _appState.LoadedEmbedding!;
+
+        // Build final payload messages list
         return messages.ToArray();
     }
 
@@ -636,6 +654,19 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             return $"Your name is \"{asst}\". The user's name is \"{user}\". Answer helpfully and concisely.";
         }
         return $"Your name is \"{asst}\". The user's name is \"{user}\".\n\n{extra}";
+    }
+
+    private object? BuildAdaptersObject()
+    {
+        var hasAny = !string.IsNullOrWhiteSpace(_appState.LoadedLora) || !string.IsNullOrWhiteSpace(_appState.LoadedTokenizer) || !string.IsNullOrWhiteSpace(_appState.LoadedEmbedding) || _appState.LoraScale.HasValue;
+        if (!hasAny) return null;
+        return new
+        {
+            lora = string.IsNullOrWhiteSpace(_appState.LoadedLora) ? null : _appState.LoadedLora,
+            lora_scale = _appState.LoraScale,
+            tokenizer = string.IsNullOrWhiteSpace(_appState.LoadedTokenizer) ? null : _appState.LoadedTokenizer,
+            embedding = string.IsNullOrWhiteSpace(_appState.LoadedEmbedding) ? null : _appState.LoadedEmbedding
+        };
     }
 
     protected override void Dispose(bool disposing)
