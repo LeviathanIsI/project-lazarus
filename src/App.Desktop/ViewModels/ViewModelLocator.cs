@@ -35,7 +35,7 @@ public sealed class ViewModelLocator : IDisposable
     /// Gets the models view model with singleton lifetime.
     /// </summary>
     public ModelsViewModel ModelsViewModel => GetOrCreateSingleton<ModelsViewModel>();
-    public ImageLabViewModel ImageLabViewModel => GetOrCreateSingleton<ImageLabViewModel>();
+    public ImagesViewModel ImageLabViewModel => GetOrCreateSingleton<ImagesViewModel>();
 
     /// <summary>
     /// Gets the chat sessions view model with singleton lifetime.
