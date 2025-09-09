@@ -160,7 +160,7 @@
                             <Run Text="{Binding LoadedLoraName}"/>
                             <Run Text="  "/>
                             <Run Text="@"/>
-                            <Run Text="{Binding LoraScale, StringFormat=F2}"/>
+                            <Run Text="{Binding LoraScale, Mode=OneWay, StringFormat=F2}"/>
                         </TextBlock>
                     </StackPanel>
 
