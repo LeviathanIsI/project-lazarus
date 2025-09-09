@@ -198,10 +198,111 @@ public static class LazarusPaths
     public static class Runners
     {
         public static readonly string RootDir  = Path.Combine(Root, "Runners");
-        // Conventional engine folders (optional):
-        public static readonly string LlamaCpp = Path.Combine(RootDir, "llama.cpp");
-        public static readonly string Vllm     = Path.Combine(RootDir, "vllm");
-        public static readonly string ExLlamaV2= Path.Combine(RootDir, "exllamav2");
+
+        // Domain roots
+        public static readonly string ChatsRoot   = Path.Combine(RootDir, "Chats");
+        public static readonly string ImagesRoot  = Path.Combine(RootDir, "Images");
+        public static readonly string VideosRoot  = Path.Combine(RootDir, "Videos");
+        public static readonly string AudioRoot   = Path.Combine(RootDir, "Audio");
+        public static readonly string AvatarsRoot = Path.Combine(RootDir, "Avatars");
+        public static readonly string SharedRoot  = Path.Combine(RootDir, "Shared");
+
+        // Chats engines
+        public static readonly string Chats_LlamaCpp = Path.Combine(ChatsRoot, "llama.cpp");
+        public static readonly string Chats_Vllm     = Path.Combine(ChatsRoot, "vllm");
+        public static readonly string Chats_ExLlamaV2= Path.Combine(ChatsRoot, "exllamav2");
+
+        // Images engines
+        public static readonly string Images_ComfyUi = Path.Combine(ImagesRoot, "comfyui");
+        public static readonly string Images_SdWebUi = Path.Combine(ImagesRoot, "sdwebui");
+        public static readonly string Images_InvokeAi= Path.Combine(ImagesRoot, "invokeai");
+
+        // Videos engines
+        public static readonly string Videos_AnimateDiff  = Path.Combine(VideosRoot, "animatediff");
+        public static readonly string Videos_Svd          = Path.Combine(VideosRoot, "svd");
+        public static readonly string Videos_Rife         = Path.Combine(VideosRoot, "rife");
+
+        // Audio engines
+        public static readonly string Audio_FasterWhisper = Path.Combine(AudioRoot, "faster-whisper");
+        public static readonly string Audio_Piper         = Path.Combine(AudioRoot, "piper");
+        public static readonly string Audio_Rvc           = Path.Combine(AudioRoot, "rvc");
+        public static readonly string Audio_NoiseReduction= Path.Combine(AudioRoot, "noise-reduction");
+
+        // Avatar engines
+        public static readonly string Avatars_Rhubarb   = Path.Combine(AvatarsRoot, "rhubarb");
+        public static readonly string Avatars_TripoSr   = Path.Combine(AvatarsRoot, "tripo-sr");
+        public static readonly string Avatars_Nerfstudio= Path.Combine(AvatarsRoot, "nerfstudio");
+
+        // Shared
+        public static readonly string Shared_Ffmpeg = Path.Combine(SharedRoot, "ffmpeg");
+        public static readonly string Shared_Utils  = Path.Combine(SharedRoot, "utils");
+
+        /// <summary>
+        /// Resolve a runner folder path, preferring domain-specific layout and falling back to legacy flat path.
+        /// If neither exists, the preferred (domain) path is created and returned.
+        /// </summary>
+        public static string ResolveRunnerPath(string engineName)
+        {
+            // Map engine to domain
+            string domainRoot = engineName switch
+            {
+                // Chats
+                "llama.cpp" => ChatsRoot,
+                "vllm" => ChatsRoot,
+                "exllamav2" => ChatsRoot,
+
+                // Images
+                "comfyui" => ImagesRoot,
+                "sdwebui" => ImagesRoot,
+                "invokeai" => ImagesRoot,
+
+                // Videos
+                "animatediff" => VideosRoot,
+                "svd" => VideosRoot,
+                "rife" => VideosRoot,
+
+                // Audio
+                "faster-whisper" => AudioRoot,
+                "piper" => AudioRoot,
+                "rvc" => AudioRoot,
+                "noise-reduction" => AudioRoot,
+
+                // Avatars / Shared
+                "rhubarb" => AvatarsRoot,
+                "tripo-sr" => AvatarsRoot,
+                "nerfstudio" => AvatarsRoot,
+                "ffmpeg" => SharedRoot,
+                "utils" => SharedRoot,
+                _ => RootDir
+            };
+
+            var preferred = Path.Combine(domainRoot, engineName);
+            try { if (Directory.Exists(preferred)) return preferred; } catch { }
+
+            var legacy = Path.Combine(RootDir, engineName);
+            try { if (Directory.Exists(legacy)) return legacy; } catch { }
+
+            // Neither exists — create the preferred domain path idempotently
+            try { Directory.CreateDirectory(preferred); } catch { }
+            return preferred;
+        }
+
+        // Legacy flat properties retained for back-compat; now resolve to domain-aware paths
+        /// <summary>
+        /// Legacy flat runner path; resolves to domain folder when available.
+        /// Prefer ResolveRunnerPath("llama.cpp").
+        /// </summary>
+        public static string LlamaCpp => ResolveRunnerPath("llama.cpp");
+        /// <summary>
+        /// Legacy flat runner path; resolves to domain folder when available.
+        /// Prefer ResolveRunnerPath("vllm").
+        /// </summary>
+        public static string Vllm => ResolveRunnerPath("vllm");
+        /// <summary>
+        /// Legacy flat runner path; resolves to domain folder when available.
+        /// Prefer ResolveRunnerPath("exllamav2").
+        /// </summary>
+        public static string ExLlamaV2 => ResolveRunnerPath("exllamav2");
     }
 
     /// <summary>
@@ -288,6 +389,38 @@ public static class LazarusPaths
 
             // Prepare Runners root so users can drop engines here
             Runners.RootDir,
+            // Domainized Runners layout
+            Runners.ChatsRoot,
+            Runners.ImagesRoot,
+            Runners.VideosRoot,
+            Runners.AudioRoot,
+            Runners.AvatarsRoot,
+            Runners.SharedRoot,
+
+            // Chats engines
+            Runners.Chats_LlamaCpp,
+            Runners.Chats_Vllm,
+            Runners.Chats_ExLlamaV2,
+            // Images engines
+            Runners.Images_ComfyUi,
+            Runners.Images_SdWebUi,
+            Runners.Images_InvokeAi,
+            // Videos engines
+            Runners.Videos_AnimateDiff,
+            Runners.Videos_Svd,
+            Runners.Videos_Rife,
+            // Audio engines
+            Runners.Audio_FasterWhisper,
+            Runners.Audio_Piper,
+            Runners.Audio_Rvc,
+            Runners.Audio_NoiseReduction,
+            // Avatars engines
+            Runners.Avatars_Rhubarb,
+            Runners.Avatars_TripoSr,
+            Runners.Avatars_Nerfstudio,
+            // Shared utilities
+            Runners.Shared_Ffmpeg,
+            Runners.Shared_Utils,
         };
 
         // Distinct by path
