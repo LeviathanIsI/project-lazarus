@@ -81,29 +81,42 @@
             </Setter>
         </Style>
 
-        <!-- Segmented control button style -->
+        <!-- Segmented control button style (selected when Tag matches ModeString) -->
         <Style x:Key="SegmentedButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
             <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{StaticResource Img_Border}"/>
             <Style.Triggers>
-                <!-- Selected when Tag matches ModeString on the view -->
-                <DataTrigger Binding="{Binding ModeString, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Txt2Img">
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ModeString, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Txt2Img"/>
+                        <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Txt2Img"/>
+                    </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{StaticResource Img_Primary}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource Img_Primary}"/>
                     <Setter Property="Foreground" Value="White"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding ModeString, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Img2Img">
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ModeString, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Img2Img"/>
+                        <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Img2Img"/>
+                    </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{StaticResource Img_Primary}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource Img_Primary}"/>
                     <Setter Property="Foreground" Value="White"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding ModeString, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Inpaint">
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ModeString, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Inpaint"/>
+                        <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Inpaint"/>
+                    </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{StaticResource Img_Primary}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource Img_Primary}"/>
                     <Setter Property="Foreground" Value="White"/>
-                </DataTrigger>
+                </MultiDataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -168,9 +181,9 @@
                         <!-- Mode segmented control -->
                         <TextBlock Text="Mode" Margin="0,8,0,6"/>
                         <UniformGrid Columns="3" Margin="0,0,0,6">
-                            <Button Content="_1 Txt2Img" Style="{StaticResource SegmentedButton}" Margin="0,0,4,0" Click="OnModeTxt2Img" IsEnabled="{Binding InputsEnabled}"/>
-                            <Button Content="_2 Img2Img" Style="{StaticResource SegmentedButton}" Margin="0,0,4,0" Click="OnModeImg2Img" IsEnabled="{Binding InputsEnabled}"/>
-                            <Button Content="_3 Inpaint" Style="{StaticResource SegmentedButton}" Click="OnModeInpaint" IsEnabled="{Binding InputsEnabled}"/>
+                            <Button Tag="Txt2Img" Content="_1 Txt2Img" Style="{StaticResource SegmentedButton}" Margin="0,0,6,0" Click="OnModeTxt2Img" IsEnabled="{Binding InputsEnabled}"/>
+                            <Button Tag="Img2Img" Content="_2 Img2Img" Style="{StaticResource SegmentedButton}" Margin="0,0,6,0" Click="OnModeImg2Img" IsEnabled="{Binding InputsEnabled}"/>
+                            <Button Tag="Inpaint" Content="_3 Inpaint" Style="{StaticResource SegmentedButton}" Click="OnModeInpaint" IsEnabled="{Binding InputsEnabled}"/>
                         </UniformGrid>
 
                         <!-- Seed tools -->

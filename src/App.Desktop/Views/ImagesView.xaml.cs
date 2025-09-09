@@ -107,7 +107,7 @@ namespace Lazarus.Desktop.Views
             SetComboItems(HyperCombo, EnumerateFilesSafe(hyperDir, new[] { ".pt", ".pth" }));
             UpscalerCombo.ItemsSource    = EnumerateFilesSafe(
                 LazarusPaths.GenAssets.Upscale,
-                new[] { ".pt", ".pth", ".onnx", ".bin" }
+                new[] { ".pt", ".pth", ".onnx", ".bin", ".safetensors" }
             );
             VaeCombo.ItemsSource         = EnumerateFilesSafe(
                 LazarusPaths.GenAssets.Vae,
