@@ -1,27 +1,64 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using Lazarus.Shared;
 
 namespace Lazarus.Desktop.Views
 {
-    public partial class ImagesView : UserControl
+    public partial class ImagesView : UserControl, System.ComponentModel.INotifyPropertyChanged
     {
         // Dummy counters (bound in XAML)
-        public int TotalImages { get; set; } = 0;
-        public int GeneratedToday { get; set; } = 0;
-        public double StorageUsedMb { get; set; } = 0.0;
+        private int _totalImages;
+        public int TotalImages { get => _totalImages; set { _totalImages = value; OnPropertyChanged(nameof(TotalImages)); } }
+        private int _generatedToday;
+        public int GeneratedToday { get => _generatedToday; set { _generatedToday = value; OnPropertyChanged(nameof(GeneratedToday)); } }
+        private double _storageUsedMb;
+        public double StorageUsedMb { get => _storageUsedMb; set { _storageUsedMb = value; OnPropertyChanged(nameof(StorageUsedMb)); } }
+
+        public enum ImageMode { Txt2Img, Img2Img, Inpaint }
+        private ImageMode _mode = ImageMode.Txt2Img;
+        public ImageMode Mode { get => _mode; set { _mode = value; OnPropertyChanged(nameof(Mode)); OnPropertyChanged(nameof(ModeString)); } }
+        public string ModeString => Mode.ToString();
+
+        private int _seed;
+        public int Seed { get => _seed; set { _seed = value; OnPropertyChanged(nameof(Seed)); OnPropertyChanged(nameof(GenerateButtonText)); } }
+        private bool _seedLocked;
+        public bool SeedLocked { get => _seedLocked; set { _seedLocked = value; OnPropertyChanged(nameof(SeedLocked)); OnPropertyChanged(nameof(GenerateButtonText)); UpdateLockGlyph(); } }
+
+        private bool _isRunning;
+        public bool IsRunning { get => _isRunning; set { _isRunning = value; OnPropertyChanged(nameof(IsRunning)); OnPropertyChanged(nameof(InputsEnabled)); OnPropertyChanged(nameof(GenerateButtonText)); } }
+        public bool InputsEnabled => !IsRunning;
+        private int _progressPercent;
+        public int ProgressPercent { get => _progressPercent; set { _progressPercent = value; OnPropertyChanged(nameof(ProgressPercent)); } }
+
+        public string GenerateButtonText => IsRunning ? "Generating…" : "Generate";
+
+        public string? InitImagePath { get; set; }
+        public string? MaskImagePath { get; set; }
+
+        private CancellationTokenSource? _cts;
+
+        public sealed class ToastItem { public Guid Id { get; } = Guid.NewGuid(); public string Text { get; set; } = string.Empty; public bool IsError { get; set; } }
+        public ObservableCollection<ToastItem> Toasts { get; } = new();
 
         public ImagesView()
         {
             InitializeComponent();
             // Bind to self for simple dummy values
             DataContext = this;
+            Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -29,9 +66,7 @@ namespace Lazarus.Desktop.Views
             try
             {
                 // Default mode selection
-                if (ModeCombo.Items.Count > 0)
-                    ModeCombo.SelectedIndex = 0;
-
+                Mode = ImageMode.Txt2Img;
                 RefreshAssets();
                 
                 // Helpful tooltips showing actual directories
@@ -71,7 +106,7 @@ namespace Lazarus.Desktop.Views
             try
             {
                 if (!Directory.Exists(root)) return Array.Empty<string>();
-                var files = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
+                var files = Directory.EnumerateFiles(root, "*.*", SearchOption.TopDirectoryOnly);
                 if (allowedExtensions != null && allowedExtensions.Length > 0)
                 {
                     var set = new HashSet<string>(allowedExtensions.Select(e => e.ToLowerInvariant()));
@@ -88,42 +123,211 @@ namespace Lazarus.Desktop.Views
             catch { return Array.Empty<string>(); }
         }
 
-        private void OnGenerateClick(object sender, RoutedEventArgs e)
+        private async void OnGenerateClick(object sender, RoutedEventArgs e)
         {
             // Show a placeholder PNG from app resources
             try
             {
-                var res = TryFindResource("LazarusPngLogo32") as BitmapSource
-                          ?? TryFindResource("LazarusPngLogo") as BitmapSource;
+                if (IsRunning) return;
 
-                if (res != null)
+                // simple validation
+                var prompt = PromptTextBox.Text?.Trim();
+                if (Mode == ImageMode.Txt2Img && string.IsNullOrWhiteSpace(prompt))
                 {
-                    PreviewImage.Source = res;
-                    PlaceholderLabel.Visibility = Visibility.Collapsed;
-                    // bump counters locally so UI feels responsive
-                    TotalImages += 1;
-                    GeneratedToday += 1;
-                    StorageUsedMb += 0.001; // pretend small size
-                    // Refresh binding targets
-                    // Since we didn't implement INotifyPropertyChanged here, rebind by resetting DataContext
-                    var dc = DataContext; DataContext = null; DataContext = dc;
+                    EnqueueToast("Enter a prompt for Txt2Img", isError: true);
                     return;
+                }
+                if (Mode != ImageMode.Txt2Img && string.IsNullOrWhiteSpace(InitImagePath))
+                {
+                    EnqueueToast("Provide an init image for this mode", isError: true);
+                    return;
+                }
+
+                _cts = new CancellationTokenSource();
+                IsRunning = true;
+                ProgressPercent = 0;
+
+                // start indeterminate, then simulate progress
+                await Task.Delay(400, _cts.Token).ContinueWith(_ => { }, TaskScheduler.Default);
+
+                var progress = 0;
+                try
+                {
+                    while (progress < 100 && !_cts.IsCancellationRequested)
+                    {
+                        await Task.Delay(180, _cts.Token);
+                        progress += 7;
+                        if (progress > 100) progress = 100;
+                        ProgressPercent = progress;
+                    }
+                }
+                catch (TaskCanceledException) { }
+
+                if (_cts.IsCancellationRequested)
+                {
+                    ProgressPercent = 0;
+                    EnqueueToast("Generation canceled", isError: true);
+                }
+                else
+                {
+                    var res = TryFindResource("LazarusPngLogo32") as BitmapSource
+                              ?? TryFindResource("LazarusPngLogo") as BitmapSource;
+                    if (res != null)
+                    {
+                        PreviewImage.Source = res;
+                        PlaceholderLabel.Visibility = Visibility.Collapsed;
+                    }
+                    TotalImages += 1; GeneratedToday += 1; StorageUsedMb += 0.001;
+                    EnqueueToast($"Image generated  Seed {Seed}");
                 }
             }
             catch { }
-
-            // Fallback: simple pack URI if resource missing
-            try
+            finally
             {
-                var uri = new Uri("pack://application:,,,/LazarusLogo.png", UriKind.Absolute);
-                var bmp = new BitmapImage(uri);
-                PreviewImage.Source = bmp;
-                PlaceholderLabel.Visibility = Visibility.Collapsed;
-            }
-            catch
-            {
-                // Leave placeholder label if we couldn't load an image
+                _cts?.Dispose(); _cts = null;
+                IsRunning = false;
             }
         }
+
+        private void OnCancelClick(object sender, RoutedEventArgs e) => _cts?.Cancel();
+
+        private void OnRandomizeSeed(object sender, RoutedEventArgs e)
+        {
+            if (SeedLocked) { EnqueueToast("Seed is locked", isError: true); return; }
+            Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
+        }
+
+        private void OnToggleSeedLock(object sender, RoutedEventArgs e)
+        {
+            SeedLocked = !SeedLocked;
+        }
+
+        private void UpdateLockGlyph()
+        {
+            if (LockBtn != null)
+                LockBtn.Content = SeedLocked ? "🔒" : "🔓";
+        }
+
+        private void OnModeTxt2Img(object sender, RoutedEventArgs e) { Mode = ImageMode.Txt2Img; }
+        private void OnModeImg2Img(object sender, RoutedEventArgs e) { Mode = ImageMode.Img2Img; }
+        private void OnModeInpaint(object sender, RoutedEventArgs e) { Mode = ImageMode.Inpaint; }
+
+        private void OnSeedPreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !e.Text.All(char.IsDigit);
+        }
+
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space && !IsRunning)
+            {
+                OnGenerateClick(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.O)
+            {
+                TryOpenInitImage();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.D1 || e.Key == Key.NumPad1) { Mode = ImageMode.Txt2Img; e.Handled = true; }
+            else if (e.Key == Key.D2 || e.Key == Key.NumPad2) { Mode = ImageMode.Img2Img; e.Handled = true; }
+            else if (e.Key == Key.D3 || e.Key == Key.NumPad3) { Mode = ImageMode.Inpaint; e.Handled = true; }
+        }
+
+        private void TryOpenInitImage()
+        {
+            try
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Images|*.png;*.jpg;*.jpeg;*.bmp;*.webp|All files|*.*",
+                    Multiselect = false
+                };
+                if (dlg.ShowDialog() == true)
+                {
+                    InitImagePath = dlg.FileName;
+                    Mode = ImageMode.Img2Img;
+                    PlaceholderLabel.Text = System.IO.Path.GetFileName(InitImagePath);
+                }
+            }
+            catch { }
+        }
+
+        private void OnDropZoneDragEnter(object sender, DragEventArgs e) => OnDropZoneDragOver(sender, e);
+        private void OnDropZoneDragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (paths != null && paths.Length > 0 && IsSupportedImage(paths[0]))
+                {
+                    e.Effects = DragDropEffects.Copy; e.Handled = true; return;
+                }
+            }
+            e.Effects = DragDropEffects.None; e.Handled = true;
+        }
+        private void OnDropZoneDrop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                var paths = e.Data.GetData(DataFormats.FileDrop) as string[];
+                if (paths == null || paths.Length == 0) return;
+                var file = paths[0];
+                if (!IsSupportedImage(file)) { EnqueueToast("Unsupported file type", isError: true); return; }
+
+                if (Mode == ImageMode.Txt2Img) Mode = ImageMode.Img2Img;
+                InitImagePath = file;
+                PlaceholderLabel.Text = System.IO.Path.GetFileName(file);
+
+                if (Mode == ImageMode.Inpaint && IsPngWithAlpha(file))
+                {
+                    MaskImagePath = file;
+                }
+            }
+            catch (Exception ex) { EnqueueToast("Drop failed: " + ex.Message, isError: true); }
+        }
+
+        private static bool IsSupportedImage(string path)
+        {
+            var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+            return ext is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".webp";
+        }
+
+        private static bool IsPngWithAlpha(string path)
+        {
+            try
+            {
+                if (!path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) return false;
+                using var fs = File.OpenRead(path);
+                var dec = new PngBitmapDecoder(fs, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                var frame = dec.Frames[0];
+                var fmt = frame.Format;
+                return fmt == PixelFormats.Pbgra32 || fmt == PixelFormats.Bgra32 || fmt == PixelFormats.Rgba64 || fmt == PixelFormats.Prgba64;
+            }
+            catch { return false; }
+        }
+
+        private void EnqueueToast(string text, bool isError = false)
+        {
+            var item = new ToastItem { Text = text, IsError = isError };
+            Toasts.Add(item);
+            var _ = Task.Run(async () =>
+            {
+                await Task.Delay(3000);
+                Dispatcher.Invoke(() => Toasts.Remove(item));
+            });
+        }
+
+        private void OnOpenControlNetFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.ControlNet);
+        private void OnOpenStyleFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.StylePresets);
+        private void OnOpenUpscaleFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Upscale);
+        private void OnOpenVaeFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Vae);
+        private static void OpenFolderSafe(string path)
+        {
+            try { if (!Directory.Exists(path)) Directory.CreateDirectory(path); Process.Start(new ProcessStartInfo("explorer.exe", path) { UseShellExecute = true }); } catch { }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 }
