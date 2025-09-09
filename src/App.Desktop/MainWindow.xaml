@@ -139,66 +139,12 @@
                     <TextBlock Text=" "/>
                     <TextBlock Text="{Binding LoadedModelName}"/>
 
-                    <!-- Separator -->
-                    <TextBlock Text="  â€¢  " Margin="12,0,12,0"/>
-
-                    <!-- HUD: LoRA (name + weight) -->
-                    <StackPanel Orientation="Horizontal">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasLora}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock Text="LoRA:" Style="{StaticResource SecondaryTextStyle}"/>
-                        <TextBlock Text=" "/>
-                        <TextBlock>
-                            <Run Text="{Binding LoadedLoraName}"/>
-                            <Run Text="  "/>
-                            <Run Text="@"/>
-                            <Run Text="{Binding LoraScale, Mode=OneWay, StringFormat=F2}"/>
-                        </TextBlock>
-                    </StackPanel>
-
-                    <!-- HUD: Tokenizer -->
-                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasTokenizer}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock Text="Tokenizer:" Style="{StaticResource SecondaryTextStyle}"/>
-                        <TextBlock Text=" "/>
-                        <TextBlock Text="{Binding LoadedTokenizerName}"/>
-                    </StackPanel>
-
-                    <!-- HUD: Embedding -->
-                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasEmbedding}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock Text="Embedding:" Style="{StaticResource SecondaryTextStyle}"/>
-                        <TextBlock Text=" "/>
-                        <TextBlock Text="{Binding LoadedEmbeddingName}"/>
-                    </StackPanel>
+                    <!-- Adapters summary (single text to avoid parse-time binding issues) -->
+                    <TextBlock Text="{Binding AdaptersHudText}"
+                               Margin="12,0,0,0"
+                               Style="{StaticResource SecondaryTextStyle}"/>
                 </StackPanel>
-                
+
                 <!-- Window Controls -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,8,16,0">
                     <!-- Minimize Button -->
@@ -620,4 +566,5 @@
     </Grid>
 
 </Window>
+
 

@@ -122,6 +122,22 @@ namespace Lazarus.Desktop.ViewModels
         public bool HasTokenizer => !string.IsNullOrWhiteSpace(LoadedTokenizerName);
         public bool HasEmbedding => !string.IsNullOrWhiteSpace(LoadedEmbeddingName);
 
+        public string AdaptersHudText
+        {
+            get
+            {
+                var parts = new List<string>();
+                if (HasLora)
+                {
+                    var scale = LoraScale.HasValue ? $"@{LoraScale.Value:0.00}" : string.Empty;
+                    parts.Add($"LoRA: {LoadedLoraName}{(string.IsNullOrEmpty(scale) ? string.Empty : " " + scale)}");
+                }
+                if (HasTokenizer) parts.Add($"Tokenizer: {LoadedTokenizerName}");
+                if (HasEmbedding) parts.Add($"Embedding: {LoadedEmbeddingName}");
+                return parts.Count == 0 ? string.Empty : string.Join("  •  ", parts);
+            }
+        }
+
         public string OrchestratorStatusTooltip => IsOrchestratorHealthy ? "Orchestrator: Healthy" : "Orchestrator: Unreachable";
         public string RunnerStatusTooltip => IsOrchestratorHealthy
             ? (IsRunnerRunning ? "Runner: Running" : "Runner: Idle")
