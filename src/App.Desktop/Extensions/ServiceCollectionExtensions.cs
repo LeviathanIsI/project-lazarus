@@ -131,6 +131,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IModelCatalogService, ModelCatalogService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();
+        services.AddSingleton<Lazarus.Backend.Services.IImageService, Lazarus.Backend.Services.ImageService>();
         services.AddSingleton<UiDebounceDispatcher>();
         
         // Runner status must be a single source of truth across the app
@@ -139,8 +140,11 @@ public static class ServiceCollectionExtensions
         // Singleton ViewModelLocator for XAML binding support
         services.AddSingleton<ViewModelLocator>();
 
-        // Chat persistence service
-        services.AddScoped<IChatService, ChatService>();
+        // Global application state (runner/model/attachments)
+        services.AddSingleton<IAppState, AppState>();
+
+        // Chat persistence service (singleton that creates scoped repos internally)
+        services.AddSingleton<IChatService, ChatService>();
 
         return services;
     }

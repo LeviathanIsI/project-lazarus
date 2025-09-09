@@ -132,7 +132,7 @@ namespace Lazarus.Desktop.ViewModels
             {
                 "Dashboard" => new Views.DashboardView(),
                 "ChatSessions" => CreateChatSessionsView(),
-                "Images" => new Views.ImagesView(),
+                "Images" => new Views.ImageLabView(),
                 "Videos" => new Views.VideosView(),
                 "Entities" => new Views.EntitiesView(),
                 "Models" => new Views.ModelsView(),
