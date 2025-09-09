@@ -301,11 +301,31 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
             _logger?.LogInformation("Chat response Content-Type: {ContentType}", contentType);
 
-            if (string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            // Read as stream first and sniff the first line to decide SSE vs JSON.
+            using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var reader = new StreamReader(stream);
+
+            string? firstLine = await reader.ReadLineAsync();
+            if (firstLine is null)
             {
-                // Fallback non-streaming JSON response
-                var jsonText = await response.Content.ReadAsStringAsync(ct);
+                _logger?.LogWarning("Empty response from chat endpoint");
+                return;
+            }
+
+            string firstTrim = firstLine.TrimStart();
+            bool looksLikeJson = firstTrim.StartsWith("{") || firstTrim.StartsWith("[");
+            bool looksLikeSse = firstTrim.StartsWith("data:", StringComparison.OrdinalIgnoreCase) || firstTrim.StartsWith(":");
+
+            if (looksLikeJson && string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                // Collect full JSON text including the first line
+                var sb = new StringBuilder();
+                sb.AppendLine(firstLine);
+                string rest = await reader.ReadToEndAsync();
+                sb.Append(rest);
+                var jsonText = sb.ToString();
                 _logger?.LogDebug("First 200 json chars: {Snippet}", jsonText.Length > 200 ? jsonText.Substring(0, 200) : jsonText);
+
                 try
                 {
                     var resp = JsonSerializer.Deserialize<ChatCompletionResponse>(jsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -326,52 +346,78 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             }
             else
             {
-                // Stream SSE
-                using var stream = await response.Content.ReadAsStreamAsync(ct);
-                using var reader = new StreamReader(stream);
+                // Treat as SSE (also covers servers that mislabel Content-Type)
                 bool firstLogged = false;
                 var deserializeOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                while (!reader.EndOfStream && !ct.IsCancellationRequested)
+                // Helper to process accumulated event data (possibly multi-line)
+                bool ProcessEvent(string eventData)
                 {
-                    var line = await reader.ReadLineAsync();
-                    if (line == null) break;
-                    if (line.Length == 0) continue; // ignore keep-alives
-                    if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) continue;
-
-                    var data = line.Substring(5).Trim();
+                    var data = eventData.Trim();
                     if (!firstLogged)
                     {
-                        _logger?.LogDebug("First SSE data line: {Snippet}", data.Length > 200 ? data.Substring(0, 200) : data);
+                        _logger?.LogDebug("First SSE data: {Snippet}", data.Length > 200 ? data.Substring(0, 200) : data);
                         firstLogged = true;
                     }
 
                     if (string.Equals(data, "[DONE]", StringComparison.Ordinal))
-                        break;
+                        return true; // signal break
 
                     try
                     {
                         var chunk = JsonSerializer.Deserialize<ChatCompletionChunk>(data, deserializeOptions);
                         var delta = chunk?.Choices?.FirstOrDefault()?.Delta?.Content;
-
                         if (!string.IsNullOrEmpty(delta))
                         {
-                            Application.Current?.Dispatcher?.Invoke(() =>
-                            {
-                                assistantMessage.Content += delta;
-                            });
-                        }
-
-                        // Optional finish condition
-                        if (!string.IsNullOrEmpty(chunk?.Choices?.FirstOrDefault()?.FinishReason))
-                        {
-                            break;
+                            Application.Current?.Dispatcher?.Invoke(() => assistantMessage.Content += delta);
                         }
                     }
                     catch (JsonException ex)
                     {
                         _logger?.LogWarning(ex, "Failed to parse streaming chunk: {Data}", data);
                     }
+                    return false;
+                }
+
+                // Initialize accumulator with first line already read
+                var eventBuilder = new StringBuilder();
+
+                bool flushEvent()
+                {
+                    var evt = eventBuilder.ToString();
+                    eventBuilder.Clear();
+                    // Remove leading repeated 'data:' prefixes and join lines
+                    var lines = evt.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(l => l.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ? l.Substring(5).TrimStart() : l.Trim());
+                    var normalized = string.Join("\n", lines);
+                    return ProcessEvent(normalized);
+                }
+
+                // Seed with first line
+                eventBuilder.AppendLine(firstLine);
+
+                while (!reader.EndOfStream && !ct.IsCancellationRequested)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if (line == null) break;
+
+                    if (line.Length == 0)
+                    {
+                        // Blank line separates events
+                        if (eventBuilder.Length > 0)
+                        {
+                            if (flushEvent()) break;
+                        }
+                        continue;
+                    }
+
+                    eventBuilder.AppendLine(line);
+                }
+
+                // Flush any trailing data
+                if (eventBuilder.Length > 0)
+                {
+                    flushEvent();
                 }
             }
         }
