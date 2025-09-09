@@ -252,14 +252,18 @@
             <Border Grid.Column="1" Style="{StaticResource GlassCardStyle}" Padding="12">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>  <!-- ControlNet label -->
+                        <RowDefinition Height="Auto"/>  <!-- ControlNet combo -->
+                        <RowDefinition Height="Auto"/>  <!-- LoRA label -->
+                        <RowDefinition Height="Auto"/>  <!-- LoRA combo -->
+                        <RowDefinition Height="Auto"/>  <!-- Embedding label -->
+                        <RowDefinition Height="Auto"/>  <!-- Embedding combo -->
+                        <RowDefinition Height="Auto"/>  <!-- Hypernetwork label -->
+                        <RowDefinition Height="Auto"/>  <!-- Hypernetwork combo -->
+                        <RowDefinition Height="Auto"/>  <!-- Upscaler label -->
+                        <RowDefinition Height="Auto"/>  <!-- Upscaler combo -->
+                        <RowDefinition Height="Auto"/>  <!-- VAE label -->
+                        <RowDefinition Height="Auto"/>  <!-- VAE combo -->
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -269,22 +273,34 @@
                     <ComboBox x:Name="ControlNetCombo" Grid.Row="1" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
 
                     <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Style Preset"/>
-                        <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenStyleFolder"/>
+                        <TextBlock Text="LoRA"/>
+                        <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenLoRAFolder"/>
                     </StackPanel>
-                    <ComboBox x:Name="StylePresetCombo" Grid.Row="3" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+                    <ComboBox x:Name="LoraCombo" Grid.Row="3" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
 
                     <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Embedding"/>
+                        <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenEmbeddingFolder"/>
+                    </StackPanel>
+                    <ComboBox x:Name="EmbeddingCombo" Grid.Row="5" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+
+                    <StackPanel Grid.Row="6" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Hypernetwork"/>
+                        <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenHyperFolder"/>
+                    </StackPanel>
+                    <ComboBox x:Name="HyperCombo" Grid.Row="7" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+
+                    <StackPanel Grid.Row="8" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Upscaler"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenUpscaleFolder"/>
                     </StackPanel>
-                    <ComboBox x:Name="UpscalerCombo" Grid.Row="5" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+                    <ComboBox x:Name="UpscalerCombo" Grid.Row="9" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
 
-                    <StackPanel Grid.Row="6" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="10" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="VAE"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenVaeFolder"/>
                     </StackPanel>
-                    <ComboBox x:Name="VaeCombo" Grid.Row="7" Margin="0,4,0,0" IsEnabled="{Binding InputsEnabled}"/>
+                    <ComboBox x:Name="VaeCombo" Grid.Row="11" Margin="0,4,0,0" IsEnabled="{Binding InputsEnabled}"/>
                 </Grid>
             </Border>
         </Grid>

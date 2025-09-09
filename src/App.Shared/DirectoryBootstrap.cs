@@ -8,7 +8,10 @@ public static class DirectoryBootstrap
     public static System.Collections.Generic.IReadOnlyList<string> LeafDirectories => new[]
     {
         LazarusPaths.GenAssets.ControlNet,
-        LazarusPaths.GenAssets.StylePresets,
+        System.IO.Path.Combine(LazarusPaths.GenAssets.RootDir, "Style-Presets"),
+        LazarusPaths.GenAssets.StylePresets_LoRAs,
+        LazarusPaths.GenAssets.StylePresets_Embeddings,
+        LazarusPaths.GenAssets.StylePresets_Hypernetworks,
         LazarusPaths.GenAssets.Upscale,
         LazarusPaths.GenAssets.Vae,
 
@@ -41,6 +44,47 @@ public static class DirectoryBootstrap
         System.IO.Path.Combine(LazarusPaths.Root, "Backups"),
         System.IO.Path.Combine(LazarusPaths.SharedResources.RootDir, "Templates"),
         System.IO.Path.Combine(LazarusPaths.Root, "Plugins"),
+
+        // Video assets
+        LazarusPaths.VideoAssets.RootDir,
+        LazarusPaths.VideoAssets.AnimateDiff,
+        LazarusPaths.VideoAssets.TemporalLoRAs,
+        LazarusPaths.VideoAssets.VideoControlNet,
+        LazarusPaths.VideoAssets.FrameInterpolators,
+
+        // Audio assets
+        LazarusPaths.AudioAssets.RootDir,
+        LazarusPaths.AudioAssets.AsrModels,
+        LazarusPaths.AudioAssets.TtsVoices,
+        LazarusPaths.AudioAssets.VoiceCloning,
+        LazarusPaths.AudioAssets.Vad,
+        LazarusPaths.AudioAssets.NoiseReduction,
+
+        // Avatar assets
+        LazarusPaths.AvatarAssets.RootDir,
+        LazarusPaths.AvatarAssets.Models3D,
+        LazarusPaths.AvatarAssets.Rigs,
+        LazarusPaths.AvatarAssets.Textures,
+        LazarusPaths.AvatarAssets.Visemes,
+
+        // RAG assets
+        LazarusPaths.RagAssets.RootDir,
+        LazarusPaths.RagAssets.Indexes,
+        LazarusPaths.RagAssets.Documents,
+        LazarusPaths.RagAssets.Presets,
+
+        // Datasets
+        LazarusPaths.Datasets.RootDir,
+        LazarusPaths.Datasets.Conversations,
+        LazarusPaths.Datasets.Images,
+        LazarusPaths.Datasets.Video,
+        LazarusPaths.Datasets.Audio,
+
+        // Presets
+        LazarusPaths.Presets.RootDir,
+        LazarusPaths.Presets.Image,
+        LazarusPaths.Presets.Video,
+        LazarusPaths.Presets.Audio,
     };
 
     public static void EnsureAll()

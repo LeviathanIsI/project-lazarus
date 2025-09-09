@@ -71,7 +71,9 @@ namespace Lazarus.Desktop.Views
                 
                 // Helpful tooltips showing actual directories
                 ControlNetCombo.ToolTip  = LazarusPaths.GenAssets.ControlNet;
-                StylePresetCombo.ToolTip = LazarusPaths.GenAssets.StylePresets;
+                LoraCombo.ToolTip        = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_LoRAs, LazarusPaths.GenAssets.StylePresets);
+                EmbeddingCombo.ToolTip   = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Embeddings, LazarusPaths.GenAssets.StylePresets);
+                HyperCombo.ToolTip       = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Hypernetworks, LazarusPaths.GenAssets.StylePresets);
                 UpscalerCombo.ToolTip    = LazarusPaths.GenAssets.Upscale;
                 VaeCombo.ToolTip         = LazarusPaths.GenAssets.Vae;
             }
@@ -87,10 +89,22 @@ namespace Lazarus.Desktop.Views
                 LazarusPaths.GenAssets.ControlNet,
                 new[] { ".pt", ".pth", ".onnx", ".safetensors", ".bin" }
             );
-            StylePresetCombo.ItemsSource = EnumerateFilesSafe(
-                LazarusPaths.GenAssets.StylePresets,
-                new[] { ".json", ".yaml", ".yml" }
+            // LoRA/Embedding/Hypernetwork split with legacy fallback
+            var loraDir = LazarusPaths.ResolveFirstExisting(
+                LazarusPaths.GenAssets.StylePresets_LoRAs,
+                LazarusPaths.GenAssets.StylePresets // legacy flat
             );
+            var embedDir = LazarusPaths.ResolveFirstExisting(
+                LazarusPaths.GenAssets.StylePresets_Embeddings,
+                LazarusPaths.GenAssets.StylePresets
+            );
+            var hyperDir = LazarusPaths.ResolveFirstExisting(
+                LazarusPaths.GenAssets.StylePresets_Hypernetworks,
+                LazarusPaths.GenAssets.StylePresets
+            );
+            SetComboItems(LoraCombo,   EnumerateFilesSafe(loraDir,  new[] { ".safetensors", ".pt", ".pth" }));
+            SetComboItems(EmbeddingCombo, EnumerateFilesSafe(embedDir, new[] { ".pt", ".bin", ".txt", ".safetensors" }));
+            SetComboItems(HyperCombo, EnumerateFilesSafe(hyperDir, new[] { ".pt", ".pth" }));
             UpscalerCombo.ItemsSource    = EnumerateFilesSafe(
                 LazarusPaths.GenAssets.Upscale,
                 new[] { ".pt", ".pth", ".onnx", ".bin" }
@@ -99,6 +113,39 @@ namespace Lazarus.Desktop.Views
                 LazarusPaths.GenAssets.Vae,
                 new[] { ".pt", ".pth", ".safetensors", ".bin" }
             );
+            // Enable/disable if no items
+            UpdateComboEnabled(LoraCombo);
+            UpdateComboEnabled(EmbeddingCombo);
+            UpdateComboEnabled(HyperCombo);
+            UpdateComboEnabled(ControlNetCombo);
+            UpdateComboEnabled(UpscalerCombo);
+            UpdateComboEnabled(VaeCombo);
+        }
+
+        private static void SetComboItems(ComboBox combo, IEnumerable<string> items)
+        {
+            var list = items?.ToList() ?? new List<string>();
+            if (list.Count == 0)
+            {
+                combo.ItemsSource = new[] { "(none found)" };
+                combo.SelectedIndex = 0;
+                combo.IsEnabled = false;
+            }
+            else
+            {
+                combo.ItemsSource = list;
+                combo.IsEnabled = true;
+            }
+        }
+
+        private static void UpdateComboEnabled(ComboBox combo)
+        {
+            try
+            {
+                if (combo.Items.Count == 1 && string.Equals(combo.Items[0]?.ToString(), "(none found)", StringComparison.Ordinal))
+                    combo.IsEnabled = false;
+            }
+            catch { }
         }
 
         private static IEnumerable<string> EnumerateFilesSafe(string root, string[]? allowedExtensions = null)
@@ -319,7 +366,12 @@ namespace Lazarus.Desktop.Views
         }
 
         private void OnOpenControlNetFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.ControlNet);
-        private void OnOpenStyleFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.StylePresets);
+        private void OnOpenLoRAFolder(object sender, RoutedEventArgs e)
+            => OpenFolderSafe(LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_LoRAs, LazarusPaths.GenAssets.StylePresets));
+        private void OnOpenEmbeddingFolder(object sender, RoutedEventArgs e)
+            => OpenFolderSafe(LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Embeddings, LazarusPaths.GenAssets.StylePresets));
+        private void OnOpenHyperFolder(object sender, RoutedEventArgs e)
+            => OpenFolderSafe(LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Hypernetworks, LazarusPaths.GenAssets.StylePresets));
         private void OnOpenUpscaleFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Upscale);
         private void OnOpenVaeFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Vae);
         private static void OpenFolderSafe(string path)
