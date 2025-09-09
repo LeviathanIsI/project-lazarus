@@ -32,11 +32,13 @@ namespace Lazarus.Desktop.Views
                 if (ModeCombo.Items.Count > 0)
                     ModeCombo.SelectedIndex = 0;
 
-                // Populate asset dropdowns
-                ControlNetCombo.ItemsSource   = EnumerateFilesSafe(LazarusPaths.GenAssets.ControlNet);
-                StylePresetCombo.ItemsSource  = EnumerateFilesSafe(LazarusPaths.GenAssets.StylePresets);
-                UpscalerCombo.ItemsSource     = EnumerateFilesSafe(LazarusPaths.GenAssets.Upscale);
-                VaeCombo.ItemsSource          = EnumerateFilesSafe(LazarusPaths.GenAssets.Vae);
+                RefreshAssets();
+                
+                // Helpful tooltips showing actual directories
+                ControlNetCombo.ToolTip  = LazarusPaths.GenAssets.ControlNet;
+                StylePresetCombo.ToolTip = LazarusPaths.GenAssets.StylePresets;
+                UpscalerCombo.ToolTip    = LazarusPaths.GenAssets.Upscale;
+                VaeCombo.ToolTip         = LazarusPaths.GenAssets.Vae;
             }
             catch
             {
@@ -44,18 +46,44 @@ namespace Lazarus.Desktop.Views
             }
         }
 
-        private static IEnumerable<string> EnumerateFilesSafe(string root)
+        private void RefreshAssets()
+        {
+            ControlNetCombo.ItemsSource  = EnumerateFilesSafe(
+                LazarusPaths.GenAssets.ControlNet,
+                new[] { ".pt", ".pth", ".onnx", ".safetensors", ".bin" }
+            );
+            StylePresetCombo.ItemsSource = EnumerateFilesSafe(
+                LazarusPaths.GenAssets.StylePresets,
+                new[] { ".json", ".yaml", ".yml" }
+            );
+            UpscalerCombo.ItemsSource    = EnumerateFilesSafe(
+                LazarusPaths.GenAssets.Upscale,
+                new[] { ".pt", ".pth", ".onnx", ".bin" }
+            );
+            VaeCombo.ItemsSource         = EnumerateFilesSafe(
+                LazarusPaths.GenAssets.Vae,
+                new[] { ".pt", ".pth", ".safetensors", ".bin" }
+            );
+        }
+
+        private static IEnumerable<string> EnumerateFilesSafe(string root, string[]? allowedExtensions = null)
         {
             try
             {
                 if (!Directory.Exists(root)) return Array.Empty<string>();
-                return Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
-                    .Select(Path.GetFileName)
-                    .Where(n => !string.IsNullOrWhiteSpace(n))
-                    .Select(n => n!)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(n => n)
-                    .ToArray();
+                var files = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
+                if (allowedExtensions != null && allowedExtensions.Length > 0)
+                {
+                    var set = new HashSet<string>(allowedExtensions.Select(e => e.ToLowerInvariant()));
+                    files = files.Where(f => set.Contains(Path.GetExtension(f).ToLowerInvariant()));
+                }
+                return files
+                        .Select(Path.GetFileName)
+                        .Where(n => !string.IsNullOrWhiteSpace(n))
+                        .Select(n => n!)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(n => n)
+                        .ToArray();
             }
             catch { return Array.Empty<string>(); }
         }
