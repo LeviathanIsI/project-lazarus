@@ -14,6 +14,8 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Lazarus.Desktop.Services;
+using Lazarus.Data.Entities;
+using Lazarus.Data.Enums;
 using Lazarus.Shared.Settings;
 using Microsoft.Extensions.Logging;
 
@@ -58,8 +60,25 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
+    public sealed class ChatItemViewModel : INotifyPropertyChanged
+    {
+        private string _title = string.Empty;
+        private DateTime _updatedAt;
+        private string? _preview;
+
+        public Guid Id { get; init; }
+        public DateTime CreatedAt { get; init; }
+        public string Title { get => _title; set { if (_title != value) { _title = value; OnPropertyChanged(); } } }
+        public DateTime UpdatedAt { get => _updatedAt; set { if (_updatedAt != value) { _updatedAt = value; OnPropertyChanged(); } } }
+        public string? Preview { get => _preview; set { if (_preview != value) { _preview = value; OnPropertyChanged(); } } }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
     private readonly RunnerStatusProvider _runnerStatus;
     private readonly ISettingsService _settingsService;
+    private readonly IChatService _chatService;
     private readonly ILogger<ChatSessionsViewModel>? _logger;
     private readonly HttpClient _httpClient;
     private CancellationTokenSource? _cts;
@@ -71,6 +90,11 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private string _errorMessage = string.Empty;
     private string _modelName = "No model loaded";
     private bool _isHealthy;
+    private bool _hasConversations;
+
+    // Conversations
+    public ObservableCollection<ChatItemViewModel> Conversations { get; } = new();
+    private ChatItemViewModel? _selectedConversation;
 
     // Inference parameters
     private double _temperature = 0.7;
@@ -83,10 +107,12 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     public ChatSessionsViewModel(
         RunnerStatusProvider runnerStatus,
         ISettingsService settingsService,
+        IChatService chatService,
         ILogger<ChatSessionsViewModel> logger)
     {
         _runnerStatus = runnerStatus ?? throw new ArgumentNullException(nameof(runnerStatus));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _chatService = chatService ?? throw new ArgumentNullException(nameof(chatService));
         _logger = logger;
         
         _httpClient = new HttpClient
@@ -99,15 +125,26 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         _httpClient.DefaultRequestHeaders.Add("Accept", "text/event-stream");
 
         Messages = new ObservableCollection<MessageVm>();
-        
+
         // Commands
         SendMessageCommand = new RelayCommand(
             async () => await SendMessageAsync(),
             () => !IsStreaming && !string.IsNullOrWhiteSpace(InputText) && IsHealthy);
 
+        NewChatCommand = new RelayCommand(async () => await NewChatAsync());
+        DeleteChatCommand = new RelayCommand(async () => await DeleteSelectedChatAsync(), () => SelectedConversation != null);
+
         // Subscribe to runner state changes
         _runnerStatus.RunnerStateChanged += OnRunnerStateChanged;
         UpdateFromRunnerState(_runnerStatus.Current);
+
+        Conversations.CollectionChanged += (_, __) =>
+        {
+            HasConversations = Conversations.Count > 0;
+        };
+
+        // Kick off loading conversations
+        _ = InitializeAsync();
 
         // Mark field as used until settings are integrated in chat parameters
         _ = _settingsService;
@@ -116,6 +153,8 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     public ObservableCollection<MessageVm> Messages { get; }
 
     public ICommand SendMessageCommand { get; }
+    public ICommand NewChatCommand { get; }
+    public ICommand DeleteChatCommand { get; }
 
     public string InputText
     {
@@ -161,6 +200,25 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             if (SetProperty(ref _isHealthy, value))
             {
                 (SendMessageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasConversations
+    {
+        get => _hasConversations;
+        private set => SetProperty(ref _hasConversations, value);
+    }
+
+    public ChatItemViewModel? SelectedConversation
+    {
+        get => _selectedConversation;
+        set
+        {
+            if (SetProperty(ref _selectedConversation, value))
+            {
+                (DeleteChatCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                _ = LoadMessagesForSelectionAsync();
             }
         }
     }
@@ -233,7 +291,16 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             InputText = string.Empty;
             ErrorMessage = string.Empty;
 
-            // Add user message to UI
+            // Ensure we have a conversation
+            if (SelectedConversation == null)
+            {
+                var created = await _chatService.CreateAsync().ConfigureAwait(true);
+                var cvm = ToVm(created);
+                Conversations.Insert(0, cvm);
+                SelectedConversation = cvm;
+            }
+
+            // Add user message to UI and persist
             var userMessage = new MessageVm
             {
                 Role = "user",
@@ -241,6 +308,34 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                 Timestamp = DateTime.Now
             };
             Messages.Add(userMessage);
+            try
+            {
+                await _chatService.AddMessageAsync(SelectedConversation!.Id, MessageRole.User, userText).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to persist user message");
+            }
+
+            // Update preview to reflect latest user text until assistant responds
+            SelectedConversation!.Preview = MakePreview(userText);
+            SelectedConversation!.UpdatedAt = DateTime.UtcNow;
+            var curIdx = Conversations.IndexOf(SelectedConversation);
+            if (curIdx > 0)
+            {
+                Conversations.Move(curIdx, 0);
+            }
+
+            // Auto-title new chats on first user message
+            if (SelectedConversation!.Title == "New Chat")
+            {
+                var title = new string(userText.Take(40).ToArray());
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    SelectedConversation.Title = title;
+                    _ = _chatService.RenameAsync(SelectedConversation.Id, title);
+                }
+            }
 
             // Start streaming assistant response
             await StreamAssistantAsync(userText);
@@ -444,6 +539,30 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                 assistantMessage.IsStreaming = false;
             });
             IsStreaming = false;
+
+            // Persist assistant message if any
+            if (SelectedConversation != null && !string.IsNullOrWhiteSpace(assistantMessage.Content))
+            {
+                try
+                {
+                    await _chatService.AddMessageAsync(SelectedConversation.Id, MessageRole.Assistant, assistantMessage.Content).ConfigureAwait(false);
+
+                    // Update preview and timestamps for sidebar
+                    SelectedConversation.Preview = MakePreview(assistantMessage.Content);
+                    SelectedConversation.UpdatedAt = DateTime.UtcNow;
+
+                    // Reorder: move selected conversation to top
+                    var currentIndex = Conversations.IndexOf(SelectedConversation);
+                    if (currentIndex > 0)
+                    {
+                        Conversations.Move(currentIndex, 0);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Failed to persist assistant message");
+                }
+            }
         }
     }
 
@@ -468,7 +587,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private object[] BuildRequestMessages(string userText)
     {
         var messages = new System.Collections.Generic.List<object>();
-        
+
         // Add conversation history (excluding the current streaming message)
         foreach (var msg in Messages.Where(m => !m.IsStreaming))
         {
@@ -497,6 +616,106 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         
         _disposed = true;
         base.Dispose(disposing);
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            var list = await _chatService.GetAllAsync().ConfigureAwait(true);
+            Conversations.Clear();
+            foreach (var c in list.OrderByDescending(c => c.LastMessageAt))
+            {
+                Conversations.Add(ToVm(c));
+            }
+            HasConversations = Conversations.Count > 0;
+            if (SelectedConversation == null && Conversations.Count > 0)
+            {
+                SelectedConversation = Conversations[0];
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to load conversations");
+        }
+    }
+
+    private async Task LoadMessagesForSelectionAsync()
+    {
+        try
+        {
+            Messages.Clear();
+            if (SelectedConversation == null) return;
+            var msgs = await _chatService.GetMessagesAsync(SelectedConversation.Id).ConfigureAwait(true);
+            foreach (var m in msgs)
+            {
+                Messages.Add(new MessageVm
+                {
+                    Role = m.Role == MessageRole.User ? "user" : m.Role == MessageRole.Assistant ? "assistant" : "system",
+                    Content = m.Content,
+                    Timestamp = m.Timestamp.ToLocalTime()
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to load messages for selection");
+        }
+    }
+
+    private async Task NewChatAsync()
+    {
+        try
+        {
+            var convo = await _chatService.CreateAsync().ConfigureAwait(true);
+            var vm = ToVm(convo);
+            Conversations.Insert(0, vm);
+            SelectedConversation = vm;
+            Messages.Clear();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to create new chat");
+            ErrorMessage = "Failed to create conversation.";
+        }
+    }
+
+    private async Task DeleteSelectedChatAsync()
+    {
+        if (SelectedConversation == null) return;
+        try
+        {
+            var id = SelectedConversation.Id;
+            await _chatService.DeleteAsync(id).ConfigureAwait(true);
+            var idx = Conversations.IndexOf(SelectedConversation);
+            Conversations.Remove(SelectedConversation);
+            SelectedConversation = Conversations.Count > 0 ? Conversations[Math.Clamp(idx, 0, Conversations.Count - 1)] : null;
+            Messages.Clear();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to delete chat");
+            ErrorMessage = "Failed to delete conversation.";
+        }
+    }
+
+    private static ChatItemViewModel ToVm(Conversation c)
+    {
+        return new ChatItemViewModel
+        {
+            Id = c.Id,
+            Title = c.Title,
+            CreatedAt = c.CreatedAt,
+            UpdatedAt = c.LastMessageAt,
+            Preview = null
+        };
+    }
+
+    private static string MakePreview(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return string.Empty;
+        var s = content.Replace("\r", " ").Replace("\n", " ");
+        return s.Length <= 80 ? s : s.Substring(0, 80);
     }
 
     // JSON response models

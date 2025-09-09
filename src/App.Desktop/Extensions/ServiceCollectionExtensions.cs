@@ -132,9 +132,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();
         services.AddSingleton<UiDebounceDispatcher>();
+        
+        // Runner status must be a single source of truth across the app
+        services.AddSingleton<RunnerStatusProvider>();
 
         // Singleton ViewModelLocator for XAML binding support
         services.AddSingleton<ViewModelLocator>();
+
+        // Chat persistence service
+        services.AddScoped<IChatService, ChatService>();
 
         return services;
     }
@@ -153,6 +159,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<ModelsViewModel>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsShellViewModel>();
+            services.AddTransient<ChatSessionsViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();

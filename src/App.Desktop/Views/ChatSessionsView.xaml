@@ -43,6 +43,7 @@
                         
                         <Button Grid.Column="1"
                                 Style="{StaticResource IconGlassButtonStyle}"
+                                Command="{Binding NewChatCommand}"
                                 ToolTip="Start new conversation"
                                 AutomationProperties.Name="Start new conversation"
                                 AutomationProperties.HelpText="Creates a new chat conversation">
@@ -60,49 +61,70 @@
                 <!-- Session List Content -->
                 <Grid Grid.Row="1">
                     <!-- Empty State for No Conversations -->
-                    <Grid x:Name="NoConversationsState" 
-                          Visibility="Collapsed">
-                        <ContentPresenter Content="{StaticResource NoConversationsEmptyState}"
-                                          Margin="20"/>
-                    </Grid>
+                    <ContentControl Margin="12,8" Visibility="Collapsed">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasConversations}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Setter Property="Content" Value="{StaticResource NoConversationsEmptyState}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
 
-                    <!-- Session List -->
-                    <ScrollViewer x:Name="SessionsScrollViewer" 
-                                  VerticalScrollBarVisibility="Auto"
-                                  Padding="12,8"
-                                  AutomationProperties.Name="Conversations list">
-                        <ItemsControl x:Name="SessionsList"
-                                      KeyboardNavigation.TabNavigation="Continue">
-                            <ItemsControl.ItemContainerStyle>
-                                <Style TargetType="ContentPresenter">
-                                    <Setter Property="Focusable" Value="True"/>
-                                </Style>
-                            </ItemsControl.ItemContainerStyle>
-                            
-                            <!-- Sample Session Item -->
-                            <Border Style="{StaticResource InteractiveGlassCardStyle}"
-                                    Padding="16,12"
-                                    Margin="0,4"
-                                    Focusable="True"
-                                    AutomationProperties.Name="Conversation: Model Architecture Discussion, Yesterday at 3:42 PM"
-                                    >
-                                <StackPanel>
-                                    <TextBlock Text="Model Architecture Discussion" 
-                                               Style="{StaticResource BodyTextStyle}"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="Yesterday at 3:42 PM" 
-                                               Style="{StaticResource SmallTextStyle}"
-                                               Margin="0,4,0,0"/>
-                                    <TextBlock Text="Last message: The attention mechanism allows..."
-                                               Style="{StaticResource SmallTextStyle}"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               Margin="0,2,0,0"/>
-                                </StackPanel>
-                            </Border>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <!-- Conversations List -->
+                    <ListBox ItemsSource="{Binding Conversations}"
+                             SelectedItem="{Binding SelectedConversation, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="12,8"
+                             KeyboardNavigation.TabNavigation="Continue">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,4"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border Style="{StaticResource InteractiveGlassCardStyle}" Padding="16,12">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   Style="{StaticResource BodyTextStyle}"
+                                                                   FontWeight="SemiBold"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding Preview}"
+                                                                   Style="{StaticResource SmallTextStyle}"
+                                                                   Margin="0,4,0,0"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1"
+                                                            Style="{StaticResource IconGlassButtonStyle}"
+                                                            Command="{Binding DataContext.DeleteChatCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                            ToolTip="Delete conversation">
+                                                        <Viewbox Width="16" Height="16">
+                                                            <Canvas Width="24" Height="24">
+                                                                <Path Data="M19 7L18.1 19.9C17.9 21.1 16.8 22 15.6 22H8.4C7.2 22 6.1 21.1 5.9 19.9L5 7M10 11V17M14 11V17M15 7V4C15 3.4 14.6 3 14 3H10C9.4 3 9 3.4 9 4V7M4 7H20"
+                                                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                                      StrokeThickness="2"/>
+                                                            </Canvas>
+                                                        </Viewbox>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
                 </Grid>
             </Grid>
         </Border>
