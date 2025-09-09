@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using Lazarus.Shared;
+using Lazarus.Backend.Services;
 
 namespace Lazarus.Desktop.Views
 {
@@ -55,12 +56,17 @@ namespace Lazarus.Desktop.Views
         public sealed class ToastItem { public Guid Id { get; } = Guid.NewGuid(); public string Text { get; set; } = string.Empty; public bool IsError { get; set; } }
         public ObservableCollection<ToastItem> Toasts { get; } = new();
 
+        // Backend (resolved via DI when available)
+        private IImageService? _imageService;
+
         public ImagesView()
         {
             InitializeComponent();
             // Bind to self for simple dummy values
             DataContext = this;
             Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
+
+            try { _imageService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(IImageService)) as IImageService; } catch { }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -172,6 +178,8 @@ namespace Lazarus.Desktop.Views
             catch { return Array.Empty<string>(); }
         }
 
+        private bool HasBackend() => _imageService != null; // no IsConfigured on interface; treat presence as configured
+
         private async void OnGenerateClick(object sender, RoutedEventArgs e)
         {
             // Show a placeholder PNG from app resources
@@ -180,15 +188,15 @@ namespace Lazarus.Desktop.Views
                 if (IsRunning) return;
 
                 // simple validation
-                var prompt = PromptTextBox.Text?.Trim();
+                var prompt = PromptBox.Text?.Trim();
                 if (Mode == ImageMode.Txt2Img && string.IsNullOrWhiteSpace(prompt))
                 {
-                    EnqueueToast("Enter a prompt for Txt2Img", isError: true);
+                    ShowToast("Enter a prompt.", isError: true);
                     return;
                 }
                 if (Mode != ImageMode.Txt2Img && string.IsNullOrWhiteSpace(InitImagePath))
                 {
-                    EnqueueToast("Provide an init image for this mode", isError: true);
+                    ShowToast("Provide an init image for this mode", isError: true);
                     return;
                 }
 
@@ -198,43 +206,73 @@ namespace Lazarus.Desktop.Views
                 LastRunFailed = false;
                 try { VisualStateManager.GoToState(GenerateButton, "Running", true); } catch { }
 
-                // start indeterminate, then simulate progress
-                await Task.Delay(400, _cts.Token).ContinueWith(_ => { }, TaskScheduler.Default);
+                // If no backend, warn and bail without touching preview
+                if (!HasBackend())
+                {
+                    ShowToast("Image backend not configured. Configure a runner to generate.", isError: true);
+                    return;
+                }
 
-                var progress = 0;
+                // Call backend (best effort) – interface returns an output path
+                string? outputPath = null;
                 try
                 {
-                    while (progress < 100 && !_cts.IsCancellationRequested)
+                    // Map mode string
+                    var modeStr = Mode.ToString();
+                    // Minimal request shim: many backends accept a simple prompt; ours uses ImageJob indirectly.
+                    // We expose only essential fields here to avoid tight coupling; service should handle defaults.
+                    outputPath = await _imageService!.GenerateAsync(new Lazarus.Data.Entities.ImageJob
                     {
-                        await Task.Delay(180, _cts.Token);
-                        progress += 7;
-                        if (progress > 100) progress = 100;
-                        ProgressPercent = progress;
-                    }
+                        Mode = modeStr,
+                        Prompt = prompt ?? string.Empty,
+                        NegativePrompt = NegativePromptBox.Text ?? string.Empty,
+                        Seed = Seed,
+                        SourceImagePath = InitImagePath,
+                        MaskImagePath = MaskImagePath
+                    }).ConfigureAwait(true);
                 }
-                catch (TaskCanceledException) { }
+                catch (TaskCanceledException) when (_cts?.IsCancellationRequested == true) { }
 
                 if (_cts.IsCancellationRequested)
                 {
                     ProgressPercent = 0;
-                    EnqueueToast("Generation canceled", isError: true);
+                    ShowToast("Generation canceled", isError: true);
                     try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
                 }
                 else
                 {
-                    var res = TryFindResource("LazarusPngLogo32") as BitmapSource
-                              ?? TryFindResource("LazarusPngLogo") as BitmapSource;
-                    if (res != null)
+                    if (!string.IsNullOrWhiteSpace(outputPath) && File.Exists(outputPath))
                     {
-                        PreviewImage.Source = res;
-                        PlaceholderLabel.Visibility = Visibility.Collapsed;
+                        try
+                        {
+                            var bmp = new BitmapImage();
+                            bmp.BeginInit();
+                            bmp.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp.UriSource = new Uri(outputPath, UriKind.Absolute);
+                            bmp.EndInit();
+                            bmp.Freeze();
+                            PreviewImage.Source = bmp;
+                            PlaceholderLabel.Visibility = Visibility.Collapsed;
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowToast("Failed to load generated image: " + ex.Message, isError: true);
+                        }
+                    }
+                    else
+                    {
+                        ShowToast("Generation returned no image.", isError: true);
                     }
                     TotalImages += 1; GeneratedToday += 1; StorageUsedMb += 0.001;
-                    EnqueueToast($"Image generated  Seed {Seed}");
+                    ShowToast($"Rendered  seed {Seed}");
                     try { VisualStateManager.GoToState(GenerateButton, "Success", true); } catch { }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                ShowToast("Generation failed: " + ex.Message, isError: true);
+                try { VisualStateManager.GoToState(GenerateButton, "Error", true); } catch { }
+            }
             finally
             {
                 _cts?.Dispose(); _cts = null;
@@ -248,7 +286,7 @@ namespace Lazarus.Desktop.Views
 
         private void OnRandomizeSeed(object sender, RoutedEventArgs e)
         {
-            if (SeedLocked) { EnqueueToast("Seed is locked", isError: true); return; }
+            if (SeedLocked) { ShowToast("Seed is locked", isError: true); return; }
             Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
         }
 
@@ -330,7 +368,7 @@ namespace Lazarus.Desktop.Views
                 var paths = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if (paths == null || paths.Length == 0) return;
                 var file = paths[0];
-                if (!IsSupportedImage(file)) { EnqueueToast("Unsupported file type", isError: true); return; }
+                if (!IsSupportedImage(file)) { ShowToast("Unsupported file type", isError: true); return; }
 
                 if (Mode == ImageMode.Txt2Img) Mode = ImageMode.Img2Img;
                 InitImagePath = file;
@@ -341,7 +379,7 @@ namespace Lazarus.Desktop.Views
                     MaskImagePath = file;
                 }
             }
-            catch (Exception ex) { EnqueueToast("Drop failed: " + ex.Message, isError: true); }
+            catch (Exception ex) { ShowToast("Drop failed: " + ex.Message, isError: true); }
         }
 
         private void OnDropZoneDragLeave(object sender, DragEventArgs e)
@@ -422,6 +460,8 @@ namespace Lazarus.Desktop.Views
                 Dispatcher.Invoke(() => Toasts.Remove(item));
             });
         }
+
+        private void ShowToast(string msg, bool isError = false) => EnqueueToast(msg, isError);
 
         private void OnOpenControlNetFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.ControlNet);
         private void OnOpenLoRAFolder(object sender, RoutedEventArgs e)
