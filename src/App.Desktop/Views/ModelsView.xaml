@@ -8,6 +8,7 @@
     </UserControl.DataContext>
     <UserControl.Resources>
         <conv:RunnerKindToStringConverter x:Key="RunnerKindToStringConverter"/>
+        <conv:PathToFileNameConverter x:Key="PathToFileNameConverter"/>
     </UserControl.Resources>
     <Grid Background="{StaticResource BackgroundBrush}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -97,6 +98,26 @@
                                 </ComboBox>
                                 <TextBlock Text="Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                 <TextBlock Text="{x:Static shared:LazarusPaths+Models.LoRAAdapters}" Style="{StaticResource SecondaryTextStyle}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button Content="Load" Style="{StaticResource RainbowAccentButton.AutoFit}" Command="{Binding LoadLoraCommand}"/>
+                                    <Button Content="Unload" Style="{StaticResource SecondaryGlassButtonStyle}" Margin="8,0,0,0" Command="{Binding UnloadLoraCommand}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <TextBlock Text="Loaded: " Style="{StaticResource SecondaryTextStyle}"/>
+                                    <TextBlock Text="{Binding LoadedLoraPath, Converter={StaticResource PathToFileNameConverter}}" Style="{StaticResource SecondaryTextStyle}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Influence:" Style="{StaticResource SecondaryTextStyle}"/>
+                                    <StackPanel Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
+                                        <Slider Width="180"
+                                                Minimum="0" Maximum="1"
+                                                SmallChange="0.01" LargeChange="0.1"
+                                                TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                                IsEnabled="{Binding IsLoraLoaded}"
+                                                Value="{Binding LoraScaleValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBlock Text="{Binding LoraScaleValue, StringFormat=F2}" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 
@@ -120,6 +141,10 @@
                                     </ComboBox>
                                     <TextBlock Text="Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                     <TextBlock Text="{x:Static shared:LazarusPaths+Models.Tokenizers}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Button Content="Load" Style="{StaticResource RainbowAccentButton.AutoFit}" Command="{Binding LoadTokenizerCommand}"/>
+                                        <Button Content="Unload" Style="{StaticResource SecondaryGlassButtonStyle}" Margin="8,0,0,0" Command="{Binding UnloadTokenizerCommand}"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource GlassCardStyle}" Padding="16" Grid.Column="1" Margin="8,0,0,0">
@@ -136,6 +161,10 @@
                                     </ComboBox>
                                     <TextBlock Text="Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                     <TextBlock Text="{x:Static shared:LazarusPaths+Models.Embeddings}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Button Content="Load" Style="{StaticResource RainbowAccentButton.AutoFit}" Command="{Binding LoadEmbeddingCommand}"/>
+                                        <Button Content="Unload" Style="{StaticResource SecondaryGlassButtonStyle}" Margin="8,0,0,0" Command="{Binding UnloadEmbeddingCommand}"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -144,6 +173,7 @@
                         <Border Style="{StaticResource GlassCardStyle}" Padding="16" Margin="0,0,0,16">
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>

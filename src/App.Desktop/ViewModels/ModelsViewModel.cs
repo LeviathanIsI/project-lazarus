@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using System.IO;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
 using Lazarus.Desktop.Extensions;
@@ -21,6 +22,7 @@ public sealed class ModelsViewModel : ViewModelBase
     private readonly IOrchestratorRunnerClient _runnerClient;
     private readonly IOrchestratorClient _orchestratorClient;
     private readonly Func<AdapterInfo, SelectableAdapter> _adapterFactory;
+    private readonly IAppState _appState;
 
     public ModelsViewModel(
         IModelInventoryService inventory,
@@ -28,7 +30,8 @@ public sealed class ModelsViewModel : ViewModelBase
         ILogger<ModelsViewModel> logger,
         Func<AdapterInfo, SelectableAdapter> adapterFactory,
         Lazarus.Desktop.Services.IOrchestratorRunnerClient runnerClient,
-        IOrchestratorClient orchestratorClient)
+        IOrchestratorClient orchestratorClient,
+        IAppState appState)
     {
         _inventory = inventory;
         _presets = presets;
@@ -36,8 +39,19 @@ public sealed class ModelsViewModel : ViewModelBase
         _adapterFactory = adapterFactory;
         _runnerClient = runnerClient;
         _orchestratorClient = orchestratorClient;
+        _appState = appState;
         // Ensure preset folder exists for smooth UX
         _presets.EnsureFolders();
+
+        // Observe global app state so the view can reflect loaded adapters immediately
+        _appState.PropertyChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(LoadedLoraPath));
+            OnPropertyChanged(nameof(LoadedTokenizerPath));
+            OnPropertyChanged(nameof(LoadedEmbeddingPath));
+            OnPropertyChanged(nameof(IsLoraLoaded));
+            OnPropertyChanged(nameof(LoraScaleValue));
+        };
 
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
         LoadSelectedModelCommand = new RelayCommand(
@@ -47,9 +61,16 @@ public sealed class ModelsViewModel : ViewModelBase
         RefreshRunnerStatusCommand = new RelayCommand(async () => { await RefreshRunnerStatusAsync(); await RefreshRunnersCatalogAsync(); }, () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
         LoadPresetCommand = new RelayCommand(LoadPreset, () => SelectedPresetName is not null && !IsDisposed);
+        LoadTokenizerCommand = new RelayCommand(LoadTokenizer, () => SelectedTokenizer is not null);
+        UnloadTokenizerCommand = new RelayCommand(UnloadTokenizer, () => _appState.LoadedTokenizer != null);
+        LoadEmbeddingCommand = new RelayCommand(LoadEmbedding, () => SelectedEmbedding is not null);
+        UnloadEmbeddingCommand = new RelayCommand(UnloadEmbedding, () => _appState.LoadedEmbedding != null);
+        LoadLoraCommand = new RelayCommand(LoadLora, () => SelectedLora is not null);
+        UnloadLoraCommand = new RelayCommand(UnloadLora, () => _appState.LoadedLora != null);
 
         Refresh();
         _ = RefreshRunnersCatalogAsync();
+        _ = RefreshRunnerStatusAsync();
 
         // Observe orchestrator health to update enablement and messaging
         _orchestratorClient.HealthStatusChanged += (_, __) =>
@@ -115,6 +136,9 @@ public sealed class ModelsViewModel : ViewModelBase
     private double _topP = ModelParams.Default.TopP;
     public double TopP { get => _topP; set => SetProperty(ref _topP, Clamp(value, Schema.TopP)); }
 
+    private int _topK = 40; // Default TopK value
+    public int TopK { get => _topK; set => SetProperty(ref _topK, Math.Max(1, value)); }
+
     private int _maxTokens = ModelParams.Default.MaxTokens;
     public int MaxTokens { get => _maxTokens; set { _maxTokens = Clamp(value, Schema.MaxTokens); OnPropertyChanged(); } }
 
@@ -171,6 +195,12 @@ public sealed class ModelsViewModel : ViewModelBase
     public RelayCommand LoadSelectedModelCommand { get; }
     public RelayCommand UnloadRunnerCommand { get; }
     public RelayCommand RefreshRunnerStatusCommand { get; }
+    public RelayCommand LoadTokenizerCommand { get; }
+    public RelayCommand UnloadTokenizerCommand { get; }
+    public RelayCommand LoadEmbeddingCommand { get; }
+    public RelayCommand UnloadEmbeddingCommand { get; }
+    public RelayCommand LoadLoraCommand { get; }
+    public RelayCommand UnloadLoraCommand { get; }
 
     public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
     private RunnerCandidate? _selectedRunner;
@@ -216,6 +246,30 @@ public sealed class ModelsViewModel : ViewModelBase
 
     private string? _runnerOutLog;
     public string? RunnerOutLog { get => _runnerOutLog; private set => SetProperty(ref _runnerOutLog, value); }
+
+    // Adapter load state (proxy to global AppState)
+    public string? LoadedLoraPath => _appState.LoadedLora;
+    public string? LoadedTokenizerPath => _appState.LoadedTokenizer;
+    public string? LoadedEmbeddingPath => _appState.LoadedEmbedding;
+    public bool IsLoraLoaded => !string.IsNullOrWhiteSpace(_appState.LoadedLora);
+
+    // LoRA influence (exposed as a clamped double for slider binding)
+    private const double LoraMin = 0.0;
+    private const double LoraMax = 1.0;
+    private const double LoraDefault = 0.7;
+    public double LoraScaleValue
+    {
+        get => Math.Clamp(_appState.LoraScale ?? LoraDefault, LoraMin, LoraMax);
+        set
+        {
+            var clamped = Math.Clamp(value, LoraMin, LoraMax);
+            if (_appState.LoraScale != clamped)
+            {
+                _appState.LoraScale = clamped;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     // Orchestrator health for enablement/messaging
     public bool IsOrchestratorHealthy => _orchestratorClient.IsHealthy;
@@ -357,6 +411,28 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(RunnerOutLog));
         LoadSelectedModelCommand.RaiseCanExecuteChanged();
         OnPropertyChanged(nameof(LoadDisabledReason));
+        _appState.IsRunnerRunning = IsRunnerRunning;
+        _appState.RunnerPort = RunnerPort;
+        _appState.RunnerPid = RunnerPid;
+        _appState.LoadedModelPath = RunnerModelPath;
+
+        // Auto-select base model if a model is already loaded
+        if (IsRunnerRunning && !string.IsNullOrWhiteSpace(RunnerModelPath))
+        {
+            var match = BaseModels.FirstOrDefault(m => string.Equals(m.FilePath, RunnerModelPath, StringComparison.OrdinalIgnoreCase));
+            if (match != null) SelectedModel = match;
+        }
+
+        // Auto-select runner candidate if we can infer it from exe path
+        if (!string.IsNullOrWhiteSpace(RunnerExePath))
+        {
+            var folder = Path.GetDirectoryName(RunnerExePath);
+            if (!string.IsNullOrWhiteSpace(folder))
+            {
+                var cand = RunnerCatalog.FirstOrDefault(r => string.Equals(r.ResolvedPath, folder, StringComparison.OrdinalIgnoreCase));
+                if (cand != null) SelectedRunner = cand;
+            }
+        }
     }
 
     private Task RefreshRunnersCatalogAsync()
@@ -438,6 +514,13 @@ public sealed class ModelsViewModel : ViewModelBase
 
         _logger.LogInformation("Loaded preset {Name}", preset.Name);
     }
+
+    private void LoadTokenizer() { if (SelectedTokenizer != null) _appState.LoadedTokenizer = SelectedTokenizer.FilePath; }
+    private void UnloadTokenizer() { _appState.LoadedTokenizer = null; }
+    private void LoadEmbedding() { if (SelectedEmbedding != null) _appState.LoadedEmbedding = SelectedEmbedding.FilePath; }
+    private void UnloadEmbedding() { _appState.LoadedEmbedding = null; }
+    private void LoadLora() { if (SelectedLora != null) _appState.LoadedLora = SelectedLora.FilePath; }
+    private void UnloadLora() { _appState.LoadedLora = null; }
 
     protected override void OnDisposing()
     {

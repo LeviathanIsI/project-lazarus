@@ -15,6 +15,7 @@ namespace Lazarus.Desktop.ViewModels
         private readonly IOrchestratorClient _orchestratorClient;
         private readonly IOrchestratorRunnerClient _runnerClient;
         private readonly System.Threading.Timer _runnerTimer;
+        private readonly IAppState _appState;
 
         public MainViewModel(
             ILogger<MainViewModel> logger,
@@ -22,7 +23,8 @@ namespace Lazarus.Desktop.ViewModels
             INavigationService navigationService,
             IThemeService themeService,
             IOrchestratorClient orchestratorClient,
-            IOrchestratorRunnerClient runnerClient)
+            IOrchestratorRunnerClient runnerClient,
+            IAppState appState)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Navigation = navigationViewModel ?? throw new ArgumentNullException(nameof(navigationViewModel));
@@ -30,6 +32,7 @@ namespace Lazarus.Desktop.ViewModels
             _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
             _orchestratorClient = orchestratorClient ?? throw new ArgumentNullException(nameof(orchestratorClient));
             _runnerClient = runnerClient ?? throw new ArgumentNullException(nameof(runnerClient));
+            _appState = appState ?? throw new ArgumentNullException(nameof(appState));
 
             // Subscribe to orchestrator health changes
             _orchestratorClient.HealthStatusChanged += OnOrchestratorHealthChanged;
@@ -39,6 +42,18 @@ namespace Lazarus.Desktop.ViewModels
             _ = RefreshConnectionAsync();
             _runnerTimer = new System.Threading.Timer(async _ => await RefreshRunnerStatusAsync(), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
             _runnerClient.RunnerStatusChanged += OnRunnerStatusChanged;
+
+            // Reflect adapter selections in HUD
+            _appState.PropertyChanged += (_, __) =>
+            {
+                OnPropertyChanged(nameof(LoadedLoraName));
+                OnPropertyChanged(nameof(LoadedTokenizerName));
+                OnPropertyChanged(nameof(LoadedEmbeddingName));
+                OnPropertyChanged(nameof(HasLora));
+                OnPropertyChanged(nameof(HasTokenizer));
+                OnPropertyChanged(nameof(HasEmbedding));
+                OnPropertyChanged(nameof(LoraScale));
+            };
 
             _logger.LogDebug("MainViewModel initialized");
         }
@@ -91,6 +106,21 @@ namespace Lazarus.Desktop.ViewModels
             private set => SetProperty(ref _loadedModelName, value);
         }
         private string? _loadedModelName;
+
+        // HUD: Adapters overview (proxied from AppState)
+        public string? LoadedLoraName => string.IsNullOrWhiteSpace(_appState.LoadedLora)
+            ? null
+            : System.IO.Path.GetFileNameWithoutExtension(_appState.LoadedLora);
+        public string? LoadedTokenizerName => string.IsNullOrWhiteSpace(_appState.LoadedTokenizer)
+            ? null
+            : System.IO.Path.GetFileName(_appState.LoadedTokenizer);
+        public string? LoadedEmbeddingName => string.IsNullOrWhiteSpace(_appState.LoadedEmbedding)
+            ? null
+            : System.IO.Path.GetFileNameWithoutExtension(_appState.LoadedEmbedding);
+        public double? LoraScale => _appState.LoraScale;
+        public bool HasLora => !string.IsNullOrWhiteSpace(LoadedLoraName);
+        public bool HasTokenizer => !string.IsNullOrWhiteSpace(LoadedTokenizerName);
+        public bool HasEmbedding => !string.IsNullOrWhiteSpace(LoadedEmbeddingName);
 
         public string OrchestratorStatusTooltip => IsOrchestratorHealthy ? "Orchestrator: Healthy" : "Orchestrator: Unreachable";
         public string RunnerStatusTooltip => IsOrchestratorHealthy
