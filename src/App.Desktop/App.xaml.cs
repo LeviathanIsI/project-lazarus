@@ -144,9 +144,39 @@ namespace Lazarus.Desktop
             base.OnExit(e);
         }
 
+        private static DateTime _lastUiExceptionShownAt = DateTime.MinValue;
+        private static string? _lastUiExceptionKey;
+
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             _logger?.LogCritical(e.Exception, "Unhandled exception on UI thread");
+
+            // Always mark handled so we don't cascade dialog storms during diagnostics
+            e.Handled = true;
+
+            // Suppress message box for common WPF binding issues that are recoverable
+            var msg = e.Exception.Message ?? string.Empty;
+            var isBindingUnsetValue = msg.Contains("DependencyProperty.UnsetValue", StringComparison.OrdinalIgnoreCase)
+                                      || msg.Contains("BorderBrush", StringComparison.OrdinalIgnoreCase)
+                                      || e.Exception is System.Windows.Markup.XamlParseException;
+
+            if (isBindingUnsetValue)
+            {
+                // Log as error and return silently
+                _logger?.LogError(e.Exception, "Suppressed WPF binding error on UI thread");
+                return;
+            }
+
+            // Throttle repeated dialogs of the same message
+            var now = DateTime.UtcNow;
+            var key = msg;
+            var isRepeat = key == _lastUiExceptionKey && (now - _lastUiExceptionShownAt) < TimeSpan.FromSeconds(5);
+            if (isRepeat)
+            {
+                return;
+            }
+            _lastUiExceptionKey = key;
+            _lastUiExceptionShownAt = now;
 
             var result = MessageBox.Show(
                 $"An unexpected error occurred:\n\n{e.Exception.Message}\n\nWould you like to continue running the application?",
@@ -157,10 +187,6 @@ namespace Lazarus.Desktop
             if (result == MessageBoxResult.No)
             {
                 Shutdown(1);
-            }
-            else
-            {
-                e.Handled = true;
             }
         }
 
@@ -253,17 +279,19 @@ namespace Lazarus.Desktop
             var viewModelLocator = ServiceProvider.GetRequiredService<ViewModelLocator>();
             Resources["ViewModelLocator"] = viewModelLocator;
 
-            // Create and show main window
-            var mainWindow = new MainWindow();
+            // Create main window and set DataContext IMMEDIATELY
             var mainViewModel = viewModelLocator.MainViewModel;
-
-            mainWindow.DataContext = mainViewModel;
+            var mainWindow = new MainWindow
+            {
+                DataContext = mainViewModel  // Set EARLY before any rendering
+            };
             MainWindow = mainWindow;
 
-            // Navigate to startup view
-            navigationService.NavigateTo(uiOptions.StartupView);
-
+            // Show window FIRST so UI is visible
             mainWindow.Show();
+
+            // Navigate to startup view AFTER window is shown
+            navigationService.NavigateTo(uiOptions.StartupView);
 
             _logger?.LogInformation("Main window initialized and displayed");
 

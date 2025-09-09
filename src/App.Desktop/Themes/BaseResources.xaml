@@ -18,6 +18,10 @@
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource GlassBorderColor}"/>
 
+    <!-- Additional safe defaults used by views -->
+    <!-- DarkGlassBrush: darker card background for emphasis bubbles -->
+    <SolidColorBrush x:Key="DarkGlassBrush" Color="#141414"/>
+
     <!-- Secondary button interaction brushes (dark theme) -->
     <SolidColorBrush x:Key="SecondaryButtonHoverBrush" Color="#222222"/>
     <SolidColorBrush x:Key="SecondaryButtonPressedBrush" Color="#141414"/>
