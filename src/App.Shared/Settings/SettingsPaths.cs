@@ -8,69 +8,65 @@ namespace Lazarus.Shared.Settings;
 /// </summary>
 public static class SettingsPaths
 {
-    private static readonly string CompanyName = "Lazarus";
-    private static readonly string AppName = "LazarusAI";
 
     /// <summary>
     /// Gets the root application data directory
     /// </summary>
-    public static string AppDataRoot => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        CompanyName,
-        AppName);
+    // Align settings with canonical LazarusPaths folder layout under %LOCALAPPDATA%\Lazarus
+    public static string AppDataRoot => Lazarus.Shared.LazarusPaths.Root;
 
     /// <summary>
     /// Gets the settings file path
     /// </summary>
-    public static string SettingsFile => Path.Combine(AppDataRoot, "settings.json");
+    public static string SettingsFile => Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Config, "settings.json");
 
     /// <summary>
     /// Gets the backup settings file path
     /// </summary>
-    public static string SettingsBackupFile => Path.Combine(AppDataRoot, "settings.backup.json");
+    public static string SettingsBackupFile => Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Config, "settings.backup.json");
 
     /// <summary>
     /// Gets the models directory path
     /// </summary>
-    public static string ModelsDirectory => Path.Combine(AppDataRoot, "Models");
+    public static string ModelsDirectory => Lazarus.Shared.LazarusPaths.Models.RootDir;
 
     /// <summary>
     /// Gets the cache directory path
     /// </summary>
-    public static string CacheDirectory => Path.Combine(AppDataRoot, "Cache");
+    public static string CacheDirectory => Lazarus.Shared.LazarusPaths.SystemData.Cache;
 
     /// <summary>
     /// Gets the temporary files directory path
     /// </summary>
-    public static string TempDirectory => Path.Combine(AppDataRoot, "Temp");
+    public static string TempDirectory => Lazarus.Shared.LazarusPaths.SystemData.Cache;
 
     /// <summary>
     /// Gets the exports directory path
     /// </summary>
-    public static string ExportsDirectory => Path.Combine(AppDataRoot, "Exports");
+    public static string ExportsDirectory => Path.Combine(Lazarus.Shared.LazarusPaths.SharedResources.ImportExport, "Export");
 
     /// <summary>
     /// Gets the logs directory path
     /// </summary>
-    public static string LogsDirectory => Path.Combine(AppDataRoot, "Logs");
+    public static string LogsDirectory => Lazarus.Shared.LazarusPaths.SystemData.Logs;
 
     /// <summary>
     /// Gets the database directory path
     /// </summary>
-    public static string DatabaseDirectory => Path.Combine(AppDataRoot, "Database");
+    public static string DatabaseDirectory => Lazarus.Shared.LazarusPaths.SystemData.Database;
 
     /// <summary>
     /// Ensures all required directories exist
     /// </summary>
     public static void EnsureDirectoriesExist()
     {
-        Directory.CreateDirectory(AppDataRoot);
-        Directory.CreateDirectory(ModelsDirectory);
-        Directory.CreateDirectory(CacheDirectory);
-        Directory.CreateDirectory(TempDirectory);
-        Directory.CreateDirectory(ExportsDirectory);
-        Directory.CreateDirectory(LogsDirectory);
-        Directory.CreateDirectory(DatabaseDirectory);
+        // Use the canonical enumerator; already idempotent
+        foreach (var d in Lazarus.Shared.LazarusPaths.EnumerateAllDirectories())
+        {
+            try { Directory.CreateDirectory(d); } catch { }
+        }
+        // Ensure configuration folder specifically for settings files
+        try { Directory.CreateDirectory(Lazarus.Shared.LazarusPaths.SystemData.Config); } catch { }
     }
 
     /// <summary>
