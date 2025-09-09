@@ -53,6 +53,8 @@ namespace Lazarus.Desktop.ViewModels
                 OnPropertyChanged(nameof(HasTokenizer));
                 OnPropertyChanged(nameof(HasEmbedding));
                 OnPropertyChanged(nameof(LoraScale));
+                OnPropertyChanged(nameof(LoadedLoraDisplay));
+                OnPropertyChanged(nameof(AdaptersHudText));
             };
 
             _logger.LogDebug("MainViewModel initialized");
@@ -121,6 +123,10 @@ namespace Lazarus.Desktop.ViewModels
         public bool HasLora => !string.IsNullOrWhiteSpace(LoadedLoraName);
         public bool HasTokenizer => !string.IsNullOrWhiteSpace(LoadedTokenizerName);
         public bool HasEmbedding => !string.IsNullOrWhiteSpace(LoadedEmbeddingName);
+
+        // For HUD value like "adapter @0.70"; null when none
+        public string? LoadedLoraDisplay
+            => HasLora ? (LoraScale.HasValue ? $"{LoadedLoraName} @{LoraScale:0.00}" : LoadedLoraName) : null;
 
         public string AdaptersHudText
         {

@@ -139,10 +139,20 @@
                     <TextBlock Text=" "/>
                     <TextBlock Text="{Binding LoadedModelName}"/>
 
-                    <!-- Adapters summary (single text to avoid parse-time binding issues) -->
-                    <TextBlock Text="{Binding AdaptersHudText}"
-                               Margin="12,0,0,0"
-                               Style="{StaticResource SecondaryTextStyle}"/>
+                    <!-- LoRA -->
+                    <TextBlock Text="LoRA:" Style="{StaticResource SecondaryTextStyle}" Margin="12,0,0,0"/>
+                    <TextBlock Text=" "/>
+                    <TextBlock Text="{Binding LoadedLoraDisplay, TargetNullValue=None Loaded}"/>
+
+                    <!-- Tokenizer -->
+                    <TextBlock Text="Tokenizer:" Style="{StaticResource SecondaryTextStyle}" Margin="12,0,0,0"/>
+                    <TextBlock Text=" "/>
+                    <TextBlock Text="{Binding LoadedTokenizerName, TargetNullValue=None Loaded}"/>
+
+                    <!-- Embedding -->
+                    <TextBlock Text="Embedding:" Style="{StaticResource SecondaryTextStyle}" Margin="12,0,0,0"/>
+                    <TextBlock Text=" "/>
+                    <TextBlock Text="{Binding LoadedEmbeddingName, TargetNullValue=None Loaded}"/>
                 </StackPanel>
 
                 <!-- Window Controls -->
