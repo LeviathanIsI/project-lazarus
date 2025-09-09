@@ -128,8 +128,9 @@
                                                             <Viewbox Width="16" Height="16">
                                                                 <Canvas Width="24" Height="24">
                                                                     <Path Data="M19 7L18.1 19.9C17.9 21.1 16.8 22 15.6 22H8.4C7.2 22 6.1 21.1 5.9 19.9L5 7M10 11V17M14 11V17M15 7V4C15 3.4 14.6 3 14 3H10C9.4 3 9 3.4 9 4V7M4 7H20"
+                                                                          StrokeThickness="2"
                                                                           Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                                                          StrokeThickness="2"/>
+                                                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                                                                 </Canvas>
                                                             </Viewbox>
                                                         </Button>
