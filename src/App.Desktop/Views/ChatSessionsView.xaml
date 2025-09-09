@@ -104,19 +104,36 @@
                                                                    Style="{StaticResource SmallTextStyle}"
                                                                    Margin="0,4,0,0"
                                                                    TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:g}'}"
+                                                                   Style="{StaticResource SmallTextStyle}"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                                   Margin="0,4,0,0"/>
                                                     </StackPanel>
-                                                    <Button Grid.Column="1"
-                                                            Style="{StaticResource IconGlassButtonStyle}"
-                                                            Command="{Binding DataContext.DeleteChatCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                                            ToolTip="Delete conversation">
-                                                        <Viewbox Width="16" Height="16">
-                                                            <Canvas Width="24" Height="24">
-                                                                <Path Data="M19 7L18.1 19.9C17.9 21.1 16.8 22 15.6 22H8.4C7.2 22 6.1 21.1 5.9 19.9L5 7M10 11V17M14 11V17M15 7V4C15 3.4 14.6 3 14 3H10C9.4 3 9 3.4 9 4V7M4 7H20"
-                                                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                                                      StrokeThickness="2"/>
-                                                            </Canvas>
-                                                        </Viewbox>
-                                                    </Button>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <Button Style="{StaticResource IconGlassButtonStyle}"
+                                                                ToolTip="Rename conversation"
+                                                                Command="{Binding DataContext.BeginRenameChatCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                CommandParameter="{Binding}">
+                                                            <Viewbox Width="16" Height="16">
+                                                                <Canvas Width="24" Height="24">
+                                                                    <Path Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z M20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"
+                                                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                                                </Canvas>
+                                                            </Viewbox>
+                                                        </Button>
+                                                        <Button Style="{StaticResource IconGlassButtonStyle}"
+                                                                Command="{Binding DataContext.DeleteChatCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                CommandParameter="{Binding}"
+                                                                ToolTip="Delete conversation">
+                                                            <Viewbox Width="16" Height="16">
+                                                                <Canvas Width="24" Height="24">
+                                                                    <Path Data="M19 7L18.1 19.9C17.9 21.1 16.8 22 15.6 22H8.4C7.2 22 6.1 21.1 5.9 19.9L5 7M10 11V17M14 11V17M15 7V4C15 3.4 14.6 3 14 3H10C9.4 3 9 3.4 9 4V7M4 7H20"
+                                                                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                                          StrokeThickness="2"/>
+                                                                </Canvas>
+                                                            </Viewbox>
+                                                        </Button>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Border>
                                         </ControlTemplate>
@@ -153,7 +170,7 @@
                         </Grid.ColumnDefinitions>
                         
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Chat Session"
+                            <TextBlock Text="{Binding SelectedConversation.Title, FallbackValue=Chat Session}"
                                        Style="{StaticResource H3TextStyle}"
                                        AutomationProperties.HeadingLevel="Level3"/>
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">

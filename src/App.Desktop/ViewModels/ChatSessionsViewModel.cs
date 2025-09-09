@@ -65,12 +65,14 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         private string _title = string.Empty;
         private DateTime _updatedAt;
         private string? _preview;
+        private bool _isEditing;
 
         public Guid Id { get; init; }
         public DateTime CreatedAt { get; init; }
         public string Title { get => _title; set { if (_title != value) { _title = value; OnPropertyChanged(); } } }
         public DateTime UpdatedAt { get => _updatedAt; set { if (_updatedAt != value) { _updatedAt = value; OnPropertyChanged(); } } }
         public string? Preview { get => _preview; set { if (_preview != value) { _preview = value; OnPropertyChanged(); } } }
+        public bool IsEditing { get => _isEditing; set { if (_isEditing != value) { _isEditing = value; OnPropertyChanged(); } } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -139,7 +141,9 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             () => !IsStreaming && !string.IsNullOrWhiteSpace(InputText) && IsHealthy);
 
         NewChatCommand = new RelayCommand(async () => await NewChatAsync());
-        DeleteChatCommand = new RelayCommand(async () => await DeleteSelectedChatAsync(), () => SelectedConversation != null);
+        DeleteChatCommand = new RelayCommand<ChatItemViewModel>(async vm => await DeleteChatAsync(vm), vm => vm != null || SelectedConversation != null);
+        BeginRenameChatCommand = new RelayCommand<ChatItemViewModel>(vm => { if (vm != null) vm.IsEditing = true; });
+        CommitRenameChatCommand = new RelayCommand<ChatItemViewModel>(async vm => { if (vm != null) await CommitRenameAsync(vm); });
 
         // Subscribe to runner state changes
         _runnerStatus.RunnerStateChanged += OnRunnerStateChanged;
@@ -162,6 +166,8 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     public ICommand SendMessageCommand { get; }
     public ICommand NewChatCommand { get; }
     public ICommand DeleteChatCommand { get; }
+    public ICommand BeginRenameChatCommand { get; }
+    public ICommand CommitRenameChatCommand { get; }
 
     public string InputText
     {
@@ -207,6 +213,8 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             if (SetProperty(ref _isHealthy, value))
             {
                 (SendMessageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                if (DeleteChatCommand is RelayCommand<ChatItemViewModel> del)
+                    del.RaiseCanExecuteChanged();
             }
         }
     }
@@ -707,23 +715,45 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         }
     }
 
-    private async Task DeleteSelectedChatAsync()
+    private async Task DeleteChatAsync(ChatItemViewModel? vm)
     {
-        if (SelectedConversation == null) return;
+        var target = vm ?? SelectedConversation;
+        if (target == null) return;
         try
         {
-            var id = SelectedConversation.Id;
+            var id = target.Id;
             await _chatService.DeleteAsync(id).ConfigureAwait(true);
-            var idx = Conversations.IndexOf(SelectedConversation);
-            Conversations.Remove(SelectedConversation);
-            SelectedConversation = Conversations.Count > 0 ? Conversations[Math.Clamp(idx, 0, Conversations.Count - 1)] : null;
-            Messages.Clear();
+            var idx = Conversations.IndexOf(target);
+            Conversations.Remove(target);
+            if (ReferenceEquals(target, SelectedConversation))
+            {
+                SelectedConversation = Conversations.Count > 0 ? Conversations[Math.Clamp(idx, 0, Conversations.Count - 1)] : null;
+                Messages.Clear();
+            }
         }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Failed to delete chat");
             ErrorMessage = "Failed to delete conversation.";
         }
+    }
+
+    private async Task CommitRenameAsync(ChatItemViewModel vm)
+    {
+        try
+        {
+            var title = string.IsNullOrWhiteSpace(vm.Title) ? "New Chat" : vm.Title.Trim();
+            vm.Title = title;
+            await _chatService.RenameAsync(vm.Id, title).ConfigureAwait(true);
+            if (SelectedConversation != null && vm.Id == SelectedConversation.Id)
+                OnPropertyChanged(nameof(SelectedConversation));
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to rename chat");
+            ErrorMessage = "Failed to rename conversation.";
+        }
+        finally { vm.IsEditing = false; }
     }
 
     private static ChatItemViewModel ToVm(Conversation c)
