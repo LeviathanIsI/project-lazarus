@@ -1,6 +1,7 @@
 <UserControl x:Class="Lazarus.Desktop.Views.ImagesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Lazarus.Desktop.Views"
              Loaded="UserControl_Loaded"
              PreviewKeyDown="OnPreviewKeyDown"
              AllowDrop="True">
@@ -15,7 +16,7 @@
         <SolidColorBrush x:Key="Img_Subtle" Color="#A0A0A0"/>
         <SolidColorBrush x:Key="Img_Border" Color="#2A2A2A"/>
 
-        <!-- Primary dark button -->
+        <!-- Primary dark button (legacy) -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -48,6 +49,89 @@
                                 <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource Img_PrimarySolid}"/>
                             </DataTrigger>
                         </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Corruption-style primary button: Idle, Running, Success, Error -->
+        <Style x:Key="PrimaryCorruptButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="MinWidth" Value="360"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!-- Outer stroke with animated gradient -->
+                            <Border x:Name="Stroke" CornerRadius="12"
+                                    BorderThickness="1"
+                                    Background="Transparent">
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" MappingMode="RelativeToBoundingBox">
+                                        <GradientStop x:Name="GS1" Color="#6AA0FF" Offset="0"/>
+                                        <GradientStop x:Name="GS2" Color="#6AA0FF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                            </Border>
+
+                            <!-- Button content -->
+                            <Border CornerRadius="10" Margin="1" Background="#0A000000">
+                                <ContentPresenter x:Name="ContentHost" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <ContentPresenter.RenderTransform>
+                                        <TranslateTransform x:Name="TextJitter" X="0" Y="0"/>
+                                    </ContentPresenter.RenderTransform>
+                                </ContentPresenter>
+                            </Border>
+
+                            <!-- Scanline overlay (hidden by default) -->
+                            <Border x:Name="Scanlines" IsHitTestVisible="False" Opacity="0" ClipToBounds="True" Margin="1" CornerRadius="10">
+                                <Border.OpacityMask>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.OpacityMask>
+                                <Grid>
+                                    <Rectangle Height="2" VerticalAlignment="Top" Fill="#30FFFFFF" Margin="0,4,0,0"/>
+                                    <Rectangle Height="1" VerticalAlignment="Center" Fill="#20FFFFFF"/>
+                                    <Rectangle Height="2" VerticalAlignment="Bottom" Fill="#30FFFFFF" Margin="0,0,0,4"/>
+                                </Grid>
+                            </Border>
+
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="RunStates">
+                                    <VisualState x:Name="Idle"/>
+                                    <VisualState x:Name="Running">
+                                        <Storyboard>
+                                            <!-- Pulse stroke thickness -->
+                                            <DoubleAnimation Storyboard.TargetName="Stroke" Storyboard.TargetProperty="BorderThickness.Top" From="1" To="2" Duration="0:0:0.5" AutoReverse="True" RepeatBehavior="Forever"/>
+                                            <DoubleAnimation Storyboard.TargetName="Stroke" Storyboard.TargetProperty="BorderThickness.Left" From="1" To="2" Duration="0:0:0.5" AutoReverse="True" RepeatBehavior="Forever"/>
+                                            <DoubleAnimation Storyboard.TargetName="Stroke" Storyboard.TargetProperty="BorderThickness.Right" From="1" To="2" Duration="0:0:0.5" AutoReverse="True" RepeatBehavior="Forever"/>
+                                            <DoubleAnimation Storyboard.TargetName="Stroke" Storyboard.TargetProperty="BorderThickness.Bottom" From="1" To="2" Duration="0:0:0.5" AutoReverse="True" RepeatBehavior="Forever"/>
+                                            <!-- Scanlines fade in -->
+                                            <DoubleAnimation Storyboard.TargetName="Scanlines" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.25"/>
+                                            <!-- Gradient drift -->
+                                            <DoubleAnimation Storyboard.TargetName="GS1" Storyboard.TargetProperty="Offset" From="0" To="1" Duration="0:0:1.5" RepeatBehavior="Forever" AutoReverse="True"/>
+                                            <DoubleAnimation Storyboard.TargetName="GS2" Storyboard.TargetProperty="Offset" From="1" To="0" Duration="0:0:1.5" RepeatBehavior="Forever" AutoReverse="True"/>
+                                            <!-- Text jitter -->
+                                            <DoubleAnimation Storyboard.TargetName="TextJitter" Storyboard.TargetProperty="X" From="0" To="0.7" Duration="0:0:0.12" AutoReverse="True" RepeatBehavior="Forever"/>
+                                            <DoubleAnimation Storyboard.TargetName="TextJitter" Storyboard.TargetProperty="Y" From="0" To="0.7" Duration="0:0:0.18" AutoReverse="True" RepeatBehavior="Forever"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Success">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Scanlines" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Error">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="GS1" Storyboard.TargetProperty="Color" To="#FF5A6A" Duration="0:0:0.2" AutoReverse="True"/>
+                                            <ColorAnimation Storyboard.TargetName="GS2" Storyboard.TargetProperty="Color" To="#FF5A6A" Duration="0:0:0.2" AutoReverse="True"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -201,8 +285,8 @@
                             <Button    Grid.Column="3" x:Name="LockBtn" Content="🔓" Style="{StaticResource GhostButton}" Click="OnToggleSeedLock" IsEnabled="True"/>
                         </Grid>
 
-                        <!-- Generate primary button -->
-                        <Button x:Name="GenerateButton" Style="{StaticResource PrimaryButton}" Margin="0,10,0,6" Click="OnGenerateClick" IsEnabled="{Binding InputsEnabled}">
+                        <!-- Generate primary button (center of gravity) -->
+                        <Button x:Name="GenerateButton" Style="{StaticResource PrimaryCorruptButton}" Margin="0,10,0,6" Click="OnGenerateClick" IsEnabled="{Binding InputsEnabled}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                             <TextBlock>
                                 <Run Text="{Binding GenerateButtonText, Mode=OneWay}"/>
                             </TextBlock>
@@ -225,19 +309,33 @@
                 </Border>
 
                 <!-- Preview / Drop zone -->
-                <Border Style="{StaticResource GlassCardStyle}" Padding="8" Margin="0,8,0,0">
-                    <Grid x:Name="DropZone" AllowDrop="True" DragOver="OnDropZoneDragOver" Drop="OnDropZoneDrop" DragEnter="OnDropZoneDragEnter">
+                <Border Style="{StaticResource GlassCardStyle}" Padding="0" Margin="0,8,0,0">
+                    <Grid x:Name="DropZone" AllowDrop="True"
+                          PreviewMouseMove="OnDropZonePreviewMouseMove"
+                          DragOver="OnDropZoneDragOver" Drop="OnDropZoneDrop" DragEnter="OnDropZoneDragEnter" DragLeave="OnDropZoneDragLeave">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Border Grid.Row="0" BorderThickness="1" BorderBrush="{StaticResource Img_Border}" CornerRadius="8" Padding="6">
+                        <Grid Grid.Row="0" ClipToBounds="True">
+                            <Grid.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="DropScale" ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform x:Name="DropTranslate" X="0" Y="0"/>
+                                </TransformGroup>
+                            </Grid.RenderTransform>
+                            <Grid.Background>
+                                <RadialGradientBrush GradientOrigin="0.5,0.4" RadiusX="0.85" RadiusY="0.85">
+                                    <GradientStop x:Name="DZ1" Color="#101319" Offset="0"/>
+                                    <GradientStop x:Name="DZ2" Color="#07090C" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Grid.Background>
                             <Grid>
                                 <Image x:Name="PreviewImage" Stretch="Uniform" Height="300"/>
                                 <TextBlock x:Name="PlaceholderLabel" Text="Drop an image here to start"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.4"/>
                             </Grid>
-                        </Border>
+                        </Grid>
                         <TextBlock Grid.Row="1" Text="PNG with alpha while Inpaint = mask" Margin="4,6,0,0" Foreground="{StaticResource Img_Subtle}"/>
                     </Grid>
                 </Border>
@@ -279,37 +377,43 @@
                         <RowDefinition Height="Auto"/>  <!-- VAE combo -->
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" x:Name="SectionControlNet">
+                        <Viewbox Width="14" Height="14" Margin="0,0,6,0"><Path Fill="{StaticResource Img_Subtle}" Data="M2,4 H14 M2,8 H14 M2,12 H14" StrokeThickness="1" Stroke="{StaticResource Img_Subtle}"/></Viewbox>
                         <TextBlock Text="ControlNet"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenControlNetFolder"/>
                     </StackPanel>
                     <ComboBox x:Name="ControlNetCombo" Grid.Row="1" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
 
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" x:Name="SectionLoRA">
+                        <Viewbox Width="14" Height="14" Margin="0,0,6,0"><Path Fill="{StaticResource Img_Subtle}" Data="M8,2 L14,8 L8,14 L2,8 Z"/></Viewbox>
                         <TextBlock Text="LoRA"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenLoRAFolder"/>
                     </StackPanel>
-                    <ComboBox x:Name="LoraCombo" Grid.Row="3" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+                    <ComboBox x:Name="LoraCombo" Grid.Row="3" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}" SelectionChanged="OnLoraSelectionChanged"/>
 
-                    <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center" x:Name="SectionEmbedding">
+                        <Viewbox Width="14" Height="14" Margin="0,0,6,0"><Path Fill="{StaticResource Img_Subtle}" Data="M8,1 L11,8 L8,15 L5,8 Z"/></Viewbox>
                         <TextBlock Text="Embedding"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenEmbeddingFolder"/>
                     </StackPanel>
-                    <ComboBox x:Name="EmbeddingCombo" Grid.Row="5" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+                    <ComboBox x:Name="EmbeddingCombo" Grid.Row="5" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}" SelectionChanged="OnEmbeddingSelectionChanged"/>
 
-                    <StackPanel Grid.Row="6" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="6" Orientation="Horizontal" VerticalAlignment="Center" x:Name="SectionHyper">
+                        <Viewbox Width="14" Height="14" Margin="0,0,6,0"><Path Fill="{StaticResource Img_Subtle}" Data="M8,2 L12,5 L12,11 L8,14 L4,11 L4,5 Z"/></Viewbox>
                         <TextBlock Text="Hypernetwork"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenHyperFolder"/>
                     </StackPanel>
-                    <ComboBox x:Name="HyperCombo" Grid.Row="7" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
+                    <ComboBox x:Name="HyperCombo" Grid.Row="7" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}" SelectionChanged="OnHyperSelectionChanged"/>
 
-                    <StackPanel Grid.Row="8" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="8" Orientation="Horizontal" VerticalAlignment="Center" x:Name="SectionUpscaler">
+                        <Viewbox Width="14" Height="14" Margin="0,0,6,0"><Path Fill="{StaticResource Img_Subtle}" Data="M8,1 L9,5 L13,6 L9,7 L8,11 L7,7 L3,6 L7,5 Z"/></Viewbox>
                         <TextBlock Text="Upscaler"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenUpscaleFolder"/>
                     </StackPanel>
                     <ComboBox x:Name="UpscalerCombo" Grid.Row="9" Margin="0,4,0,8" IsEnabled="{Binding InputsEnabled}"/>
 
-                    <StackPanel Grid.Row="10" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="10" Orientation="Horizontal" VerticalAlignment="Center" x:Name="SectionVae">
+                        <Viewbox Width="14" Height="14" Margin="0,0,6,0"><Path Fill="{StaticResource Img_Subtle}" Data="M5,4 L11,4 L14,8 L11,12 L5,12 L2,8 Z"/></Viewbox>
                         <TextBlock Text="VAE"/>
                         <Button Content="Open" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnOpenVaeFolder"/>
                     </StackPanel>

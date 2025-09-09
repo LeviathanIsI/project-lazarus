@@ -42,6 +42,8 @@ namespace Lazarus.Desktop.Views
         public bool InputsEnabled => !IsRunning;
         private int _progressPercent;
         public int ProgressPercent { get => _progressPercent; set { _progressPercent = value; OnPropertyChanged(nameof(ProgressPercent)); } }
+        private bool _lastRunFailed;
+        public bool LastRunFailed { get => _lastRunFailed; set { _lastRunFailed = value; OnPropertyChanged(nameof(LastRunFailed)); } }
 
         public string GenerateButtonText => IsRunning ? "Generating…" : "Generate";
 
@@ -193,6 +195,8 @@ namespace Lazarus.Desktop.Views
                 _cts = new CancellationTokenSource();
                 IsRunning = true;
                 ProgressPercent = 0;
+                LastRunFailed = false;
+                try { VisualStateManager.GoToState(GenerateButton, "Running", true); } catch { }
 
                 // start indeterminate, then simulate progress
                 await Task.Delay(400, _cts.Token).ContinueWith(_ => { }, TaskScheduler.Default);
@@ -214,6 +218,7 @@ namespace Lazarus.Desktop.Views
                 {
                     ProgressPercent = 0;
                     EnqueueToast("Generation canceled", isError: true);
+                    try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
                 }
                 else
                 {
@@ -226,6 +231,7 @@ namespace Lazarus.Desktop.Views
                     }
                     TotalImages += 1; GeneratedToday += 1; StorageUsedMb += 0.001;
                     EnqueueToast($"Image generated  Seed {Seed}");
+                    try { VisualStateManager.GoToState(GenerateButton, "Success", true); } catch { }
                 }
             }
             catch { }
@@ -233,6 +239,8 @@ namespace Lazarus.Desktop.Views
             {
                 _cts?.Dispose(); _cts = null;
                 IsRunning = false;
+                await Task.Delay(500);
+                try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
             }
         }
 
@@ -317,6 +325,8 @@ namespace Lazarus.Desktop.Views
         {
             try
             {
+                // Ripple effect
+                AnimateDropRipple();
                 var paths = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if (paths == null || paths.Length == 0) return;
                 var file = paths[0];
@@ -332,6 +342,54 @@ namespace Lazarus.Desktop.Views
                 }
             }
             catch (Exception ex) { EnqueueToast("Drop failed: " + ex.Message, isError: true); }
+        }
+
+        private void OnDropZoneDragLeave(object sender, DragEventArgs e)
+        {
+            try
+            {
+                DZ1.Color = (Color)ColorConverter.ConvertFromString("#101319");
+                DZ2.Color = (Color)ColorConverter.ConvertFromString("#07090C");
+            }
+            catch { }
+        }
+
+        private void AnimateDropRipple()
+        {
+            try
+            {
+                var sb = new System.Windows.Media.Animation.Storyboard();
+                var a1 = new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.02, TimeSpan.FromMilliseconds(120)) { AutoReverse = true };
+                var a2 = new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.02, TimeSpan.FromMilliseconds(120)) { AutoReverse = true };
+                System.Windows.Media.Animation.Storyboard.SetTarget(a1, DropScale);
+                System.Windows.Media.Animation.Storyboard.SetTargetProperty(a1, new PropertyPath(ScaleTransform.ScaleXProperty));
+                System.Windows.Media.Animation.Storyboard.SetTarget(a2, DropScale);
+                System.Windows.Media.Animation.Storyboard.SetTargetProperty(a2, new PropertyPath(ScaleTransform.ScaleYProperty));
+                sb.Children.Add(a1); sb.Children.Add(a2);
+                sb.Begin();
+            }
+            catch { }
+        }
+
+        private void OnDropZonePreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                var element = (FrameworkElement)sender;
+                var pos = e.GetPosition(element);
+                var cx = element.ActualWidth / 2.0;
+                var cy = element.ActualHeight / 2.0;
+                var dx = pos.X - cx;
+                var dy = pos.Y - cy;
+                var max = Math.Max(element.ActualWidth, element.ActualHeight);
+                var dist = Math.Sqrt(dx * dx + dy * dy);
+                var scale = 1.0 + Math.Min(0.01, dist / max * 0.02);
+                DropTranslate.X = dx * 0.02;
+                DropTranslate.Y = dy * 0.02;
+                DropScale.ScaleX = scale;
+                DropScale.ScaleY = scale;
+            }
+            catch { }
         }
 
         private static bool IsSupportedImage(string path)
@@ -372,6 +430,33 @@ namespace Lazarus.Desktop.Views
             => OpenFolderSafe(LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Embeddings, LazarusPaths.GenAssets.StylePresets));
         private void OnOpenHyperFolder(object sender, RoutedEventArgs e)
             => OpenFolderSafe(LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Hypernetworks, LazarusPaths.GenAssets.StylePresets));
+
+        // Empty-state selection handlers: open folder when placeholder clicked
+        private void OnLoraSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryOpenIfPlaceholder((ComboBox)sender, LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_LoRAs, LazarusPaths.GenAssets.StylePresets));
+        }
+        private void OnEmbeddingSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryOpenIfPlaceholder((ComboBox)sender, LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Embeddings, LazarusPaths.GenAssets.StylePresets));
+        }
+        private void OnHyperSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TryOpenIfPlaceholder((ComboBox)sender, LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Hypernetworks, LazarusPaths.GenAssets.StylePresets));
+        }
+        private static void TryOpenIfPlaceholder(ComboBox combo, string path)
+        {
+            try
+            {
+                var s = combo.SelectedItem as string;
+                if (string.Equals(s, "Configure…", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "(none found)", StringComparison.OrdinalIgnoreCase) || s?.StartsWith("Configure ") == true)
+                {
+                    OpenFolderSafe(path);
+                    combo.SelectedIndex = -1;
+                }
+            }
+            catch { }
+        }
         private void OnOpenUpscaleFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Upscale);
         private void OnOpenVaeFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Vae);
         private static void OpenFolderSafe(string path)
