@@ -457,8 +457,28 @@ public sealed class ModelsViewModel : ViewModelBase
         var root = LazarusPaths.Runners.RootDir;
         if (!System.IO.Directory.Exists(root)) return results;
 
-        foreach (var engineDir in System.IO.Directory.EnumerateDirectories(root, "*", System.IO.SearchOption.TopDirectoryOnly))
+        // Build candidate engine directories from domain roots + legacy flat
+        var engineDirs = new System.Collections.Generic.List<string>();
+        void AddTop(string dir)
         {
+            try
+            {
+                if (System.IO.Directory.Exists(dir))
+                    engineDirs.AddRange(System.IO.Directory.EnumerateDirectories(dir, "*", System.IO.SearchOption.TopDirectoryOnly));
+            }
+            catch { }
+        }
+
+        // Domain roots: Chats/Images/Videos/Audio/Avatars/Shared (Chats hosts LLM runners we scan for)
+        AddTop(LazarusPaths.Runners.ChatsRoot);
+        // Keep legacy flat engines for back-compat
+        AddTop(root);
+
+        // De-duplicate
+        var seen = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+        foreach (var engineDir in engineDirs)
+        {
+            if (!seen.Add(engineDir)) continue;
             var engineKey = System.IO.Path.GetFileName(engineDir).Trim();
             string[] patterns = engineKey.ToLowerInvariant() switch
             {
@@ -477,11 +497,14 @@ public sealed class ModelsViewModel : ViewModelBase
                 foreach (var exe in files)
                 {
                     var folder = System.IO.Path.GetDirectoryName(exe)!;
-                    var leaf = new System.IO.DirectoryInfo(folder).Name;
+                    string leaf;
+                    try { leaf = new System.IO.DirectoryInfo(folder).Name; }
+                    catch { leaf = folder; }
                     results.Add(new RunnerCandidate(engineKey, leaf, folder, exe));
                 }
             }
         }
+
         return results
             .GroupBy(r => new Tuple<string,string>(r.Engine.ToLowerInvariant(), r.ResolvedPath), System.Collections.Generic.EqualityComparer<Tuple<string,string>>.Default)
             .Select(g => g.First())
