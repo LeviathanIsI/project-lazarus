@@ -65,6 +65,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         private string _title = string.Empty;
         private DateTime _updatedAt;
         private string? _preview;
+        private string? _lastMessage;
         private bool _isEditing;
 
         public Guid Id { get; init; }
@@ -72,6 +73,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         public string Title { get => _title; set { if (_title != value) { _title = value; OnPropertyChanged(); } } }
         public DateTime UpdatedAt { get => _updatedAt; set { if (_updatedAt != value) { _updatedAt = value; OnPropertyChanged(); } } }
         public string? Preview { get => _preview; set { if (_preview != value) { _preview = value; OnPropertyChanged(); } } }
+        public string? LastMessage { get => _lastMessage; set { if (_lastMessage != value) { _lastMessage = value; OnPropertyChanged(); } } }
         public bool IsEditing { get => _isEditing; set { if (_isEditing != value) { _isEditing = value; OnPropertyChanged(); } } }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -86,6 +88,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private readonly HttpClient _httpClient;
     private CancellationTokenSource? _cts;
     private bool _disposed;
+    private int _sendInProgress; // prevent rapid double-submit
 
     // UI Properties
     private string _inputText = string.Empty;
@@ -314,6 +317,9 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             if (!IsHealthy || string.IsNullOrWhiteSpace(InputText) || IsStreaming)
                 return;
 
+            if (System.Threading.Interlocked.Exchange(ref _sendInProgress, 1) == 1)
+                return;
+
             var userText = InputText.Trim();
             InputText = string.Empty;
             ErrorMessage = string.Empty;
@@ -327,7 +333,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                 SelectedConversation = cvm;
             }
 
-            // Add user message to UI and persist
+            // Add user message to UI and persist (exactly once)
             var userMessage = new MessageVm
             {
                 Role = "user",
@@ -344,8 +350,10 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                 _logger?.LogError(ex, "Failed to persist user message");
             }
 
-            // Update preview to reflect latest user text until assistant responds
+            // Update sidebar preview/last-message to reflect the user's text until assistant responds
+            var single = FirstLine(userText);
             SelectedConversation!.Preview = MakePreview(userText);
+            SelectedConversation!.LastMessage = single;
             SelectedConversation!.UpdatedAt = DateTime.UtcNow;
             var curIdx = Conversations.IndexOf(SelectedConversation);
             if (curIdx > 0)
@@ -371,6 +379,10 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         {
             _logger?.LogError(ex, "Error in SendMessageAsync");
             ErrorMessage = $"Failed to send message: {ex.Message}";
+        }
+        finally
+        {
+            System.Threading.Interlocked.Exchange(ref _sendInProgress, 0);
         }
     }
 
@@ -574,8 +586,9 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                 {
                     await _chatService.AddMessageAsync(SelectedConversation.Id, MessageRole.Assistant, assistantMessage.Content).ConfigureAwait(false);
 
-                    // Update preview and timestamps for sidebar
+                    // Update preview/last-message and timestamps for sidebar
                     SelectedConversation.Preview = MakePreview(assistantMessage.Content);
+                    SelectedConversation.LastMessage = FirstLine(assistantMessage.Content);
                     SelectedConversation.UpdatedAt = DateTime.UtcNow;
 
                     // Reorder: move selected conversation to top
@@ -621,13 +634,16 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         messages.Add(new { role = "system", content = sys });
 
         // Add conversation history (excluding the current streaming message)
-        foreach (var msg in Messages.Where(m => !m.IsStreaming))
+        var history = Messages.Where(m => !m.IsStreaming).ToList();
+        foreach (var msg in history)
         {
             messages.Add(new { role = msg.Role, content = msg.Content });
         }
 
-        // Add current user message if not already added
-        if (Messages.LastOrDefault()?.Content != userText)
+        // Add current user message if not already the last non-streaming message
+        var lastNonStreaming = history.LastOrDefault();
+        var lastIsSameUser = lastNonStreaming != null && lastNonStreaming.Role == "user" && string.Equals(lastNonStreaming.Content, userText, StringComparison.Ordinal);
+        if (!lastIsSameUser)
         {
             messages.Add(new { role = "user", content = userText });
         }
@@ -694,6 +710,24 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             {
                 Conversations.Add(ToVm(c));
             }
+            // Hydrate last-message previews for sidebar (first line of the latest message)
+            try
+            {
+                foreach (var vm in Conversations.ToList())
+                {
+                    try
+                    {
+                        var msgs = await _chatService.GetMessagesAsync(vm.Id).ConfigureAwait(true);
+                        var last = msgs.LastOrDefault();
+                        var content = last?.Content ?? string.Empty;
+                        var one = FirstLine(content);
+                        vm.LastMessage = one;
+                        if (!string.IsNullOrEmpty(content)) vm.Preview = MakePreview(content);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
             HasConversations = Conversations.Count > 0;
             if (SelectedConversation == null && Conversations.Count > 0)
             {
@@ -721,6 +755,14 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                     Content = m.Content,
                     Timestamp = m.Timestamp.ToLocalTime()
                 });
+            }
+            // Update sidebar preview/last-message from the loaded history
+            var lastMsg = msgs.LastOrDefault();
+            if (lastMsg != null)
+            {
+                SelectedConversation.LastMessage = FirstLine(lastMsg.Content ?? string.Empty);
+                SelectedConversation.Preview = MakePreview(lastMsg.Content ?? string.Empty);
+                SelectedConversation.UpdatedAt = lastMsg.Timestamp;
             }
         }
         catch (Exception ex)
@@ -795,7 +837,8 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             Title = c.Title,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.LastMessageAt,
-            Preview = null
+            Preview = null,
+            LastMessage = null
         };
     }
 
@@ -804,6 +847,18 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(content)) return string.Empty;
         var s = content.Replace("\r", " ").Replace("\n", " ");
         return s.Length <= 80 ? s : s.Substring(0, 80);
+    }
+
+    private static string FirstLine(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return string.Empty;
+        var idxR = content.IndexOf('\r');
+        var idxN = content.IndexOf('\n');
+        var idx = -1;
+        if (idxR >= 0 && idxN >= 0) idx = Math.Min(idxR, idxN);
+        else idx = Math.Max(idxR, idxN);
+        var one = idx >= 0 ? content.Substring(0, idx) : content;
+        return one;
     }
 
     // JSON response models

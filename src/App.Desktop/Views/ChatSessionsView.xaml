@@ -81,7 +81,7 @@
                              BorderThickness="0"
                              Padding="12,8"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
                              KeyboardNavigation.TabNavigation="Continue">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
@@ -99,15 +99,19 @@
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding Title}"
-                                                                   Style="{StaticResource BodyTextStyle}"
-                                                                   FontWeight="SemiBold"
-                                                                   TextTrimming="CharacterEllipsis"
-                                                                   TextWrapping="NoWrap"/>
-                                                         <TextBlock Text="{Binding Preview}"
+                                                                       Style="{StaticResource BodyTextStyle}"
+                                                                       FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       TextWrapping="NoWrap"/>
+                                                         <TextBlock Text="{Binding LastMessage}"
                                                                     Style="{StaticResource SmallTextStyle}"
                                                                     Margin="0,4,0,0"
                                                                     TextTrimming="CharacterEllipsis"
-                                                                    TextWrapping="NoWrap"/>
+                                                                    TextWrapping="NoWrap"
+                                                                    VerticalAlignment="Center"
+                                                                    HorizontalAlignment="Left"
+                                                                    MaxHeight="20"
+                                                                    ToolTip="{Binding LastMessage}"/>
                                                         <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:g}'}"
                                                                    Style="{StaticResource SmallTextStyle}"
                                                                    Foreground="{StaticResource TextSecondaryBrush}"
