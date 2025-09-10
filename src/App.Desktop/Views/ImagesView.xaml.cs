@@ -180,26 +180,13 @@ namespace Lazarus.Desktop.Views
                 psi.RedirectStandardError = true;
                 psi.CreateNoWindow = true;
 
-                if (ext is ".bat" or ".cmd")
-                {
-                    psi.FileName = "cmd.exe";
-                    psi.Arguments = $"/c \"{exe}\"";
-                }
-                else if (ext == ".exe")
-                {
-                    psi.FileName = exe;
-                    psi.Arguments = string.Empty;
-                }
-                else if (ext == ".py")
-                {
-                    // Try python from PATH
-                    psi.FileName = "python";
-                    psi.Arguments = $"\"{exe}\"";
-                }
-                else
-                {
-                    return false;
-                }
+                // Per-engine launch arguments and command mapping
+                var engine = (candidate.Engine ?? string.Empty).Trim().ToLowerInvariant();
+                var desiredPort = GetDefaultPort(engine);
+                var (fileName, arguments) = BuildLaunchCommand(engine, ext, exe, desiredPort);
+                if (string.IsNullOrWhiteSpace(fileName) && string.IsNullOrWhiteSpace(arguments)) return false;
+                psi.FileName = fileName;
+                psi.Arguments = arguments;
 
                 // Prepare logs
                 try { Directory.CreateDirectory(LazarusPaths.SystemData.Logs); } catch { }
@@ -208,8 +195,30 @@ namespace Lazarus.Desktop.Views
                 _imageRunnerErrLog = Path.Combine(LazarusPaths.SystemData.Logs, $"image-runner-{ts}.err.log");
 
                 var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
-                proc.OutputDataReceived += (_, e) => { try { if (e.Data != null) File.AppendAllText(_imageRunnerOutLog!, e.Data + Environment.NewLine); } catch { } };
-                proc.ErrorDataReceived  += (_, e) => { try { if (e.Data != null) File.AppendAllText(_imageRunnerErrLog!, e.Data + Environment.NewLine); } catch { } };
+                proc.OutputDataReceived += (_, e) =>
+                {
+                    try
+                    {
+                        if (e.Data != null)
+                        {
+                            File.AppendAllText(_imageRunnerOutLog!, e.Data + Environment.NewLine);
+                            OnRunnerOutputLine(engine, e.Data);
+                        }
+                    }
+                    catch { }
+                };
+                proc.ErrorDataReceived  += (_, e) =>
+                {
+                    try
+                    {
+                        if (e.Data != null)
+                        {
+                            File.AppendAllText(_imageRunnerErrLog!, e.Data + Environment.NewLine);
+                            OnRunnerOutputLine(engine, e.Data);
+                        }
+                    }
+                    catch { }
+                };
                 proc.Exited += (_, __) => Dispatcher?.Invoke(() => { IsRunnerRunning = false; });
 
                 var ok = proc.Start();
@@ -236,6 +245,98 @@ namespace Lazarus.Desktop.Views
             {
                 await Task.CompletedTask;
             }
+        }
+
+        private static int GetDefaultPort(string engine)
+        {
+            // Allow override via env var
+            var env = Environment.GetEnvironmentVariable("LAZARUS_IMAGE_RUNNER_PORT");
+            if (int.TryParse(env, out var p) && p > 0) return p;
+            return engine switch
+            {
+                "comfyui" => 8188,
+                "sdwebui" => 7860,
+                "stable-diffusion" => 7860,
+                "invokeai" => 9090,
+                _ => 0
+            };
+        }
+
+        private static (string fileName, string arguments) BuildLaunchCommand(string engine, string ext, string exe, int desiredPort)
+        {
+            string fileName;
+            string args;
+            // Common port args per engine
+            string portArg = desiredPort > 0 ? desiredPort.ToString() : string.Empty;
+
+            if (ext is ".bat" or ".cmd")
+            {
+                fileName = "cmd.exe";
+                var tail = engine switch
+                {
+                    "comfyui" => string.IsNullOrEmpty(portArg) ? string.Empty : $" --port {portArg} --listen 127.0.0.1",
+                    "sdwebui" or "stable-diffusion" => " --api",
+                    "invokeai" => string.IsNullOrEmpty(portArg) ? " --host 127.0.0.1" : $" --host 127.0.0.1 --port {portArg}",
+                    _ => string.Empty
+                };
+                args = $"/c \"{exe}{tail}\"";
+            }
+            else if (ext == ".exe")
+            {
+                fileName = exe;
+                args = engine switch
+                {
+                    "comfyui" => string.IsNullOrEmpty(portArg) ? string.Empty : $" --port {portArg} --listen 127.0.0.1",
+                    "sdwebui" or "stable-diffusion" => " --api",
+                    "invokeai" => string.IsNullOrEmpty(portArg) ? " --host 127.0.0.1" : $" --host 127.0.0.1 --port {portArg}",
+                    _ => string.Empty
+                };
+            }
+            else if (ext == ".py")
+            {
+                fileName = "python";
+                var tail = engine switch
+                {
+                    "comfyui" => string.IsNullOrEmpty(portArg) ? string.Empty : $" --port {portArg} --listen 127.0.0.1",
+                    "invokeai" => string.IsNullOrEmpty(portArg) ? " --host 127.0.0.1" : $" --host 127.0.0.1 --port {portArg}",
+                    _ => string.Empty
+                };
+                args = $"\"{exe}\"{tail}";
+            }
+            else
+            {
+                return (string.Empty, string.Empty);
+            }
+            return (fileName, args);
+        }
+
+        private void OnRunnerOutputLine(string engine, string line)
+        {
+            try
+            {
+                // Detect ready and URL/port
+                // Common patterns
+                if (line.IndexOf("Running on local URL:", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("Local URL:", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("Uvicorn running on", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("Started server process", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("app started", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Dispatcher?.Invoke(() =>
+                    {
+                        RunnerStatusMessage = "Ready";
+                        OnPropertyChanged(nameof(RunnerStatusMessage));
+                    });
+                }
+
+                // Extract http port if present
+                var m = System.Text.RegularExpressions.Regex.Match(line, @"http[s]?://[\w\.-]+:(\d+)");
+                if (m.Success && int.TryParse(m.Groups[1].Value, out var port))
+                {
+                    Dispatcher?.Invoke(() => { RunnerPort = port; OnPropertyChanged(nameof(RunnerPort)); });
+                }
+            }
+            catch { }
         }
 
         private async Task StopImageRunnerAsync()
