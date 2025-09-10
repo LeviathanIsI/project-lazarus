@@ -468,9 +468,14 @@
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource RainbowAccentButton.AutoFit}">
                                     <Setter Property="IsEnabled" Value="True"/>
+                                    <Setter Property="Visibility" Value="Visible"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding SelectedRunner}" Value="{x:Null}">
                                             <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                        <!-- Hide load button when a runner is already running (match Models UX) -->
+                                        <DataTrigger Binding="{Binding IsRunnerRunning}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -481,10 +486,13 @@
                                 Command="{Binding UnloadRunnerCommand}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource RainbowAccentButton.AutoFit}">
-                                    <Setter Property="IsEnabled" Value="True"/>
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                    <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedRunner}" Value="{x:Null}">
-                                            <Setter Property="IsEnabled" Value="False"/>
+                                        <!-- Show/enable only while a runner is active -->
+                                        <DataTrigger Binding="{Binding IsRunnerRunning}" Value="True">
+                                            <Setter Property="IsEnabled" Value="True"/>
+                                            <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
