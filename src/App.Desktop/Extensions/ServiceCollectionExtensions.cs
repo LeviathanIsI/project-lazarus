@@ -139,6 +139,9 @@ public static class ServiceCollectionExtensions
         // Update service for checking latest releases
         services.AddSingleton<IUpdateService, UpdateService>();
 
+        // Audio services
+        services.AddSingleton<IAudioService, AudioService>();
+
         return services;
     }
 
@@ -190,6 +193,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsShellViewModel>();
             services.AddTransient<ChatSessionsViewModel>();
+            services.AddTransient<AudioViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();
