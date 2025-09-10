@@ -138,6 +138,9 @@ public sealed class ImagesViewModel : ViewModelBase
     private string? _maskImagePath;
     public double? Strength { get => _strength; set => SetProperty(ref _strength, value); }
     private double? _strength;
+    // Optional ControlNet input image for SD pipelines
+    public string? ControlNetInputPath { get => _controlNetInputPath; set => SetProperty(ref _controlNetInputPath, value); }
+    private string? _controlNetInputPath;
 
     public ObservableCollection<ImageJob> JobHistory { get; } = new();
 
@@ -184,7 +187,11 @@ public sealed class ImagesViewModel : ViewModelBase
                     Steps = Steps,
                     Cfg = CfgScale,
                     Sampler = Sampler,
-                    Mode = Mode
+                    Mode = Mode,
+                    InitImagePath = InitImagePath,
+                    MaskImagePath = MaskImagePath,
+                    Strength = Strength,
+                    ControlNetImagePath = ControlNetInputPath
                 };
 
                 await foreach (var ev in _imageGenService.GenerateAsync(req, ct))

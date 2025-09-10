@@ -823,6 +823,12 @@ namespace Lazarus.Desktop.Views
                 if (dlg.ShowDialog() == true)
                 {
                     ControlNetInputPath = dlg.FileName;
+                    try
+                    {
+                        _vm ??= Lazarus.Desktop.ViewModels.ViewModelLocator.Instance?.ImageLabViewModel;
+                        if (_vm != null) _vm.ControlNetInputPath = ControlNetInputPath;
+                    }
+                    catch { }
                 }
             }
             catch { }

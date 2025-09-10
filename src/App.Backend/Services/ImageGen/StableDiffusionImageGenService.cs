@@ -74,26 +74,56 @@ public sealed class StableDiffusionImageGenService : IImageGenService
 
         yield return ImageGenEvent.Info("Uploading settings");
 
-        var payload = new
+        string? ReadAsBase64(string? path)
         {
-            prompt = req.Prompt,
-            negative_prompt = req.NegativePrompt,
-            seed = req.Seed,
-            steps = req.Steps,
-            cfg_scale = req.Cfg,
-            sampler_name = req.Sampler,
-            override_settings = new
+            try
             {
-                sd_model_checkpoint = Path.GetFileNameWithoutExtension(req.ModelPath)
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return null;
+                var bytes = File.ReadAllBytes(path);
+                return Convert.ToBase64String(bytes);
             }
-        };
+            catch { return null; }
+        }
 
-        var endpoint = (req.Mode ?? "txt2img").ToLowerInvariant() switch
+        var mode = (req.Mode ?? "txt2img").ToLowerInvariant();
+        object payload;
+        string endpoint;
+
+        if (mode is "img2img" or "inpaint")
         {
-            "img2img" => "/sdapi/v1/img2img",
-            "inpaint" => "/sdapi/v1/img2img",
-            _ => "/sdapi/v1/txt2img"
-        };
+            var init = ReadAsBase64(req.InitImagePath);
+            var mask = ReadAsBase64(req.MaskImagePath);
+            endpoint = "/sdapi/v1/img2img";
+            payload = new
+            {
+                prompt = req.Prompt,
+                negative_prompt = req.NegativePrompt,
+                seed = req.Seed,
+                steps = req.Steps,
+                cfg_scale = req.Cfg,
+                sampler_name = req.Sampler,
+                denoising_strength = req.Strength ?? 0.5,
+                init_images = init != null ? new[] { init } : Array.Empty<string>(),
+                mask = mask,
+                override_settings = new { sd_model_checkpoint = Path.GetFileNameWithoutExtension(req.ModelPath) },
+                alwayson_scripts = BuildControlNetScripts(req)
+            };
+        }
+        else
+        {
+            endpoint = "/sdapi/v1/txt2img";
+            payload = new
+            {
+                prompt = req.Prompt,
+                negative_prompt = req.NegativePrompt,
+                seed = req.Seed,
+                steps = req.Steps,
+                cfg_scale = req.Cfg,
+                sampler_name = req.Sampler,
+                override_settings = new { sd_model_checkpoint = Path.GetFileNameWithoutExtension(req.ModelPath) },
+                alwayson_scripts = BuildControlNetScripts(req)
+            };
+        }
 
         using var resp = await _http.PostAsJsonAsync($"{runner.BaseUrl.TrimEnd('/')}{endpoint}", payload, ct).ConfigureAwait(false);
         if (!resp.IsSuccessStatusCode)
@@ -125,5 +155,27 @@ public sealed class StableDiffusionImageGenService : IImageGenService
         {
             yield return ImageGenEvent.Error("Runner returned no image.");
         }
+    }
+
+    private static object BuildControlNetScripts(ImageGenRequest req)
+    {
+        try
+        {
+            var p = req.ControlNetImagePath;
+            if (string.IsNullOrWhiteSpace(p) || !File.Exists(p)) return new { };
+            var bytes = File.ReadAllBytes(p);
+            var b64 = Convert.ToBase64String(bytes);
+            var args = new[]
+            {
+                new {
+                    input_image = b64,
+                    model = "",
+                    module = "none",
+                    weight = 1.0
+                }
+            };
+            return new { controlnet = new { args } };
+        }
+        catch { return new { }; }
     }
 }

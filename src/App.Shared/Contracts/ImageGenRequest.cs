@@ -18,5 +18,12 @@ public sealed class ImageGenRequest
 
     // "txt2img" | "img2img" | "inpaint"
     public string Mode { get; set; } = "txt2img";
-}
 
+    // Optional sources for img2img/inpaint
+    public string? InitImagePath { get; set; }
+    public string? MaskImagePath { get; set; }
+    public double? Strength { get; set; }
+
+    // Optional ControlNet input image (single) for basic pipelines
+    public string? ControlNetImagePath { get; set; }
+}
