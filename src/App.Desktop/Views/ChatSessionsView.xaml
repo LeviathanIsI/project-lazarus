@@ -342,22 +342,20 @@
                         
                         <!-- Message Input -->
                         <TextBox Grid.Column="0"
-                                 x:Name="MessageInput"
-                                 Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged, FallbackValue=''}"
-                                 IsEnabled="{Binding IsHealthy, FallbackValue=False}"
-                                 Style="{StaticResource ValidatedGlassTextBoxStyle}"
-                                 Margin="0,0,16,0"
-                                 MinHeight="48"
-                                 MaxHeight="120"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 VerticalScrollBarVisibility="Auto"
-                                 AutomationProperties.Name="Message input"
-                                 AutomationProperties.HelpText="Type your message here. Press Enter to send"
-                                 ToolTip="Type your message (Enter to send)">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SendMessageCommand}"/>
-                            </TextBox.InputBindings>
+                                  x:Name="MessageInput"
+                                  Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged, FallbackValue=''}"
+                                  IsEnabled="{Binding IsHealthy, FallbackValue=False}"
+                                  Style="{StaticResource ValidatedGlassTextBoxStyle}"
+                                  Margin="0,0,16,0"
+                                  MinHeight="48"
+                                  MaxHeight="120"
+                                  TextWrapping="Wrap"
+                                  AcceptsReturn="False"
+                                  VerticalScrollBarVisibility="Auto"
+                                  AutomationProperties.Name="Message input"
+                                  AutomationProperties.HelpText="Type your message here. Press Enter to send"
+                                  ToolTip="Type your message (Enter to send)">
+                            
                         </TextBox>
                         
                         <!-- Send Button -->
