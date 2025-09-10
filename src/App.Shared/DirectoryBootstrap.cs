@@ -56,6 +56,7 @@ public static class DirectoryBootstrap
         LazarusPaths.Runners.Chats_LlamaCpp,
         LazarusPaths.Runners.Chats_Vllm,
         LazarusPaths.Runners.Chats_ExLlamaV2,
+        LazarusPaths.Runners.Images_StableDiffusion,
         LazarusPaths.Runners.Images_ComfyUi,
         LazarusPaths.Runners.Images_SdWebUi,
         LazarusPaths.Runners.Images_InvokeAi,

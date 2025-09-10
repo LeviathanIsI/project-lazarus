@@ -213,6 +213,7 @@ public static class LazarusPaths
         public static readonly string Chats_ExLlamaV2= Path.Combine(ChatsRoot, "exllamav2");
 
         // Images engines
+        public static readonly string Images_StableDiffusion = Path.Combine(ImagesRoot, "stable-diffusion");
         public static readonly string Images_ComfyUi = Path.Combine(ImagesRoot, "comfyui");
         public static readonly string Images_SdWebUi = Path.Combine(ImagesRoot, "sdwebui");
         public static readonly string Images_InvokeAi= Path.Combine(ImagesRoot, "invokeai");
@@ -402,6 +403,7 @@ public static class LazarusPaths
             Runners.Chats_Vllm,
             Runners.Chats_ExLlamaV2,
             // Images engines
+            Runners.Images_StableDiffusion,
             Runners.Images_ComfyUi,
             Runners.Images_SdWebUi,
             Runners.Images_InvokeAi,
