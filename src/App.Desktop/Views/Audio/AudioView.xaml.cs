@@ -100,6 +100,19 @@ public partial class AudioView : UserControl, IDisposable
 }
 
 // Value converters
+public sealed class BooleanToVisibilityConverter : System.Windows.Data.IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is bool boolValue)
+            return boolValue ? Visibility.Visible : Visibility.Collapsed;
+        return Visibility.Collapsed;
+    }
+    
+    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
 public sealed class ZeroToVisibilityConverter : System.Windows.Data.IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
