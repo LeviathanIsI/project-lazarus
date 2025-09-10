@@ -710,6 +710,13 @@ namespace Lazarus.Desktop.Views
                     ShowToast("Enter a prompt.", isError: true);
                     return;
                 }
+                // Require explicit Image runner selection
+                if (SelectedRunner is null)
+                {
+                    ShowToast("Select an Image runner.", isError: true);
+                    StatusText = "Select an Image runner.";
+                    return;
+                }
                 // Validate diffusion model selection
                 var modelLeaf = SelectedImageModel;
                 var modelPath = string.IsNullOrWhiteSpace(modelLeaf) ? null : System.IO.Path.Combine(LazarusPaths.GenAssets.StableDiffusionModels, modelLeaf);
@@ -799,64 +806,39 @@ namespace Lazarus.Desktop.Views
                     return;
                 }
 
-                // Call backend (best effort) – interface returns an output path
+                // Always route via the selected Image runner; never fallback to unrelated engines
                 string? outputPath = null;
                 try
                 {
-                    // Map mode string
-                    var modeStr = Mode.ToString();
-                    // Minimal request shim: many backends accept a simple prompt; ours uses ImageJob indirectly.
-                    // We expose only essential fields here to avoid tight coupling; service should handle defaults.
-                    outputPath = await _imageService!.GenerateAsync(new Lazarus.Data.Entities.ImageJob
+                    var normArgs = BuildNormalizedArgs(prompt ?? string.Empty);
+                    var started = await StartImageRunnerAsync(SelectedRunner, normArgs).ConfigureAwait(true);
+                    if (started)
                     {
-                        Mode = modeStr,
-                        Prompt = prompt ?? string.Empty,
-                        NegativePrompt = NegativePromptBox.Text ?? string.Empty,
-                        Seed = Seed,
-                        SourceImagePath = InitImagePath,
-                        MaskImagePath = MaskImagePath
-                    }).ConfigureAwait(true);
-                }
-                catch (TaskCanceledException) when (_cts?.IsCancellationRequested == true) { }
-
-                // One-shot runner preferred: if backend didn't produce an output, try invoking runner now
-                if (string.IsNullOrWhiteSpace(outputPath))
-                {
-                    try
-                    {
-                        if (SelectedRunner != null)
+                        var outDir = LazarusPaths.UserContent.GeneratedOutput;
+                        try { Directory.CreateDirectory(outDir); } catch { }
+                        var startTime = DateTime.UtcNow;
+                        var exts = new HashSet<string>(new[] { ".png", ".jpg", ".jpeg", ".webp" }, StringComparer.OrdinalIgnoreCase);
+                        for (int i = 0; i < 120; i++)
                         {
-                            var normArgs = BuildNormalizedArgs(prompt ?? string.Empty);
-                            var started = await StartImageRunnerAsync(SelectedRunner, normArgs).ConfigureAwait(true);
-                            if (started)
+                            try
                             {
-                                var outDir = LazarusPaths.UserContent.GeneratedOutput;
-                                try { Directory.CreateDirectory(outDir); } catch { }
-                                var startTime = DateTime.UtcNow;
-                                var exts = new HashSet<string>(new[] { ".png", ".jpg", ".jpeg", ".webp" }, StringComparer.OrdinalIgnoreCase);
-                                for (int i = 0; i < 120; i++)
+                                var candidate = Directory.EnumerateFiles(outDir, "*.*", SearchOption.TopDirectoryOnly)
+                                    .Where(f => exts.Contains(Path.GetExtension(f)))
+                                    .Select(f => new FileInfo(f))
+                                    .OrderByDescending(fi => fi.LastWriteTimeUtc)
+                                    .FirstOrDefault();
+                                if (candidate != null && candidate.LastWriteTimeUtc >= startTime.AddSeconds(-2))
                                 {
-                                    try
-                                    {
-                                        var candidate = Directory.EnumerateFiles(outDir, "*.*", SearchOption.TopDirectoryOnly)
-                                            .Where(f => exts.Contains(Path.GetExtension(f)))
-                                            .Select(f => new FileInfo(f))
-                                            .OrderByDescending(fi => fi.LastWriteTimeUtc)
-                                            .FirstOrDefault();
-                                        if (candidate != null && candidate.LastWriteTimeUtc >= startTime.AddSeconds(-2))
-                                        {
-                                            outputPath = candidate.FullName;
-                                            break;
-                                        }
-                                    }
-                                    catch { }
-                                    await Task.Delay(1000);
+                                    outputPath = candidate.FullName;
+                                    break;
                                 }
                             }
+                            catch { }
+                            await Task.Delay(1000);
                         }
                     }
-                    catch { }
                 }
+                catch { }
 
                 if (_cts.IsCancellationRequested)
                 {
