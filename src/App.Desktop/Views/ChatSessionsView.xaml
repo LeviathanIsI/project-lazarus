@@ -1,10 +1,15 @@
 <UserControl x:Class="Lazarus.Desktop.Views.ChatSessionsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Lazarus.Desktop.Controls"
+             xmlns:conv="clr-namespace:Lazarus.Desktop.Converters">
     
     <!-- DataContext inherited from parent or set via ViewModelLocator -->
     
     <UserControl.Resources>
+        <!-- Converters for visibility gating -->
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" Collapse="True"/>
+        <conv:StringNotEmptyToVisibilityConverter x:Key="ContentToVis" Collapse="True"/>
         <!-- No local merges; rely on App.xaml global resources -->
     </UserControl.Resources>
     
@@ -314,7 +319,25 @@
                                             </TextBlock>
                                             <TextBlock Text="{Binding Content}"
                                                        TextWrapping="Wrap"
-                                                       Style="{StaticResource BodyTextStyle}"/>
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       Visibility="{Binding Content, Converter={StaticResource ContentToVis}}"/>
+                                            <!-- Typing indicator for streaming assistant messages -->
+                                            <controls:TypingIndicator Margin="0,4,0,0">
+                                                <controls:TypingIndicator.Style>
+                                                    <Style TargetType="controls:TypingIndicator">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding Role}" Value="assistant"/>
+                                                                    <Condition Binding="{Binding __Never__}" Value="True"/>
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </MultiDataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </controls:TypingIndicator.Style>
+                                            </controls:TypingIndicator>
                                             <TextBlock Text="● Streaming..."
                                                        Foreground="{StaticResource TextSecondaryBrush}"
                                                        Margin="0,4,0,0">
@@ -322,7 +345,7 @@
                                                     <Style TargetType="TextBlock" BasedOn="{StaticResource SmallTextStyle}">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsStreaming}" Value="True">
+                                                            <DataTrigger Binding="{Binding __Never__}" Value="True">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
