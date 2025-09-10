@@ -256,6 +256,26 @@
                 <!-- Runner selector moved to right column to mirror Models view -->
                 <Border Style="{StaticResource GlassCardStyle}" Padding="12">
                     <StackPanel>
+                        <!-- Runner selection (one-shot invocation) -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Runner" VerticalAlignment="Center"/>
+                            <ComboBox MinWidth="260" Margin="8,0,0,0"
+                                      ItemsSource="{Binding VisibleRunnerCatalog}"
+                                      SelectedItem="{Binding SelectedRunner}"
+                                      IsTextSearchEnabled="True"
+                                      TextSearch.TextPath="DisplayName">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding Engine}"/>
+                                            <Run Text="  "/>
+                                            <Run Text="{Binding DisplayName}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Content="Refresh" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnRefreshRunnersClick"/>
+                        </StackPanel>
                         <!-- Prompt -->
                         <StackPanel>
                             <TextBlock Text="Prompt" Margin="4,0,0,6" Opacity="0.8"/>
@@ -379,98 +399,7 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Right column: stack runner card above assets to avoid overlay -->
             <StackPanel Grid.Column="1">
-                <!-- Runner card (mirrors Models view) -->
-                <Border Style="{StaticResource GlassCardStyle}" Padding="12" Margin="0,0,0,12">
-                    <StackPanel>
-                        <TextBlock Text="Runner" Style="{StaticResource H3TextStyle}"/>
-                        <ComboBox Width="260"
-                                  ItemsSource="{Binding VisibleRunnerCatalog}"
-                                  SelectedItem="{Binding SelectedRunner}"
-                                  IsTextSearchEnabled="True"
-                                  TextSearch.TextPath="DisplayName"
-                                  Margin="0,8,0,0">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock>
-                                        <Run Text="{Binding Engine}"/>
-                                        <Run Text="  "/>
-                                        <Run Text="{Binding DisplayName}"/>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
-                            <Button Content="Load Selected"
-                                    Command="{Binding LoadSelectedRunnerCommand}">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource RainbowAccentButton.AutoFit}">
-                                        <Setter Property="IsEnabled" Value="True"/>
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding SelectedRunner}" Value="{x:Null}">
-                                                <Setter Property="IsEnabled" Value="False"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsRunnerRunning}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                            <Button Content="Unload"
-                                    Margin="8,0,0,0"
-                                    Command="{Binding UnloadRunnerCommand}">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource RainbowAccentButton.AutoFit}">
-                                        <Setter Property="IsEnabled" Value="False"/>
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRunnerRunning}" Value="True">
-                                                <Setter Property="IsEnabled" Value="True"/>
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                            <Button Content="Refresh"
-                                    Margin="8,0,0,0"
-                                    Style="{StaticResource RainbowAccentButton.AutoFit}"
-                                    Click="OnRefreshRunnersClick"/>
-                        </StackPanel>
-                        <TextBlock Text="No runners detected. Add engines under %LOCALAPPDATA%/Lazarus/Runners/Images." Margin="0,0,0,8">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource SecondaryTextStyle}">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding RunnerCatalog.Count}" Value="0">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="Status:" Style="{StaticResource SecondaryTextStyle}"/>
-                        <TextBlock Text="{Binding IsRunnerRunning}"/>
-                        <TextBlock Text="Model Path:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerModelPath}" TextWrapping="Wrap"/>
-                        <TextBlock Text="PID:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerPid}"/>
-                        <TextBlock Text="Binary:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerExePath}" TextWrapping="Wrap"/>
-                        <TextBlock Text="Port:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerPort}"/>
-                        <TextBlock Text="Err Log:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerErrLog}" TextWrapping="Wrap"/>
-                        <TextBlock Text="Out Log:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerOutLog}" TextWrapping="Wrap"/>
-                        <TextBlock Text="Message:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding RunnerStatusMessage}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </Border>
-
                 <!-- Assets card -->
                 <Border Style="{StaticResource GlassCardStyle}" Padding="12">
             
