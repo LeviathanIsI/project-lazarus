@@ -463,7 +463,25 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                        <Button Content="Load Selected"
+                                Command="{Binding LoadSelectedRunnerCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource RainbowAccentButton.AutoFit}">
+                                    <Setter Property="IsEnabled" Value="True"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedRunner}" Value="{x:Null}">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Content="Unload"
+                                Margin="8,0,0,0"
+                                Command="{Binding UnloadRunnerCommand}"
+                                Style="{StaticResource RainbowAccentButton.AutoFit}"/>
                         <Button Content="Refresh"
+                                Margin="8,0,0,0"
                                 Style="{StaticResource RainbowAccentButton.AutoFit}"
                                 Click="OnRefreshRunnersClick"/>
                     </StackPanel>

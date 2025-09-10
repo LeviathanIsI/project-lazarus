@@ -102,6 +102,10 @@ namespace Lazarus.Desktop.Views
         public string? RunnerStatusMessage { get => _runnerStatusMessage; private set { _runnerStatusMessage = value; OnPropertyChanged(nameof(RunnerStatusMessage)); } }
         private string? _runnerStatusMessage;
 
+        // Commands (mirror Models UX)
+        public Lazarus.Desktop.ViewModels.RelayCommand LoadSelectedRunnerCommand { get; private set; } = null!;
+        public Lazarus.Desktop.ViewModels.RelayCommand UnloadRunnerCommand { get; private set; } = null!;
+
         public ImagesView()
         {
             InitializeComponent();
@@ -115,6 +119,35 @@ namespace Lazarus.Desktop.Views
             try { _settingsService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Shared.Settings.ISettingsService)) as Lazarus.Shared.Settings.ISettingsService; } catch { }
             try { if (_runnerClient != null) _runnerClient.RunnerStatusChanged += (_, s) => Dispatcher?.Invoke(() => ApplyStatus(s)); } catch { }
             try { RefreshRunnersCatalog(); } catch { }
+
+            // Commands
+            LoadSelectedRunnerCommand = new Lazarus.Desktop.ViewModels.RelayCommand(async () =>
+            {
+                try
+                {
+                    var path = SelectedRunner?.ResolvedPath ?? string.Empty;
+                    if (_settingsService != null)
+                    {
+                        await _settingsService.SetValueAsync("LastImageRunnerPath", path).ConfigureAwait(true);
+                    }
+                    RunnerStatusMessage = string.IsNullOrWhiteSpace(path) ? "No runner selected" : $"Image runner set to '{SelectedRunner?.Engine} / {SelectedRunner?.DisplayName}'";
+                    ShowToast("Runner loaded");
+                }
+                catch { }
+            }, () => SelectedRunner != null);
+
+            UnloadRunnerCommand = new Lazarus.Desktop.ViewModels.RelayCommand(async () =>
+            {
+                try
+                {
+                    SelectedRunner = null;
+                    if (_settingsService != null)
+                        await _settingsService.SetValueAsync("LastImageRunnerPath", string.Empty).ConfigureAwait(true);
+                    RunnerStatusMessage = "Runner cleared";
+                    ShowToast("Runner cleared");
+                }
+                catch { }
+            }, () => true);
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
