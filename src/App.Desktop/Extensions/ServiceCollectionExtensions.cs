@@ -4,6 +4,10 @@ using Lazarus.Desktop.Services;
 using Lazarus.Shared.Settings;
 using Lazarus.Backend.Services.Runners;
 using Lazarus.Backend.Services.ImageGen;
+using Lazarus.Backend.Runners;
+using Lazarus.Backend.Services.Chat;
+using Lazarus.Backend.Services.Image;
+using Lazarus.Shared.Enums;
 using Lazarus.Backend.Services.Settings;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -108,13 +112,25 @@ public static class ServiceCollectionExtensions
         // Bootstrap filesystem layout (registered for use at startup)
         services.AddSingleton<IFileSystemBootstrapService, FileSystemBootstrapService>();
 
+        // Separate lanes: in-memory runner registry and lane-specific services
+        services.AddSingleton<Lazarus.Backend.Runners.IRunnerRegistry>(_ => new InMemoryRunnerRegistry(new[]
+        {
+            new Lazarus.Backend.Runners.RunnerDescriptor { Id = "llama.local", Kind = RunnerKind.ChatLlm, BaseUrl = "http://127.0.0.1:11888", Provider = "llama",     DisplayName = "Local llama.cpp" },
+            new Lazarus.Backend.Runners.RunnerDescriptor { Id = "sd.local",    Kind = RunnerKind.ImageGen, BaseUrl = "http://127.0.0.1:7860",  Provider = "sd-webui", DisplayName = "Automatic1111" },
+            new Lazarus.Backend.Runners.RunnerDescriptor { Id = "comfy.a",     Kind = RunnerKind.ImageGen, BaseUrl = "http://127.0.0.1:8188",  Provider = "comfyui",  DisplayName = "ComfyUI A" }
+        }));
+        services.AddHttpClient<LlamaChatService>();
+        services.AddSingleton<Lazarus.Backend.Services.Chat.IChatService>(sp => sp.GetRequiredService<LlamaChatService>());
+        services.AddHttpClient<ImageGenService>();
+        services.AddSingleton<Lazarus.Backend.Services.Image.IImageGenService>(sp => sp.GetRequiredService<ImageGenService>());
+
         // Images pipeline: runner registry + SD image generation service
-        services.AddSingleton<IRunnerRegistry, RunnerRegistry>();
+        services.AddSingleton<Lazarus.Backend.Services.Runners.IRunnerRegistry, RunnerRegistry>();
         services.AddHttpClient<StableDiffusionImageGenService>((sp, http) =>
         {
             http.Timeout = TimeSpan.FromSeconds(30);
         });
-        services.AddSingleton<IImageGenService>(sp => sp.GetRequiredService<StableDiffusionImageGenService>());
+        services.AddSingleton<Lazarus.Backend.Services.ImageGen.IImageGenService>(sp => sp.GetRequiredService<StableDiffusionImageGenService>());
 
         // Settings service (JSON-backed under LazarusPaths.Root)
         services.AddSingleton<ISettingsService, SettingsService>();
@@ -154,7 +170,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppState, AppState>();
 
         // Chat persistence service (singleton that creates scoped repos internally)
-        services.AddSingleton<IChatService, ChatService>();
+        services.AddSingleton<Lazarus.Desktop.Services.IChatService, ChatService>();
 
         return services;
     }

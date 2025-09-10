@@ -1,8 +1,14 @@
+﻿using Lazarus.Data.Entities;
+using Lazarus.Data.Enums;
+using Lazarus.Desktop.Services;
+using Lazarus.Shared.Settings;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -13,11 +19,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Lazarus.Desktop.Services;
-using Lazarus.Data.Entities;
-using Lazarus.Data.Enums;
-using Lazarus.Shared.Settings;
-using Microsoft.Extensions.Logging;
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -83,12 +84,18 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private readonly RunnerStatusProvider _runnerStatus;
     private readonly ISettingsService _settingsService;
     private readonly IChatService _chatService;
+    private readonly Lazarus.Backend.Services.Chat.IChatService? _llamaChat;
     private readonly ILogger<ChatSessionsViewModel>? _logger;
     private readonly IAppState _appState;
     private readonly HttpClient _httpClient;
     private CancellationTokenSource? _cts;
     private bool _disposed;
     private int _sendInProgress; // prevent rapid double-submit
+
+    // llama.cpp model id must be the FULL PATH returned by /v1/models
+    private const string LlamaModelId =
+        @"C:\Users\Josh\AppData\Local\Lazarus\Models\Base-Models\Qwen2.5-32B-Instruct-Q5_K_M.gguf";
+
 
     // UI Properties
     private string _inputText = string.Empty;
@@ -114,23 +121,37 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         RunnerStatusProvider runnerStatus,
         ISettingsService settingsService,
         IChatService chatService,
+        Lazarus.Backend.Services.Chat.IChatService? llamaChatService,
         IAppState appState,
         ILogger<ChatSessionsViewModel> logger)
     {
         _runnerStatus = runnerStatus ?? throw new ArgumentNullException(nameof(runnerStatus));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _chatService = chatService ?? throw new ArgumentNullException(nameof(chatService));
+        _llamaChat = llamaChatService;
         _appState = appState ?? throw new ArgumentNullException(nameof(appState));
         _logger = logger;
-        
-        _httpClient = new HttpClient
+
+        var handler = new SocketsHttpHandler
         {
-            BaseAddress = new Uri("http://127.0.0.1:11711/"),
-            Timeout = TimeSpan.FromMinutes(5)
+            PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+            KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+            KeepAlivePingDelay = TimeSpan.FromSeconds(15),
+            KeepAlivePingTimeout = TimeSpan.FromSeconds(10)
         };
-        // Prefer SSE, but server may still return application/json for non-streaming
-        _httpClient.DefaultRequestHeaders.Remove("Accept");
-        _httpClient.DefaultRequestHeaders.Add("Accept", "text/event-stream");
+
+        _httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:11888/"),   // llama-server you verified
+            Timeout = Timeout.InfiniteTimeSpan,                 // don’t time out mid-stream
+            DefaultRequestVersion = HttpVersion.Version11,      // SSE is happiest on HTTP/1.1
+            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower
+        };
+
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/event-stream");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
+
 
         Messages = new ObservableCollection<MessageVm>();
 
@@ -388,12 +409,13 @@ public sealed class ChatSessionsViewModel : ViewModelBase
 
     private async Task StreamAssistantAsync()
     {
+        // start/refresh cancellation for this run
         IsStreaming = true;
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
 
-        // Add assistant message placeholder
+        // Add assistant message placeholder to UI
         var assistantMessage = new MessageVm
         {
             Role = "assistant",
@@ -401,159 +423,124 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             Timestamp = DateTime.Now,
             IsStreaming = true
         };
-        
         Application.Current?.Dispatcher?.Invoke(() => Messages.Add(assistantMessage));
 
         try
         {
+            // Use lane-specific chat service when available (separate from Images)
+            if (_llamaChat != null)
+            {
+                var assistant = assistantMessage;
+                var req = new Lazarus.Shared.Contracts.Chat.ChatRequest
+                {
+                    Model = LlamaModelId,
+                    Messages = BuildPlainMessages().ToArray(),
+                    Stream = true
+                };
+                await foreach (var chunk in _llamaChat.StreamAsync(req, ct).ConfigureAwait(false))
+                {
+                    Application.Current?.Dispatcher?.Invoke(() => assistant.Content += chunk);
+                }
+                return;
+            }
+
+            // Legacy fallback HTTP path
             var requestBody = BuildRequest();
+
             var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = false,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
+
             var json = JsonSerializer.Serialize(requestBody, jsonOptions);
             _logger?.LogDebug("Sending request: {Json}", json);
 
+            // --- HTTP request (ask for SSE with JSON fallback) -------------------
             using var request = new HttpRequestMessage(HttpMethod.Post, "v1/chat/completions")
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
-            // Ensure Accept on the request (in addition to default)
-            request.Headers.Remove("Accept");
-            request.Headers.Add("Accept", "text/event-stream");
+            request.Headers.Accept.Clear();
+            request.Headers.Accept.ParseAdd("text/event-stream");
+            request.Headers.Accept.ParseAdd("application/json");
 
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-            
+            using var response = await _httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                ct
+            );
+
             if (!response.IsSuccessStatusCode)
             {
-                var error = await response.Content.ReadAsStringAsync(ct);
-                throw new HttpRequestException($"API returned {response.StatusCode}: {error}");
+                var errorText = await response.Content.ReadAsStringAsync(ct);
+                throw new HttpRequestException($"API returned {response.StatusCode}: {errorText}");
             }
 
             var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
             _logger?.LogInformation("Chat response Content-Type: {ContentType}", contentType);
 
-            // Read as stream first and sniff the first line to decide SSE vs JSON.
-            using var stream = await response.Content.ReadAsStreamAsync(ct);
-            using var reader = new StreamReader(stream);
-
-            string? firstLine = await reader.ReadLineAsync();
-            if (firstLine is null)
+            // If it's labeled SSE, handle as SSE directly.
+            if (string.Equals(contentType, "text/event-stream", StringComparison.OrdinalIgnoreCase))
             {
-                _logger?.LogWarning("Empty response from chat endpoint");
-                return;
+                await HandleSseAsync(response, assistantMessage, ct);
             }
-
-            string firstTrim = firstLine.TrimStart();
-            bool looksLikeJson = firstTrim.StartsWith("{") || firstTrim.StartsWith("[");
-            bool looksLikeSse = firstTrim.StartsWith("data:", StringComparison.OrdinalIgnoreCase) || firstTrim.StartsWith(":");
-
-            if (looksLikeJson && string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            else
             {
-                // Collect full JSON text including the first line
-                var sb = new StringBuilder();
-                sb.AppendLine(firstLine);
-                string rest = await reader.ReadToEndAsync();
-                sb.Append(rest);
-                var jsonText = sb.ToString();
-                _logger?.LogDebug("First 200 json chars: {Snippet}", jsonText.Length > 200 ? jsonText.Substring(0, 200) : jsonText);
+                // Not labeled SSE — peek first line to detect mis-labeled SSE.
+                await using var stream = await response.Content.ReadAsStreamAsync(ct);
+                using var reader = new StreamReader(stream);
 
-                try
+                string? firstLine = await reader.ReadLineAsync();
+                if (firstLine is null)
                 {
-                    var resp = JsonSerializer.Deserialize<ChatCompletionResponse>(jsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    var contentText = resp?.Choices?.FirstOrDefault()?.Message?.Content;
-                    if (!string.IsNullOrEmpty(contentText))
+                    _logger?.LogWarning("Empty response from chat endpoint");
+                    return;
+                }
+
+                var firstTrim = firstLine.TrimStart();
+
+                // If body actually looks like SSE, handle as SSE (including the first line).
+                if (firstTrim.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
+                    firstTrim.StartsWith(":", StringComparison.Ordinal))
+                {
+                    await HandleSseAsync(response, assistantMessage, ct, firstLine, reader);
+                }
+                else
+                {
+                    // Otherwise treat as non-streaming JSON (accumulate full body)
+                    var sb = new StringBuilder();
+                    sb.AppendLine(firstLine);
+                    sb.Append(await reader.ReadToEndAsync());
+
+                    var jsonText = sb.ToString();
+                    _logger?.LogDebug("First 200 json chars: {Snippet}", jsonText.Length > 200 ? jsonText[..200] : jsonText);
+
+                    try
                     {
+                        var resp = JsonSerializer.Deserialize<ChatCompletionResponse>(
+                            jsonText,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                        var contentText = resp?.Choices?.FirstOrDefault()?.Message?.Content ?? string.Empty;
+
                         Application.Current?.Dispatcher?.Invoke(() =>
                         {
                             assistantMessage.Content += contentText;
                         });
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "Failed to parse JSON chat response");
-                    throw;
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "Failed to parse JSON chat response");
+                        throw;
+                    }
                 }
             }
-            else
-            {
-                // Treat as SSE (also covers servers that mislabel Content-Type)
-                bool firstLogged = false;
-                var deserializeOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-                // Helper to process accumulated event data (possibly multi-line)
-                bool ProcessEvent(string eventData)
-                {
-                    var data = eventData.Trim();
-                    if (!firstLogged)
-                    {
-                        _logger?.LogDebug("First SSE data: {Snippet}", data.Length > 200 ? data.Substring(0, 200) : data);
-                        firstLogged = true;
-                    }
-
-                    if (string.Equals(data, "[DONE]", StringComparison.Ordinal))
-                        return true; // signal break
-
-                    try
-                    {
-                        var chunk = JsonSerializer.Deserialize<ChatCompletionChunk>(data, deserializeOptions);
-                        var delta = chunk?.Choices?.FirstOrDefault()?.Delta?.Content;
-                        if (!string.IsNullOrEmpty(delta))
-                        {
-                            Application.Current?.Dispatcher?.Invoke(() => assistantMessage.Content += delta);
-                        }
-                    }
-                    catch (JsonException ex)
-                    {
-                        _logger?.LogWarning(ex, "Failed to parse streaming chunk: {Data}", data);
-                    }
-                    return false;
-                }
-
-                // Initialize accumulator with first line already read
-                var eventBuilder = new StringBuilder();
-
-                bool flushEvent()
-                {
-                    var evt = eventBuilder.ToString();
-                    eventBuilder.Clear();
-                    // Remove leading repeated 'data:' prefixes and join lines
-                    var lines = evt.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)
-                                   .Select(l => l.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ? l.Substring(5).TrimStart() : l.Trim());
-                    var normalized = string.Join("\n", lines);
-                    return ProcessEvent(normalized);
-                }
-
-                // Seed with first line
-                eventBuilder.AppendLine(firstLine);
-
-                while (!reader.EndOfStream && !ct.IsCancellationRequested)
-                {
-                    var line = await reader.ReadLineAsync();
-                    if (line == null) break;
-
-                    if (line.Length == 0)
-                    {
-                        // Blank line separates events
-                        if (eventBuilder.Length > 0)
-                        {
-                            if (flushEvent()) break;
-                        }
-                        continue;
-                    }
-
-                    eventBuilder.AppendLine(line);
-                }
-
-                // Flush any trailing data
-                if (eventBuilder.Length > 0)
-                {
-                    flushEvent();
-                }
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger?.LogInformation("Streaming cancelled");
         }
         catch (Exception ex)
         {
@@ -561,13 +548,10 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             Application.Current?.Dispatcher?.Invoke(() =>
             {
                 if (string.IsNullOrEmpty(assistantMessage.Content))
-                {
                     assistantMessage.Content = "[Error: " + ex.Message + "]";
-                }
                 else
-                {
                     assistantMessage.Content += " [error]";
-                }
+
                 ErrorMessage = "Failed to get response: " + ex.Message;
             });
         }
@@ -584,19 +568,19 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             {
                 try
                 {
-                    await _chatService.AddMessageAsync(SelectedConversation.Id, MessageRole.Assistant, assistantMessage.Content).ConfigureAwait(false);
+                    await _chatService.AddMessageAsync(
+                        SelectedConversation.Id,
+                        MessageRole.Assistant,
+                        assistantMessage.Content
+                    ).ConfigureAwait(false);
 
-                    // Update preview/last-message and timestamps for sidebar
                     SelectedConversation.Preview = MakePreview(assistantMessage.Content);
                     SelectedConversation.LastMessage = FirstLine(assistantMessage.Content);
                     SelectedConversation.UpdatedAt = DateTime.UtcNow;
 
-                    // Reorder: move selected conversation to top
                     var currentIndex = Conversations.IndexOf(SelectedConversation);
                     if (currentIndex > 0)
-                    {
                         Conversations.Move(currentIndex, 0);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -606,13 +590,97 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         }
     }
 
+    // --- helpers ---------------------------------------------------------------
+
+    private async Task HandleSseAsync(
+        HttpResponseMessage response,
+        MessageVm assistantMessage,
+        CancellationToken ct,
+        string? firstLine = null,
+        StreamReader? existingReader = null)
+    {
+        // Ensure we truly await something in this method to avoid CS1998
+        Stream? stream = null;
+        StreamReader reader;
+
+        if (existingReader != null)
+        {
+            reader = existingReader;
+        }
+        else
+        {
+            stream = await response.Content.ReadAsStreamAsync(ct);
+            reader = new StreamReader(stream);
+        }
+
+        assistantMessage.IsStreaming = true;
+
+        var deserializeOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+        // If we were passed an already-read first line, process it first.
+        if (firstLine is not null)
+            if (await ProcessSseLineAsync(firstLine, assistantMessage, deserializeOptions, ct))
+                return;
+
+        string? line;
+        while ((line = await reader.ReadLineAsync()) is not null && !ct.IsCancellationRequested)
+            if (await ProcessSseLineAsync(line, assistantMessage, deserializeOptions, ct))
+                break;
+
+        assistantMessage.IsStreaming = false;
+    }
+
+    private async Task<bool> ProcessSseLineAsync(
+        string line,
+        MessageVm assistantMessage,
+        JsonSerializerOptions deserializeOptions,
+        CancellationToken ct)
+    {
+        // keep signature async so we can add awaits later if needed
+        await Task.Yield();
+
+        if (line.Length == 0) return false; // blank separator
+        if (line.StartsWith(":", StringComparison.Ordinal)) return false; // comment/keepalive
+
+        if (line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            var payload = line.AsSpan(5).Trim().ToString();
+
+            if (string.Equals(payload, "[DONE]", StringComparison.OrdinalIgnoreCase))
+                return true; // stop
+
+            try
+            {
+                var chunk = JsonSerializer.Deserialize<ChatCompletionChunk>(payload, deserializeOptions);
+                var choice = chunk?.Choices?.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(choice?.FinishReason))
+                    return true;
+
+                var delta = choice?.Delta?.Content;
+                if (!string.IsNullOrEmpty(delta))
+                {
+                    Application.Current?.Dispatcher?.Invoke(() =>
+                        assistantMessage.Content += delta);
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogWarning(ex, "Failed to parse streaming chunk: {Payload}", payload);
+            }
+        }
+        return false;
+    }
+
+
+
     private object BuildRequest()
     {
         var messages = BuildRequestMessages();
         
         return new
         {
-            model = ModelName,
+            model = LlamaModelId,
             stream = true,
             messages = messages,
             temperature = Temperature,
@@ -648,6 +716,17 @@ public sealed class ChatSessionsViewModel : ViewModelBase
 
         // Build final payload messages list
         return messages.ToArray();
+    }
+
+    private IEnumerable<string> BuildPlainMessages()
+    {
+        var messages = new System.Collections.Generic.List<string>();
+        try { messages.Add(BuildSystemPrompt()); } catch { }
+        foreach (var msg in Messages.Where(m => !m.IsStreaming))
+        {
+            if (!string.IsNullOrWhiteSpace(msg.Content)) messages.Add(msg.Content);
+        }
+        return messages;
     }
 
     private string BuildSystemPrompt()
@@ -737,16 +816,26 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         {
             Messages.Clear();
             if (SelectedConversation == null) return;
+
             var msgs = await _chatService.GetMessagesAsync(SelectedConversation.Id).ConfigureAwait(true);
+
             foreach (var m in msgs)
             {
-                Messages.Add(new MessageVm
+                // Skip duplicates if somehow already present
+                if (!Messages.Any(x => x.Role == (m.Role == MessageRole.User ? "user" :
+                                                  m.Role == MessageRole.Assistant ? "assistant" : "system")
+                                    && x.Content == m.Content))
                 {
-                    Role = m.Role == MessageRole.User ? "user" : m.Role == MessageRole.Assistant ? "assistant" : "system",
-                    Content = m.Content,
-                    Timestamp = m.Timestamp.ToLocalTime()
-                });
+                    Messages.Add(new MessageVm
+                    {
+                        Role = m.Role == MessageRole.User ? "user" :
+                               m.Role == MessageRole.Assistant ? "assistant" : "system",
+                        Content = m.Content,
+                        Timestamp = m.Timestamp.ToLocalTime()
+                    });
+                }
             }
+
             // Update sidebar preview/last-message from the loaded history
             var lastMsg = msgs.LastOrDefault();
             if (lastMsg != null)
@@ -761,6 +850,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             _logger?.LogError(ex, "Failed to load messages for selection");
         }
     }
+
 
     private async Task NewChatAsync()
     {
