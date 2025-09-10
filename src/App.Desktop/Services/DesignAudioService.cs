@@ -9,6 +9,9 @@ public sealed class DesignAudioService : IAudioService
 {
     public Task<bool> IsSynthesisReadyAsync(CancellationToken ct) => Task.FromResult(true);
 
+    public Task<IReadOnlyList<AudioItem>> ListAsync(CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<AudioItem>>(Array.Empty<AudioItem>());
+
     public Task<IReadOnlyList<AudioItem>> ImportAsync(IEnumerable<string> paths, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<AudioItem>>(Array.Empty<AudioItem>());
 
@@ -21,4 +24,3 @@ public sealed class DesignAudioService : IAudioService
             GeneratedToday: 2,
             TotalDuration: TimeSpan.FromMinutes(23) + TimeSpan.FromSeconds(11)));
 }
-

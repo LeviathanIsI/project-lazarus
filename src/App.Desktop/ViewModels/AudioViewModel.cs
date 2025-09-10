@@ -78,6 +78,11 @@ public sealed class AudioViewModel : INotifyPropertyChanged, IDisposable
 
             // Refresh list + stats
             Items.Clear();
+            var list = await _audio.ListAsync(ct);
+            foreach (var a in list)
+            {
+                Items.Add(AudioRow.From(a));
+            }
             var stats = await _audio.GetStatsAsync(ct);
             TotalFiles = stats.TotalFiles;
             GeneratedToday = stats.GeneratedToday;

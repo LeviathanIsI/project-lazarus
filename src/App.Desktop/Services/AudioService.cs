@@ -33,6 +33,12 @@ public sealed class AudioService : IAudioService
         return Task.FromResult(true);
     }
 
+    public Task<IReadOnlyList<AudioItem>> ListAsync(CancellationToken ct)
+    {
+        var list = EnumerateSafe(ImportedDir).Concat(EnumerateSafe(GeneratedDir)).ToList();
+        return Task.FromResult<IReadOnlyList<AudioItem>>(list);
+    }
+
     public async Task<IReadOnlyList<AudioItem>> ImportAsync(IEnumerable<string> paths, CancellationToken ct)
     {
         var results = new List<AudioItem>();

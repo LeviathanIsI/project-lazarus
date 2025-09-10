@@ -114,9 +114,51 @@
                     </Border>
                 </UniformGrid>
 
-                <!-- Placeholder Content Area -->
+                <!-- Items list + Placeholder Content Area -->
                 <Grid Grid.Row="2">
-                    <Border Style="{StaticResource GlassCardStyle}"
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Simple list of audio items -->
+                    <ItemsControl Grid.Row="0" ItemsSource="{Binding Items}" Margin="0,0,0,16">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource GlassCardStyle}" Padding="12" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="280"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="170"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding FileName}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Duration}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding CreatedLocal}"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding FilePath}" Opacity="0.6"/>
+                                        <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="12,0,0,0">
+                                            <Button Content="Open"
+                                                    Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding FilePath}"
+                                                    Style="{StaticResource RainbowAccentButton.AutoFit}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="5" Orientation="Horizontal" Margin="8,0,0,0">
+                                            <Button Content="Delete"
+                                                    Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding FilePath}"
+                                                    Style="{StaticResource RainbowAccentButton.AutoFit}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- keep existing placeholder below -->
+                    <Border Grid.Row="1" Style="{StaticResource GlassCardStyle}"
                             Padding="40">
                         <StackPanel Style="{StaticResource EmptyStateContainerStyle}">
                             <!-- Icon -->

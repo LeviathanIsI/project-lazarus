@@ -6,6 +6,7 @@ namespace Lazarus.Desktop.Services;
 public interface IAudioService
 {
     Task<bool> IsSynthesisReadyAsync(CancellationToken ct);
+    Task<IReadOnlyList<AudioItem>> ListAsync(CancellationToken ct);
     Task<IReadOnlyList<AudioItem>> ImportAsync(IEnumerable<string> paths, CancellationToken ct);
     Task<AudioItem?> GenerateAsync(AudioGenRequest request, CancellationToken ct);
     Task<AudioStats> GetStatsAsync(CancellationToken ct);
