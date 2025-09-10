@@ -196,31 +196,29 @@ app.MapPost("/v1/chat/completions", async (IRunnerSupervisor sup, HttpContext ct
     }
 
     var incoming = ctx.Request;
-    var wantStream = string.Equals(incoming.Query["stream"], "true", StringComparison.OrdinalIgnoreCase);
 
-    // Read body and ensure stream=true when requested
+    // Read body (unchanged forward)
     string payload;
     using (var reader = new StreamReader(incoming.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 8192, leaveOpen: true))
         payload = await reader.ReadToEndAsync();
+
+    // Determine streaming from JSON body: { "stream": true }
+    bool wantStream = false;
+    try
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(payload);
+        if (doc.RootElement.TryGetProperty("stream", out var s) && s.ValueKind == System.Text.Json.JsonValueKind.True)
+            wantStream = true;
+    }
+    catch { }
 
     try
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
         var url = $"http://127.0.0.1:{sup.Port}/v1/chat/completions";
 
-        // If streaming, force stream:true in body and proxy SSE
         if (wantStream)
         {
-            try
-            {
-                using var doc = System.Text.Json.JsonDocument.Parse(payload);
-                var root = doc.RootElement.Clone();
-                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(root.GetRawText()) ?? new();
-                dict["stream"] = true;
-                payload = System.Text.Json.JsonSerializer.Serialize(dict);
-            }
-            catch { /* fall back to raw payload */ }
-
             var req = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = new StringContent(payload, Encoding.UTF8, "application/json")
@@ -229,29 +227,20 @@ app.MapPost("/v1/chat/completions", async (IRunnerSupervisor sup, HttpContext ct
             req.Headers.Accept.ParseAdd("text/event-stream");
 
             using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ctx.RequestAborted);
+
             ctx.Response.StatusCode = (int)resp.StatusCode;
             ctx.Response.Headers["Cache-Control"] = "no-cache";
             ctx.Response.Headers["Connection"] = "keep-alive";
+            ctx.Response.Headers["Content-Encoding"] = "identity"; // avoid compression on SSE
             ctx.Response.ContentType = "text/event-stream";
 
-            using var runnerStream = await resp.Content.ReadAsStreamAsync(ctx.RequestAborted);
-            using var reader = new StreamReader(runnerStream, Encoding.UTF8);
-            using var writer = new StreamWriter(ctx.Response.Body, new UTF8Encoding(false)) { AutoFlush = true };
-
-            string? line;
-            while (!ctx.RequestAborted.IsCancellationRequested && (line = await reader.ReadLineAsync()) != null)
+            await using var src = await resp.Content.ReadAsStreamAsync(ctx.RequestAborted);
+            var buffer = new byte[8192];
+            int read;
+            while ((read = await src.ReadAsync(buffer, 0, buffer.Length, ctx.RequestAborted)) > 0)
             {
-                if (line.Length == 0) continue; // keep-alives
-                // Ensure frames are prefixed with data:
-                if (!line.StartsWith("data:")) line = "data: " + line;
-                await writer.WriteAsync(line + "\n\n");
-                await writer.FlushAsync();
-            }
-            // End of stream marker
-            if (!ctx.RequestAborted.IsCancellationRequested)
-            {
-                await writer.WriteAsync("data: [DONE]\n\n");
-                await writer.FlushAsync();
+                await ctx.Response.Body.WriteAsync(buffer.AsMemory(0, read), ctx.RequestAborted);
+                await ctx.Response.Body.FlushAsync(ctx.RequestAborted);
             }
             return;
         }
