@@ -33,6 +33,43 @@ namespace Lazarus.Desktop.Views
         }
         public sealed record RunnerCandidate(string Engine, string DisplayName, string ResolvedPath, string Entrypoint);
 
+        private static bool LooksLikeDiffusionModel(string path)
+        {
+            try
+            {
+                var ext = System.IO.Path.GetExtension(path)?.ToLowerInvariant();
+                return ext is ".safetensors" or ".ckpt" or ".onnx";
+            }
+            catch { return false; }
+        }
+
+        private static string NewRunLogPath()
+        {
+            try
+            {
+                var root = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Logs, "Images");
+                System.IO.Directory.CreateDirectory(root);
+                return System.IO.Path.Combine(root, $"{DateTime.Now:yyyyMMdd-HHmmss}_run.log");
+            }
+            catch
+            {
+                return System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"lazarus-images-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+            }
+        }
+
+        private string? _currentRunLogFile;
+        private void AppendRunLog(string message)
+        {
+            try
+            {
+                _currentRunLogFile ??= NewRunLogPath();
+                var line = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
+                System.IO.File.AppendAllText(_currentRunLogFile, line);
+                System.Diagnostics.Debug.WriteLine(line);
+            }
+            catch { }
+        }
+
         // Dummy counters (bound in XAML)
         private int _totalImages;
         public int TotalImages { get => _totalImages; set { _totalImages = value; OnPropertyChanged(nameof(TotalImages)); } }
@@ -195,7 +232,7 @@ namespace Lazarus.Desktop.Views
             {
                 ImageModels.Clear();
                 // Only scan Stable Diffusion models (separate from LLM models)
-                foreach (var m in EnumerateFilesSafe(LazarusPaths.GenAssets.StableDiffusionModels, new[] { ".safetensors", ".ckpt", ".ckp" }))
+                foreach (var m in EnumerateFilesSafe(LazarusPaths.GenAssets.StableDiffusionModels, new[] { ".safetensors", ".ckpt", ".onnx" }))
                     ImageModels.Add(m);
             }
             catch { }
@@ -673,6 +710,14 @@ namespace Lazarus.Desktop.Views
                     ShowToast("Enter a prompt.", isError: true);
                     return;
                 }
+                // Validate diffusion model selection
+                var modelLeaf = SelectedImageModel;
+                var modelPath = string.IsNullOrWhiteSpace(modelLeaf) ? null : System.IO.Path.Combine(LazarusPaths.GenAssets.StableDiffusionModels, modelLeaf);
+                if (string.IsNullOrWhiteSpace(modelPath) || !System.IO.File.Exists(modelPath) || !LooksLikeDiffusionModel(modelPath))
+                {
+                    ShowToast("Select a valid diffusion model (.safetensors/.ckpt/.onnx).", isError: true);
+                    return;
+                }
                 if (Mode != ImageMode.Txt2Img && string.IsNullOrWhiteSpace(InitImagePath))
                 {
                     ShowToast("Provide an init image for this mode", isError: true);
@@ -681,11 +726,50 @@ namespace Lazarus.Desktop.Views
 
                 _cts = new CancellationTokenSource();
                 IsRunning = true;
-                StatusText = "Starting generation";
+                StatusText = "Preflight";
                 Progress = null; // indeterminate
                 ProgressPercent = 0;
                 LastRunFailed = false;
                 try { VisualStateManager.GoToState(GenerateButton, "Running", true); } catch { }
+
+                // Start per-run log file
+                _currentRunLogFile = NewRunLogPath();
+                AppendRunLog($"START model={modelPath} seed={Seed} sampler={Sampler} steps={Steps} cfg={CfgScale} mode={Mode}");
+
+                // Preflight ping (1s timeout) using orchestrator health if available
+                bool runnerOk = true; // default to true if no orchestrator
+                try
+                {
+                    if (_orchestratorClient != null)
+                    {
+                        using var pingCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                        var healthy = await _orchestratorClient.CheckHealthAsync(pingCts.Token).ConfigureAwait(true);
+                        runnerOk = healthy;
+                        AppendRunLog(healthy ? "Preflight: orchestrator healthy" : "Preflight: orchestrator unhealthy");
+                    }
+                    else if (_runnerClient != null)
+                    {
+                        using var pingCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                        var status = await _runnerClient.GetStatusAsync(pingCts.Token).ConfigureAwait(true);
+                        runnerOk = status.IsRunning;
+                        AppendRunLog(runnerOk ? "Preflight: runner status RUNNING" : "Preflight: runner status NOT RUNNING");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    runnerOk = false;
+                    AppendRunLog($"Runner ping failed: {ex.Message}");
+                }
+
+                if (!runnerOk)
+                {
+                    StatusText = "Runner not reachable.";
+                    ShowToast("Runner not reachable.", isError: true);
+                    AppendRunLog("ABORT: runner not reachable");
+                    return;
+                }
+
+                StatusText = "Starting generation";
 
                 // If no backend, warn and bail without touching preview
                 if (!HasBackend())
@@ -787,6 +871,7 @@ namespace Lazarus.Desktop.Views
                     StatusText = "Done.";
                     TotalImages += 1; GeneratedToday += 1; StorageUsedMb += 0.001;
                     ShowToast($"Rendered  seed {Seed}");
+                    AppendRunLog("COMPLETED");
                     try { VisualStateManager.GoToState(GenerateButton, "Success", true); } catch { }
                 }
             }
@@ -794,6 +879,7 @@ namespace Lazarus.Desktop.Views
             {
                 StatusText = "Generation failed.";
                 ShowToast("Generation failed: " + ex.Message, isError: true);
+                try { AppendRunLog("ERROR: " + ex.ToString()); } catch { }
                 try { VisualStateManager.GoToState(GenerateButton, "Error", true); } catch { }
             }
             finally

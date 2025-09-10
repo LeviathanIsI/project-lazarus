@@ -30,8 +30,8 @@ namespace Lazarus.Desktop
 
         protected override async void OnStartup(StartupEventArgs e)
         {
-            // Increase binding trace verbosity during diagnostics
-            PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Information;
+            // Binding trace to warnings (visible in Output window)
+            PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning;
 
             try
             {
@@ -150,6 +150,7 @@ namespace Lazarus.Desktop
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             _logger?.LogCritical(e.Exception, "Unhandled exception on UI thread");
+            SafeLog("DispatcherUnhandled", e.Exception);
 
             // Always mark handled so we don't cascade dialog storms during diagnostics
             e.Handled = true;
@@ -303,13 +304,31 @@ namespace Lazarus.Desktop
             if (e.ExceptionObject is Exception exception)
             {
                 _logger?.LogCritical(exception, "Unhandled exception on background thread. IsTerminating: {IsTerminating}", e.IsTerminating);
+                SafeLog("AppDomain.Unhandled", exception);
             }
         }
 
         private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             _logger?.LogError(e.Exception, "Unobserved task exception");
+            SafeLog("TaskScheduler.Unobserved", e.Exception);
             e.SetObserved(); // Prevent the process from terminating
+        }
+
+        private static void SafeLog(string tag, Exception? ex)
+        {
+            try
+            {
+                var root = System.IO.Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Logs, "Images");
+                System.IO.Directory.CreateDirectory(root);
+                var line = $"[{DateTime.Now:HH:mm:ss}] {tag}: {ex?.GetType().Name} {ex?.Message}{Environment.NewLine}{ex?.StackTrace}{Environment.NewLine}";
+                System.IO.File.AppendAllText(System.IO.Path.Combine(root, "images-errors.log"), line);
+                System.Diagnostics.Debug.WriteLine(line);
+            }
+            catch
+            {
+                // never throw from logger
+            }
         }
 
         public void Dispose()
