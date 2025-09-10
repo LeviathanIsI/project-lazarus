@@ -20,6 +20,17 @@ namespace Lazarus.Desktop.Views
 {
     public partial class ImagesView : UserControl, System.ComponentModel.INotifyPropertyChanged
     {
+        
+        private sealed class RelayCommand : ICommand
+        {
+            private readonly Action _exec;
+            private readonly Func<bool>? _can;
+            public RelayCommand(Action exec, Func<bool>? can = null) { _exec = exec; _can = can; }
+            public bool CanExecute(object? parameter) => _can?.Invoke() ?? true;
+            public void Execute(object? parameter) => _exec();
+            public event EventHandler? CanExecuteChanged;
+            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
         public sealed record RunnerCandidate(string Engine, string DisplayName, string ResolvedPath, string Entrypoint);
 
         // Dummy counters (bound in XAML)
@@ -86,8 +97,16 @@ namespace Lazarus.Desktop.Views
         public bool SeedLocked { get => _seedLocked; set { _seedLocked = value; OnPropertyChanged(nameof(SeedLocked)); OnPropertyChanged(nameof(GenerateButtonText)); UpdateLockGlyph(); } }
 
         private bool _isRunning;
-        public bool IsRunning { get => _isRunning; set { _isRunning = value; OnPropertyChanged(nameof(IsRunning)); OnPropertyChanged(nameof(InputsEnabled)); OnPropertyChanged(nameof(GenerateButtonText)); } }
+        public bool IsRunning { get => _isRunning; set { _isRunning = value; OnPropertyChanged(nameof(IsRunning)); OnPropertyChanged(nameof(InputsEnabled)); OnPropertyChanged(nameof(GenerateButtonText)); OnPropertyChanged(nameof(CanCancel)); } }
         public bool InputsEnabled => !IsRunning;
+        // Run-state (explicit)
+        private string _statusText = "Idle";
+        public string StatusText { get => _statusText; set { _statusText = value; OnPropertyChanged(nameof(StatusText)); } }
+        private double? _progress; // null = indeterminate
+        public double? Progress { get => _progress; set { _progress = value; OnPropertyChanged(nameof(Progress)); } }
+        public bool CanCancel => IsRunning;
+        public ICommand? GenerateImagesCommand { get; private set; }
+        public ICommand? CancelCommand { get; private set; }
         private int _progressPercent;
         public int ProgressPercent { get => _progressPercent; set { _progressPercent = value; OnPropertyChanged(nameof(ProgressPercent)); } }
         private bool _lastRunFailed;
@@ -159,6 +178,9 @@ namespace Lazarus.Desktop.Views
             InitializeComponent();
             // Bind to self for simple dummy values
             DataContext = this;
+            // Commands for keyboard bindings
+            GenerateImagesCommand = new RelayCommand(() => OnGenerateClick(this, new RoutedEventArgs()), () => !IsRunning);
+            CancelCommand = new RelayCommand(() => OnCancelClick(this, new RoutedEventArgs()), () => IsRunning);
             Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
 
             try { _imageService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(IImageService)) as IImageService; } catch { }
@@ -644,7 +666,7 @@ namespace Lazarus.Desktop.Views
                 if (IsRunning) return;
 
                 // simple validation
-                var prompt = PromptBox.Text?.Trim();
+                var prompt = PromptBox.Text; // keep spaces/newlines as-is
                 if (Mode == ImageMode.Txt2Img && string.IsNullOrWhiteSpace(prompt))
                 {
                     ShowToast("Enter a prompt.", isError: true);
@@ -658,6 +680,8 @@ namespace Lazarus.Desktop.Views
 
                 _cts = new CancellationTokenSource();
                 IsRunning = true;
+                StatusText = "Starting generation";
+                Progress = null; // indeterminate
                 ProgressPercent = 0;
                 LastRunFailed = false;
                 try { VisualStateManager.GoToState(GenerateButton, "Running", true); } catch { }
@@ -731,6 +755,7 @@ namespace Lazarus.Desktop.Views
                 if (_cts.IsCancellationRequested)
                 {
                     ProgressPercent = 0;
+                    StatusText = "Canceled.";
                     ShowToast("Generation canceled", isError: true);
                     try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
                 }
@@ -758,6 +783,7 @@ namespace Lazarus.Desktop.Views
                     {
                         ShowToast("Generation returned no image.", isError: true);
                     }
+                    StatusText = "Done.";
                     TotalImages += 1; GeneratedToday += 1; StorageUsedMb += 0.001;
                     ShowToast($"Rendered  seed {Seed}");
                     try { VisualStateManager.GoToState(GenerateButton, "Success", true); } catch { }
@@ -765,12 +791,14 @@ namespace Lazarus.Desktop.Views
             }
             catch (Exception ex)
             {
+                StatusText = "Generation failed.";
                 ShowToast("Generation failed: " + ex.Message, isError: true);
                 try { VisualStateManager.GoToState(GenerateButton, "Error", true); } catch { }
             }
             finally
             {
                 _cts?.Dispose(); _cts = null;
+                Progress = null;
                 IsRunning = false;
                 await Task.Delay(500);
                 try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
@@ -807,7 +835,8 @@ namespace Lazarus.Desktop.Views
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Space && !IsRunning)
+            // Ctrl+Enter triggers Generate; plain Enter stays for new lines
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.Enter && !IsRunning)
             {
                 OnGenerateClick(this, new RoutedEventArgs());
                 e.Handled = true;

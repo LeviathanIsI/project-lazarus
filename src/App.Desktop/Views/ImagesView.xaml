@@ -6,6 +6,11 @@
              PreviewKeyDown="OnPreviewKeyDown"
              AllowDrop="True">
 
+    <UserControl.InputBindings>
+        <!-- Ctrl+Enter triggers Generate -->
+        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding GenerateImagesCommand}"/>
+    </UserControl.InputBindings>
+
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <!-- Local brushes (dark theme friendly) -->
@@ -350,22 +355,49 @@
                             <Slider Grid.Column="3" Minimum="0" Maximum="20" Value="{Binding CfgScale, Mode=TwoWay}" TickFrequency="0.5"/>
                         </Grid>
 
-                        <!-- Generate primary button (center of gravity) -->
-                        <Button x:Name="GenerateButton" Style="{StaticResource PrimaryCorruptButton}" Margin="0,10,0,6" Click="OnGenerateClick" IsEnabled="{Binding InputsEnabled}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Content="Generate"/>
+                        <!-- Model selection -->
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="Model" VerticalAlignment="Center"/>
+                            <ComboBox MinWidth="260" Margin="8,0,0,0"
+                                      ItemsSource="{Binding ImageModels}"
+                                      SelectedItem="{Binding SelectedImageModel}"
+                                      IsTextSearchEnabled="True"/>
+                        </StackPanel>
 
-                        <!-- Thin progress + cancel -->
-                        <Grid>
+                        <!-- LoRAs (comma-separated with optional weights) -->
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Text="LoRAs (name[:weight], comma-separated)" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding LoraList, Mode=TwoWay}"/>
+                        </StackPanel>
+
+                        <!-- ControlNet input image (optional) -->
+                        <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ProgressBar x:Name="JobProgress" Style="{StaticResource ThinProgress}" Grid.Column="0"
-                                         IsIndeterminate="{Binding IsRunning}"
-                                         Minimum="0" Maximum="100" Value="{Binding ProgressPercent}"/>
-                            <Button Grid.Column="1" Content="Cancel" Margin="8,0,0,0" Style="{StaticResource GhostButton}"
-                                    Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"
-                                    Click="OnCancelClick"/>
+                            <TextBlock Grid.Column="0" Text="ControlNet Input" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" Text="{Binding ControlNetInputPath, Mode=TwoWay}" Margin="8,0,8,0"/>
+                            <Button Grid.Column="2" Content="Browse" Style="{StaticResource GhostButton}" Click="OnBrowseControlNetInput"/>
                         </Grid>
+
+                        <!-- Generate primary button (center of gravity) -->
+                        <Button x:Name="GenerateButton" Style="{StaticResource PrimaryCorruptButton}" Margin="0,10,0,6" Click="OnGenerateClick" IsEnabled="{Binding InputsEnabled}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Content="Generate"/>
+
+                        <!-- Status / Run State Bar -->
+                        <DockPanel LastChildFill="False">
+                            <ProgressBar x:Name="JobProgress" Style="{StaticResource ThinProgress}"
+                                         Width="160" Height="6" Margin="0,0,12,0"
+                                         IsIndeterminate="{Binding IsRunning}"
+                                         Minimum="0" Maximum="100" Value="{Binding ProgressPercent}"
+                                         Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"/>
+                            <TextBlock VerticalAlignment="Center"
+                                       Text="{Binding StatusText}" Opacity="0.9"/>
+                            <Button Content="Cancel" Margin="12,0,0,0" Padding="8,2"
+                                    Command="{Binding CancelCommand}"
+                                    Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"/>
+                        </DockPanel>
                     </StackPanel>
                 </Border>
 
