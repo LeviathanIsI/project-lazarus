@@ -65,6 +65,21 @@ namespace Lazarus.Desktop.Views
         private string? _filenamePrefix;
         public string? FilenamePrefix { get => _filenamePrefix; set { _filenamePrefix = value; OnPropertyChanged(nameof(FilenamePrefix)); } }
 
+        // Steps / CFG (surface via sliders)
+        private int _steps = 30;
+        public int Steps { get => _steps; set { _steps = Math.Max(1, value); OnPropertyChanged(nameof(Steps)); } }
+
+        private double _cfgScale = 7.0;
+        public double CfgScale { get => _cfgScale; set { _cfgScale = Math.Max(0.0, value); OnPropertyChanged(nameof(CfgScale)); } }
+
+        // Advanced: multiple LoRAs with optional weights (comma-separated: name[:weight])
+        private string? _loraList;
+        public string? LoraList { get => _loraList; set { _loraList = value; OnPropertyChanged(nameof(LoraList)); } }
+
+        // ControlNet input image (optional)
+        private string? _controlNetInputPath;
+        public string? ControlNetInputPath { get => _controlNetInputPath; set { _controlNetInputPath = value; OnPropertyChanged(nameof(ControlNetInputPath)); } }
+
         private int _seed;
         public int Seed { get => _seed; set { _seed = value; OnPropertyChanged(nameof(Seed)); OnPropertyChanged(nameof(GenerateButtonText)); } }
         private bool _seedLocked;

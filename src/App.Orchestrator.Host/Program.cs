@@ -186,29 +186,97 @@ app.MapGet("/v1/models", async (IRunnerSupervisor sup, IModelInventoryService in
 });
 
 // OpenAI-compatible chat completions proxy
-app.MapPost("/v1/chat/completions", async (IRunnerSupervisor sup, HttpRequest incoming) =>
+app.MapPost("/v1/chat/completions", async (IRunnerSupervisor sup, HttpContext ctx) =>
 {
     if (!sup.IsRunning)
     {
-        return Results.BadRequest(new { error = "runner idle" });
+        ctx.Response.StatusCode = 400;
+        await ctx.Response.WriteAsJsonAsync(new { error = "runner idle" });
+        return;
     }
 
-    // Read incoming JSON body
-    using var reader = new StreamReader(incoming.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 8192, leaveOpen: true);
-    var payload = await reader.ReadToEndAsync();
+    var incoming = ctx.Request;
+    var wantStream = string.Equals(incoming.Query["stream"], "true", StringComparison.OrdinalIgnoreCase);
+
+    // Read body and ensure stream=true when requested
+    string payload;
+    using (var reader = new StreamReader(incoming.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 8192, leaveOpen: true))
+        payload = await reader.ReadToEndAsync();
 
     try
     {
-        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+        using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
         var url = $"http://127.0.0.1:{sup.Port}/v1/chat/completions";
-        using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-        using var resp = await http.PostAsync(url, content);
-        var body = await resp.Content.ReadAsStringAsync();
-        return Results.Text(body, "application/json", statusCode: (int)resp.StatusCode);
+
+        // If streaming, force stream:true in body and proxy SSE
+        if (wantStream)
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(payload);
+                var root = doc.RootElement.Clone();
+                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(root.GetRawText()) ?? new();
+                dict["stream"] = true;
+                payload = System.Text.Json.JsonSerializer.Serialize(dict);
+            }
+            catch { /* fall back to raw payload */ }
+
+            var req = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = new StringContent(payload, Encoding.UTF8, "application/json")
+            };
+            req.Headers.Accept.Clear();
+            req.Headers.Accept.ParseAdd("text/event-stream");
+
+            using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ctx.RequestAborted);
+            ctx.Response.StatusCode = (int)resp.StatusCode;
+            ctx.Response.Headers["Cache-Control"] = "no-cache";
+            ctx.Response.Headers["Connection"] = "keep-alive";
+            ctx.Response.ContentType = "text/event-stream";
+
+            using var runnerStream = await resp.Content.ReadAsStreamAsync(ctx.RequestAborted);
+            using var reader = new StreamReader(runnerStream, Encoding.UTF8);
+            using var writer = new StreamWriter(ctx.Response.Body, new UTF8Encoding(false)) { AutoFlush = true };
+
+            string? line;
+            while (!ctx.RequestAborted.IsCancellationRequested && (line = await reader.ReadLineAsync()) != null)
+            {
+                if (line.Length == 0) continue; // keep-alives
+                // Ensure frames are prefixed with data:
+                if (!line.StartsWith("data:")) line = "data: " + line;
+                await writer.WriteAsync(line + "\n\n");
+                await writer.FlushAsync();
+            }
+            // End of stream marker
+            if (!ctx.RequestAborted.IsCancellationRequested)
+            {
+                await writer.WriteAsync("data: [DONE]\n\n");
+                await writer.FlushAsync();
+            }
+            return;
+        }
+        else
+        {
+            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            using var resp = await http.PostAsync(url, content, ctx.RequestAborted);
+            var body = await resp.Content.ReadAsStringAsync(ctx.RequestAborted);
+            ctx.Response.StatusCode = (int)resp.StatusCode;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.WriteAsync(body);
+            return;
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // client disconnected
     }
     catch
     {
-        return Results.BadRequest(new { error = "runner idle" });
+        if (!ctx.Response.HasStarted)
+        {
+            ctx.Response.StatusCode = 400;
+            await ctx.Response.WriteAsJsonAsync(new { error = "runner idle" });
+        }
     }
 });
 
