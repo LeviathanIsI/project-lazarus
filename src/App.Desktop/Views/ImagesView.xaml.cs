@@ -268,6 +268,7 @@ namespace Lazarus.Desktop.Views
             string args;
             // Common port args per engine
             string portArg = desiredPort > 0 ? desiredPort.ToString() : string.Empty;
+            var extra = Environment.GetEnvironmentVariable("LAZARUS_IMAGE_RUNNER_EXTRA_ARGS") ?? string.Empty;
 
             if (ext is ".bat" or ".cmd")
             {
@@ -275,10 +276,12 @@ namespace Lazarus.Desktop.Views
                 var tail = engine switch
                 {
                     "comfyui" => string.IsNullOrEmpty(portArg) ? string.Empty : $" --port {portArg} --listen 127.0.0.1",
-                    "sdwebui" or "stable-diffusion" => " --api",
+                    // Do not force --api for SD engines; distributions vary.
+                    "sdwebui" or "stable-diffusion" => string.Empty,
                     "invokeai" => string.IsNullOrEmpty(portArg) ? " --host 127.0.0.1" : $" --host 127.0.0.1 --port {portArg}",
                     _ => string.Empty
                 };
+                if (!string.IsNullOrWhiteSpace(extra)) tail += ($" " + extra);
                 args = $"/c \"{exe}{tail}\"";
             }
             else if (ext == ".exe")
@@ -287,10 +290,12 @@ namespace Lazarus.Desktop.Views
                 args = engine switch
                 {
                     "comfyui" => string.IsNullOrEmpty(portArg) ? string.Empty : $" --port {portArg} --listen 127.0.0.1",
-                    "sdwebui" or "stable-diffusion" => " --api",
+                    // Do not force --api for SD engines; distributions vary.
+                    "sdwebui" or "stable-diffusion" => string.Empty,
                     "invokeai" => string.IsNullOrEmpty(portArg) ? " --host 127.0.0.1" : $" --host 127.0.0.1 --port {portArg}",
                     _ => string.Empty
                 };
+                if (!string.IsNullOrWhiteSpace(extra)) args += ($" " + extra);
             }
             else if (ext == ".py")
             {
@@ -301,6 +306,7 @@ namespace Lazarus.Desktop.Views
                     "invokeai" => string.IsNullOrEmpty(portArg) ? " --host 127.0.0.1" : $" --host 127.0.0.1 --port {portArg}",
                     _ => string.Empty
                 };
+                if (!string.IsNullOrWhiteSpace(extra)) tail += ($" " + extra);
                 args = $"\"{exe}\"{tail}";
             }
             else
