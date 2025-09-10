@@ -330,7 +330,7 @@
                                                             <MultiDataTrigger>
                                                                 <MultiDataTrigger.Conditions>
                                                                     <Condition Binding="{Binding Role}" Value="assistant"/>
-                                                                    <Condition Binding="{Binding __Never__}" Value="True"/>
+                                                                    <Condition Binding="{Binding IsStreaming}" Value="True"/>
                                                                 </MultiDataTrigger.Conditions>
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </MultiDataTrigger>
