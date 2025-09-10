@@ -80,6 +80,8 @@
                              Background="Transparent"
                              BorderThickness="0"
                              Padding="12,8"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                              KeyboardNavigation.TabNavigation="Continue">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
@@ -99,11 +101,13 @@
                                                         <TextBlock Text="{Binding Title}"
                                                                    Style="{StaticResource BodyTextStyle}"
                                                                    FontWeight="SemiBold"
-                                                                   TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock Text="{Binding Preview}"
-                                                                   Style="{StaticResource SmallTextStyle}"
-                                                                   Margin="0,4,0,0"
-                                                                   TextTrimming="CharacterEllipsis"/>
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   TextWrapping="NoWrap"/>
+                                                         <TextBlock Text="{Binding Preview}"
+                                                                    Style="{StaticResource SmallTextStyle}"
+                                                                    Margin="0,4,0,0"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap"/>
                                                         <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:g}'}"
                                                                    Style="{StaticResource SmallTextStyle}"
                                                                    Foreground="{StaticResource TextSecondaryBrush}"
