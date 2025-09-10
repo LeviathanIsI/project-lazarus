@@ -491,7 +491,8 @@ namespace Lazarus.Desktop.Views
                 var s = combo.SelectedItem as string;
                 if (string.Equals(s, "Configure…", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "(none found)", StringComparison.OrdinalIgnoreCase) || s?.StartsWith("Configure ") == true)
                 {
-                    OpenFolderSafe(path);
+                    // Do not open folders automatically based on selection.
+                    // Leave explicit opening to dedicated buttons/commands.
                     combo.SelectedIndex = -1;
                 }
             }
