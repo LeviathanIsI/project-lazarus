@@ -633,19 +633,10 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         var sys = BuildSystemPrompt();
         messages.Add(new { role = "system", content = sys });
 
-        // Add conversation history (excluding the current streaming message)
-        var history = Messages.Where(m => !m.IsStreaming).ToList();
-        foreach (var msg in history)
+        // Add conversation history only (SendMessageAsync already inserted the user's message)
+        foreach (var msg in Messages.Where(m => !m.IsStreaming))
         {
             messages.Add(new { role = msg.Role, content = msg.Content });
-        }
-
-        // Add current user message if not already the last non-streaming message
-        var lastNonStreaming = history.LastOrDefault();
-        var lastIsSameUser = lastNonStreaming != null && lastNonStreaming.Role == "user" && string.Equals(lastNonStreaming.Content, userText, StringComparison.Ordinal);
-        if (!lastIsSameUser)
-        {
-            messages.Add(new { role = "user", content = userText });
         }
 
         // Attachments (adapters) hint for runners that support them
