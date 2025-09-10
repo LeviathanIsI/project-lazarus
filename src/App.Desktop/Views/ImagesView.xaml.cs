@@ -769,6 +769,27 @@ namespace Lazarus.Desktop.Views
                     return;
                 }
 
+                // Attempt to load selected model via orchestrator-runner API when available
+                if (_runnerClient != null && !string.IsNullOrWhiteSpace(modelPath))
+                {
+                    try
+                    {
+                        StatusText = "Loading model";
+                        using var loadCts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                        var loaded = await _runnerClient.LoadModelAsync(modelPath!, loadCts.Token).ConfigureAwait(true);
+                        AppendRunLog(loaded ? $"Model loaded: {modelPath}" : $"Model load failed: {modelPath}");
+                        if (!loaded)
+                        {
+                            ShowToast("Failed to load model in runner", isError: true);
+                            // Continue anyway; some runners hot-load on request
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AppendRunLog($"Model load threw: {ex.Message}");
+                    }
+                }
+
                 StatusText = "Starting generation";
 
                 // If no backend, warn and bail without touching preview
