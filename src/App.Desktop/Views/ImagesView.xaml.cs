@@ -63,6 +63,9 @@ namespace Lazarus.Desktop.Views
         private Lazarus.Desktop.Services.IOrchestratorRunnerClient? _runnerClient;
         private Lazarus.Desktop.Services.IOrchestratorClient? _orchestratorClient;
         private Lazarus.Shared.Settings.ISettingsService? _settingsService;
+        private System.Diagnostics.Process? _imageRunnerProcess;
+        private string? _imageRunnerOutLog;
+        private string? _imageRunnerErrLog;
 
         // Image Runners catalog (recursively scanned under %LOCALAPPDATA%\Lazarus\Runners\Images)
         public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
@@ -130,8 +133,19 @@ namespace Lazarus.Desktop.Views
                     {
                         await _settingsService.SetValueAsync("LastImageRunnerPath", path).ConfigureAwait(true);
                     }
-                    RunnerStatusMessage = string.IsNullOrWhiteSpace(path) ? "No runner selected" : $"Image runner set to '{SelectedRunner?.Engine} / {SelectedRunner?.DisplayName}'";
-                    ShowToast("Runner loaded");
+                    if (SelectedRunner is null)
+                    {
+                        RunnerStatusMessage = "No runner selected";
+                        return;
+                    }
+
+                    // Stop previous image runner if any
+                    await StopImageRunnerAsync().ConfigureAwait(true);
+
+                    // Start selected engine entrypoint
+                    var started = await StartImageRunnerAsync(SelectedRunner).ConfigureAwait(true);
+                    RunnerStatusMessage = started ? $"Started {SelectedRunner.Engine} at {RunnerExePath}" : "Failed to start image runner";
+                    if (started) ShowToast("Runner started"); else ShowToast("Failed to start runner", isError: true);
                 }
                 catch { }
             }, () => SelectedRunner != null);
@@ -140,6 +154,7 @@ namespace Lazarus.Desktop.Views
             {
                 try
                 {
+                    await StopImageRunnerAsync().ConfigureAwait(true);
                     SelectedRunner = null;
                     if (_settingsService != null)
                         await _settingsService.SetValueAsync("LastImageRunnerPath", string.Empty).ConfigureAwait(true);
@@ -148,6 +163,108 @@ namespace Lazarus.Desktop.Views
                 }
                 catch { }
             }, () => true);
+        }
+
+        private async Task<bool> StartImageRunnerAsync(RunnerCandidate candidate)
+        {
+            try
+            {
+                string exe = candidate.Entrypoint;
+                if (string.IsNullOrWhiteSpace(exe) || !File.Exists(exe)) return false;
+
+                var ext = Path.GetExtension(exe).ToLowerInvariant();
+                var psi = new ProcessStartInfo();
+                psi.WorkingDirectory = Path.GetDirectoryName(exe)!;
+                psi.UseShellExecute = false;
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.CreateNoWindow = true;
+
+                if (ext is ".bat" or ".cmd")
+                {
+                    psi.FileName = "cmd.exe";
+                    psi.Arguments = $"/c \"{exe}\"";
+                }
+                else if (ext == ".exe")
+                {
+                    psi.FileName = exe;
+                    psi.Arguments = string.Empty;
+                }
+                else if (ext == ".py")
+                {
+                    // Try python from PATH
+                    psi.FileName = "python";
+                    psi.Arguments = $"\"{exe}\"";
+                }
+                else
+                {
+                    return false;
+                }
+
+                // Prepare logs
+                try { Directory.CreateDirectory(LazarusPaths.SystemData.Logs); } catch { }
+                var ts = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+                _imageRunnerOutLog = Path.Combine(LazarusPaths.SystemData.Logs, $"image-runner-{ts}.out.log");
+                _imageRunnerErrLog = Path.Combine(LazarusPaths.SystemData.Logs, $"image-runner-{ts}.err.log");
+
+                var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                proc.OutputDataReceived += (_, e) => { try { if (e.Data != null) File.AppendAllText(_imageRunnerOutLog!, e.Data + Environment.NewLine); } catch { } };
+                proc.ErrorDataReceived  += (_, e) => { try { if (e.Data != null) File.AppendAllText(_imageRunnerErrLog!, e.Data + Environment.NewLine); } catch { } };
+                proc.Exited += (_, __) => Dispatcher?.Invoke(() => { IsRunnerRunning = false; });
+
+                var ok = proc.Start();
+                if (!ok) return false;
+                try { proc.BeginOutputReadLine(); proc.BeginErrorReadLine(); } catch { }
+
+                _imageRunnerProcess = proc;
+                IsRunnerRunning = true;
+                RunnerPid = proc.Id;
+                RunnerExePath = exe;
+                RunnerOutLog = _imageRunnerOutLog;
+                RunnerErrLog = _imageRunnerErrLog;
+                OnPropertyChanged(nameof(RunnerPid));
+                OnPropertyChanged(nameof(RunnerExePath));
+                OnPropertyChanged(nameof(RunnerOutLog));
+                OnPropertyChanged(nameof(RunnerErrLog));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                await Task.CompletedTask;
+            }
+        }
+
+        private async Task StopImageRunnerAsync()
+        {
+            try
+            {
+                var p = _imageRunnerProcess;
+                _imageRunnerProcess = null;
+                if (p == null) return;
+                if (!p.HasExited)
+                {
+                    try { p.CloseMainWindow(); } catch { }
+                    try
+                    {
+                        if (!p.WaitForExit(1000))
+                        {
+                            p.Kill(true);
+                            p.WaitForExit(2000);
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+            finally
+            {
+                IsRunnerRunning = false;
+                await Task.CompletedTask;
+            }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
