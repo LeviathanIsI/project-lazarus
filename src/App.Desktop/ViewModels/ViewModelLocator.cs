@@ -12,6 +12,7 @@ public sealed class ViewModelLocator : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<Type, object> _singletonViewModels;
+    private readonly Dictionary<Type, IServiceScope> _singletonScopes;
     private readonly object _lock = new();
     private bool _disposed;
 
@@ -19,6 +20,7 @@ public sealed class ViewModelLocator : IDisposable
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _singletonViewModels = new Dictionary<Type, object>();
+        _singletonScopes = new Dictionary<Type, IServiceScope>();
     }
 
     /// <summary>
@@ -71,8 +73,11 @@ public sealed class ViewModelLocator : IDisposable
         {
             if (!_singletonViewModels.TryGetValue(typeof(T), out var existingViewModel))
             {
-                existingViewModel = _serviceProvider.GetRequiredService<T>();
+                // Create a dedicated scope for this singleton VM so it can consume scoped services safely
+                var scope = _serviceProvider.CreateScope();
+                existingViewModel = scope.ServiceProvider.GetRequiredService<T>();
                 _singletonViewModels[typeof(T)] = existingViewModel;
+                _singletonScopes[typeof(T)] = scope;
             }
 
             return (T)existingViewModel;
@@ -94,7 +99,12 @@ public sealed class ViewModelLocator : IDisposable
             if (_singletonViewModels.TryGetValue(typeof(T), out var viewModel))
             {
                 _singletonViewModels.Remove(typeof(T));
-
+                if (_singletonScopes.TryGetValue(typeof(T), out var scope))
+                {
+                    _singletonScopes.Remove(typeof(T));
+                    try { scope.Dispose(); } catch { }
+                }
+                
                 // Dispose the ViewModel if it implements IDisposable
                 if (viewModel is IDisposable disposable)
                 {
@@ -123,6 +133,11 @@ public sealed class ViewModelLocator : IDisposable
             }
 
             _singletonViewModels.Clear();
+            foreach (var scope in _singletonScopes.Values)
+            {
+                try { scope.Dispose(); } catch { }
+            }
+            _singletonScopes.Clear();
         }
     }
 
