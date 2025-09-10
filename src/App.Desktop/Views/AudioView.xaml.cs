@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Controls;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,10 @@ namespace Lazarus.Desktop.Views
             InitializeComponent();
             try
             {
-                DataContext = Lazarus.Desktop.App.ServiceProvider.GetRequiredService<AudioViewModel>();
+                if (!DesignerProperties.GetIsInDesignMode(this))
+                {
+                    DataContext = Lazarus.Desktop.App.ServiceProvider.GetRequiredService<AudioViewModel>();
+                }
             }
             catch { }
         }

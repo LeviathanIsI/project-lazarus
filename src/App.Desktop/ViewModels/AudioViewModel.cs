@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Input;
 using Lazarus.Desktop.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
 
 namespace Lazarus.Desktop.ViewModels;
@@ -52,6 +53,16 @@ public sealed class AudioViewModel : INotifyPropertyChanged, IDisposable
         DeleteItemCommand = new RelayCommand<string?>(DeleteItem);
 
         _ = LoadAsync();
+    }
+
+    // Parameterless ctor for design-time (designer)
+    public AudioViewModel() : this(new Lazarus.Desktop.Services.DesignAudioService(), NullLogger<AudioViewModel>.Instance)
+    {
+        // Seed friendly design-time values
+        SynthesisStatus = "Ready";
+        TotalFiles = 7;
+        GeneratedToday = 2;
+        TotalDurationDisplay = "0:23:11";
     }
 
     // PUBLIC API
