@@ -35,6 +35,36 @@ namespace Lazarus.Desktop.Views
         public ImageMode Mode { get => _mode; set { _mode = value; OnPropertyChanged(nameof(Mode)); OnPropertyChanged(nameof(ModeString)); } }
         public string ModeString => Mode.ToString();
 
+        // Normalized runner parameters
+        public ObservableCollection<string> ImageModels { get; } = new();
+        private string? _selectedImageModel;
+        public string? SelectedImageModel { get => _selectedImageModel; set { _selectedImageModel = value; OnPropertyChanged(nameof(SelectedImageModel)); } }
+
+        public ObservableCollection<string> Samplers { get; } = new(new[] { "Euler", "EulerA", "DPM2", "DPM2S", "DDIM", "Heun", "PLMS", "DPM++" });
+        private string _sampler = "Euler";
+        public string Sampler { get => _sampler; set { _sampler = value; OnPropertyChanged(nameof(Sampler)); } }
+
+        private int _batch = 1;
+        public int Batch { get => _batch; set { _batch = Math.Max(1, value); OnPropertyChanged(nameof(Batch)); } }
+
+        private int _threads = Math.Max(1, Environment.ProcessorCount / 2);
+        public int Threads { get => _threads; set { _threads = Math.Max(0, value); OnPropertyChanged(nameof(Threads)); } }
+
+        public ObservableCollection<string> Precisions { get; } = new(new[] { "fp32", "fp16", "bf16", "int8" });
+        private string _precision = "fp16";
+        public string Precision { get => _precision; set { _precision = value; OnPropertyChanged(nameof(Precision)); } }
+
+        public ObservableCollection<string> Devices { get; } = new(new[] { "Auto", "CPU", "GPU" });
+        private string _device = "Auto";
+        public string Device { get => _device; set { _device = value; OnPropertyChanged(nameof(Device)); } }
+
+        public ObservableCollection<string> OutputFormats { get; } = new(new[] { "png", "jpg", "webp" });
+        private string _outputFormat = "png";
+        public string OutputFormat { get => _outputFormat; set { _outputFormat = value; OnPropertyChanged(nameof(OutputFormat)); } }
+
+        private string? _filenamePrefix;
+        public string? FilenamePrefix { get => _filenamePrefix; set { _filenamePrefix = value; OnPropertyChanged(nameof(FilenamePrefix)); } }
+
         private int _seed;
         public int Seed { get => _seed; set { _seed = value; OnPropertyChanged(nameof(Seed)); OnPropertyChanged(nameof(GenerateButtonText)); } }
         private bool _seedLocked;
@@ -123,6 +153,15 @@ namespace Lazarus.Desktop.Views
             try { if (_runnerClient != null) _runnerClient.RunnerStatusChanged += (_, s) => Dispatcher?.Invoke(() => ApplyStatus(s)); } catch { }
             try { RefreshRunnersCatalog(); } catch { }
 
+            // Populate image models list
+            try
+            {
+                ImageModels.Clear();
+                foreach (var m in EnumerateFilesSafe(LazarusPaths.Models.BaseModels, new[] { ".safetensors", ".ckpt", ".ckp", ".gguf" }))
+                    ImageModels.Add(m);
+            }
+            catch { }
+
             // Commands
             LoadSelectedRunnerCommand = new Lazarus.Desktop.ViewModels.RelayCommand(async () =>
             {
@@ -143,7 +182,7 @@ namespace Lazarus.Desktop.Views
                     await StopImageRunnerAsync().ConfigureAwait(true);
 
                     // Start selected engine entrypoint
-                    var started = await StartImageRunnerAsync(SelectedRunner).ConfigureAwait(true);
+                    var started = await StartImageRunnerAsync(SelectedRunner, string.Empty).ConfigureAwait(true);
                     RunnerStatusMessage = started ? $"Started {SelectedRunner.Engine} at {RunnerExePath}" : "Failed to start image runner";
                     if (started) ShowToast("Runner started"); else ShowToast("Failed to start runner", isError: true);
                 }
@@ -165,7 +204,7 @@ namespace Lazarus.Desktop.Views
             }, () => true);
         }
 
-        private async Task<bool> StartImageRunnerAsync(RunnerCandidate candidate)
+        private async Task<bool> StartImageRunnerAsync(RunnerCandidate candidate, string normalizedArgs)
         {
             try
             {
@@ -187,6 +226,10 @@ namespace Lazarus.Desktop.Views
                 if (string.IsNullOrWhiteSpace(fileName) && string.IsNullOrWhiteSpace(arguments)) return false;
                 psi.FileName = fileName;
                 psi.Arguments = arguments;
+                if (!string.IsNullOrWhiteSpace(normalizedArgs))
+                {
+                    try { psi.EnvironmentVariables["LAZARUS_IMAGE_RUNNER_EXTRA_ARGS"] = normalizedArgs; } catch { }
+                }
 
                 // Prepare logs
                 try { Directory.CreateDirectory(LazarusPaths.SystemData.Logs); } catch { }
@@ -576,7 +619,7 @@ namespace Lazarus.Desktop.Views
             catch { return Array.Empty<string>(); }
         }
 
-        private bool HasBackend() => _imageService != null; // no IsConfigured on interface; treat presence as configured
+        private bool HasBackend() => true; // one-shot local runner invocation; backend stub not required
 
         private async void OnGenerateClick(object sender, RoutedEventArgs e)
         {
@@ -630,6 +673,45 @@ namespace Lazarus.Desktop.Views
                     }).ConfigureAwait(true);
                 }
                 catch (TaskCanceledException) when (_cts?.IsCancellationRequested == true) { }
+
+                // One-shot runner preferred: if backend didn't produce an output, try invoking runner now
+                if (string.IsNullOrWhiteSpace(outputPath))
+                {
+                    try
+                    {
+                        if (SelectedRunner != null)
+                        {
+                            var normArgs = BuildNormalizedArgs(prompt ?? string.Empty);
+                            var started = await StartImageRunnerAsync(SelectedRunner, normArgs).ConfigureAwait(true);
+                            if (started)
+                            {
+                                var outDir = LazarusPaths.UserContent.GeneratedOutput;
+                                try { Directory.CreateDirectory(outDir); } catch { }
+                                var startTime = DateTime.UtcNow;
+                                var exts = new HashSet<string>(new[] { ".png", ".jpg", ".jpeg", ".webp" }, StringComparer.OrdinalIgnoreCase);
+                                for (int i = 0; i < 120; i++)
+                                {
+                                    try
+                                    {
+                                        var candidate = Directory.EnumerateFiles(outDir, "*.*", SearchOption.TopDirectoryOnly)
+                                            .Where(f => exts.Contains(Path.GetExtension(f)))
+                                            .Select(f => new FileInfo(f))
+                                            .OrderByDescending(fi => fi.LastWriteTimeUtc)
+                                            .FirstOrDefault();
+                                        if (candidate != null && candidate.LastWriteTimeUtc >= startTime.AddSeconds(-2))
+                                        {
+                                            outputPath = candidate.FullName;
+                                            break;
+                                        }
+                                    }
+                                    catch { }
+                                    await Task.Delay(1000);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
 
                 if (_cts.IsCancellationRequested)
                 {
@@ -846,6 +928,70 @@ namespace Lazarus.Desktop.Views
                 return fmt == PixelFormats.Pbgra32 || fmt == PixelFormats.Bgra32 || fmt == PixelFormats.Rgba64 || fmt == PixelFormats.Prgba64;
             }
             catch { return false; }
+        }
+
+        // Build normalized CLI flags for image runners
+        private string BuildNormalizedArgs(string prompt)
+        {
+            var sb = new System.Text.StringBuilder();
+            string q(string s) => "\"" + s.Replace("\"", "\\\"") + "\"";
+
+            // Core
+            if (!string.IsNullOrWhiteSpace(SelectedImageModel))
+            {
+                var modelPath = Path.Combine(LazarusPaths.Models.BaseModels, SelectedImageModel);
+                sb.Append(" --model ").Append(q(modelPath));
+            }
+            if (!string.IsNullOrWhiteSpace(prompt)) sb.Append(" --prompt ").Append(q(prompt));
+            if (!string.IsNullOrWhiteSpace(NegativePromptBox.Text)) sb.Append(" --negative ").Append(q(NegativePromptBox.Text));
+            sb.Append(" --seed ").Append(Seed);
+            var stepsVal = 30; // default if not bound here
+            sb.Append(" --steps ").Append(stepsVal);
+            if (!string.IsNullOrWhiteSpace(Sampler)) sb.Append(" --sampler ").Append(q(Sampler));
+            sb.Append(" --cfg ").Append(7.0);
+
+            // Dimensions / output
+            sb.Append(" --W ").Append(Width);
+            sb.Append(" --H ").Append(Height);
+            sb.Append(" --outdir ").Append(q(LazarusPaths.UserContent.GeneratedOutput));
+            if (!string.IsNullOrWhiteSpace(OutputFormat)) sb.Append(" --format ").Append(OutputFormat.ToLowerInvariant());
+            if (!string.IsNullOrWhiteSpace(FilenamePrefix)) sb.Append(" --prefix ").Append(q(FilenamePrefix));
+
+            // Model add-ons
+            var vaeItem = VaeCombo?.SelectedItem as string;
+            if (!string.IsNullOrWhiteSpace(vaeItem) && !vaeItem!.Contains("(none", StringComparison.OrdinalIgnoreCase))
+            {
+                var vaePath = Path.Combine(LazarusPaths.GenAssets.Vae, vaeItem!);
+                sb.Append(" --vae ").Append(q(vaePath));
+            }
+            var loraItem = LoraCombo?.SelectedItem as string;
+            if (!string.IsNullOrWhiteSpace(loraItem) && !loraItem!.Contains("(none", StringComparison.OrdinalIgnoreCase))
+            {
+                var loraPath = Path.Combine(LazarusPaths.GenAssets.StylePresets, loraItem!);
+                sb.Append(" --loras ").Append(q(loraPath));
+            }
+            var cnItem = ControlNetCombo?.SelectedItem as string;
+            if (!string.IsNullOrWhiteSpace(cnItem) && !cnItem!.Contains("(none", StringComparison.OrdinalIgnoreCase))
+            {
+                var cnPath = Path.Combine(LazarusPaths.GenAssets.ControlNet, cnItem!);
+                sb.Append(" --controlnet ").Append(q(cnPath));
+            }
+
+            // Performance / device
+            if (Threads > 0) sb.Append(" --threads ").Append(Threads);
+            if (Batch > 1) sb.Append(" --batch ").Append(Batch);
+            if (!string.IsNullOrWhiteSpace(Device) && !string.Equals(Device, "Auto", StringComparison.OrdinalIgnoreCase)) sb.Append(" --device ").Append(Device.ToLowerInvariant());
+            if (!string.IsNullOrWhiteSpace(Precision)) sb.Append(" --precision ").Append(Precision.ToLowerInvariant());
+
+            // Extras
+            if (!string.Equals(Mode.ToString(), "Txt2Img", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(InitImagePath))
+            {
+                sb.Append(" --init-img ").Append(q(InitImagePath!));
+                if (!string.IsNullOrWhiteSpace(MaskImagePath)) sb.Append(" --mask ").Append(q(MaskImagePath!));
+                // Strength optional; not bound in this view yet
+            }
+
+            return sb.ToString();
         }
 
         private void EnqueueToast(string text, bool isError = false)
