@@ -265,27 +265,17 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                             <TextBlock Text="Runner" VerticalAlignment="Center"/>
                             <ComboBox MinWidth="260" Margin="8,0,0,0"
-                                      ItemsSource="{Binding VisibleRunnerCatalog}"
-                                      SelectedItem="{Binding SelectedRunner}"
+                                      ItemsSource="{Binding Source={StaticResource ViewModelLocator}, Path=ImageLabViewModel.ImageRunners}"
+                                      SelectedItem="{Binding Source={StaticResource ViewModelLocator}, Path=ImageLabViewModel.SelectedRunner, Mode=TwoWay}"
                                       IsTextSearchEnabled="True"
-                                      TextSearch.TextPath="DisplayName">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                            <Run Text="{Binding Engine}"/>
-                                            <Run Text="  "/>
-                                            <Run Text="{Binding DisplayName}"/>
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                      DisplayMemberPath="Name"/>
                             <Button Content="Refresh" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="OnRefreshRunnersClick"/>
                         </StackPanel>
                         <!-- Prompt -->
                         <StackPanel>
                             <TextBlock Text="Prompt" Margin="4,0,0,6" Opacity="0.8"/>
                             <TextBox x:Name="PromptBox"
-                                     Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding Source={StaticResource ViewModelLocator}, Path=ImageLabViewModel.Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
                                      MinHeight="84"
@@ -301,7 +291,7 @@
                         <StackPanel Margin="0,10,0,0">
                             <TextBlock Text="Negative Prompt" Margin="4,0,0,6" Opacity="0.8"/>
                             <TextBox x:Name="NegativePromptBox"
-                                     Text="{Binding NegativePrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding Source={StaticResource ViewModelLocator}, Path=ImageLabViewModel.NegativePrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
                                      MinHeight="64"
@@ -362,7 +352,7 @@
                             <TextBlock Text="Model" VerticalAlignment="Center"/>
                             <ComboBox MinWidth="260" Margin="8,0,0,0"
                                       ItemsSource="{Binding ImageModels}"
-                                      SelectedItem="{Binding SelectedImageModel}"
+                                      SelectedItem="{Binding Source={StaticResource ViewModelLocator}, Path=ImageLabViewModel.SelectedImageModel, Mode=TwoWay}"
                                       IsTextSearchEnabled="True"/>
                         </StackPanel>
 

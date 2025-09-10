@@ -38,6 +38,19 @@ public sealed class ImagesViewModel : ViewModelBase
         RandomizeSeedCommand = new RelayCommand(() => { if (!IsSeedLocked) Seed = _rng.Next(); }, () => !IsSeedLocked);
         LockSeedCommand = new RelayCommand(() => IsSeedLocked = !IsSeedLocked);
 
+        try
+        {
+            if (_runnerRegistry != null)
+            {
+                ImageRunners.Clear();
+                foreach (var r in _runnerRegistry.GetByRole(RunnerRole.Image))
+                {
+                    ImageRunners.Add(r);
+                }
+            }
+        }
+        catch { }
+
         _ = RefreshCountersAsync();
         _ = LoadLastPreviewAsync();
     }

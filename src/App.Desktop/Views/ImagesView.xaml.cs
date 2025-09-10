@@ -20,6 +20,7 @@ namespace Lazarus.Desktop.Views
 {
     public partial class ImagesView : UserControl, System.ComponentModel.INotifyPropertyChanged
     {
+        private Lazarus.Desktop.ViewModels.ImagesViewModel? _vm;
         
         private sealed class RelayCommand : ICommand
         {
@@ -154,7 +155,7 @@ namespace Lazarus.Desktop.Views
         public string? InitImagePath { get; set; }
         public string? MaskImagePath { get; set; }
 
-        private CancellationTokenSource? _cts;
+        // Cancellation is now managed by the ViewModel strong DTO path
 
         public sealed class ToastItem { public Guid Id { get; } = Guid.NewGuid(); public string Text { get; set; } = string.Empty; public bool IsError { get; set; } }
         public ObservableCollection<ToastItem> Toasts { get; } = new();
@@ -226,6 +227,17 @@ namespace Lazarus.Desktop.Views
             try { _settingsService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Shared.Settings.ISettingsService)) as Lazarus.Shared.Settings.ISettingsService; } catch { }
             try { if (_runnerClient != null) _runnerClient.RunnerStatusChanged += (_, s) => Dispatcher?.Invoke(() => ApplyStatus(s)); } catch { }
             try { RefreshRunnersCatalog(); } catch { }
+
+            // Hook up ViewModel events to mirror status/preview
+            try
+            {
+                _vm = Lazarus.Desktop.ViewModels.ViewModelLocator.Instance?.ImageLabViewModel;
+                if (_vm != null)
+                {
+                    _vm.PropertyChanged += VmOnPropertyChanged;
+                }
+            }
+            catch { }
 
             // Populate image models list
             try
@@ -698,204 +710,34 @@ namespace Lazarus.Desktop.Views
 
         private async void OnGenerateClick(object sender, RoutedEventArgs e)
         {
-            // Show a placeholder PNG from app resources
             try
             {
                 if (IsRunning) return;
-
-                // simple validation
-                var prompt = PromptBox.Text; // keep spaces/newlines as-is
-                if (Mode == ImageMode.Txt2Img && string.IsNullOrWhiteSpace(prompt))
+                if (_vm == null)
                 {
-                    ShowToast("Enter a prompt.", isError: true);
+                    ShowToast("Image pipeline not available", isError: true);
                     return;
                 }
-                // Require explicit Image runner selection
-                if (SelectedRunner is null)
-                {
-                    ShowToast("Select an Image runner.", isError: true);
-                    StatusText = "Select an Image runner.";
-                    return;
-                }
-                // Validate diffusion model selection
-                var modelLeaf = SelectedImageModel;
-                var modelPath = string.IsNullOrWhiteSpace(modelLeaf) ? null : System.IO.Path.Combine(LazarusPaths.GenAssets.StableDiffusionModels, modelLeaf);
-                if (string.IsNullOrWhiteSpace(modelPath) || !System.IO.File.Exists(modelPath) || !LooksLikeDiffusionModel(modelPath))
-                {
-                    ShowToast("Select a valid diffusion model (.safetensors/.ckpt/.onnx).", isError: true);
-                    return;
-                }
-                if (Mode != ImageMode.Txt2Img && string.IsNullOrWhiteSpace(InitImagePath))
-                {
-                    ShowToast("Provide an init image for this mode", isError: true);
-                    return;
-                }
-
-                _cts = new CancellationTokenSource();
-                IsRunning = true;
-                StatusText = "Preflight";
-                Progress = null; // indeterminate
-                ProgressPercent = 0;
-                LastRunFailed = false;
-                try { VisualStateManager.GoToState(GenerateButton, "Running", true); } catch { }
-
-                // Start per-run log file
-                _currentRunLogFile = NewRunLogPath();
-                AppendRunLog($"START model={modelPath} seed={Seed} sampler={Sampler} steps={Steps} cfg={CfgScale} mode={Mode}");
-
-                // Preflight ping (1s timeout) using orchestrator health if available
-                bool runnerOk = true; // default to true if no orchestrator
-                try
-                {
-                    if (_orchestratorClient != null)
-                    {
-                        using var pingCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                        var healthy = await _orchestratorClient.CheckHealthAsync(pingCts.Token).ConfigureAwait(true);
-                        runnerOk = healthy;
-                        AppendRunLog(healthy ? "Preflight: orchestrator healthy" : "Preflight: orchestrator unhealthy");
-                    }
-                    else if (_runnerClient != null)
-                    {
-                        using var pingCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                        var status = await _runnerClient.GetStatusAsync(pingCts.Token).ConfigureAwait(true);
-                        runnerOk = status.IsRunning;
-                        AppendRunLog(runnerOk ? "Preflight: runner status RUNNING" : "Preflight: runner status NOT RUNNING");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    runnerOk = false;
-                    AppendRunLog($"Runner ping failed: {ex.Message}");
-                }
-
-                if (!runnerOk)
-                {
-                    StatusText = "Runner not reachable.";
-                    ShowToast("Runner not reachable.", isError: true);
-                    AppendRunLog("ABORT: runner not reachable");
-                    return;
-                }
-
-                // Attempt to load selected model via orchestrator-runner API when available
-                if (_runnerClient != null && !string.IsNullOrWhiteSpace(modelPath))
-                {
-                    try
-                    {
-                        StatusText = "Loading model";
-                        using var loadCts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-                        var loaded = await _runnerClient.LoadModelAsync(modelPath!, loadCts.Token).ConfigureAwait(true);
-                        AppendRunLog(loaded ? $"Model loaded: {modelPath}" : $"Model load failed: {modelPath}");
-                        if (!loaded)
-                        {
-                            ShowToast("Failed to load model in runner", isError: true);
-                            // Continue anyway; some runners hot-load on request
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        AppendRunLog($"Model load threw: {ex.Message}");
-                    }
-                }
-
-                StatusText = "Starting generation";
-
-                // If no backend, warn and bail without touching preview
-                if (!HasBackend())
-                {
-                    ShowToast("Image backend not configured. Configure a runner to generate.", isError: true);
-                    return;
-                }
-
-                // Always route via the selected Image runner; never fallback to unrelated engines
-                string? outputPath = null;
-                try
-                {
-                    var normArgs = BuildNormalizedArgs(prompt ?? string.Empty);
-                    var started = await StartImageRunnerAsync(SelectedRunner, normArgs).ConfigureAwait(true);
-                    if (started)
-                    {
-                        var outDir = LazarusPaths.UserContent.GeneratedOutput;
-                        try { Directory.CreateDirectory(outDir); } catch { }
-                        var startTime = DateTime.UtcNow;
-                        var exts = new HashSet<string>(new[] { ".png", ".jpg", ".jpeg", ".webp" }, StringComparer.OrdinalIgnoreCase);
-                        for (int i = 0; i < 120; i++)
-                        {
-                            try
-                            {
-                                var candidate = Directory.EnumerateFiles(outDir, "*.*", SearchOption.TopDirectoryOnly)
-                                    .Where(f => exts.Contains(Path.GetExtension(f)))
-                                    .Select(f => new FileInfo(f))
-                                    .OrderByDescending(fi => fi.LastWriteTimeUtc)
-                                    .FirstOrDefault();
-                                if (candidate != null && candidate.LastWriteTimeUtc >= startTime.AddSeconds(-2))
-                                {
-                                    outputPath = candidate.FullName;
-                                    break;
-                                }
-                            }
-                            catch { }
-                            await Task.Delay(1000);
-                        }
-                    }
-                }
-                catch { }
-
-                if (_cts.IsCancellationRequested)
-                {
-                    ProgressPercent = 0;
-                    StatusText = "Canceled.";
-                    ShowToast("Generation canceled", isError: true);
-                    try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
-                }
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace(outputPath) && File.Exists(outputPath))
-                    {
-                        try
-                        {
-                            var bmp = new BitmapImage();
-                            bmp.BeginInit();
-                            bmp.CacheOption = BitmapCacheOption.OnLoad;
-                            bmp.UriSource = new Uri(outputPath, UriKind.Absolute);
-                            bmp.EndInit();
-                            bmp.Freeze();
-                            PreviewImage.Source = bmp;
-                            PlaceholderLabel.Visibility = Visibility.Collapsed;
-                        }
-                        catch (Exception ex)
-                        {
-                            ShowToast("Failed to load generated image: " + ex.Message, isError: true);
-                        }
-                    }
-                    else
-                    {
-                        ShowToast("Generation returned no image.", isError: true);
-                    }
-                    StatusText = "Done.";
-                    TotalImages += 1; GeneratedToday += 1; StorageUsedMb += 0.001;
-                    ShowToast($"Rendered  seed {Seed}");
-                    AppendRunLog("COMPLETED");
-                    try { VisualStateManager.GoToState(GenerateButton, "Success", true); } catch { }
-                }
+                _vm.Prompt = PromptBox.Text ?? string.Empty;
+                _vm.NegativePrompt = NegativePromptBox.Text ?? string.Empty;
+                _vm.GenerateCommand.Execute(null);
+                await Task.Yield();
             }
             catch (Exception ex)
             {
                 StatusText = "Generation failed.";
                 ShowToast("Generation failed: " + ex.Message, isError: true);
-                try { AppendRunLog("ERROR: " + ex.ToString()); } catch { }
-                try { VisualStateManager.GoToState(GenerateButton, "Error", true); } catch { }
-            }
-            finally
-            {
-                _cts?.Dispose(); _cts = null;
-                Progress = null;
-                IsRunning = false;
-                await Task.Delay(500);
-                try { VisualStateManager.GoToState(GenerateButton, "Idle", true); } catch { }
             }
         }
 
-        private void OnCancelClick(object sender, RoutedEventArgs e) => _cts?.Cancel();
+        private void OnCancelClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Cancellation for the strong DTO path can be added to the ViewModel later
+            }
+            catch { }
+        }
 
         private void OnRandomizeSeed(object sender, RoutedEventArgs e)
         {
@@ -1234,6 +1076,49 @@ namespace Lazarus.Desktop.Views
 
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+
+        private void VmOnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            try
+            {
+                if (_vm == null) return;
+                if (e.PropertyName == nameof(Lazarus.Desktop.ViewModels.ImagesViewModel.IsGenerating))
+                {
+                    Dispatcher?.Invoke(() =>
+                    {
+                        IsRunning = _vm.IsGenerating;
+                        try { VisualStateManager.GoToState(GenerateButton, _vm.IsGenerating ? "Running" : "Idle", true); } catch { }
+                    });
+                }
+                else if (e.PropertyName == nameof(Lazarus.Desktop.ViewModels.ImagesViewModel.ProcessingStatus))
+                {
+                    Dispatcher?.Invoke(() => { StatusText = _vm.ProcessingStatus; });
+                }
+                else if (e.PropertyName == nameof(Lazarus.Desktop.ViewModels.ImagesViewModel.PreviewImagePath))
+                {
+                    var p = _vm.PreviewImagePath;
+                    if (!string.IsNullOrWhiteSpace(p) && File.Exists(p))
+                    {
+                        Dispatcher?.Invoke(() =>
+                        {
+                            try
+                            {
+                                var bmp = new BitmapImage();
+                                bmp.BeginInit();
+                                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                                bmp.UriSource = new Uri(p, UriKind.Absolute);
+                                bmp.EndInit();
+                                bmp.Freeze();
+                                PreviewImage.Source = bmp;
+                                PlaceholderLabel.Visibility = Visibility.Collapsed;
+                            }
+                            catch { }
+                        });
+                    }
+                }
+            }
+            catch { }
+        }
     }
 }
 
