@@ -20,6 +20,7 @@ public sealed class ImagesViewModel : ViewModelBase
     private readonly IRunnerRegistry? _runnerRegistry;
     private readonly IImageJobRepository _jobs;
     private readonly ILogger<ImagesViewModel>? _logger;
+    private CancellationTokenSource? _cts;
 
     public ImagesViewModel(IImageService imageService, IImageJobRepository jobs, ILogger<ImagesViewModel> logger, IRunnerRegistry? runnerRegistry = null, IImageGenService? imageGenService = null)
     {
@@ -35,6 +36,7 @@ public sealed class ImagesViewModel : ViewModelBase
         Vaes = new ObservableCollection<string>(ScanDir(Lazarus.Shared.LazarusPaths.GenAssets.Vae));
 
         GenerateCommand = new RelayCommand(async () => await GenerateAsync(), () => !IsGenerating);
+        CancelCommand = new RelayCommand(() => _cts?.Cancel(), () => IsGenerating);
         RandomizeSeedCommand = new RelayCommand(() => { if (!IsSeedLocked) Seed = _rng.Next(); }, () => !IsSeedLocked);
         LockSeedCommand = new RelayCommand(() => IsSeedLocked = !IsSeedLocked);
 
@@ -140,12 +142,13 @@ public sealed class ImagesViewModel : ViewModelBase
     public ObservableCollection<ImageJob> JobHistory { get; } = new();
 
     public RelayCommand GenerateCommand { get; }
+    public RelayCommand CancelCommand { get; }
     public RelayCommand RandomizeSeedCommand { get; }
     public RelayCommand LockSeedCommand { get; }
 
     public string? PreviewImagePath { get => _previewPath; private set => SetProperty(ref _previewPath, value); }
     private string? _previewPath;
-    public bool IsGenerating { get => _isGenerating; private set { if (SetProperty(ref _isGenerating, value)) GenerateCommand.RaiseCanExecuteChanged(); } }
+    public bool IsGenerating { get => _isGenerating; private set { if (SetProperty(ref _isGenerating, value)) { GenerateCommand.RaiseCanExecuteChanged(); CancelCommand.RaiseCanExecuteChanged(); } } }
     private bool _isGenerating;
     public string? JobLog { get => _jobLog; private set => SetProperty(ref _jobLog, value); }
     private string? _jobLog;
@@ -166,6 +169,11 @@ public sealed class ImagesViewModel : ViewModelBase
                     ProcessingStatus = "Select a diffusion model (.safetensors/.ckpt/.onnx)."; return;
                 }
 
+                _cts?.Cancel();
+                _cts?.Dispose();
+                _cts = new CancellationTokenSource();
+                var ct = _cts.Token;
+
                 var req = new ImageGenRequest
                 {
                     Prompt = Prompt ?? string.Empty,
@@ -179,7 +187,7 @@ public sealed class ImagesViewModel : ViewModelBase
                     Mode = Mode
                 };
 
-                await foreach (var ev in _imageGenService.GenerateAsync(req, CancellationToken.None))
+                await foreach (var ev in _imageGenService.GenerateAsync(req, ct))
                 {
                     switch (ev.Kind)
                     {
@@ -237,13 +245,22 @@ public sealed class ImagesViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "GenerateAsync failed");
-            JobLog = ex.Message;
+            if (ex is OperationCanceledException)
+            {
+                ProcessingStatus = "Canceled.";
+            }
+            else
+            {
+                _logger?.LogError(ex, "GenerateAsync failed");
+                JobLog = ex.Message;
+            }
         }
         finally
         {
             ProcessingStatus = "Ready";
             IsGenerating = false;
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 

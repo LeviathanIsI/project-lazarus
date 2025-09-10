@@ -734,7 +734,16 @@ namespace Lazarus.Desktop.Views
         {
             try
             {
-                // Cancellation for the strong DTO path can be added to the ViewModel later
+                var vm = _vm ?? Lazarus.Desktop.ViewModels.ViewModelLocator.Instance?.ImageLabViewModel;
+                if (vm != null)
+                {
+                    // call VM CancelCommand via reflection to avoid hard dep if missing
+                    var cmdProp = typeof(Lazarus.Desktop.ViewModels.ImagesViewModel).GetProperty("CancelCommand");
+                    if (cmdProp?.GetValue(vm) is System.Windows.Input.ICommand cmd && cmd.CanExecute(null))
+                    {
+                        cmd.Execute(null);
+                    }
+                }
             }
             catch { }
         }
