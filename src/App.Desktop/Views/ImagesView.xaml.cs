@@ -60,11 +60,32 @@ namespace Lazarus.Desktop.Views
 
         // Backend (resolved via DI when available)
         private IImageService? _imageService;
+        private Lazarus.Desktop.Services.IOrchestratorRunnerClient? _runnerClient;
+        private Lazarus.Desktop.Services.IOrchestratorClient? _orchestratorClient;
 
         // Image Runners catalog (recursively scanned under %LOCALAPPDATA%\Lazarus\Runners\Images)
         public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
+        public System.Collections.Generic.IEnumerable<RunnerCandidate> VisibleRunnerCatalog => RunnerCatalog;
         private RunnerCandidate? _selectedRunner;
         public RunnerCandidate? SelectedRunner { get => _selectedRunner; set { _selectedRunner = value; OnPropertyChanged(nameof(SelectedRunner)); } }
+
+        // Runner diagnostics (align with Models runner card bindings)
+        public bool IsRunnerRunning { get => _isRunnerRunning; private set { _isRunnerRunning = value; OnPropertyChanged(nameof(IsRunnerRunning)); } }
+        private bool _isRunnerRunning;
+        public string? RunnerModelPath { get => _runnerModelPath; private set { _runnerModelPath = value; OnPropertyChanged(nameof(RunnerModelPath)); } }
+        private string? _runnerModelPath;
+        public int? RunnerPid { get => _runnerPid; private set { _runnerPid = value; OnPropertyChanged(nameof(RunnerPid)); } }
+        private int? _runnerPid;
+        public int? RunnerPort { get => _runnerPort; private set { _runnerPort = value; OnPropertyChanged(nameof(RunnerPort)); } }
+        private int? _runnerPort;
+        public string? RunnerExePath { get => _runnerExePath; private set { _runnerExePath = value; OnPropertyChanged(nameof(RunnerExePath)); } }
+        private string? _runnerExePath;
+        public string? RunnerErrLog { get => _runnerErrLog; private set { _runnerErrLog = value; OnPropertyChanged(nameof(RunnerErrLog)); } }
+        private string? _runnerErrLog;
+        public string? RunnerOutLog { get => _runnerOutLog; private set { _runnerOutLog = value; OnPropertyChanged(nameof(RunnerOutLog)); } }
+        private string? _runnerOutLog;
+        public string? RunnerStatusMessage { get => _runnerStatusMessage; private set { _runnerStatusMessage = value; OnPropertyChanged(nameof(RunnerStatusMessage)); } }
+        private string? _runnerStatusMessage;
 
         public ImagesView()
         {
@@ -74,6 +95,9 @@ namespace Lazarus.Desktop.Views
             Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
 
             try { _imageService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(IImageService)) as IImageService; } catch { }
+            try { _runnerClient = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Desktop.Services.IOrchestratorRunnerClient)) as Lazarus.Desktop.Services.IOrchestratorRunnerClient; } catch { }
+            try { _orchestratorClient = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Desktop.Services.IOrchestratorClient)) as Lazarus.Desktop.Services.IOrchestratorClient; } catch { }
+            try { if (_runnerClient != null) _runnerClient.RunnerStatusChanged += (_, s) => Dispatcher?.Invoke(() => ApplyStatus(s)); } catch { }
             try { RefreshRunnersCatalog(); } catch { }
         }
 
@@ -546,9 +570,35 @@ namespace Lazarus.Desktop.Views
             });
         }
 
-        private void OnRefreshRunnersClick(object sender, RoutedEventArgs e)
+        private async void OnRefreshRunnersClick(object sender, RoutedEventArgs e)
         {
-            try { RefreshRunnersCatalog(); ShowToast("Runners refreshed"); } catch { }
+            try
+            {
+                RefreshRunnersCatalog();
+                if (_runnerClient != null)
+                {
+                    var s = await _runnerClient.GetStatusAsync().ConfigureAwait(true);
+                    ApplyStatus(s);
+                }
+                ShowToast("Runners refreshed");
+            }
+            catch { }
+        }
+
+        private void ApplyStatus(Lazarus.Desktop.Services.RunnerProcessStatus s)
+        {
+            try
+            {
+                IsRunnerRunning = s.IsRunning;
+                RunnerModelPath = s.ModelPath;
+                RunnerPid = s.Pid;
+                RunnerPort = s.Port;
+                RunnerExePath = s.ExePath;
+                RunnerErrLog = s.ErrLog;
+                RunnerOutLog = s.OutLog;
+                RunnerStatusMessage = null;
+            }
+            catch { }
         }
 
         private void ShowToast(string msg, bool isError = false) => EnqueueToast(msg, isError);
