@@ -373,7 +373,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             }
 
             // Start streaming assistant response
-            await StreamAssistantAsync(userText);
+            await StreamAssistantAsync();
         }
         catch (Exception ex)
         {
@@ -386,7 +386,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         }
     }
 
-    private async Task StreamAssistantAsync(string userText)
+    private async Task StreamAssistantAsync()
     {
         IsStreaming = true;
         _cts?.Cancel();
@@ -406,7 +406,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
 
         try
         {
-            var requestBody = BuildRequest(userText);
+            var requestBody = BuildRequest();
             var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -606,9 +606,9 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         }
     }
 
-    private object BuildRequest(string userText)
+    private object BuildRequest()
     {
-        var messages = BuildRequestMessages(userText);
+        var messages = BuildRequestMessages();
         
         return new
         {
@@ -625,7 +625,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         };
     }
 
-    private object[] BuildRequestMessages(string userText)
+    private object[] BuildRequestMessages()
     {
         var messages = new System.Collections.Generic.List<object>();
 
