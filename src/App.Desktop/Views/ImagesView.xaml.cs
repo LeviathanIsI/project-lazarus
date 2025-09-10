@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -112,7 +112,7 @@ namespace Lazarus.Desktop.Views
         private bool _lastRunFailed;
         public bool LastRunFailed { get => _lastRunFailed; set { _lastRunFailed = value; OnPropertyChanged(nameof(LastRunFailed)); } }
 
-        public string GenerateButtonText => IsRunning ? "Generatingâ€¦" : "Generate";
+        public string GenerateButtonText => IsRunning ? "Generating…" : "Generate";
 
         public string? InitImagePath { get; set; }
         public string? MaskImagePath { get; set; }
@@ -694,7 +694,7 @@ namespace Lazarus.Desktop.Views
                     return;
                 }
 
-                // Call backend (best effort) â€“ interface returns an output path
+                // Call backend (best effort) – interface returns an output path
                 string? outputPath = null;
                 try
                 {
@@ -822,7 +822,7 @@ namespace Lazarus.Desktop.Views
         private void UpdateLockGlyph()
         {
             if (LockBtn != null)
-                LockBtn.Content = SeedLocked ? "ðŸ”’" : "ðŸ”“";
+                LockBtn.Content = SeedLocked ? "Unlock" : "Lock";
         }
 
         private void OnModeTxt2Img(object sender, RoutedEventArgs e) { Mode = ImageMode.Txt2Img; }
@@ -1126,7 +1126,7 @@ namespace Lazarus.Desktop.Views
             try
             {
                 var s = combo.SelectedItem as string;
-                if (string.Equals(s, "Configureâ€¦", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "(none found)", StringComparison.OrdinalIgnoreCase) || s?.StartsWith("Configure ") == true)
+                if (string.Equals(s, "Configure…", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "(none found)", StringComparison.OrdinalIgnoreCase) || s?.StartsWith("Configure ") == true)
                 {
                     // Do not open folders automatically based on selection.
                     // Leave explicit opening to dedicated buttons/commands.
@@ -1147,4 +1147,6 @@ namespace Lazarus.Desktop.Views
         private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 }
+
+
 
