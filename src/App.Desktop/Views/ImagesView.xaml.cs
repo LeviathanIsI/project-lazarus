@@ -450,7 +450,7 @@ namespace Lazarus.Desktop.Views
                 string[] patterns = key switch
                 {
                     // Popular image engines with common entrypoints (Windows)
-                    "stable-diffusion" => new[] { "webui-user.bat", "webui.bat", "launch*.bat", "start*.bat" },
+                    "stable-diffusion" => new[] { "webui-user.bat", "webui.bat", "launch*.bat", "start*.bat", "sd.exe", "sd*.exe" },
                     "sdwebui"          => new[] { "webui-user.bat", "webui.bat" },
                     "comfyui"          => new[] { "run*.bat", "main.py" },
                     "invokeai"         => new[] { "invoke*.bat", "invokeai*.exe" },
