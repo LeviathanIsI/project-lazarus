@@ -138,7 +138,9 @@ namespace Lazarus.Desktop.Views
             {
                 if (!seen.Add(engineDir)) continue;
                 var engineKey = Path.GetFileName(engineDir).Trim();
-                string[] patterns = engineKey.ToLowerInvariant() switch
+                var key = engineKey.ToLowerInvariant();
+                // Only consider known image engines; ignore domain folders like "Images", "Audio", etc.
+                string[] patterns = key switch
                 {
                     // Popular image engines with common entrypoints (Windows)
                     "stable-diffusion" => new[] { "webui-user.bat", "webui.bat", "launch*.bat", "start*.bat" },
@@ -147,10 +149,7 @@ namespace Lazarus.Desktop.Views
                     "invokeai"         => new[] { "invoke*.bat", "invokeai*.exe" },
                     _ => Array.Empty<string>()
                 };
-
-                // If we don't have a mapped pattern, still allow generic Windows scripts
-                if (patterns.Length == 0)
-                    patterns = new[] { "*.bat", "*.cmd", "*.exe" };
+                if (patterns.Length == 0) continue; // skip unknown folders completely
 
                 foreach (var pattern in patterns)
                 {
@@ -166,13 +165,7 @@ namespace Lazarus.Desktop.Views
                     }
                 }
 
-                // If nothing matched, still surface the engine folder once
-                if (!results.Any(r => string.Equals(r.ResolvedPath, engineDir, StringComparison.OrdinalIgnoreCase)))
-                {
-                    string leaf;
-                    try { leaf = new DirectoryInfo(engineDir).Name; } catch { leaf = engineDir; }
-                    results.Add(new RunnerCandidate(engineKey, leaf, engineDir, engineDir));
-                }
+                // If no entrypoints matched in this engine, skip it silently
             }
 
             return results
