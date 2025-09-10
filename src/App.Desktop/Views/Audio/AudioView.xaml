@@ -1,0 +1,454 @@
+<UserControl x:Class="Lazarus.Desktop.Views.Audio.AudioView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Lazarus.Desktop.Views.Audio"
+             mc:Ignorable="d"
+             d:DesignWidth="1200" d:DesignHeight="800"
+             AllowDrop="True">
+    
+    <UserControl.InputBindings>
+        <KeyBinding Key="Space" Command="{Binding PlayPauseCommand}"/>
+        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"/>
+        <KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding ImportCommand}"/>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+    </UserControl.InputBindings>
+    
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Toolbar -->
+            <RowDefinition Height="*"/>    <!-- Main content -->
+            <RowDefinition Height="Auto"/> <!-- Transport -->
+        </Grid.RowDefinitions>
+
+        <!-- Top Toolbar -->
+        <Border Grid.Row="0" Style="{StaticResource GlassCardStyle}" Margin="8,8,8,0">
+            <StackPanel Orientation="Horizontal" Margin="8">
+                <Button Command="{Binding ImportCommand}" 
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Margin="0,0,4,0"
+                        ToolTip="Import audio files (Ctrl+I)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📁" Margin="0,0,6,0"/>
+                        <TextBlock Text="Import"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding RecordCommand}"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Margin="0,0,4,0"
+                        ToolTip="Record audio">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🎙️" Margin="0,0,6,0"/>
+                        <TextBlock Text="Record"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button IsEnabled="False"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Margin="0,0,12,0"
+                        ToolTip="Generate with AI (Coming soon)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="✨" Margin="0,0,6,0"/>
+                        <TextBlock Text="Generate"/>
+                    </StackPanel>
+                </Button>
+                
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,12,0"/>
+                
+                <Button Command="{Binding AnalyzeCommand}"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Margin="0,0,4,0"
+                        ToolTip="Analyze selected file">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📊" Margin="0,0,6,0"/>
+                        <TextBlock Text="Analyze"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding DeleteCommand}"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Margin="0,0,4,0"
+                        ToolTip="Delete selected (Del)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗑️" Margin="0,0,6,0"/>
+                        <TextBlock Text="Delete"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding RefreshCommand}"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        ToolTip="Refresh list (F5)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔄" Margin="0,0,6,0"/>
+                        <TextBlock Text="Refresh"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- Status indicator -->
+                <TextBlock Text="Loading..." 
+                           VerticalAlignment="Center"
+                           Margin="20,0,0,0"
+                           Opacity="0.7"
+                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Split Content -->
+        <Grid Grid.Row="1">
+            <!-- Empty State (shown when no items) -->
+            <Border Margin="100" 
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Visibility="{Binding Items.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                <Border Style="{StaticResource GlassCardStyle}" Padding="60">
+                    <StackPanel>
+                        <TextBlock Text="🎵" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                        <TextBlock Text="No audio files yet" 
+                                   Style="{StaticResource H2TextStyle}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,12"/>
+                        <TextBlock Text="Import audio files or start recording"
+                                   Style="{StaticResource SecondaryTextStyle}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,24"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Command="{Binding ImportCommand}"
+                                    Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                    Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📁" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Import Files"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding RecordCommand}"
+                                    Style="{StaticResource RainbowAccentButton.AutoFit}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🎙️" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Record"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- Content when items exist -->
+            <Grid Visibility="{Binding Items.Count, Converter={StaticResource NonZeroToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" MinWidth="400"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" MinWidth="300"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: File List -->
+                <Border Grid.Column="0" Style="{StaticResource GlassCardStyle}" Margin="8">
+                    <DataGrid ItemsSource="{Binding Items}"
+                              SelectedItem="{Binding SelectedItem}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              GridLinesVisibility="None"
+                              HeadersVisibility="Column"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              RowHeight="50"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling">
+                        
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                                <Setter Property="Padding" Value="8,4"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+                                        <Setter Property="Background">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="#2248BB48" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGrid.Resources>
+                        
+                        <DataGrid.Columns>
+                            <!-- Playing indicator -->
+                            <DataGridTemplateColumn Width="30">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="▶" 
+                                                   HorizontalAlignment="Center"
+                                                   Visibility="{Binding IsPlaying, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <!-- Waveform -->
+                            <DataGridTemplateColumn Header="Waveform" Width="320">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Height="40" Background="#1A1A1A" CornerRadius="2">
+                                            <Image Source="{Binding WaveformSmall}" 
+                                                   Stretch="Fill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <!-- File Name -->
+                            <DataGridTextColumn Header="Name" 
+                                                Binding="{Binding FileName}" 
+                                                Width="*"
+                                                MinWidth="150"/>
+                            
+                            <!-- Duration -->
+                            <DataGridTextColumn Header="Duration" 
+                                                Binding="{Binding DurationDisplay}" 
+                                                Width="80"/>
+                            
+                            <!-- Size -->
+                            <DataGridTextColumn Header="Size" 
+                                                Binding="{Binding SizeDisplay}" 
+                                                Width="80"/>
+                            
+                            <!-- Modified -->
+                            <DataGridTextColumn Header="Modified" 
+                                                Binding="{Binding ModifiedDisplay}" 
+                                                Width="140"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- Splitter -->
+                <GridSplitter Grid.Column="1" 
+                              Width="4" 
+                              HorizontalAlignment="Stretch"
+                              Background="Transparent"
+                              Margin="2,8"/>
+
+                <!-- Right: Inspector Panel -->
+                <Border Grid.Column="2" Style="{StaticResource GlassCardStyle}" Margin="0,8,8,8">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="16">
+                            <!-- No selection hint -->
+                            <TextBlock Text="Select an audio file to view details"
+                                       Style="{StaticResource SecondaryTextStyle}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,40"
+                                       Visibility="{Binding SelectedItem, Converter={StaticResource NullToVisibilityConverter}}"/>
+                            
+                            <!-- Selected item details -->
+                            <StackPanel Visibility="{Binding SelectedItem, Converter={StaticResource NotNullToVisibilityConverter}}">
+                                <TextBlock Text="{Binding SelectedItem.FileName}" 
+                                           Style="{StaticResource H3TextStyle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,16"/>
+                                
+                                <!-- Large waveform -->
+                                <Border Height="120" Background="#1A1A1A" CornerRadius="4" Margin="0,0,0,16">
+                                    <Image Source="{Binding SelectedItem.WaveformLarge}" 
+                                           Stretch="Fill"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
+                                
+                                <!-- Metadata -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Duration:" Margin="0,2" Opacity="0.7"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedItem.DurationDisplay}" Margin="8,2,0,2"/>
+                                    
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Sample Rate:" Margin="0,2" Opacity="0.7"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedItem.SampleRate, StringFormat='{}{0:N0} Hz'}" Margin="8,2,0,2"/>
+                                    
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Channels:" Margin="0,2" Opacity="0.7"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedItem.Channels}" Margin="8,2,0,2"/>
+                                    
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Bitrate:" Margin="0,2" Opacity="0.7"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedItem.Bitrate, StringFormat='{}{0:N0} bps'}" Margin="8,2,0,2"/>
+                                    
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Size:" Margin="0,2" Opacity="0.7"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedItem.SizeDisplay}" Margin="8,2,0,2"/>
+                                </Grid>
+                                
+                                <!-- Actions -->
+                                <StackPanel>
+                                    <Button Command="{Binding PlayPauseCommand}"
+                                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                            Margin="0,0,0,4"
+                                            HorizontalAlignment="Stretch">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <TextBlock Margin="0,0,6,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="▶"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SelectedItem.IsPlaying}" Value="True">
+                                                                <Setter Property="Text" Value="⏸"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="Play"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SelectedItem.IsPlaying}" Value="True">
+                                                                <Setter Property="Text" Value="Pause"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <Button Command="{Binding StopCommand}"
+                                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                            Margin="0,0,0,4"
+                                            HorizontalAlignment="Stretch">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <TextBlock Text="⏹" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Stop"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <Button Command="{Binding OpenInFolderCommand}"
+                                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                            Margin="0,0,0,4"
+                                            HorizontalAlignment="Stretch">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <TextBlock Text="📂" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Open Folder"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Bottom Transport -->
+        <Border Grid.Row="2" Style="{StaticResource GlassCardStyle}" Margin="8,0,8,8">
+            <Grid Margin="12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Play/Pause button -->
+                <Button Grid.Column="0"
+                        Command="{Binding PlayPauseCommand}"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Width="40" Height="30"
+                        Margin="0,0,4,0">
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="▶"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TransportState}" Value="Playing">
+                                        <Setter Property="Text" Value="⏸"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button>
+                
+                <!-- Stop button -->
+                <Button Grid.Column="1"
+                        Command="{Binding StopCommand}"
+                        Style="{StaticResource RainbowAccentButton.AutoFit}"
+                        Width="40" Height="30"
+                        Margin="0,0,12,0">
+                    <TextBlock Text="⏹"/>
+                </Button>
+                
+                <!-- Seek slider and time -->
+                <Grid Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0" 
+                               Text="{Binding CurrentPosition, StringFormat='{}{0:mm\\:ss}'}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"
+                               MinWidth="40"/>
+                    
+                    <Slider Grid.Column="1"
+                            Minimum="0"
+                            Maximum="{Binding CurrentDuration.TotalSeconds}"
+                            Value="{Binding CurrentPosition.TotalSeconds, Mode=OneWay}"
+                            VerticalAlignment="Center"
+                            IsEnabled="{Binding NowPlayingId, Converter={StaticResource NotNullToBooleanConverter}}"/>
+                    
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding CurrentDuration, StringFormat='{}{0:mm\\:ss}'}"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               MinWidth="40"/>
+                </Grid>
+                
+                <!-- Volume label -->
+                <TextBlock Grid.Column="3"
+                           Text="🔊"
+                           VerticalAlignment="Center"
+                           Margin="20,0,8,0"/>
+                
+                <!-- Volume slider -->
+                <Slider Grid.Column="4"
+                        Minimum="0" Maximum="1"
+                        Value="{Binding Volume}"
+                        Width="100"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+    
+    <!-- Converters needed -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+        <local:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter"/>
+        <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <local:NotNullToVisibilityConverter x:Key="NotNullToVisibilityConverter"/>
+        <local:NotNullToBooleanConverter x:Key="NotNullToBooleanConverter"/>
+    </UserControl.Resources>
+</UserControl>

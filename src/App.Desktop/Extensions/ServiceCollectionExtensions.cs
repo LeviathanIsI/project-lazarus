@@ -140,7 +140,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUpdateService, UpdateService>();
 
         // Audio services
-        services.AddSingleton<IAudioService, AudioService>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IAudioService, Lazarus.Backend.Services.Audio.AudioService>();
 
         return services;
     }
@@ -193,7 +193,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsShellViewModel>();
             services.AddTransient<ChatSessionsViewModel>();
-            services.AddTransient<AudioViewModel>();
+            services.AddTransient<Lazarus.Desktop.ViewModels.Audio.AudioViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();

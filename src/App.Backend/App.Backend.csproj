@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.9" />
     <ProjectReference Include="..\App.Shared\App.Shared.csproj" />
     <ProjectReference Include="..\App.Data\App.Data.csproj" />
   </ItemGroup>
