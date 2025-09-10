@@ -9,13 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Lazarus.Desktop.ViewModels;
 
-public sealed class ImageLabViewModel : ViewModelBase
+public sealed class ImagesViewModel : ViewModelBase
 {
     private readonly IImageService _imageService;
     private readonly IImageJobRepository _jobs;
-    private readonly ILogger<ImageLabViewModel>? _logger;
+    private readonly ILogger<ImagesViewModel>? _logger;
 
-    public ImageLabViewModel(IImageService imageService, IImageJobRepository jobs, ILogger<ImageLabViewModel> logger)
+    public ImagesViewModel(IImageService imageService, IImageJobRepository jobs, ILogger<ImagesViewModel> logger)
     {
         _imageService = imageService;
         _jobs = jobs;

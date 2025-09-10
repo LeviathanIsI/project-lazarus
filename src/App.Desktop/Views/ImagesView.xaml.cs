@@ -826,6 +826,23 @@ namespace Lazarus.Desktop.Views
             catch { }
         }
 
+        private void OnBrowseControlNetInput(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Images|*.png;*.jpg;*.jpeg;*.bmp;*.webp|All files|*.*",
+                    Multiselect = false
+                };
+                if (dlg.ShowDialog() == true)
+                {
+                    ControlNetInputPath = dlg.FileName;
+                }
+            }
+            catch { }
+        }
+
         private void OnDropZoneDragEnter(object sender, DragEventArgs e) => OnDropZoneDragOver(sender, e);
         private void OnDropZoneDragOver(object sender, DragEventArgs e)
         {
