@@ -62,12 +62,27 @@ namespace Lazarus.Desktop.Views
         private IImageService? _imageService;
         private Lazarus.Desktop.Services.IOrchestratorRunnerClient? _runnerClient;
         private Lazarus.Desktop.Services.IOrchestratorClient? _orchestratorClient;
+        private Lazarus.Shared.Settings.ISettingsService? _settingsService;
 
         // Image Runners catalog (recursively scanned under %LOCALAPPDATA%\Lazarus\Runners\Images)
         public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
         public System.Collections.Generic.IEnumerable<RunnerCandidate> VisibleRunnerCatalog => RunnerCatalog;
         private RunnerCandidate? _selectedRunner;
-        public RunnerCandidate? SelectedRunner { get => _selectedRunner; set { _selectedRunner = value; OnPropertyChanged(nameof(SelectedRunner)); } }
+        public RunnerCandidate? SelectedRunner
+        {
+            get => _selectedRunner;
+            set
+            {
+                _selectedRunner = value;
+                OnPropertyChanged(nameof(SelectedRunner));
+                try
+                {
+                    var path = value?.ResolvedPath ?? string.Empty;
+                    _ = _settingsService?.SetValueAsync("LastImageRunnerPath", path);
+                }
+                catch { }
+            }
+        }
 
         // Runner diagnostics (align with Models runner card bindings)
         public bool IsRunnerRunning { get => _isRunnerRunning; private set { _isRunnerRunning = value; OnPropertyChanged(nameof(IsRunnerRunning)); } }
@@ -97,6 +112,7 @@ namespace Lazarus.Desktop.Views
             try { _imageService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(IImageService)) as IImageService; } catch { }
             try { _runnerClient = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Desktop.Services.IOrchestratorRunnerClient)) as Lazarus.Desktop.Services.IOrchestratorRunnerClient; } catch { }
             try { _orchestratorClient = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Desktop.Services.IOrchestratorClient)) as Lazarus.Desktop.Services.IOrchestratorClient; } catch { }
+            try { _settingsService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(Lazarus.Shared.Settings.ISettingsService)) as Lazarus.Shared.Settings.ISettingsService; } catch { }
             try { if (_runnerClient != null) _runnerClient.RunnerStatusChanged += (_, s) => Dispatcher?.Invoke(() => ApplyStatus(s)); } catch { }
             try { RefreshRunnersCatalog(); } catch { }
         }
@@ -131,6 +147,22 @@ namespace Lazarus.Desktop.Views
                 RunnerCatalog.Clear();
                 foreach (var r in list) RunnerCatalog.Add(r);
                 OnPropertyChanged(nameof(RunnerCatalog));
+                OnPropertyChanged(nameof(VisibleRunnerCatalog));
+                TryRestoreSelectedRunner();
+            }
+            catch { }
+        }
+
+        private void TryRestoreSelectedRunner()
+        {
+            try
+            {
+                var saved = _settingsService?.GetValue<string>("LastImageRunnerPath", string.Empty) ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(saved))
+                {
+                    var cand = RunnerCatalog.FirstOrDefault(r => string.Equals(r.ResolvedPath, saved, StringComparison.OrdinalIgnoreCase));
+                    if (cand != null) SelectedRunner = cand;
+                }
             }
             catch { }
         }

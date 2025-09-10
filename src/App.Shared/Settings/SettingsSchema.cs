@@ -57,6 +57,8 @@ public class AppSettings : INotifyPropertyChanged
     private int _orchestratorHealthCheckIntervalSec = 5;
     private int _orchestratorStartupTimeoutSec = 30;
     private bool _orchestratorAutoRestartOnCrash = true;
+    // UI state - remember last image runner selection
+    private string _lastImageRunnerPath = string.Empty;
     // Additional UI & General fields
     private string _language = "English";
     private string _uiTheme = "Dark";
@@ -466,6 +468,14 @@ public class AppSettings : INotifyPropertyChanged
     {
         get => _orchestratorAutoRestartOnCrash;
         set { _orchestratorAutoRestartOnCrash = value; OnPropertyChanged(nameof(OrchestratorAutoRestartOnCrash)); }
+    }
+
+    // Images View - Last selected image runner path
+    [JsonPropertyName("lastImageRunnerPath")]
+    public string LastImageRunnerPath
+    {
+        get => _lastImageRunnerPath ?? string.Empty;
+        set { _lastImageRunnerPath = value ?? string.Empty; OnPropertyChanged(nameof(LastImageRunnerPath)); }
     }
 
     // UI & General (additional)
