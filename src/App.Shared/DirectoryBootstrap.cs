@@ -8,6 +8,7 @@ public static class DirectoryBootstrap
     public static System.Collections.Generic.IReadOnlyList<string> LeafDirectories => new[]
     {
         LazarusPaths.GenAssets.ControlNet,
+        LazarusPaths.GenAssets.StableDiffusionModels,
         System.IO.Path.Combine(LazarusPaths.GenAssets.RootDir, "Style-Presets"),
         LazarusPaths.GenAssets.StylePresets_LoRAs,
         LazarusPaths.GenAssets.StylePresets_Embeddings,

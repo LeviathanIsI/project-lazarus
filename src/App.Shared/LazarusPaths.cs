@@ -57,6 +57,8 @@ public static class LazarusPaths
     {
         public static readonly string RootDir      = Path.Combine(Root, "Generation-Assets");
         public static readonly string ControlNet   = Path.Combine(RootDir, "ControlNet");
+        // Stable Diffusion base models live under Generation-Assets/StableDiffusion-Models (separate from LLM models)
+        public static readonly string StableDiffusionModels = Path.Combine(RootDir, "StableDiffusion-Models");
         // Legacy flat folder retained for backward-compat probing; prefer structured subfolders
         public static readonly string StylePresets = Path.Combine(RootDir, "Style-Presets");
         public static readonly string StylePresets_LoRAs = Path.Combine(RootDir, "Style-Presets", "LoRAs");
@@ -326,6 +328,7 @@ public static class LazarusPaths
 
             GenAssets.RootDir,
             GenAssets.ControlNet,
+            GenAssets.StableDiffusionModels,
             Path.Combine(GenAssets.RootDir, "Style-Presets"),
             GenAssets.StylePresets_LoRAs,
             GenAssets.StylePresets_Embeddings,

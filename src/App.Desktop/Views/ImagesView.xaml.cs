@@ -194,7 +194,8 @@ namespace Lazarus.Desktop.Views
             try
             {
                 ImageModels.Clear();
-                foreach (var m in EnumerateFilesSafe(LazarusPaths.Models.BaseModels, new[] { ".safetensors", ".ckpt", ".ckp", ".gguf" }))
+                // Only scan Stable Diffusion models (separate from LLM models)
+                foreach (var m in EnumerateFilesSafe(LazarusPaths.GenAssets.StableDiffusionModels, new[] { ".safetensors", ".ckpt", ".ckp" }))
                     ImageModels.Add(m);
             }
             catch { }
@@ -1000,7 +1001,7 @@ namespace Lazarus.Desktop.Views
             // Core
             if (!string.IsNullOrWhiteSpace(SelectedImageModel))
             {
-                var modelPath = Path.Combine(LazarusPaths.Models.BaseModels, SelectedImageModel);
+                var modelPath = Path.Combine(LazarusPaths.GenAssets.StableDiffusionModels, SelectedImageModel);
                 sb.Append(" --model ").Append(q(modelPath));
             }
             if (!string.IsNullOrWhiteSpace(prompt)) sb.Append(" --prompt ").Append(q(prompt));
