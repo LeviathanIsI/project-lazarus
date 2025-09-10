@@ -2,6 +2,8 @@ using Lazarus.Data.Extensions;
 using Lazarus.Desktop.Configuration;
 using Lazarus.Desktop.Services;
 using Lazarus.Shared.Settings;
+using Lazarus.Backend.Services.Runners;
+using Lazarus.Backend.Services.ImageGen;
 using Lazarus.Backend.Services.Settings;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -105,6 +107,14 @@ public static class ServiceCollectionExtensions
 
         // Bootstrap filesystem layout (registered for use at startup)
         services.AddSingleton<IFileSystemBootstrapService, FileSystemBootstrapService>();
+
+        // Images pipeline: runner registry + SD image generation service
+        services.AddSingleton<IRunnerRegistry, RunnerRegistry>();
+        services.AddHttpClient<StableDiffusionImageGenService>((sp, http) =>
+        {
+            http.Timeout = TimeSpan.FromSeconds(30);
+        });
+        services.AddSingleton<IImageGenService>(sp => sp.GetRequiredService<StableDiffusionImageGenService>());
 
         // Settings service (JSON-backed under LazarusPaths.Root)
         services.AddSingleton<ISettingsService, SettingsService>();

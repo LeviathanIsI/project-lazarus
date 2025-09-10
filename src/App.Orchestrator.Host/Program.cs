@@ -7,9 +7,13 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Serilog;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
+using Lazarus.Backend.Services.Runners;
+using Lazarus.Backend.Services.ImageGen;
+using Lazarus.Shared.Images;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +28,10 @@ builder.Services.AddSingleton<IModelInventoryService, ModelInventoryService>();
 builder.Services.AddSingleton<IModelPresetService, ModelPresetService>();
 builder.Services.AddSingleton<IRunnerSupervisor, LlamaCppSupervisor>();
 builder.Services.AddHostedService<RunnerAutoStartService>();
+// Runner registry + SD image gen (lightweight; registry will be empty unless later populated)
+builder.Services.AddSingleton<IRunnerRegistry, RunnerRegistry>();
+builder.Services.AddHttpClient<StableDiffusionImageGenService>();
+builder.Services.AddSingleton<IImageGenService, StableDiffusionImageGenService>();
 
 // Logging: write to System-Data/Logs and console
 try
@@ -224,20 +232,28 @@ app.MapPost("/v1/chat/completions", async (IRunnerSupervisor sup, HttpContext ct
                 Content = new StringContent(payload, Encoding.UTF8, "application/json")
             };
             req.Headers.Accept.Clear();
-            req.Headers.Accept.ParseAdd("text/event-stream");
+            req.Headers.Accept.ParseAdd("text/event-stream"); // request SSE
+            req.Headers.Accept.ParseAdd("application/json");  // allow JSON fallback
 
             using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ctx.RequestAborted);
 
+            // Tell client we are streaming SSE and prevent any buffering
             ctx.Response.StatusCode = (int)resp.StatusCode;
-            ctx.Response.Headers["Cache-Control"] = "no-cache";
+            ctx.Response.Headers["Cache-Control"] = "no-cache, no-transform";
             ctx.Response.Headers["Connection"] = "keep-alive";
-            ctx.Response.Headers["Content-Encoding"] = "identity"; // avoid compression on SSE
+            ctx.Response.Headers["X-Accel-Buffering"] = "no";
+            ctx.Response.Headers["Content-Encoding"] = "identity";
             ctx.Response.ContentType = "text/event-stream";
 
+            // Disable ASP.NET buffering and flush headers now
+            ctx.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
+            await ctx.Response.StartAsync(ctx.RequestAborted);
+
+            // Pipe bytes as they arrive
             await using var src = await resp.Content.ReadAsStreamAsync(ctx.RequestAborted);
             var buffer = new byte[8192];
             int read;
-            while ((read = await src.ReadAsync(buffer, 0, buffer.Length, ctx.RequestAborted)) > 0)
+            while ((read = await src.ReadAsync(buffer.AsMemory(0, buffer.Length), ctx.RequestAborted)) > 0)
             {
                 await ctx.Response.Body.WriteAsync(buffer.AsMemory(0, read), ctx.RequestAborted);
                 await ctx.Response.Body.FlushAsync(ctx.RequestAborted);
@@ -309,6 +325,9 @@ app.MapPost("/runner/unload", async (IRunnerSupervisor sup, CancellationToken ct
     foreach (var k in runners.Keys) { runners.TryRemove(k, out _); }
     return Results.Json(new { status = "ok" });
 });
+
+// Optional: Minimal images endpoint proxying to SD service (strong DTO path)
+// moved earlier above app.Run()
 
 app.Run();
 
@@ -905,3 +924,4 @@ internal static class HostHelpers
         return null;
     }
 }
+// (images endpoint is defined earlier above app.Run())

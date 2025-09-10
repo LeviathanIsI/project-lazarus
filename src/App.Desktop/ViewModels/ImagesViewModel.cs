@@ -3,6 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using Lazarus.Backend.Services;
+using Lazarus.Backend.Services.ImageGen;
+using Lazarus.Backend.Services.Runners;
+using Lazarus.Shared.Images;
+using Lazarus.Shared.Runners;
 using Lazarus.Data.Entities;
 using Lazarus.Data.Repositories;
 using Microsoft.Extensions.Logging;
@@ -12,14 +16,18 @@ namespace Lazarus.Desktop.ViewModels;
 public sealed class ImagesViewModel : ViewModelBase
 {
     private readonly IImageService _imageService;
+    private readonly IImageGenService? _imageGenService; // optional new pipeline
+    private readonly IRunnerRegistry? _runnerRegistry;
     private readonly IImageJobRepository _jobs;
     private readonly ILogger<ImagesViewModel>? _logger;
 
-    public ImagesViewModel(IImageService imageService, IImageJobRepository jobs, ILogger<ImagesViewModel> logger)
+    public ImagesViewModel(IImageService imageService, IImageJobRepository jobs, ILogger<ImagesViewModel> logger, IRunnerRegistry? runnerRegistry = null, IImageGenService? imageGenService = null)
     {
         _imageService = imageService;
         _jobs = jobs;
         _logger = logger;
+        _runnerRegistry = runnerRegistry;
+        _imageGenService = imageGenService;
 
         ControlNets = new ObservableCollection<string>(ScanDir(Lazarus.Shared.LazarusPaths.GenAssets.ControlNet));
         StylePresets = new ObservableCollection<string>(ScanDir(Lazarus.Shared.LazarusPaths.GenAssets.StylePresets));
@@ -33,6 +41,11 @@ public sealed class ImagesViewModel : ViewModelBase
         _ = RefreshCountersAsync();
         _ = LoadLastPreviewAsync();
     }
+
+    // Optional: expose image runners if registry is wired
+    public ObservableCollection<RunnerDescriptor> ImageRunners { get; } = new();
+    public RunnerDescriptor? SelectedRunner { get => _selectedRunner; set => SetProperty(ref _selectedRunner, value); }
+    private RunnerDescriptor? _selectedRunner;
 
     private static IEnumerable<string> ScanDir(string path)
     {
@@ -67,6 +80,12 @@ public sealed class ImagesViewModel : ViewModelBase
     private string? _prompt;
     public string? NegativePrompt { get => _negativePrompt; set => SetProperty(ref _negativePrompt, value); }
     private string? _negativePrompt;
+
+    // Minimal fields to support strong DTO path if used
+    public string Sampler { get => _sampler; set => SetProperty(ref _sampler, value); }
+    private string _sampler = "Euler";
+    public string? SelectedImageModel { get => _selectedImageModel; set => SetProperty(ref _selectedImageModel, value); }
+    private string? _selectedImageModel;
 
     public string Mode { get => _mode; set => SetProperty(ref _mode, value); }
     private string _mode = "Txt2Img";
@@ -124,6 +143,51 @@ public sealed class ImagesViewModel : ViewModelBase
         ProcessingStatus = "Generating…";
         try
         {
+            // If new pipeline service is available and runner selection is present, use it
+            if (_imageGenService != null && _runnerRegistry != null && SelectedRunner != null)
+            {
+                if (string.IsNullOrWhiteSpace(Prompt)) { ProcessingStatus = "Enter a prompt."; return; }
+                var modelPath = ResolvePath(Lazarus.Shared.LazarusPaths.GenAssets.StableDiffusionModels, SelectedImageModel);
+                if (string.IsNullOrWhiteSpace(modelPath) || !File.Exists(modelPath) || !LooksLikeModel(modelPath))
+                {
+                    ProcessingStatus = "Select a diffusion model (.safetensors/.ckpt/.onnx)."; return;
+                }
+
+                var req = new ImageGenRequest
+                {
+                    Prompt = Prompt ?? string.Empty,
+                    NegativePrompt = NegativePrompt ?? string.Empty,
+                    ModelPath = modelPath!,
+                    RunnerId = SelectedRunner.Id,
+                    Seed = Seed ?? 0,
+                    Steps = Steps,
+                    Cfg = CfgScale,
+                    Sampler = Sampler,
+                    Mode = Mode
+                };
+
+                await foreach (var ev in _imageGenService.GenerateAsync(req, CancellationToken.None))
+                {
+                    switch (ev.Kind)
+                    {
+                        case ImageGenEventKind.Error:
+                            ProcessingStatus = ev.Message ?? "Error"; break;
+                        case ImageGenEventKind.Info:
+                            ProcessingStatus = ev.Message ?? ProcessingStatus; break;
+                        case ImageGenEventKind.Completed when ev.ImagePng != null:
+                            var outDir = Lazarus.Shared.LazarusPaths.UserContent.GeneratedOutput;
+                            try { Directory.CreateDirectory(outDir); } catch { }
+                            var file = Path.Combine(outDir, $"sd-{DateTime.UtcNow:yyyyMMdd-HHmmssfff}.png");
+                            try { await File.WriteAllBytesAsync(file, ev.ImagePng); } catch { }
+                            JobLog = $"Generated: {Path.GetFileName(file)}";
+                            PreviewImagePath = file;
+                            break;
+                    }
+                }
+
+                return; // skip legacy flow if new path was used
+            }
+
             var job = new ImageJob
             {
                 Prompt = Prompt,
@@ -168,6 +232,12 @@ public sealed class ImagesViewModel : ViewModelBase
             ProcessingStatus = "Ready";
             IsGenerating = false;
         }
+    }
+
+    private static bool LooksLikeModel(string path)
+    {
+        var ext = Path.GetExtension(path)?.ToLowerInvariant();
+        return ext is ".safetensors" or ".ckpt" or ".onnx";
     }
 
     private static string? ResolvePath(string root, string? leaf)
