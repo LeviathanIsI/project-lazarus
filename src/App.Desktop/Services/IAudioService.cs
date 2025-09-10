@@ -1,32 +1,57 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using Lazarus.Desktop.ViewModels;
+
 namespace Lazarus.Desktop.Services;
-public interface IAudioService
+
+/// <summary>
+/// Service interface for audio file management and playback
+/// </summary>
+public interface IAudioService : IDisposable
 {
-    Task<bool> IsSynthesisReadyAsync(CancellationToken ct);
-    Task<IReadOnlyList<AudioItem>> ListAsync(CancellationToken ct);
-    Task<IReadOnlyList<AudioItem>> ImportAsync(IEnumerable<string> paths, CancellationToken ct);
-    Task<AudioItem?> GenerateAsync(AudioGenRequest request, CancellationToken ct);
-    Task<AudioStats> GetStatsAsync(CancellationToken ct);
+    /// <summary>
+    /// Gets all audio files from the configured directory
+    /// </summary>
+    Task<IReadOnlyList<AudioItem>> GetAudioFilesAsync();
+
+    /// <summary>
+    /// Imports an audio file to the managed directory
+    /// </summary>
+    Task ImportFileAsync(string filePath);
+
+    /// <summary>
+    /// Starts audio recording
+    /// </summary>
+    Task<string> StartRecordingAsync();
+
+    /// <summary>
+    /// Stops the current recording
+    /// </summary>
+    Task StopRecordingAsync();
+
+    /// <summary>
+    /// Plays an audio file
+    /// </summary>
+    Task PlayAsync(string filePath);
+
+    /// <summary>
+    /// Pauses the current playback
+    /// </summary>
+    Task PauseAsync();
+
+    /// <summary>
+    /// Stops the current playback
+    /// </summary>
+    void Stop();
+
+    /// <summary>
+    /// Gets the current playback position
+    /// </summary>
+    TimeSpan? GetPlaybackPosition();
+
+    /// <summary>
+    /// Deletes an audio file
+    /// </summary>
+    Task DeleteFileAsync(string filePath);
 }
-
-public sealed record AudioItem(
-    string Id,
-    string FilePath,
-    string FileName,
-    TimeSpan Duration,
-    DateTime CreatedUtc,
-    bool IsGenerated);
-
-public sealed record AudioGenRequest(
-    string Text,
-    string Voice,
-    int SampleRate);
-
-public sealed record AudioStats(
-    int TotalFiles,
-    int GeneratedToday,
-    TimeSpan TotalDuration);
-
