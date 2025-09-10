@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -20,6 +20,8 @@ namespace Lazarus.Desktop.Views
 {
     public partial class ImagesView : UserControl, System.ComponentModel.INotifyPropertyChanged
     {
+        public sealed record RunnerCandidate(string Engine, string DisplayName, string ResolvedPath, string Entrypoint);
+
         // Dummy counters (bound in XAML)
         private int _totalImages;
         public int TotalImages { get => _totalImages; set { _totalImages = value; OnPropertyChanged(nameof(TotalImages)); } }
@@ -46,7 +48,7 @@ namespace Lazarus.Desktop.Views
         private bool _lastRunFailed;
         public bool LastRunFailed { get => _lastRunFailed; set { _lastRunFailed = value; OnPropertyChanged(nameof(LastRunFailed)); } }
 
-        public string GenerateButtonText => IsRunning ? "Generating…" : "Generate";
+        public string GenerateButtonText => IsRunning ? "Generatingâ€¦" : "Generate";
 
         public string? InitImagePath { get; set; }
         public string? MaskImagePath { get; set; }
@@ -59,6 +61,11 @@ namespace Lazarus.Desktop.Views
         // Backend (resolved via DI when available)
         private IImageService? _imageService;
 
+        // Image Runners catalog (recursively scanned under %LOCALAPPDATA%\Lazarus\Runners\Images)
+        public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
+        private RunnerCandidate? _selectedRunner;
+        public RunnerCandidate? SelectedRunner { get => _selectedRunner; set { _selectedRunner = value; OnPropertyChanged(nameof(SelectedRunner)); } }
+
         public ImagesView()
         {
             InitializeComponent();
@@ -67,6 +74,7 @@ namespace Lazarus.Desktop.Views
             Seed = RandomNumberGenerator.GetInt32(0, int.MaxValue);
 
             try { _imageService = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(IImageService)) as IImageService; } catch { }
+            try { RefreshRunnersCatalog(); } catch { }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -89,6 +97,90 @@ namespace Lazarus.Desktop.Views
             {
                 // Swallow startup enumeration issues to keep UI reliable
             }
+        }
+
+        private void RefreshRunnersCatalog()
+        {
+            try
+            {
+                var list = ScanImageRunners();
+                RunnerCatalog.Clear();
+                foreach (var r in list) RunnerCatalog.Add(r);
+                OnPropertyChanged(nameof(RunnerCatalog));
+            }
+            catch { }
+        }
+
+        private static IReadOnlyList<RunnerCandidate> ScanImageRunners()
+        {
+            var results = new List<RunnerCandidate>();
+            var root = LazarusPaths.Runners.RootDir;
+            var imagesRoot = LazarusPaths.Runners.ImagesRoot;
+            if (!Directory.Exists(root) && !Directory.Exists(imagesRoot)) return results;
+
+            var engineDirs = new List<string>();
+            void AddTop(string dir)
+            {
+                try
+                {
+                    if (Directory.Exists(dir))
+                        engineDirs.AddRange(Directory.EnumerateDirectories(dir, "*", SearchOption.TopDirectoryOnly));
+                }
+                catch { }
+            }
+
+            // Domain root and legacy flat roots
+            AddTop(imagesRoot);
+            AddTop(root);
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var engineDir in engineDirs)
+            {
+                if (!seen.Add(engineDir)) continue;
+                var engineKey = Path.GetFileName(engineDir).Trim();
+                string[] patterns = engineKey.ToLowerInvariant() switch
+                {
+                    // Popular image engines with common entrypoints (Windows)
+                    "stable-diffusion" => new[] { "webui-user.bat", "webui.bat", "launch*.bat", "start*.bat" },
+                    "sdwebui"          => new[] { "webui-user.bat", "webui.bat" },
+                    "comfyui"          => new[] { "run*.bat", "main.py" },
+                    "invokeai"         => new[] { "invoke*.bat", "invokeai*.exe" },
+                    _ => Array.Empty<string>()
+                };
+
+                // If we don't have a mapped pattern, still allow generic Windows scripts
+                if (patterns.Length == 0)
+                    patterns = new[] { "*.bat", "*.cmd", "*.exe" };
+
+                foreach (var pattern in patterns)
+                {
+                    IEnumerable<string> files;
+                    try { files = Directory.EnumerateFiles(engineDir, pattern, SearchOption.AllDirectories); }
+                    catch { continue; }
+                    foreach (var entry in files)
+                    {
+                        var folder = Path.GetDirectoryName(entry)!;
+                        string leaf;
+                        try { leaf = new DirectoryInfo(folder).Name; } catch { leaf = folder; }
+                        results.Add(new RunnerCandidate(engineKey, leaf, folder, entry));
+                    }
+                }
+
+                // If nothing matched, still surface the engine folder once
+                if (!results.Any(r => string.Equals(r.ResolvedPath, engineDir, StringComparison.OrdinalIgnoreCase)))
+                {
+                    string leaf;
+                    try { leaf = new DirectoryInfo(engineDir).Name; } catch { leaf = engineDir; }
+                    results.Add(new RunnerCandidate(engineKey, leaf, engineDir, engineDir));
+                }
+            }
+
+            return results
+                .GroupBy(r => Tuple.Create(r.Engine.ToLowerInvariant(), r.ResolvedPath), EqualityComparer<Tuple<string, string>>.Default)
+                .Select(g => g.First())
+                .OrderBy(r => r.Engine)
+                .ThenBy(r => r.DisplayName)
+                .ToList();
         }
 
         private void RefreshAssets()
@@ -213,7 +305,7 @@ namespace Lazarus.Desktop.Views
                     return;
                 }
 
-                // Call backend (best effort) – interface returns an output path
+                // Call backend (best effort) â€“ interface returns an output path
                 string? outputPath = null;
                 try
                 {
@@ -298,7 +390,7 @@ namespace Lazarus.Desktop.Views
         private void UpdateLockGlyph()
         {
             if (LockBtn != null)
-                LockBtn.Content = SeedLocked ? "🔒" : "🔓";
+                LockBtn.Content = SeedLocked ? "ðŸ”’" : "ðŸ”“";
         }
 
         private void OnModeTxt2Img(object sender, RoutedEventArgs e) { Mode = ImageMode.Txt2Img; }
@@ -461,6 +553,11 @@ namespace Lazarus.Desktop.Views
             });
         }
 
+        private void OnRefreshRunnersClick(object sender, RoutedEventArgs e)
+        {
+            try { RefreshRunnersCatalog(); ShowToast("Runners refreshed"); } catch { }
+        }
+
         private void ShowToast(string msg, bool isError = false) => EnqueueToast(msg, isError);
 
         private void OnOpenControlNetFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.ControlNet);
@@ -489,7 +586,7 @@ namespace Lazarus.Desktop.Views
             try
             {
                 var s = combo.SelectedItem as string;
-                if (string.Equals(s, "Configure…", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "(none found)", StringComparison.OrdinalIgnoreCase) || s?.StartsWith("Configure ") == true)
+                if (string.Equals(s, "Configureâ€¦", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "(none found)", StringComparison.OrdinalIgnoreCase) || s?.StartsWith("Configure ") == true)
                 {
                     // Do not open folders automatically based on selection.
                     // Leave explicit opening to dedicated buttons/commands.
@@ -498,6 +595,7 @@ namespace Lazarus.Desktop.Views
             }
             catch { }
         }
+
         private void OnOpenUpscaleFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Upscale);
         private void OnOpenVaeFolder(object sender, RoutedEventArgs e) => OpenFolderSafe(LazarusPaths.GenAssets.Vae);
         private static void OpenFolderSafe(string path)
@@ -509,3 +607,4 @@ namespace Lazarus.Desktop.Views
         private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 }
+

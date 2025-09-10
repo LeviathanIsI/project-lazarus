@@ -251,8 +251,36 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left: inputs, actions and preview -->
+            <!-- Left: runner selection, inputs, actions and preview -->
             <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                <!-- Runner selection (mirrors Chats runners scan approach) -->
+                <Border Style="{StaticResource GlassCardStyle}" Padding="12" Margin="0,0,0,8">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Runner"/>
+                            <Button Grid.Column="1" Content="Refresh" Style="{StaticResource GhostButton}" Click="OnRefreshRunnersClick"/>
+                        </Grid>
+                        <ComboBox ItemsSource="{Binding RunnerCatalog}"
+                                  SelectedItem="{Binding SelectedRunner}"
+                                  Margin="0,6,0,0"
+                                  IsTextSearchEnabled="True">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Engine}"/>
+                                        <TextBlock Text="  "/>
+                                        <TextBlock Text="{Binding DisplayName}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Text="%LOCALAPPDATA%/Lazarus/Runners/Images" Style="{StaticResource SecondaryTextStyle}" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
                 <Border Style="{StaticResource GlassCardStyle}" Padding="12">
                     <StackPanel>
                         <!-- Prompt -->
