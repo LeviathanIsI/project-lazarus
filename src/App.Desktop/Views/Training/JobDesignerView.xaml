@@ -114,7 +114,7 @@
                               ItemsSource="{Binding SelectedDatasets}"
                               Style="{StaticResource VirtualizedListView}"
                               Margin="8,0,8,8"
-                              MinHeight="120"
+                              MinHeight="120">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <DockPanel Margin="4" LastChildFill="True">

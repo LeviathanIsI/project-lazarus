@@ -127,8 +127,7 @@
                         IsEnabled="{Binding CanStart}"   
                         Style="{StaticResource RainbowAccentButton.AutoFit}" 
                         Margin="0,0,8,0"
-                        ToolTip="Start selected training jobs (Ctrl+Enter)"
-"/>
+                        ToolTip="Start selected training jobs (Ctrl+Enter)"/>
                 <Button Content="Pause"   
                         Command="{Binding PauseCommand}"   
                         IsEnabled="{Binding CanPause}"   
