@@ -137,13 +137,29 @@ namespace Lazarus.Desktop.ViewModels
                 "Entities" => new Views.EntitiesView(),
                 "Models" => new Views.ModelsView(),
                 "ThreeDModels" => new Views.ThreeDModelsView(),
-                "Audio" => new Views.Audio.AudioView(),
+                "Audio" => CreateAudioViewSafe(),
                 "Settings" => CreateSettingsViewSafe(),
                 _ => new Views.DashboardView()
             };
 
             // Notify property changes
             OnPropertyChanged(nameof(CurrentViewName));
+        }
+
+        private object CreateAudioViewSafe()
+        {
+            try
+            {
+                var view = new Views.Audio.AudioView();
+                // Optionally wire a scoped ViewModel via DI if needed later
+                return view;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to create AudioView");
+                // Fall back to last-known-safe view to avoid stale content perception
+                return new Views.DashboardView();
+            }
         }
 
         private object CreateChatSessionsView()
