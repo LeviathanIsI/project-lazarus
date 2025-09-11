@@ -67,7 +67,7 @@
                         
                         <!-- Recognition Type Extended -->
                         <StackPanel Margin="0,0,0,8">
-                            <TextBlock Text="Recognition & Sync Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Recognition and Sync Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                             <ComboBox SelectedValue="{Binding Params[RecognitionType]}">
                                 <ComboBoxItem Content="Lip-sync Only"/>
                                 <ComboBoxItem Content="Gesture Recognition"/>
