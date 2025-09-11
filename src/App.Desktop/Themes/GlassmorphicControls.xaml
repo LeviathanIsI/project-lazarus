@@ -725,8 +725,14 @@
     </Style>
 
     <!-- ====================
-         SLIDER RAINBOW GLASS TEMPLATE (Horizontal)
+         SLIDER BASE + RAINBOW TEMPLATE (Horizontal)
          ==================== -->
+    <!-- Base dark slider style (must precede RainbowGlassSliderStyle) -->
+    <Style x:Key="GlassSliderStyle" TargetType="Slider">
+        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
+    </Style>
+
     <Style x:Key="RainbowGlassSliderStyle" TargetType="Slider" BasedOn="{StaticResource GlassSliderStyle}">
         <Setter Property="Template">
             <Setter.Value>
@@ -771,13 +777,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!-- ====================
-         SLIDER DARK STYLE (non-invasive)
-         ==================== -->
-    <Style x:Key="GlassSliderStyle" TargetType="Slider">
-        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
-        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
-    </Style>
+    <!-- (Base GlassSliderStyle defined above) -->
 
     <!-- Loading Spinner Template -->
     <ControlTemplate x:Key="LoadingSpinnerTemplate">
