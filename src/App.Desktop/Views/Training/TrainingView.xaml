@@ -119,8 +119,7 @@
                         Command="{Binding JobDesigner.CreateJobCommand}"   
                         Style="{StaticResource RainbowAccentButton.AutoFit}" 
                         Margin="0,0,8,0"
-                        ToolTip="Create training job from current configuration"
-                        Visibility="{Binding JobDesigner.HasJob, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}"/>
+                        ToolTip="Create training job from current configuration"/>
                 
                 <!-- Job control buttons (shown when job exists) -->
                 <Button Content="Start"   
