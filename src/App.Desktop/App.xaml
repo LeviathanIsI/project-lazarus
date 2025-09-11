@@ -24,6 +24,8 @@
                 <ResourceDictionary Source="Resources/Styles/ComboBoxes.xaml"/>
                 <!-- Settings section view templates -->
                 <ResourceDictionary Source="Resources/SettingsTemplates.xaml"/>
+                <!-- Training resources (panels, chips, dataset previews) -->
+                <ResourceDictionary Source="Resources/Training/TrainingResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Value Converters -->

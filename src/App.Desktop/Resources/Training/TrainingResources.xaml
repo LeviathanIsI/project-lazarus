@@ -1,0 +1,50 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Glass panels and chips -->
+    <Style x:Key="GlassPanel" TargetType="Border" BasedOn="{StaticResource StaticGlassCardStyle}"/>
+    <Style x:Key="GlassPanelElevated" TargetType="Border" BasedOn="{StaticResource RainbowBorderCardStyle}"/>
+    <Style x:Key="GlassPill" TargetType="Border" BasedOn="{StaticResource StaticGlassCardStyle}">
+        <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+
+    <!-- Status chips -->
+    <Style x:Key="StatusChip.Base" TargetType="ContentControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border Background="{StaticResource GlassCardBrush}" CornerRadius="10" Padding="8,4">
+                        <TextBlock Text="{TemplateBinding Content}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="StatusChip.Default" TargetType="ContentControl" BasedOn="{StaticResource StatusChip.Base}"/>
+
+    <!-- Chart/Meter containers -->
+    <Style x:Key="ChartCard" TargetType="Border" BasedOn="{StaticResource GlassPanel}"/>
+    <Style x:Key="MeterBar" TargetType="ProgressBar" BasedOn="{StaticResource RainbowGlassProgressBarStyle}"/>
+
+    <!-- Dataset preview DataTemplates (placeholders) -->
+    <DataTemplate x:Key="DatasetPreview.Text">
+        <Border Style="{StaticResource GlassPanel}" Padding="8"><TextBlock Text="Text dataset preview"/></Border>
+    </DataTemplate>
+    <DataTemplate x:Key="DatasetPreview.Voice">
+        <Border Style="{StaticResource GlassPanel}" Padding="8"><TextBlock Text="Voice dataset preview"/></Border>
+    </DataTemplate>
+    <DataTemplate x:Key="DatasetPreview.Images">
+        <Border Style="{StaticResource GlassPanel}" Padding="8"><TextBlock Text="Images dataset preview"/></Border>
+    </DataTemplate>
+    <DataTemplate x:Key="DatasetPreview.ThreeD">
+        <Border Style="{StaticResource GlassPanel}" Padding="8"><TextBlock Text="3D dataset preview"/></Border>
+    </DataTemplate>
+    <DataTemplate x:Key="DatasetPreview.Entities">
+        <Border Style="{StaticResource GlassPanel}" Padding="{StaticResource BtnPadding}"><TextBlock Text="Entities dataset preview"/></Border>
+    </DataTemplate>
+    <DataTemplate x:Key="DatasetPreview.Videos">
+        <Border Style="{StaticResource GlassPanel}" Padding="8"><TextBlock Text="Videos dataset preview"/></Border>
+    </DataTemplate>
+
+</ResourceDictionary>
+
