@@ -27,7 +27,7 @@
             
             <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="3D Model Files" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="3D Model Files" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     
                     <ItemsControl ItemsSource="{Binding Draft.ModelFiles}">
                         <ItemsControl.ItemTemplate>
@@ -62,7 +62,7 @@
             
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="3D Parameters" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="3D Parameters" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>

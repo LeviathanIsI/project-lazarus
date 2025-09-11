@@ -27,7 +27,7 @@
             
             <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Entity Assets" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Entity Assets" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     <TextBlock Text="No entity assets imported yet" 
                                Style="{StaticResource SecondaryTextStyle}"
                                HorizontalAlignment="Center"
@@ -37,7 +37,7 @@
             
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Entity Parameters" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Entity Parameters" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Recognition Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>

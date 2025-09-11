@@ -35,7 +35,7 @@
             <!-- Left: Datasets Library -->
             <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Conversation Datasets" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Conversation Datasets" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     
                     <!-- Draft datasets (when no job) -->
                     <ItemsControl ItemsSource="{Binding Draft.Datasets}">
@@ -94,7 +94,7 @@
             <!-- Right: Configuration -->
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Configuration" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Configuration" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
