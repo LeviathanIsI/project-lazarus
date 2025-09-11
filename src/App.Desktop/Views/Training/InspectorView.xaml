@@ -2,10 +2,138 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Foreground="{StaticResource TextPrimaryBrush}">
-        <StackPanel Margin="4">
-            <TextBlock Text="Details / Inspector" Style="{StaticResource H3TextStyle}"/>
-            <!-- TODO(training): bind to selection metadata -->
-            <TextBlock Text="{Binding SelectionSummary}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+        <StackPanel Margin="8">
+            <TextBlock Text="Conversation Training Inspector" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
+            
+            <!-- Job Overview -->
+            <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Job Overview" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Status:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding JobStatus}" FontWeight="Medium" Margin="0,0,0,4"/>
+                        
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Progress:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
+                        <DockPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,4">
+                            <TextBlock Text="{Binding CurrentStep, StringFormat='Step {0:N0}'}" DockPanel.Dock="Right" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="{Binding CurrentEpoch, StringFormat='Epoch {0} •'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,4,0"/>
+                        </DockPanel>
+                        
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="ETA:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding EstimatedTimeRemaining, TargetNullValue='Calculating...'}" FontWeight="Medium"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            
+            <!-- Conversation Statistics -->
+            <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Dataset Statistics" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Conversations:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="1,247 conversations" FontWeight="Medium" Margin="0,0,0,4"/>
+                        
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Tokens:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="2,456,789 tokens" FontWeight="Medium" Margin="0,0,0,4"/>
+                        
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Avg Length:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="1,970 tokens/conversation" FontWeight="Medium" Margin="0,0,0,4"/>
+                        
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Format:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
+                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Text="ChatML" FontWeight="Medium"/>
+                            <TextBlock Text=" • " Style="{StaticResource SecondaryTextStyle}" Margin="4,0"/>
+                            <TextBlock Text="✅ Validated" Foreground="#10B981" FontSize="11"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            
+            <!-- Training Insights -->
+            <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Training Insights" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    
+                    <!-- Token Distribution -->
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock Text="Token Distribution" Style="{StaticResource SecondaryTextStyle}" DockPanel.Dock="Top"/>
+                        <ProgressBar DockPanel.Dock="Top" 
+                                     Style="{StaticResource RainbowGlassProgressBarStyle}" 
+                                     Value="0.65" 
+                                     Height="8" 
+                                     Margin="0,4,0,4"/>
+                        <DockPanel DockPanel.Dock="Top">
+                            <TextBlock Text="Short (&lt;512)" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                            <TextBlock Text="35%" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                        </DockPanel>
+                    </DockPanel>
+                    
+                    <!-- Quality Metrics -->
+                    <TextBlock Text="Quality Indicators:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,4"/>
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,2">
+                            <TextBlock Text="✅ Format validation passed" FontSize="11" Foreground="#10B981"/>
+                            <TextBlock Text="100%" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,2">
+                            <TextBlock Text="⚠️ Long conversations detected" FontSize="11" Foreground="#F59E0B"/>
+                            <TextBlock Text="15%" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,2">
+                            <TextBlock Text="✅ Role consistency good" FontSize="11" Foreground="#10B981"/>
+                            <TextBlock Text="98%" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                        </DockPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Current Selection Details -->
+            <Border Style="{StaticResource GlassPanel}" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="Selection Details" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding SelectionSummary, TargetNullValue='No item selected'}" 
+                               TextWrapping="Wrap" 
+                               Style="{StaticResource SecondaryTextStyle}"/>
+                    
+                    <!-- Recommendations -->
+                    <TextBlock Text="Recommendations:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,4"/>
+                    <TextBlock Text="• Consider reducing max sequence length for faster training" 
+                               TextWrapping="Wrap" 
+                               FontSize="11" 
+                               Style="{StaticResource SecondaryTextStyle}" 
+                               Margin="0,0,0,2"/>
+                    <TextBlock Text="• Use gradient accumulation to handle longer conversations" 
+                               TextWrapping="Wrap" 
+                               FontSize="11" 
+                               Style="{StaticResource SecondaryTextStyle}" 
+                               Margin="0,0,0,2"/>
+                    <TextBlock Text="• Monitor for overfitting on short conversations" 
+                               TextWrapping="Wrap" 
+                               FontSize="11" 
+                               Style="{StaticResource SecondaryTextStyle}"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

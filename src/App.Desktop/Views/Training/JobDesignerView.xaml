@@ -13,14 +13,40 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     
+                    <!-- Import Tools -->
+                    <Border Grid.Row="0" Style="{StaticResource GlassPill}" Padding="12" Margin="8">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="📁 Import JSONL" 
+                                    Command="{Binding ImportConversationDatasetCommand}" 
+                                    Style="{StaticResource RainbowAccentButton.AutoFit}" 
+                                    Margin="0,0,8,0"
+                                    ToolTip="Import conversation dataset from JSONL file"/>
+                            <Button Content="💬 From Chat History" 
+                                    Command="{Binding ImportChatHistoryCommand}" 
+                                    Style="{StaticResource SolidDarkButton}" 
+                                    Margin="0,0,8,0"
+                                    ToolTip="Convert existing chat sessions to training data"/>
+                            <Button Content="🔧 Create Template" 
+                                    Command="{Binding CreateDatasetTemplateCommand}" 
+                                    Style="{StaticResource SolidDarkButton}" 
+                                    Margin="0,0,8,0"
+                                    ToolTip="Create conversation dataset template"/>
+                            <Button Content="✅ Validate Format" 
+                                    Command="{Binding ValidateConversationFormatCommand}" 
+                                    Style="{StaticResource SolidDarkButton}"
+                                    ToolTip="Check conversation format and token counts"/>
+                        </StackPanel>
+                    </Border>
+                    
                     <!-- Available datasets -->
-                    <TextBlock Grid.Row="0" Text="Available Datasets" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
-                    <ListView Grid.Row="1" 
+                    <TextBlock Grid.Row="1" Text="Available Conversation Datasets" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
+                    <ListView Grid.Row="2" 
                               ItemsSource="{Binding AvailableDatasets}"
                               Style="{StaticResource VirtualizedListView}"
                               Margin="8,0,8,8"
@@ -28,23 +54,39 @@
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <DockPanel Margin="4" LastChildFill="True">
-                                    <Button DockPanel.Dock="Right" 
-                                            Content="Add" 
-                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.SelectDatasetCommand}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource SolidDarkButton}"
-                                            Margin="8,0,0,0"/>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
-                                        <TextBlock Text="{Binding Type}" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
-                                        <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="10">
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0:N0} items • {1:N1} MB">
-                                                    <Binding Path="Stats.TotalItems"/>
-                                                    <Binding Path="SizeBytes" Converter="{StaticResource BytesToMegabytesConverter}"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Vertical">
+                                        <Button Content="Add" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.SelectDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"
+                                                Margin="0,0,0,2"/>
+                                        <Button Content="Preview" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.PreviewDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,8,0">
+                                        <DockPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" DockPanel.Dock="Left"/>
+                                            <TextBlock Text="{Binding Stats.TotalTokens, StringFormat='{}{0:N0} tokens'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding Stats.TotalItems, StringFormat='{}{0:N0} conversations'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       FontSize="11" 
+                                                       DockPanel.Dock="Left"/>
+                                            <TextBlock Text="{Binding Stats.AverageTokensPerItem, StringFormat='avg {0:N0} tokens/conv'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       FontSize="11" 
+                                                       HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding Path}" 
+                                                   Style="{StaticResource SecondaryTextStyle}" 
+                                                   FontSize="10" 
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </DockPanel>
                             </DataTemplate>
@@ -52,8 +94,8 @@
                     </ListView>
                     
                     <!-- Selected datasets -->
-                    <TextBlock Grid.Row="2" Text="Selected for Training" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
-                    <ListView Grid.Row="3" 
+                    <TextBlock Grid.Row="3" Text="Selected for Training" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
+                    <ListView Grid.Row="4" 
                               ItemsSource="{Binding SelectedDatasets}"
                               Style="{StaticResource VirtualizedListView}"
                               Margin="8,0,8,8"
@@ -62,42 +104,47 @@
                             <DataTemplate>
                                 <DockPanel Margin="4" LastChildFill="True">
                                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                        <Button Content="Preview" 
+                                        <Button Content="Edit" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.EditDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"
+                                                Margin="0,0,4,0"
+                                                ToolTip="Edit conversation format and templates"/>
+                                        <Button Content="Sample" 
                                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.PreviewDatasetCommand}"
                                                 CommandParameter="{Binding}"
                                                 Style="{StaticResource SolidDarkButton}"
-                                                Margin="0,0,4,0"/>
+                                                Margin="0,0,4,0"
+                                                ToolTip="Preview conversation samples"/>
                                         <Button Content="Remove" 
                                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.RemoveDatasetCommand}"
                                                 CommandParameter="{Binding}"
                                                 Style="{StaticResource SolidDarkButton}"/>
                                     </StackPanel>
-                                    <ContentControl Content="{Binding}">
-                                        <ContentControl.Style>
-                                            <Style TargetType="ContentControl">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Type}" Value="ConversationJsonl">
-                                                        <Setter Property="ContentTemplate" Value="{StaticResource ConversationDatasetTemplate}"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="VoiceAudioTranscript">
-                                                        <Setter Property="ContentTemplate" Value="{StaticResource VoiceDatasetTemplate}"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="ImageDirectory">
-                                                        <Setter Property="ContentTemplate" Value="{StaticResource ImageDatasetTemplate}"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="ThreeDMeshes">
-                                                        <Setter Property="ContentTemplate" Value="{StaticResource ThreeDDatasetTemplate}"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="EntityVoiceAvatar">
-                                                        <Setter Property="ContentTemplate" Value="{StaticResource EntityDatasetTemplate}"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Type}" Value="VideoClips">
-                                                        <Setter Property="ContentTemplate" Value="{StaticResource VideoDatasetTemplate}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ContentControl.Style>
-                                    </ContentControl>
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <TextBlock Text="💬" Margin="0,0,4,0"/>
+                                                <TextBlock Text="{Binding Stats.TotalItems, StringFormat='{}{0:N0} convs'}" 
+                                                           Style="{StaticResource SecondaryTextStyle}"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <ProgressBar Value="{Binding Stats.TotalTokens}" 
+                                                     Maximum="1000000" 
+                                                     Style="{StaticResource MeterBar}" 
+                                                     Height="4" 
+                                                     Margin="0,4,0,0"/>
+                                        <DockPanel Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding Stats.TotalTokens, StringFormat='Total: {0:N0} tokens'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       FontSize="10"/>
+                                            <TextBlock Text="{Binding Stats.AverageTokensPerItem, StringFormat='Avg: {0:N0} tokens'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       FontSize="10" 
+                                                       HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                    </StackPanel>
                                 </DockPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -109,8 +156,115 @@
             <TabItem Header="Configuration">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">
-                        <!-- Model Selection -->
-                        <TextBlock Text="Model Configuration" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <!-- Model Configuration -->
+                        <TextBlock Text="Base Model Configuration" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="Chat Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                                    <ComboBoxItem Content="llama-2-7b-chat"/>
+                                    <ComboBoxItem Content="llama-2-13b-chat" IsSelected="True"/>
+                                    <ComboBoxItem Content="mistral-7b-instruct"/>
+                                    <ComboBoxItem Content="codellama-7b-instruct"/>
+                                    <ComboBoxItem Content="openchat-3.5"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="Training Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                                    <ComboBoxItem Content="LoRA Fine-tuning" IsSelected="True"/>
+                                    <ComboBoxItem Content="QLoRA Fine-tuning"/>
+                                    <ComboBoxItem Content="Full Fine-tuning"/>
+                                    <ComboBoxItem Content="DPO Training"/>
+                                    <ComboBoxItem Content="RLHF Training"/>
+                                </ComboBox>
+                            </StackPanel>
+                                      
+                            <StackPanel Grid.Row="0" Grid.Column="4">
+                                <TextBlock Text="Output Path" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="📁" Style="{StaticResource SolidDarkButton}" Margin="4,0,0,0"/>
+                                    <TextBox Text="./models/my-chat-model" Style="{StaticResource GlassTextBoxStyle}"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- Conversation Format Settings -->
+                        <TextBlock Text="Conversation Format" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="Chat Template" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                                    <ComboBoxItem Content="ChatML" IsSelected="True"/>
+                                    <ComboBoxItem Content="Alpaca"/>
+                                    <ComboBoxItem Content="Vicuna"/>
+                                    <ComboBoxItem Content="ShareGPT"/>
+                                    <ComboBoxItem Content="Custom"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="Max Sequence Length" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="2048" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="4">
+                                <TextBlock Text="System Role" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                                    <ComboBoxItem Content="Assistant" IsSelected="True"/>
+                                    <ComboBoxItem Content="Helper"/>
+                                    <ComboBoxItem Content="Expert"/>
+                                    <ComboBoxItem Content="Custom"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <!-- Row 2: Advanced Format Options -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,8,0,0">
+                                <TextBlock Text="Turn Separator" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="&lt;|im_end|&gt;" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
+                                <TextBlock Text="Response Prefix" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="&lt;|im_start|&gt;assistant" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,8,0,0">
+                                <CheckBox Content="Add BOS/EOS tokens" 
+                                          IsChecked="True" 
+                                          Style="{StaticResource GlassCheckBoxStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- Training Parameters -->
+                        <TextBlock Text="Training Hyperparameters" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
                         <Grid Margin="0,0,0,16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -119,39 +273,6 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Text="Base Model" Grid.Row="0" Grid.Column="0" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                            <ComboBox Grid.Row="1" Grid.Column="0" 
-                                      ItemsSource="{Binding Models}" 
-                                      SelectedItem="{Binding SelectedModel}"
-                                      Style="{StaticResource GlassComboBoxStyle}"/>
-                                      
-                            <TextBlock Text="Training Recipe" Grid.Row="0" Grid.Column="2" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                            <ComboBox Grid.Row="1" Grid.Column="2" 
-                                      ItemsSource="{Binding Recipes}" 
-                                      SelectedItem="{Binding SelectedRecipe}"
-                                      Style="{StaticResource GlassComboBoxStyle}"/>
-                                      
-                            <TextBlock Text="Output Path" Grid.Row="0" Grid.Column="4" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                            <TextBox Grid.Row="1" Grid.Column="4" 
-                                     Text="{Binding OutputPath}"
-                                     Style="{StaticResource GlassTextBoxStyle}"/>
-                        </Grid>
-                        
-                        <!-- Hyperparameters -->
-                        <TextBlock Text="Hyperparameters" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
-                        <Grid Margin="0,0,0,16">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="12"/>
@@ -172,7 +293,62 @@
                                 <TextBlock Text="Warmup Steps" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                                 <TextBox Text="100" Style="{StaticResource GlassTextBoxStyle}"/>
                             </StackPanel>
+                            
+                            <!-- Row 2: LoRA specific settings -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,8,0,0">
+                                <TextBlock Text="LoRA Rank" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="16" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
+                                <TextBlock Text="LoRA Alpha" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="32" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,8,0,0">
+                                <TextBlock Text="Dropout" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="0.1" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <!-- Row 3: Advanced options -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,8,0,0">
+                                <CheckBox Content="Use gradient checkpointing" 
+                                          IsChecked="True" 
+                                          Style="{StaticResource GlassCheckBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,8,0,0">
+                                <CheckBox Content="Use flash attention" 
+                                          IsChecked="True" 
+                                          Style="{StaticResource GlassCheckBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="2" Grid.Column="4" Margin="0,8,0,0">
+                                <CheckBox Content="Save intermediate checkpoints" 
+                                          IsChecked="True" 
+                                          Style="{StaticResource GlassCheckBoxStyle}"/>
+                            </StackPanel>
                     </Grid>
+                        
+                        <!-- Prompt Engineering -->
+                        <TextBlock Text="Prompt Engineering" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,16">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,8">
+                                    <TextBlock Text="System Prompt Template" Style="{StaticResource SecondaryTextStyle}" DockPanel.Dock="Left"/>
+                                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                        <Button Content="Load Template" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                        <Button Content="Save Template" Style="{StaticResource SolidDarkButton}"/>
+                                    </StackPanel>
+                                </DockPanel>
+                                <TextBox Height="80" 
+                                         TextWrapping="Wrap" 
+                                         AcceptsReturn="True"
+                                         Text="You are a helpful, harmless, and honest assistant. Respond conversationally and be concise."
+                                         Style="{StaticResource GlassTextBoxStyle}"
+                                         FontFamily="{StaticResource MonoFont}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

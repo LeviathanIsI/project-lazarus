@@ -2,7 +2,18 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DockPanel>
-        <TextBlock DockPanel.Dock="Top" Text="Training Projects" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <TextBlock Text="💬 Conversation Models" Style="{StaticResource H3TextStyle}" DockPanel.Dock="Left"/>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="📊" 
+                        ToolTip="View dataset statistics" 
+                        Style="{StaticResource SolidDarkButton}" 
+                        Margin="0,0,4,0"/>
+                <Button Content="📋" 
+                        ToolTip="Export training report" 
+                        Style="{StaticResource SolidDarkButton}"/>
+            </StackPanel>
+        </DockPanel>
         <!-- Toolbar -->
         <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <Button Content="New Job" 
@@ -50,28 +61,50 @@
                   x:Name="JobsListView">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <DockPanel LastChildFill="True" Margin="0,0,0,6" MinHeight="48">
-                        <StackPanel DockPanel.Dock="Right" Orientation="Vertical" HorizontalAlignment="Right">
-                            <ContentControl Content="{Binding Status}" Style="{StaticResource StatusChip.Default}" Margin="0,0,0,2"/>
-                            <TextBlock Text="{Binding Modified, StringFormat='MM/dd HH:mm'}" 
-                                       Style="{StaticResource SecondaryTextStyle}" 
-                                       FontSize="10" 
-                                       HorizontalAlignment="Right"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Text="{Binding Modality}" 
-                                       Style="{StaticResource SecondaryTextStyle}" 
-                                       FontSize="11" 
-                                       Margin="0,2,0,0"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                <TextBlock Text="Epoch " Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
-                                <TextBlock Text="{Binding CurrentEpoch}" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
-                                <TextBlock Text=" • Step " Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
-                                <TextBlock Text="{Binding CurrentStep}" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                    <Border CornerRadius="8" 
+                                            Padding="8" 
+                                            Margin="0,0,0,6" 
+                                            MinHeight="64"
+                                            Background="{StaticResource BackgroundBrush}"
+                                            BorderBrush="#30FFFFFF" 
+                                            BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Vertical" HorizontalAlignment="Right">
+                                <ContentControl Content="{Binding Status}" Style="{StaticResource StatusChip.Default}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding Modified, StringFormat='MM/dd HH:mm'}" 
+                                           Style="{StaticResource SecondaryTextStyle}" 
+                                           FontSize="10" 
+                                           HorizontalAlignment="Right"/>
                             </StackPanel>
-                        </StackPanel>
-                    </DockPanel>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="💬" Margin="4,0,0,0" VerticalAlignment="Center" DockPanel.Dock="Right"/>
+                                </DockPanel>
+                                <TextBlock Text="{Binding Modality, StringFormat='Chat Training • {0}'}" 
+                                           Style="{StaticResource SecondaryTextStyle}" 
+                                           FontSize="11" 
+                                           Margin="0,2,0,0"/>
+                                <ProgressBar Style="{StaticResource MeterBar}" 
+                                             Value="{Binding Progress}" 
+                                             Maximum="1" 
+                                             Height="3" 
+                                             Margin="0,4,0,2"/>
+                                <DockPanel Margin="0,2,0,0">
+                                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                        <TextBlock Text="E" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                        <TextBlock Text="{Binding CurrentEpoch}" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                        <TextBlock Text="/S" Style="{StaticResource SecondaryTextStyle}" FontSize="10" Margin="4,0,0,0"/>
+                                        <TextBlock Text="{Binding CurrentStep}" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding EstimatedTimeRemaining, StringFormat='ETA {0:hh\\:mm}'}" 
+                                               Style="{StaticResource SecondaryTextStyle}" 
+                                               FontSize="10" 
+                                               HorizontalAlignment="Right"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

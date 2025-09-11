@@ -67,6 +67,13 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand PreviewDatasetCommand { get; }
         public ICommand EstimateResourcesCommand { get; }
         
+        // Conversation-specific commands
+        public ICommand ImportConversationDatasetCommand { get; }
+        public ICommand ImportChatHistoryCommand { get; }
+        public ICommand CreateDatasetTemplateCommand { get; }
+        public ICommand ValidateConversationFormatCommand { get; }
+        public ICommand EditDatasetCommand { get; }
+        
         public JobDesignerViewModel(ITrainingService trainingService)
         {
             _trainingService = trainingService ?? throw new ArgumentNullException(nameof(trainingService));
@@ -75,6 +82,13 @@ namespace Lazarus.Desktop.ViewModels.Training
             RemoveDatasetCommand = new RelayCommand<TrainingDatasetRef>(dataset => RemoveDataset(dataset));
             PreviewDatasetCommand = new RelayCommand<TrainingDatasetRef>(dataset => PreviewDataset(dataset));
             EstimateResourcesCommand = new RelayCommand(async _ => await EstimateResourcesAsync());
+            
+            // Conversation-specific commands
+            ImportConversationDatasetCommand = new RelayCommand(async _ => await ImportConversationDatasetAsync());
+            ImportChatHistoryCommand = new RelayCommand(async _ => await ImportChatHistoryAsync());
+            CreateDatasetTemplateCommand = new RelayCommand(async _ => await CreateDatasetTemplateAsync());
+            ValidateConversationFormatCommand = new RelayCommand(async _ => await ValidateConversationFormatAsync());
+            EditDatasetCommand = new RelayCommand<TrainingDatasetRef>(dataset => EditDataset(dataset));
             
             // TODO(training): Load initial data
             LoadModelsAndRecipes();
@@ -216,6 +230,44 @@ namespace Lazarus.Desktop.ViewModels.Training
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to estimate resources: {ex.Message}");
+            }
+        }
+        
+        // Conversation-specific dataset management
+        private async Task ImportConversationDatasetAsync()
+        {
+            // TODO(training): Show file dialog to select JSONL files
+            System.Diagnostics.Debug.WriteLine("Import JSONL conversation dataset");
+            await Task.CompletedTask;
+        }
+        
+        private async Task ImportChatHistoryAsync()
+        {
+            // TODO(training): Convert existing chat sessions to training format
+            System.Diagnostics.Debug.WriteLine("Import from chat history");
+            await Task.CompletedTask;
+        }
+        
+        private async Task CreateDatasetTemplateAsync()
+        {
+            // TODO(training): Create conversation dataset template with example format
+            System.Diagnostics.Debug.WriteLine("Create conversation template");
+            await Task.CompletedTask;
+        }
+        
+        private async Task ValidateConversationFormatAsync()
+        {
+            // TODO(training): Validate JSONL format and compute statistics
+            System.Diagnostics.Debug.WriteLine("Validate conversation format");
+            await Task.CompletedTask;
+        }
+        
+        private void EditDataset(TrainingDatasetRef? dataset)
+        {
+            // TODO(training): Open dataset editor for conversation format adjustment
+            if (dataset != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"Edit dataset: {dataset.Name}");
             }
         }
         
