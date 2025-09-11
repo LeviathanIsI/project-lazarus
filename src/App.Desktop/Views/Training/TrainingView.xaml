@@ -29,7 +29,10 @@
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="3D Models" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=ThreeD}" Margin="0,0,8,0"/>
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Entities" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Entities}" Margin="0,0,8,0"/>
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Videos" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Videos}"/>
-            <ToggleButton Content="Design  Progress" Style="{StaticResource GlassToggleButtonStyle}" Margin="16,0,0,0" IsChecked="{Binding IsProgressMode}" ToolTip="Toggle designer vs progress full-screen"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}"
+                          Content="Design Progress"
+                          Margin="16,0,0,0"
+                          IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Design Progress}"/>
         </StackPanel>
 
         <!-- Main regions -->
@@ -50,35 +53,10 @@
                 </DockPanel>
             </Border>
 
-            <!-- Center Designer or Progress -->
+            <!-- Center Surface: current designer or Design Progress via DataTemplates -->
             <Grid Grid.Column="2">
-                <Grid.Style>
-                    <Style TargetType="Grid">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsProgressMode}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
                 <Border Style="{StaticResource GlassPanelElevated}" Padding="8">
                     <ContentControl Content="{Binding ActiveDesigner}"/>
-                </Border>
-            </Grid>
-            <!-- Full-screen Progress Surface (visible when IsProgressMode) -->
-            <Grid Grid.Column="2" Visibility="Collapsed">
-                <Grid.Style>
-                    <Style TargetType="Grid">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsProgressMode}" Value="True">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-                <Border Style="{StaticResource GlassPanelElevated}" Padding="8">
-                    <!-- TODO(training): replace placeholder with charts+logs fullscreen composite -->
-                    <TextBlock Text="Progress Mode — Charts &amp; Logs" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
             </Grid>
 
