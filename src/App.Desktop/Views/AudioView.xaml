@@ -77,14 +77,8 @@
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.ScrollUnit="Pixel">
                     <ListView.Resources>
-                        <!-- Dark column header style -->
-                        <Style TargetType="GridViewColumnHeader">
-                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
-                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                            <Setter Property="Padding" Value="8,6"/>
-                        </Style>
+                        <!-- Dark column header style with hover -->
+                        <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource GlassGridViewHeaderStyle}"/>
                     </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">
@@ -294,10 +288,21 @@
                         <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"/>
 
                         <TextBlock Text="Transpose" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
-                        <Slider Minimum="-12" Maximum="12" Value="{Binding Transpose}" Style="{StaticResource RainbowGlassSliderStyle}"/>
+                        <Slider Minimum="-12" Maximum="12" Value="{Binding Transpose}" Style="{StaticResource RainbowGlassSliderStyle}"
+                                ToolTip="Drag the handle to set transpose"/>
+                        <TextBlock Text="{Binding Transpose}" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right" Margin="0,2,0,0"/>
 
                         <TextBlock Text="No. of generations" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
-                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding NumGenerations}" Style="{StaticResource RainbowGlassSliderStyle}"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="-" Width="28" Style="{StaticResource SolidDarkButton}" Command="{Binding DecreaseNumGenerationsCmd}"/>
+                            <TextBox Width="48" Margin="6,0" HorizontalContentAlignment="Center"
+                                     Text="{Binding NumGenerations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource GlassTextBoxStyle}"/>
+                            <Button Content="+" Width="28" Style="{StaticResource SolidDarkButton}" Command="{Binding IncreaseNumGenerationsCmd}"/>
+                        </StackPanel>
+                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True"
+                                Value="{Binding NumGenerations}" Style="{StaticResource RainbowGlassSliderStyle}"
+                                ToolTip="Drag the handle to set number of generations"/>
 
                         <TextBlock Text="Algorithm" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
                         <ComboBox ItemsSource="{Binding Algorithms}" SelectedItem="{Binding SelectedAlgorithm}"/>

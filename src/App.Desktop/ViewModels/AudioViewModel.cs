@@ -121,7 +121,7 @@ namespace Lazarus.Desktop.ViewModels
         public int NumGenerations
         {
             get => _numGenerations;
-            set { _numGenerations = value; OnPropertyChanged(); }
+            set { _numGenerations = Math.Clamp(value, 1, 4); OnPropertyChanged(); }
         }
         private int _numGenerations = 1;
 
@@ -167,6 +167,9 @@ namespace Lazarus.Desktop.ViewModels
 
         private bool _isPlaying;
 
+        public ICommand IncreaseNumGenerationsCmd { get; }
+        public ICommand DecreaseNumGenerationsCmd { get; }
+
         public AudioViewModel()
         {
             // Placeholder rows so the whole UI is visible instantly
@@ -194,6 +197,9 @@ namespace Lazarus.Desktop.ViewModels
             SplitOnSilenceCmd = new RelayCommand(_ => AddJob("Split on Silence"));
             SynthesizeCmd = new RelayCommand(_ => AddJob("TTS Synthesize"));
             CloneVoiceCmd = new RelayCommand(_ => AddJob("Voice Clone"));
+
+            IncreaseNumGenerationsCmd = new RelayCommand(_ => NumGenerations = Math.Min(NumGenerations + 1, 4));
+            DecreaseNumGenerationsCmd = new RelayCommand(_ => NumGenerations = Math.Max(NumGenerations - 1, 1));
         }
 
         private void TogglePlay()

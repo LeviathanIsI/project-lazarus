@@ -654,6 +654,21 @@
         </Setter>
     </Style>
 
+    <!-- GridView Column Header Style (dark + hover) -->
+    <Style x:Key="GlassGridViewHeaderStyle" TargetType="GridViewColumnHeader">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource SecondaryButtonHoverBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- ====================
          CHECKBOX DARK STYLE
          ==================== -->
