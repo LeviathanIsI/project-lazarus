@@ -6,14 +6,112 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TabControl>
+        
+        <TabControl Foreground="{StaticResource TextPrimaryBrush}" SelectedIndex="0">
+            <!-- Datasets Tab -->
             <TabItem Header="Datasets">
-                <!-- TODO(training): modality-aware dataset previews via DataTemplates -->
-                <ContentControl Content="{Binding DatasetsPresenter}"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Available datasets -->
+                    <TextBlock Grid.Row="0" Text="Available Datasets" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
+                    <ListView Grid.Row="1" 
+                              ItemsSource="{Binding AvailableDatasets}"
+                              Style="{StaticResource VirtualizedListView}"
+                              Margin="8,0,8,8"
+                              MinHeight="120">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="4" LastChildFill="True">
+                                    <Button DockPanel.Dock="Right" 
+                                            Content="Add" 
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.SelectDatasetCommand}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource SolidDarkButton}"
+                                            Margin="8,0,0,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding Type}" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                                        <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="10">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0:N0} items • {1:N1} MB">
+                                                    <Binding Path="Stats.TotalItems"/>
+                                                    <Binding Path="SizeBytes" Converter="{StaticResource BytesToMegabytesConverter}"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    
+                    <!-- Selected datasets -->
+                    <TextBlock Grid.Row="2" Text="Selected for Training" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
+                    <ListView Grid.Row="3" 
+                              ItemsSource="{Binding SelectedDatasets}"
+                              Style="{StaticResource VirtualizedListView}"
+                              Margin="8,0,8,8"
+                              MinHeight="120">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="4" LastChildFill="True">
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <Button Content="Preview" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.PreviewDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"
+                                                Margin="0,0,4,0"/>
+                                        <Button Content="Remove" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.RemoveDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"/>
+                                    </StackPanel>
+                                    <ContentControl Content="{Binding}">
+                                        <ContentControl.Style>
+                                            <Style TargetType="ContentControl">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Type}" Value="ConversationJsonl">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource ConversationDatasetTemplate}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Type}" Value="VoiceAudioTranscript">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource VoiceDatasetTemplate}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Type}" Value="ImageDirectory">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource ImageDatasetTemplate}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Type}" Value="ThreeDMeshes">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource ThreeDDatasetTemplate}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Type}" Value="EntityVoiceAvatar">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource EntityDatasetTemplate}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Type}" Value="VideoClips">
+                                                        <Setter Property="ContentTemplate" Value="{StaticResource VideoDatasetTemplate}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ContentControl.Style>
+                                    </ContentControl>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
             </TabItem>
+            
+            <!-- Configuration Tab -->
             <TabItem Header="Configuration">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="8">
+                    <StackPanel Margin="12">
+                        <!-- Model Selection -->
+                        <TextBlock Text="Model Configuration" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -21,49 +119,179 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Text="Base Model" Grid.Row="0" Grid.Column="0" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <ComboBox Grid.Row="1" Grid.Column="0" 
+                                      ItemsSource="{Binding Models}" 
+                                      SelectedItem="{Binding SelectedModel}"
+                                      Style="{StaticResource GlassComboBoxStyle}"/>
+                                      
+                            <TextBlock Text="Training Recipe" Grid.Row="0" Grid.Column="2" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <ComboBox Grid.Row="1" Grid.Column="2" 
+                                      ItemsSource="{Binding Recipes}" 
+                                      SelectedItem="{Binding SelectedRecipe}"
+                                      Style="{StaticResource GlassComboBoxStyle}"/>
+                                      
+                            <TextBlock Text="Output Path" Grid.Row="0" Grid.Column="4" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <TextBox Grid.Row="1" Grid.Column="4" 
+                                     Text="{Binding OutputPath}"
+                                     Style="{StaticResource GlassTextBoxStyle}"/>
+                        </Grid>
+                        
+                        <!-- Hyperparameters -->
+                        <TextBlock Text="Hyperparameters" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Model" Grid.Row="0" Grid.Column="0" Style="{StaticResource SecondaryTextStyle}"/>
-                        <ComboBox Grid.Row="1" Grid.Column="0" ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"/>
-                        <TextBlock Text="Recipe" Grid.Row="0" Grid.Column="1" Style="{StaticResource SecondaryTextStyle}"/>
-                        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Recipes}" SelectedItem="{Binding SelectedRecipe}"/>
-                        <TextBlock Text="Output Path" Grid.Row="0" Grid.Column="2" Style="{StaticResource SecondaryTextStyle}"/>
-                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding OutputPath}"/>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="2e-4" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="Epochs" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="3" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="4">
+                                <TextBlock Text="Warmup Steps" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="100" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
                     </Grid>
+                    </StackPanel>
                 </ScrollViewer>
             </TabItem>
+            
+            <!-- Resources Tab -->
             <TabItem Header="Resources">
-                <Grid Margin="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="12">
+                        <!-- GPU Selection -->
+                        <TextBlock Text="GPU Configuration" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="GPU" Style="{StaticResource SecondaryTextStyle}"/>
-                    <ComboBox Grid.Row="1" ItemsSource="{Binding Gpus}" SelectedItem="{Binding SelectedGpu}"/>
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
-                        <StackPanel Width="200" Margin="0,0,8,0">
-                            <TextBlock Text="Batch Size" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBox Text="{Binding BatchSize}"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Text="GPU" Grid.Row="0" Grid.Column="0" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <ComboBox Grid.Row="1" Grid.Column="0" 
+                                      ItemsSource="{Binding Gpus}" 
+                                      SelectedItem="{Binding SelectedGpu}"
+                                      Style="{StaticResource GlassComboBoxStyle}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="10">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0:N1} GB • {1:N0}% util">
+                                                        <Binding Path="TotalMemoryBytes" Converter="{StaticResource BytesToGigabytesConverter}"/>
+                                                        <Binding Path="UtilizationPercent"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            
+                            <TextBlock Text="Precision" Grid.Row="0" Grid.Column="2" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <ComboBox Grid.Row="1" Grid.Column="2" 
+                                      ItemsSource="{Binding Precisions}" 
+                                      SelectedItem="{Binding SelectedPrecision}"
+                                      Style="{StaticResource GlassComboBoxStyle}"/>
+                        </Grid>
+                        
+                        <!-- Memory and Batch Settings -->
+                        <TextBlock Text="Memory Settings" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Batch Size" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding BatchSize}" Style="{StaticResource GlassTextBoxStyle}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Gradient Accumulation" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="8" Style="{StaticResource GlassTextBoxStyle}"/>
                         </StackPanel>
-                        <StackPanel Width="200">
-                            <TextBlock Text="Precision" Style="{StaticResource SecondaryTextStyle}"/>
-                            <ComboBox ItemsSource="{Binding Precisions}" SelectedItem="{Binding SelectedPrecision}"/>
+                        </Grid>
+                        
+                        <!-- Resource Estimate -->
+                        <TextBlock Text="Resource Estimate" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                        <Border Style="{StaticResource ChartCard}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,8">
+                                    <TextBlock Text="Estimated VRAM Usage" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="{Binding EstimatedVRAM, StringFormat='{}{0:N1} GB'}" 
+                                               HorizontalAlignment="Right" 
+                                               FontWeight="Medium"/>
+                                </DockPanel>
+                                <ProgressBar Style="{StaticResource MeterBar}" 
+                                             Minimum="0" Maximum="24" 
+                                             Value="{Binding EstimatedVRAM, Converter={StaticResource BytesToGigabytesConverter}}"/>
+                                <Button Content="Recalculate" 
+                                        Command="{Binding EstimateResourcesCommand}" 
+                                        Style="{StaticResource SolidDarkButton}"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,8,0,0"/>
                         </StackPanel>
+                        </Border>
                     </StackPanel>
-                </Grid>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
 
         <!-- Overview strip -->
         <Border Grid.Row="1" Style="{StaticResource GlassPill}" Padding="8" Margin="0,8,0,0">
             <DockPanel>
-                <ContentControl Content="{Binding OverviewStatus}" Style="{StaticResource StatusChip.Default}"/>
-                <ProgressBar Style="{StaticResource RainbowGlassProgressBarStyle}" Minimum="0" Maximum="1" Value="{Binding OverviewProgress}" Height="10" Margin="12,0"/>
-                <TextBlock Text="{Binding OverviewEta}" HorizontalAlignment="Right"/>
+                <ContentControl Content="{Binding OverviewStatus}" 
+                                Style="{StaticResource StatusChip.Default}" 
+                                DockPanel.Dock="Left"/>
+                <TextBlock Text="{Binding OverviewEta}" 
+                           DockPanel.Dock="Right" 
+                           VerticalAlignment="Center"
+                           Style="{StaticResource SecondaryTextStyle}"/>
+                <StackPanel Orientation="Horizontal" Margin="12,0">
+                    <TextBlock Text="Progress: " Style="{StaticResource SecondaryTextStyle}" VerticalAlignment="Center"/>
+                    <ProgressBar Style="{StaticResource RainbowGlassProgressBarStyle}" 
+                                 Minimum="0" Maximum="1" 
+                                 Value="{Binding OverviewProgress}" 
+                                 Height="8" Width="200" 
+                                 VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding OverviewProgress, StringFormat='{}{0:P1}'}" 
+                               Style="{StaticResource SecondaryTextStyle}" 
+                               Margin="8,0,0,0" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
             </DockPanel>
         </Border>
     </Grid>
 </UserControl>
-

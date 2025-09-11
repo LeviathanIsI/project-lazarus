@@ -1,34 +1,333 @@
 <UserControl x:Class="Lazarus.Desktop.Views.Training.MonitorDockView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <TabControl>
+    <TabControl Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}">
+        <!-- Metrics Tab -->
         <TabItem Header="Metrics">
-            <Grid Margin="8">
-                <!-- TODO(training): charts placeholder -->
-                <TextBlock Text="Live metrics (loss, accuracy, lr, step/epoch)"/>
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Metrics controls -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                    <TextBlock Text="Metrics" Style="{StaticResource H4TextStyle}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox Content="Training Loss" IsChecked="True" Style="{StaticResource GlassCheckBoxStyle}" Margin="0,0,8,0"/>
+                        <CheckBox Content="Validation Loss" IsChecked="True" Style="{StaticResource GlassCheckBoxStyle}" Margin="0,0,8,0"/>
+                        <CheckBox Content="Learning Rate" IsChecked="True" Style="{StaticResource GlassCheckBoxStyle}" Margin="0,0,8,0"/>
+                        <CheckBox Content="VRAM Usage" IsChecked="True" Style="{StaticResource GlassCheckBoxStyle}"/>
+                    </StackPanel>
+                    <Button Content="[ ]" ToolTip="Adjust time window" Style="{StaticResource SolidDarkButton}" Margin="12,0,4,0"/>
+                    <Button Content="M" ToolTip="Toggle metric lines" Style="{StaticResource SolidDarkButton}"/>
+                </StackPanel>
+                
+                <!-- Charts area -->
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Training Loss Chart -->
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource ChartCard}">
+                        <StackPanel>
+                            <TextBlock Text="Training Loss" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                            <Border Height="120" Background="#10FFFFFF" CornerRadius="4">
+                                <!-- TODO(training): Implement live chart control -->
+                                <TextBlock Text="📈 Loss: 2.456 → 1.123" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" 
+                                           Style="{StaticResource SecondaryTextStyle}"/>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Learning Rate Chart -->
+                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource ChartCard}">
+                        <StackPanel>
+                            <TextBlock Text="Learning Rate" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                            <Border Height="120" Background="#10FFFFFF" CornerRadius="4">
+                                <!-- TODO(training): Implement live chart control -->
+                                <TextBlock Text="📊 LR: 2e-4 → 1.5e-5" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" 
+                                           Style="{StaticResource SecondaryTextStyle}"/>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Steps/Epoch Display -->
+                    <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource ChartCard}">
+                        <StackPanel>
+                            <TextBlock Text="Progress" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Epoch" Style="{StaticResource SecondaryTextStyle}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Step" Style="{StaticResource SecondaryTextStyle}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="2 / 3" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="1,234 / 2,000" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="ETA: 1h 23m" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Performance Chart -->
+                    <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource ChartCard}">
+                        <StackPanel>
+                            <TextBlock Text="Performance" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <DockPanel Grid.Row="0" Margin="0,0,0,4">
+                                    <TextBlock Text="Time/Step" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                                    <TextBlock Text="1.2s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                                </DockPanel>
+                                <DockPanel Grid.Row="1" Margin="0,0,0,4">
+                                    <TextBlock Text="Tokens/sec" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                                    <TextBlock Text="850" HorizontalAlignment="Right" FontWeight="Medium"/>
+                                </DockPanel>
+                                <DockPanel Grid.Row="2">
+                                    <TextBlock Text="Samples/sec" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                                    <TextBlock Text="16.7" HorizontalAlignment="Right" FontWeight="Medium"/>
+                                </DockPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
         </TabItem>
+        
+        <!-- Logs Tab -->
         <TabItem Header="Logs">
-            <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
-                    <TextBox Width="280" Text="{Binding LogsFilter}" Style="{StaticResource GlassTextBoxStyle}"/>
-                    <CheckBox Content="Autoscroll" IsChecked="{Binding Autoscroll}" Margin="8,0,0,0" Style="{StaticResource GlassCheckBoxStyle}"/>
+            <DockPanel Margin="12">
+                <!-- Logs toolbar -->
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBox Width="280" 
+                             Text="{Binding LogsFilter}" 
+                             Style="{StaticResource GlassTextBoxStyle}"
+                             x:Name="LogsFilterBox">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FocusLogsFilterCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <CheckBox Content="Autoscroll" 
+                              IsChecked="{Binding Autoscroll}" 
+                              Margin="12,0,0,0" 
+                              Style="{StaticResource GlassCheckBoxStyle}"/>
+                    <Button Content="Clear" 
+                            Command="{Binding ClearLogsCommand}" 
+                            Style="{StaticResource SolidDarkButton}" 
+                            Margin="12,0,4,0"
+                            ToolTip="Clear logs (Ctrl+L)"/>
+                    <Button Content="Copy" 
+                            Command="{Binding CopyLogsCommand}" 
+                            Style="{StaticResource SolidDarkButton}" 
+                            Margin="0,0,4,0"
+                            ToolTip="Copy logs to clipboard"/>
+                    <Button Content="Save" 
+                            Command="{Binding SaveLogsCommand}" 
+                            Style="{StaticResource SolidDarkButton}"
+                            ToolTip="Save logs to file"/>
                 </StackPanel>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Logs}">
+                
+                <!-- Logs display -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Auto"
+                              x:Name="LogsScrollViewer">
+                    <ItemsControl ItemsSource="{Binding Logs}" 
+                                  Style="{StaticResource VirtualizedListView}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding}" FontFamily="{StaticResource MonoFont}"/>
+                                <TextBlock Margin="2,1" FontFamily="{StaticResource MonoFont}" FontSize="11">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0:HH:mm:ss.fff} [{1}] {2}">
+                                            <Binding Path="Timestamp"/>
+                                            <Binding Path="Level"/>
+                                            <Binding Path="Message"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                    <Setter Property="Foreground" Value="#FF6B6B"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Level}" Value="Warning">
+                                                    <Setter Property="Foreground" Value="#FFD93D"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Level}" Value="Info">
+                                                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Level}" Value="Debug">
+                                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
             </DockPanel>
         </TabItem>
+        
+        <!-- System Tab -->
         <TabItem Header="System">
-            <Grid Margin="8">
-                <!-- TODO(training): gauges placeholder -->
-                <TextBlock Text="VRAM/CPU/Disk/IO gauges"/>
+            <Grid Margin="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- GPU Usage -->
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource ChartCard}">
+                    <StackPanel>
+                        <TextBlock Text="GPU Usage" Style="{StaticResource H4TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="VRAM" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="{Binding VramUsagePercent, StringFormat='{}{0:P1}'}" 
+                                       HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="{Binding VramUsagePercent}"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="GPU Util" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="87%" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="0.87"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel>
+                            <TextBlock Text="Temperature" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="72°C" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- CPU Usage -->
+                <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource ChartCard}">
+                    <StackPanel>
+                        <TextBlock Text="CPU Usage" Style="{StaticResource H4TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="CPU" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="{Binding CpuUsagePercent, StringFormat='{}{0:P1}'}" 
+                                       HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="{Binding CpuUsagePercent}"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="Memory" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="12.4 / 32.0 GB" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="0.39"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel>
+                            <TextBlock Text="Load Avg" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="4.2" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Disk I/O -->
+                <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource ChartCard}">
+                    <StackPanel>
+                        <TextBlock Text="Disk I/O" Style="{StaticResource H4TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="Read Speed" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="125 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="0.45"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="Write Speed" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="89 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="0.32"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel>
+                            <TextBlock Text="Disk Usage" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="67%" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Network -->
+                <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource ChartCard}">
+                    <StackPanel>
+                        <TextBlock Text="Network" Style="{StaticResource H4TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="Download" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="2.3 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="0.23"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock Text="Upload" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="0.8 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource MeterBar}" 
+                                     Minimum="0" Maximum="1" 
+                                     Value="0.08"
+                                     Margin="0,0,0,12"/>
+                        
+                        <DockPanel>
+                            <TextBlock Text="Latency" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="12ms" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
             </Grid>
         </TabItem>
     </TabControl>

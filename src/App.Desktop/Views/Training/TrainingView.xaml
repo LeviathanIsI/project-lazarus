@@ -6,6 +6,15 @@
              xmlns:views="clr-namespace:Lazarus.Desktop.Views.Training"
              mc:Ignorable="d">
     <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.InputBindings>
+            <!-- Global keyboard shortcuts -->
+            <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding JobsSidebar.NewJobCommand}"/>
+            <KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding JobsSidebar.ImportDatasetCommand}"/>
+            <KeyBinding Key="Enter" Modifiers="Ctrl" Command="{Binding StartCommand}"/>
+            <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding PauseCommand}"/>
+            <KeyBinding Key="OemPeriod" Modifiers="Ctrl" Command="{Binding StopCommand}"/>
+            <KeyBinding Key="OemTilde" Modifiers="Ctrl" Command="{Binding ToggleMonitorDockCommand}"/>
+        </Grid.InputBindings>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -331,10 +340,29 @@
         <!-- Global action row (floats above dock) -->
         <DockPanel Grid.Row="2" Margin="16,0,16,8" VerticalAlignment="Bottom">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Start"   Command="{Binding StartCommand}"   IsEnabled="{Binding CanStart}"   Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
-                <Button Content="Pause"   Command="{Binding PauseCommand}"   IsEnabled="{Binding CanPause}"   Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-                <Button Content="Stop"    Command="{Binding StopCommand}"    IsEnabled="{Binding CanStop}"    Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-                <Button Content="Export"  Command="{Binding ExportCommand}"  IsEnabled="{Binding CanExport}"  Style="{StaticResource SolidDarkButton}"/>
+                <Button Content="Start"   
+                        Command="{Binding StartCommand}"   
+                        IsEnabled="{Binding CanStart}"   
+                        Style="{StaticResource RainbowAccentButton.AutoFit}" 
+                        Margin="0,0,8,0"
+                        ToolTip="Start selected training jobs (Ctrl+Enter)"/>
+                <Button Content="Pause"   
+                        Command="{Binding PauseCommand}"   
+                        IsEnabled="{Binding CanPause}"   
+                        Style="{StaticResource SolidDarkButton}" 
+                        Margin="0,0,8,0"
+                        ToolTip="Pause running jobs (Ctrl+P)"/>
+                <Button Content="Stop"    
+                        Command="{Binding StopCommand}"    
+                        IsEnabled="{Binding CanStop}"    
+                        Style="{StaticResource SolidDarkButton}" 
+                        Margin="0,0,8,0"
+                        ToolTip="Stop running/paused jobs (Ctrl+.)"/>
+                <Button Content="Export"  
+                        Command="{Binding ExportCommand}"  
+                        IsEnabled="{Binding CanExport}"  
+                        Style="{StaticResource SolidDarkButton}"
+                        ToolTip="Export completed job results"/>
             </StackPanel>
         </DockPanel>
     </Grid>

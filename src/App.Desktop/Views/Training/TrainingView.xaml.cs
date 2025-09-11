@@ -10,8 +10,9 @@ namespace Lazarus.Desktop.Views.Training
         public TrainingView()
         {
             InitializeComponent();
-            // TODO(training): consider resolving via DI; for now create a standalone VM
-            _vm = new TrainingViewModel();
+            // TODO(training): consider resolving via DI; for now create a mock training service
+            var mockTrainingService = new MockTrainingService();
+            _vm = new TrainingViewModel(mockTrainingService);
             DataContext = _vm;
         }
 

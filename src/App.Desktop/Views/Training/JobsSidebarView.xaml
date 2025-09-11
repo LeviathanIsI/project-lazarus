@@ -2,14 +2,35 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Training Projects" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
         <!-- Toolbar -->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-            <Button Content="New Job" Command="{Binding NewJobCommand}" Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
-            <Button Content="Import Dataset" Command="{Binding ImportDatasetCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-            <Button Content="Duplicate" Command="{Binding DuplicateCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-            <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-            <Button Content="Resume" Command="{Binding ResumeCommand}" Style="{StaticResource SolidDarkButton}"/>
-        </StackPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button Content="New Job" 
+                    Command="{Binding NewJobCommand}" 
+                    Style="{StaticResource RainbowAccentButton.AutoFit}" 
+                    Margin="0,0,4,4"
+                    ToolTip="Create new training job (Ctrl+N)"/>
+            <Button Content="Import Dataset" 
+                    Command="{Binding ImportDatasetCommand}" 
+                    Style="{StaticResource SolidDarkButton}" 
+                    Margin="0,0,4,4"
+                    ToolTip="Import dataset for training (Ctrl+I)"/>
+            <Button Content="Duplicate" 
+                    Command="{Binding DuplicateCommand}" 
+                    Style="{StaticResource SolidDarkButton}" 
+                    Margin="0,0,4,4"
+                    ToolTip="Duplicate selected job"/>
+            <Button Content="Delete" 
+                    Command="{Binding DeleteCommand}" 
+                    Style="{StaticResource SolidDarkButton}" 
+                    Margin="0,0,4,4"
+                    ToolTip="Delete selected job(s)"/>
+            <Button Content="Resume" 
+                    Command="{Binding ResumeCommand}" 
+                    Style="{StaticResource SolidDarkButton}"
+                    Margin="0,0,4,4"
+                    ToolTip="Resume paused job(s)"/>
+        </WrapPanel>
 
         <!-- Filters -->
         <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
@@ -23,14 +44,33 @@
         <!-- Jobs List -->
         <ListView ItemsSource="{Binding Jobs}"
                   SelectedItem="{Binding SelectedJob, Mode=TwoWay}"
-                  VirtualizingPanel.IsVirtualizing="True"
-                  VirtualizingPanel.ScrollUnit="Pixel"
-                  ScrollViewer.CanContentScroll="True">
+                  Style="{StaticResource VirtualizedListView}"
+                  Foreground="{StaticResource TextPrimaryBrush}"
+                  SelectionMode="Multiple"
+                  x:Name="JobsListView">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <DockPanel LastChildFill="True" Margin="0,0,0,6">
-                        <ContentControl Content="{Binding Status}" Style="{StaticResource StatusChip.Default}" DockPanel.Dock="Right"/>
-                        <TextBlock Text="{Binding Name}"/>
+                    <DockPanel LastChildFill="True" Margin="0,0,0,6" MinHeight="48">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Vertical" HorizontalAlignment="Right">
+                            <ContentControl Content="{Binding Status}" Style="{StaticResource StatusChip.Default}" Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding Modified, StringFormat='MM/dd HH:mm'}" 
+                                       Style="{StaticResource SecondaryTextStyle}" 
+                                       FontSize="10" 
+                                       HorizontalAlignment="Right"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding Modality}" 
+                                       Style="{StaticResource SecondaryTextStyle}" 
+                                       FontSize="11" 
+                                       Margin="0,2,0,0"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                <TextBlock Text="Epoch " Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                <TextBlock Text="{Binding CurrentEpoch}" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                <TextBlock Text=" • Step " Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                                <TextBlock Text="{Binding CurrentStep}" Style="{StaticResource SecondaryTextStyle}" FontSize="10"/>
+                            </StackPanel>
+                        </StackPanel>
                     </DockPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -40,4 +80,3 @@
         <TextBlock Text="No jobs yet — create one" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
     </DockPanel>
 </UserControl>
-
