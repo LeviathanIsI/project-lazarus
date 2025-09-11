@@ -139,14 +139,12 @@
                         IsEnabled="{Binding CanStop}"    
                         Style="{StaticResource SolidDarkButton}" 
                         Margin="0,0,8,0"
-                        ToolTip="Stop running/paused jobs (Ctrl+.)"
-"/>
+                        ToolTip="Stop running/paused jobs (Ctrl+.)"/>
                 <Button Content="Export"  
                         Command="{Binding ExportCommand}"  
                         IsEnabled="{Binding CanExport}"  
                         Style="{StaticResource SolidDarkButton}"
-                        ToolTip="Export completed job results"
-"/>
+                        ToolTip="Export completed job results"/>
             </StackPanel>
         </DockPanel>
     </Grid>
