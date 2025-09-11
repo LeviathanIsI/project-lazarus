@@ -133,8 +133,7 @@
                         IsEnabled="{Binding CanPause}"   
                         Style="{StaticResource SolidDarkButton}" 
                         Margin="0,0,8,0"
-                        ToolTip="Pause running jobs (Ctrl+P)"
-"/>
+                        ToolTip="Pause running jobs (Ctrl+P)"/>
                 <Button Content="Stop"    
                         Command="{Binding StopCommand}"    
                         IsEnabled="{Binding CanStop}"    
