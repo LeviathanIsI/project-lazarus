@@ -98,7 +98,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             ThreeDModels = new ThreeDModelsDesignerViewModel(_trainingService);
             Entities = new EntitiesDesignerViewModel(_trainingService);
             Videos = new VideosDesignerViewModel(_trainingService);
-            DesignProgress = new DesignProgressViewModel();
+            DesignProgress = new DesignProgressViewModel(trainingService);
             
             // Set default active designer
             ActiveDesigner = Conversations;
