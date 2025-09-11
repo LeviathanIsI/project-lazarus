@@ -67,15 +67,14 @@ namespace Lazarus.Desktop.Services
             return Task.FromResult(exportPath);
         }
 
-        public Task<IReadOnlyList<GpuInfo>> GetAvailableGpusAsync(CancellationToken cancellationToken = default)
+        public Task<System.Collections.Generic.IReadOnlyList<Lazarus.Shared.Contracts.GpuInfo>> GetAvailableGpusAsync(CancellationToken cancellationToken = default)
         {
-            var list = new List<GpuInfo>
+            var gpus = new System.Collections.Generic.List<Lazarus.Shared.Contracts.GpuInfo>
             {
-                new GpuInfo { Id = "gpu0", Name = "NVIDIA RTX 4090", TotalMemoryBytes = 24L * 1024 * 1024 * 1024, IsAvailable = true },
-                new GpuInfo { Id = "gpu1", Name = "NVIDIA RTX 3080", TotalMemoryBytes = 12L * 1024 * 1024 * 1024, IsAvailable = true }
-            }.AsReadOnly();
-            
-            return Task.FromResult<IReadOnlyList<GpuInfo>>(list);
+                new() { Id = "gpu0", Name = "NVIDIA RTX 4090", TotalMemoryBytes = 24L * 1024 * 1024 * 1024, IsAvailable = true },
+                new() { Id = "gpu1", Name = "NVIDIA RTX 3080", TotalMemoryBytes = 12L * 1024 * 1024 * 1024, IsAvailable = true }
+            };
+            return Task.FromResult<System.Collections.Generic.IReadOnlyList<Lazarus.Shared.Contracts.GpuInfo>>(gpus);
         }
 
         public Task<TrainingConfig> GetConfigAsync(string configId, CancellationToken cancellationToken = default)

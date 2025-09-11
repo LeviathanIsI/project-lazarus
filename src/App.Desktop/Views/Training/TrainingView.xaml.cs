@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Controls;
 using Lazarus.Desktop.ViewModels.Training;
+using Lazarus.Desktop.Services;
 
 namespace Lazarus.Desktop.Views.Training
 {
