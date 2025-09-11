@@ -44,7 +44,6 @@
                     </ItemsControl>
                     
                     <TextBlock Text="No 3D models imported yet" 
-                               Style="{StaticResource SecondaryTextStyle}"
                                HorizontalAlignment="Center"
                                Margin="0,24,0,0">
                         <TextBlock.Style>

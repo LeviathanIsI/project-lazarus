@@ -52,7 +52,6 @@
                     </ItemsControl>
                     
                     <TextBlock Text="No image datasets imported yet" 
-                               Style="{StaticResource SecondaryTextStyle}"
                                HorizontalAlignment="Center"
                                Margin="0,24,0,0">
                         <TextBlock.Style>

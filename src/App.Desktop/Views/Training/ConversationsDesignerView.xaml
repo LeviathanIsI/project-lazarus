@@ -74,7 +74,6 @@
                     
                     <!-- Empty state -->
                     <TextBlock Text="No datasets added yet" 
-                               Style="{StaticResource SecondaryTextStyle}"
                                HorizontalAlignment="Center"
                                Margin="0,24,0,0">
                         <TextBlock.Style>
