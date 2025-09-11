@@ -19,8 +19,7 @@
         <Border Grid.Row="1" 
                 Style="{StaticResource GlassPill}" 
                 Padding="12,8" 
-                Margin="0,0,0,12"
-                Visibility="{Binding HasJob, Converter={StaticResource BoolToVis}, ConverterParameter=True}">
+                Margin="0,0,0,12">
             <TextBlock Text="📝 No job selected — editing draft configuration" 
                        Style="{StaticResource SecondaryTextStyle}"/>
         </Border>
@@ -39,8 +38,7 @@
                     <TextBlock Text="Conversation Datasets" Style="{StaticResource H4TextStyle}" Margin="0,0,0,8"/>
                     
                     <!-- Draft datasets (when no job) -->
-                    <ItemsControl ItemsSource="{Binding Draft.Datasets}"
-                                  Visibility="{Binding HasJob, Converter={StaticResource BoolToVis}, ConverterParameter=True}">
+                    <ItemsControl ItemsSource="{Binding Draft.Datasets}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{StaticResource GlassPanel}" Padding="8" Margin="0,0,0,4">
@@ -58,8 +56,7 @@
                     </ItemsControl>
                     
                     <!-- Job datasets (when job exists) -->
-                    <ItemsControl ItemsSource="{Binding CurrentJob.DatasetIds}"
-                                  Visibility="{Binding HasJob, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding CurrentJob.DatasetIds}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{StaticResource GlassPanel}" Padding="8" Margin="0,0,0,4">
