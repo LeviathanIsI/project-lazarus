@@ -9,7 +9,7 @@ using Lazarus.Shared.Contracts;
 
 namespace Lazarus.Desktop.ViewModels.Training
 {
-    public sealed class TrainingViewModel : INotifyPropertyChanged, IDisposable
+    public sealed class TrainingViewModel : ViewModelBase, IDisposable
     {
         private readonly ITrainingService _trainingService;
         private readonly List<IDisposable> _disposables = new();
