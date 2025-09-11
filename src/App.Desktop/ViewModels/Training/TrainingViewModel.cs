@@ -52,14 +52,12 @@ namespace Lazarus.Desktop.ViewModels.Training
                         "ThreeD" => ThreeDModels,
                         "Entities" => Entities,
                         "Videos" => Videos,
+                        "Design Progress" => DesignProgress,
+                        "DesignProgress" => DesignProgress,
                         _ => Conversations
                     };
                     
-                    // Handle design progress toggle separately
-                    if (value == "DesignProgress")
-                    {
-                        IsProgressMode = true;
-                    }
+                    IsProgressMode = (value == "Design Progress" || value == "DesignProgress");
                 }
             }
         }
