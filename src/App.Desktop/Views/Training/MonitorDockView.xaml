@@ -81,8 +81,8 @@
                                 
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Epoch" Style="{StaticResource SecondaryTextStyle}"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="Step" Style="{StaticResource SecondaryTextStyle}"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="2 / 3" FontWeight="Bold" FontSize="18"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="1,234 / 2,000" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="2 / 3" FontWeight="Bold" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="1,234 / 2,000" FontWeight="Bold" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}"/>
                                 <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="ETA: 1h 23m" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0"/>
                             </Grid>
                         </StackPanel>
@@ -101,15 +101,15 @@
                                 
                                 <DockPanel Grid.Row="0" Margin="0,0,0,4">
                                     <TextBlock Text="Time/Step" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                                    <TextBlock Text="1.2s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                                    <TextBlock Text="1.2s" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Row="1" Margin="0,0,0,4">
                                     <TextBlock Text="Tokens/sec" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                                    <TextBlock Text="850" HorizontalAlignment="Right" FontWeight="Medium"/>
+                                    <TextBlock Text="850" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Row="2">
                                     <TextBlock Text="Samples/sec" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                                    <TextBlock Text="16.7" HorizontalAlignment="Right" FontWeight="Medium"/>
+                                    <TextBlock Text="16.7" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                 </DockPanel>
                             </Grid>
                         </StackPanel>
@@ -224,7 +224,7 @@
                         
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock Text="GPU Util" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="87%" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="87%" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                         <ProgressBar Style="{StaticResource MeterBar}" 
                                      Minimum="0" Maximum="1" 
@@ -233,7 +233,7 @@
                         
                         <DockPanel>
                             <TextBlock Text="Temperature" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="72°C" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="72°C" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                     </StackPanel>
                 </Border>
@@ -255,7 +255,7 @@
                         
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock Text="Memory" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="12.4 / 32.0 GB" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="12.4 / 32.0 GB" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                         <ProgressBar Style="{StaticResource MeterBar}" 
                                      Minimum="0" Maximum="1" 
@@ -264,7 +264,7 @@
                         
                         <DockPanel>
                             <TextBlock Text="Load Avg" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="4.2" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="4.2" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                     </StackPanel>
                 </Border>
@@ -276,7 +276,7 @@
                         
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock Text="Read Speed" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="125 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="125 MB/s" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                         <ProgressBar Style="{StaticResource MeterBar}" 
                                      Minimum="0" Maximum="1" 
@@ -285,7 +285,7 @@
                         
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock Text="Write Speed" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="89 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="89 MB/s" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                         <ProgressBar Style="{StaticResource MeterBar}" 
                                      Minimum="0" Maximum="1" 
@@ -294,7 +294,7 @@
                         
                         <DockPanel>
                             <TextBlock Text="Disk Usage" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="67%" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="67%" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                     </StackPanel>
                 </Border>
@@ -306,7 +306,7 @@
                         
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock Text="Download" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="2.3 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="2.3 MB/s" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                         <ProgressBar Style="{StaticResource MeterBar}" 
                                      Minimum="0" Maximum="1" 
@@ -315,7 +315,7 @@
                         
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock Text="Upload" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="0.8 MB/s" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="0.8 MB/s" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                         <ProgressBar Style="{StaticResource MeterBar}" 
                                      Minimum="0" Maximum="1" 
@@ -324,7 +324,7 @@
                         
                         <DockPanel>
                             <TextBlock Text="Latency" DockPanel.Dock="Left" Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="12ms" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="12ms" HorizontalAlignment="Right" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </DockPanel>
                     </StackPanel>
                 </Border>

@@ -78,7 +78,7 @@
                                     </StackPanel>
                                     <StackPanel Margin="0,0,8,0">
                                         <DockPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" DockPanel.Dock="Left"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" DockPanel.Dock="Left" Foreground="{StaticResource TextPrimaryBrush}"/>
                                             <TextBlock Text="{Binding Stats.TotalTokens, StringFormat='{}{0:N0} tokens'}" 
                                                        Style="{StaticResource SecondaryTextStyle}" 
                                                        HorizontalAlignment="Right"/>
@@ -138,7 +138,7 @@
                                     </StackPanel>
                                     <StackPanel>
                                         <DockPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                                 <TextBlock Text="💬" Margin="0,0,4,0"/>
                                                 <TextBlock Text="{Binding Stats.TotalItems, StringFormat='{}{0:N0} convs'}" 
@@ -188,7 +188,7 @@
                                     </StackPanel>
                                     <StackPanel>
                                         <DockPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                                 <TextBlock Text="📝" Margin="0,0,4,0"/>
                                                 <TextBlock Text="Draft" Style="{StaticResource SecondaryTextStyle}"/>
@@ -438,7 +438,7 @@
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                             <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="10">
                                                 <TextBlock.Text>
                                                     <MultiBinding StringFormat="{}{0:N1} GB • {1:N0}% util">

@@ -78,7 +78,7 @@
                             </StackPanel>
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" DockPanel.Dock="Left" Foreground="{StaticResource TextPrimaryBrush}"/>
                                     <TextBlock Text="💬" Margin="4,0,0,0" VerticalAlignment="Center" DockPanel.Dock="Right"/>
                                 </DockPanel>
                                 <TextBlock Text="{Binding Modality, StringFormat='Chat Training • {0}'}" 

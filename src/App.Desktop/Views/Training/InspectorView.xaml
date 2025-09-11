@@ -21,7 +21,7 @@
                         </Grid.ColumnDefinitions>
                         
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Status:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding JobStatus}" FontWeight="Medium" Margin="0,0,0,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding JobStatus}" FontWeight="Medium" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}"/>
                         
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Progress:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
                         <DockPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,4">
@@ -30,7 +30,7 @@
                         </DockPanel>
                         
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="ETA:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding EstimatedTimeRemaining, TargetNullValue='Calculating...'}" FontWeight="Medium"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding EstimatedTimeRemaining, TargetNullValue='Calculating...'}" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -52,17 +52,17 @@
                         </Grid.ColumnDefinitions>
                         
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Conversations:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="1,247 conversations" FontWeight="Medium" Margin="0,0,0,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="1,247 conversations" FontWeight="Medium" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}"/>
                         
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Tokens:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="2,456,789 tokens" FontWeight="Medium" Margin="0,0,0,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="2,456,789 tokens" FontWeight="Medium" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}"/>
                         
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Avg Length:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,4"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="1,970 tokens/conversation" FontWeight="Medium" Margin="0,0,0,4"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="1,970 tokens/conversation" FontWeight="Medium" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}"/>
                         
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Format:" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
                         <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
-                            <TextBlock Text="ChatML" FontWeight="Medium"/>
+                            <TextBlock Text="ChatML" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text=" • " Style="{StaticResource SecondaryTextStyle}" Margin="4,0"/>
                             <TextBlock Text="✅ Validated" Foreground="#10B981" FontSize="11"/>
                         </StackPanel>

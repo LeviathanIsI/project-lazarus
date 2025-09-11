@@ -46,7 +46,7 @@
                                         <TextBlock Text="📝" DockPanel.Dock="Left" Margin="0,0,8,0"/>
                                         <Button Content="×" DockPanel.Dock="Right" Style="{StaticResource SolidDarkButton}"/>
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                             <TextBlock Text="Draft dataset" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
                                         </StackPanel>
                                     </DockPanel>
@@ -62,7 +62,7 @@
                                 <Border Style="{StaticResource GlassPanel}" Padding="8" Margin="0,0,0,4">
                                     <DockPanel>
                                         <TextBlock Text="💬" DockPanel.Dock="Left" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{Binding}" FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding}" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}"/>
                                     </DockPanel>
                                 </Border>
                             </DataTemplate>
