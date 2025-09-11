@@ -68,7 +68,8 @@
                             </Style>
                         </ToggleButton.Style>
                     </ToggleButton>
-                    <ComboBox Width="120" SelectedItem="{Binding SortMode}" Margin="0,0,0,8">
+                    <TextBlock Text="Sort by:" Style="{StaticResource SecondaryTextStyle}" Margin="0,6,6,8"/>
+                    <ComboBox Width="140" SelectedItem="{Binding SortMode}" Margin="0,0,0,8">
                         <ComboBoxItem Content="Name"/>
                         <ComboBoxItem Content="Date"/>
                         <ComboBoxItem Content="Size"/>
@@ -101,7 +102,8 @@
 
                 <!-- List -->
                 <ListView ItemsSource="{Binding Items}"
-                          Background="Transparent" BorderThickness="0"
+                          Style="{StaticResource GlassListViewStyle}"
+                          ItemContainerStyle="{StaticResource GlassListViewItemStyle}"
                           SelectedItem="{Binding ActiveItem, Mode=TwoWay}"
                           SelectionMode="Extended"
                           ScrollViewer.CanContentScroll="True"
@@ -326,7 +328,7 @@
                         <TextBlock Text="Algorithm" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
                         <ComboBox ItemsSource="{Binding Algorithms}" SelectedItem="{Binding SelectedAlgorithm}"/>
 
-                        <CheckBox Content="Clean Vocals" IsChecked="{Binding CleanVocals}" Margin="0,12,0,0"/>
+                        <CheckBox Content="Clean Vocals" IsChecked="{Binding CleanVocals}" Margin="0,12,0,0" Style="{StaticResource GlassCheckBoxStyle}"/>
 
                         <TextBlock Text="Harmony" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
                         <ComboBox ItemsSource="{Binding Harmonies}" SelectedItem="{Binding SelectedHarmony}"/>
@@ -344,7 +346,7 @@
                     <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}" Style="{StaticResource SolidDarkButton}"/>
                     <Button Command="{Binding StopCmd}" Content="⏹" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
                 </StackPanel>
-                <Slider Margin="12,0"
+                <Slider Margin="12,0" Style="{StaticResource GlassSliderStyle}"
                         Minimum="0"
                         Maximum="{Binding DurationSeconds}"
                         Value="{Binding PositionSeconds, Mode=TwoWay}"/>

@@ -612,6 +612,90 @@
         </Setter>
     </Style>
 
+    <!-- ====================
+         LISTVIEW DARK STYLES
+         ==================== -->
+    <Style x:Key="GlassListViewStyle" TargetType="ListView">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+    </Style>
+
+    <Style x:Key="GlassListViewItemStyle" TargetType="ListViewItem">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="4,2"/>
+        <Setter Property="Margin" Value="0,0,0,2"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListViewItem">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SecondaryButtonHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#262626"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         CHECKBOX DARK STYLE
+         ==================== -->
+    <Style x:Key="GlassCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="Box"
+                                Width="16" Height="16"
+                                CornerRadius="3"
+                                Background="{StaticResource CardBackgroundBrush}"
+                                BorderBrush="{StaticResource GlassBorderBrush}"
+                                BorderThickness="1"/>
+                        <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="Background" Value="{StaticResource SecondaryButtonHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Box" Property="Background" Value="{StaticResource RainbowFlowBrush}"/>
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Box" Property="Opacity" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================
+         SLIDER DARK STYLE (non-invasive)
+         ==================== -->
+    <Style x:Key="GlassSliderStyle" TargetType="Slider">
+        <Setter Property="Foreground" Value="{StaticResource RainbowFlowBrush}"/>
+        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
+    </Style>
+
     <!-- Loading Spinner Template -->
     <ControlTemplate x:Key="LoadingSpinnerTemplate">
         <Grid>
