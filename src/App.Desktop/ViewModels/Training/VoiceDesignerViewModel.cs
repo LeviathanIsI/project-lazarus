@@ -26,6 +26,28 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand ImportCommand { get; }
         public ICommand CreateJobCommand { get; }
         public ICommand ClearCommand { get; }
+        public ICommand SetLearningRateCommand { get; }
+        public ICommand SetBatchSizeCommand { get; }
+        
+        // UI state for training duration selection
+        private bool _useEpochs = true;
+        public bool UseEpochs
+        {
+            get => _useEpochs;
+            set
+            {
+                if (SetProperty(ref _useEpochs, value))
+                {
+                    OnPropertyChanged(nameof(UseSteps));
+                }
+            }
+        }
+        
+        public bool UseSteps
+        {
+            get => !_useEpochs;
+            set => UseEpochs = !value;
+        }
         
         public VoiceDesignerViewModel(ITrainingService trainingService)
         {
@@ -35,12 +57,11 @@ namespace Lazarus.Desktop.ViewModels.Training
             ImportCommand = new RelayCommand(async _ => await ImportAsync());
             CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), _ => !HasJob);
             ClearCommand = new RelayCommand(_ => Clear());
+            SetLearningRateCommand = new RelayCommand<string>(rate => SetLearningRate(rate));
+            SetBatchSizeCommand = new RelayCommand<string>(size => SetBatchSize(size));
             
-            // Set voice-specific defaults
-            Params["BaseModel"] = "whisper-large";
-            Params["TrainingType"] = "Fine-tune";
-            Params["LearningRate"] = "1e-4";
-            Params["SampleRate"] = "22050";
+            // Set comprehensive voice defaults
+            SetDefaultParameters();
         }
         
         public void SetCurrentJob(TrainingJob? job)
@@ -74,11 +95,64 @@ namespace Lazarus.Desktop.ViewModels.Training
             }
         }
         
+        private void SetDefaultParameters()
+        {
+            // Core voice settings
+            Params["BaseModel"] = "whisper-large";
+            Params["TrainingType"] = "TTS Fine-tune";
+            Params["SampleRate"] = "22050";
+            Params["EmbeddingSize"] = "256";
+            Params["LearningRate"] = "1e-4";
+            Params["BatchSize"] = "4";
+            Params["Epochs"] = "10";
+            Params["MaxSteps"] = "5000";
+            
+            // Advanced voice settings
+            Params["Optimizer"] = "adamw";
+            Params["LossFunction"] = "mse";
+            Params["WarmupSteps"] = "500";
+            Params["LRScheduler"] = "cosine";
+            Params["ValidationSplit"] = "0.1";
+            Params["SaveSteps"] = "1000";
+            
+            // Audio augmentation
+            Params["PitchShift"] = "true";
+            Params["TimeStretch"] = "false";
+            Params["BackgroundNoise"] = "true";
+            Params["VolumeJitter"] = "true";
+            Params["SpectralMasking"] = "false";
+            Params["FormantShift"] = "false";
+            
+            // Performance options
+            Params["MixedPrecision"] = "true";
+            Params["GradientClipping"] = "true";
+            Params["DynamicBatching"] = "false";
+        }
+        
+        private void SetLearningRate(string? rate)
+        {
+            if (!string.IsNullOrWhiteSpace(rate))
+            {
+                Params["LearningRate"] = rate;
+                OnPropertyChanged("LearningRate");
+            }
+        }
+        
+        private void SetBatchSize(string? size)
+        {
+            if (!string.IsNullOrWhiteSpace(size))
+            {
+                Params["BatchSize"] = size;
+                OnPropertyChanged("BatchSize");
+            }
+        }
+        
         private void Clear()
         {
             Draft.AudioFiles.Clear();
             Draft.Datasets.Clear();
             Draft.Params.Clear();
+            SetDefaultParameters();
         }
     }
 }
