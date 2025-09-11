@@ -247,7 +247,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             try
             {
                 var job = await _trainingService.CreateJobAsync(Draft.Name, Draft.Modality);
-                job.OutputPath = Params["OutputPath"];
+                job.OutputPath = Draft.Params.TryGetValue("OutputPath", out var path) ? path : $"./models/{Draft.Name}";
                 
                 // Transfer datasets from draft
                 foreach (var dataset in Draft.Datasets)

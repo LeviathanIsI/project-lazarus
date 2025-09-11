@@ -118,7 +118,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             _disposables.Add(Inspector);
         }
 
-        public void Dispose()
+        protected override void OnDisposing()
         {
             JobsSidebar.SelectedJobChanged -= OnSelectedJobChanged;
             foreach (var disposable in _disposables)
@@ -189,8 +189,6 @@ namespace Lazarus.Desktop.ViewModels.Training
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
 
