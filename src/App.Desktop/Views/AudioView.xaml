@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="clr-namespace:Lazarus.Desktop.Behaviors"
              mc:Ignorable="d"
              d:DesignWidth="1280" d:DesignHeight="800">
 
@@ -32,42 +33,7 @@
                     <Button Content="Record audio" Command="{Binding RecordCmd}"
                             Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,8"/>
                     <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview"
-                                  Margin="0,0,8,8">
-                        <ToggleButton.Style>
-                            <Style TargetType="ToggleButton">
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                                <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
-                                <Setter Property="Padding" Value="12,8"/>
-                                <Setter Property="BorderThickness" Value="1"/>
-                                <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="ToggleButton">
-                                            <Border x:Name="Root" CornerRadius="8"
-                                                    Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                  Margin="{TemplateBinding Padding}"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsChecked" Value="True">
-                                                    <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
-                                                    <Setter TargetName="Root" Property="BorderThickness" Value="2"/>
-                                                </Trigger>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Root" Property="Background" Value="#2A2A2A"/>
-                                                </Trigger>
-                                                <Trigger Property="IsEnabled" Value="False">
-                                                    <Setter TargetName="Root" Property="Opacity" Value="0.6"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </ToggleButton.Style>
-                    </ToggleButton>
+                                  Margin="0,0,8,8" Style="{StaticResource GlassToggleButtonStyle}"/>
                     <TextBlock Text="Sort by:" Style="{StaticResource SecondaryTextStyle}" Margin="0,6,6,8"/>
                     <ComboBox Width="140" SelectedItem="{Binding SortMode}" Margin="0,0,0,8">
                         <ComboBoxItem Content="Name"/>
@@ -104,6 +70,7 @@
                 <ListView ItemsSource="{Binding Items}"
                           Style="{StaticResource GlassListViewStyle}"
                           ItemContainerStyle="{StaticResource GlassListViewItemStyle}"
+                          behaviors:GridViewColumnResizeBehavior.EnableColumnFill="True"
                           SelectedItem="{Binding ActiveItem, Mode=TwoWay}"
                           SelectionMode="Extended"
                           ScrollViewer.CanContentScroll="True"
@@ -139,8 +106,15 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <!-- GridViewColumn.Width expects a double; star sizing is invalid at runtime -->
-                            <GridViewColumn Width="220" Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn Header="Name" behaviors:GridViewColumnResizeBehavior.FillColumn="True">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                             <GridViewColumn Width="90" Header="Duration" DisplayMemberBinding="{Binding Duration}"/>
                             <GridViewColumn Width="85" Header="Size" DisplayMemberBinding="{Binding Size}"/>
                             <GridViewColumn Width="140" Header="Modified">
@@ -320,10 +294,10 @@
                         <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"/>
 
                         <TextBlock Text="Transpose" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
-                        <Slider Minimum="-12" Maximum="12" Value="{Binding Transpose}"/>
+                        <Slider Minimum="-12" Maximum="12" Value="{Binding Transpose}" Style="{StaticResource RainbowGlassSliderStyle}"/>
 
                         <TextBlock Text="No. of generations" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
-                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding NumGenerations}"/>
+                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding NumGenerations}" Style="{StaticResource RainbowGlassSliderStyle}"/>
 
                         <TextBlock Text="Algorithm" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
                         <ComboBox ItemsSource="{Binding Algorithms}" SelectedItem="{Binding SelectedAlgorithm}"/>
@@ -346,7 +320,7 @@
                     <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}" Style="{StaticResource SolidDarkButton}"/>
                     <Button Command="{Binding StopCmd}" Content="⏹" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
                 </StackPanel>
-                <Slider Margin="12,0" Style="{StaticResource GlassSliderStyle}"
+                <Slider Margin="12,0" Style="{StaticResource RainbowGlassSliderStyle}"
                         Minimum="0"
                         Maximum="{Binding DurationSeconds}"
                         Value="{Binding PositionSeconds, Mode=TwoWay}"/>
