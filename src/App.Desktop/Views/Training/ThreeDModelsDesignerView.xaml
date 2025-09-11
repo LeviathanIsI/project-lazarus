@@ -134,7 +134,7 @@
                         <Expander Header="Advanced 3D Settings" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
                                 <!-- Comprehensive 3D training parameters here -->
-                                <TextBlock Text="NeRF, Mesh & Point Cloud training controls" Style="{StaticResource SecondaryTextStyle}"/>
+                                <TextBlock Text="NeRF, Mesh and Point Cloud training controls" Style="{StaticResource SecondaryTextStyle}"/>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
