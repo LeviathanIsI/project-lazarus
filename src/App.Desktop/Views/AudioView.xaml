@@ -26,18 +26,24 @@
                 Padding="12">
             <DockPanel LastChildFill="True">
                 <!-- Toolbar -->
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" >
-                    <Button Command="{Binding RecordCmd}" Margin="0,0,8,0" Content="⏺ Record"/>
-                    <Button Command="{Binding StopRecordCmd}" Margin="0,0,8,0" Content="⏹ Stop"/>
-                    <Button Command="{Binding ImportCmd}" Margin="0,0,8,0" Content="⬆ Import"/>
-                    <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview" Margin="0,0,8,0"/>
-                    <ComboBox Width="140" SelectedItem="{Binding SortMode}">
-                        <ComboBoxItem Content="Name"/>
-                        <ComboBoxItem Content="Date"/>
-                        <ComboBoxItem Content="Size"/>
-                        <ComboBoxItem Content="Duration"/>
-                    </ComboBox>
-                </StackPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <Button Content="Upload audio" Command="{Binding ImportCmd}"
+                                Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
+                        <Button Content="Record audio" Command="{Binding RecordCmd}"
+                                Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview" Margin="0,0,8,0"
+                                      Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                        <ComboBox Width="140" SelectedItem="{Binding SortMode}">
+                            <ComboBoxItem Content="Name"/>
+                            <ComboBoxItem Content="Date"/>
+                            <ComboBoxItem Content="Size"/>
+                            <ComboBoxItem Content="Duration"/>
+                        </ComboBox>
+                    </StackPanel>
+                </DockPanel>
 
                 <!-- Search (WPF-compatible placeholder/watermark) -->
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
@@ -109,27 +115,80 @@
         <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource GlassBorderBrush}" CornerRadius="4"/>
 
         <!-- RIGHT: Details -->
-        <Border Grid.Row="0" Grid.Column="2"
-                Style="{StaticResource GlassCardStyle}"
-                Padding="12">
+        <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource GlassCardStyle}" Padding="12">
+            <!-- Two-column layout: content + filters panel -->
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="260"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="200"/>
-                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="320"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="260"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Big Waveform (placeholder) -->
-                <Border Grid.Row="0" CornerRadius="10" Padding="12"
-                        Style="{StaticResource GlassCardStyle}">
+                <!-- Big Waveform (with empty-state dropzone overlay) -->
+                <Border Grid.Row="0" CornerRadius="10" Padding="12" Style="{StaticResource GlassCardStyle}">
                     <Grid>
-                        <TextBlock Text="{Binding ActiveItem.Name, FallbackValue=No Selection}"
-                                   FontSize="14" Foreground="{StaticResource TextSecondaryBrush}"/>
-                        <Viewbox Stretch="Fill" Margin="0,24,0,0">
-                            <Path StrokeThickness="2" Stroke="{StaticResource RainbowFlowBrush}"
-                                  Data="M 0,50 L 40,30 80,55 120,10 160,60 200,35 240,50 280,20 320,70 360,50"/>
-                        </Viewbox>
+                        <!-- When an item is selected, show waveform placeholder -->
+                        <Grid x:Name="WaveSection">
+                            <TextBlock Text="{Binding ActiveItem.Name, FallbackValue=No Selection}"
+                                       FontSize="14" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <Viewbox Stretch="Fill" Margin="0,24,0,0">
+                                <Path StrokeThickness="2" Stroke="{StaticResource RainbowFlowBrush}"
+                                      Data="M 0,50 L 40,30 80,55 120,10 160,60 200,35 240,50 280,20 320,70 360,50"/>
+                            </Viewbox>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveItem}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
+
+                        <!-- Drag & Drop empty state overlay -->
+                        <Grid x:Name="DropOverlay" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border CornerRadius="12" Padding="24" Background="#0DFFFFFF">
+                                <Grid>
+                                    <!-- Dashed rectangle look -->
+                                    <Rectangle RadiusX="12" RadiusY="12" StrokeThickness="2" StrokeDashArray="6 6"
+                                               Stroke="{StaticResource RainbowFlowBrush}"/>
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="☁" FontSize="36" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Drag &amp; drop or choose your audio file"
+                                                   Style="{StaticResource H2TextStyle}" Margin="0,8,0,2"/>
+                                        <TextBlock Text="Supported formats:" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                                            <ContentControl Style="{StaticResource RainbowBorderChip}" Content=".mp3" Margin="0,0,8,0"/>
+                                            <ContentControl Style="{StaticResource RainbowBorderChip}" Content=".ogg" Margin="0,0,8,0"/>
+                                            <ContentControl Style="{StaticResource RainbowBorderChip}" Content=".aiff" Margin="0,0,8,0"/>
+                                            <ContentControl Style="{StaticResource RainbowBorderChip}" Content=".wav"/>
+                                        </StackPanel>
+                                        <Button Content="Choose file" Command="{Binding ImportCmd}"
+                                                Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,16,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveItem}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -187,8 +246,7 @@
                 </WrapPanel>
 
                 <!-- Jobs -->
-                <Border Grid.Row="3" Margin="0,12,0,0" Padding="12" CornerRadius="10"
-                        Style="{StaticResource GlassCardStyle}">
+                <Border Grid.Row="3" Margin="0,12,0,0" Padding="12" CornerRadius="10" Style="{StaticResource GlassCardStyle}">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="Jobs" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ItemsControl ItemsSource="{Binding Jobs}">
@@ -197,13 +255,39 @@
                                     <StackPanel Margin="0,0,0,8">
                                         <TextBlock Text="{Binding Title}"/>
                                         <ProgressBar Value="{Binding ProgressPercent}" Height="6"/>
-                                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
-                                                   Text="{Binding StatusText}"/>
+                                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Text="{Binding StatusText}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </DockPanel>
+                </Border>
+                </Grid>
+
+                <!-- Filters Panel -->
+                <Border Grid.Column="1" Style="{StaticResource GlassCardStyle}" Padding="14">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="Apply Filters" FontSize="16" FontWeight="SemiBold"/>
+                            <Button Content="Reset" Style="{StaticResource SecondaryGlassButtonStyle}" DockPanel.Dock="Right" Margin="8,0,0,0"/>
+                        </DockPanel>
+                        <TextBlock Text="Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
+                        <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"/>
+
+                        <TextBlock Text="Transpose" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
+                        <Slider Minimum="-12" Maximum="12" Value="{Binding Transpose}"/>
+
+                        <TextBlock Text="No. of generations" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
+                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding NumGenerations}"/>
+
+                        <TextBlock Text="Algorithm" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
+                        <ComboBox ItemsSource="{Binding Algorithms}" SelectedItem="{Binding SelectedAlgorithm}"/>
+
+                        <CheckBox Content="Clean Vocals" IsChecked="{Binding CleanVocals}" Margin="0,12,0,0"/>
+
+                        <TextBlock Text="Harmony" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
+                        <ComboBox ItemsSource="{Binding Harmonies}" SelectedItem="{Binding SelectedHarmony}"/>
+                    </StackPanel>
                 </Border>
             </Grid>
         </Border>

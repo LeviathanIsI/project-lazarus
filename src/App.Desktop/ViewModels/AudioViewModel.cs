@@ -102,6 +102,52 @@ namespace Lazarus.Desktop.ViewModels
         }
         private string? _selectedOutputDevice = "Default Output";
 
+        // ===== Filters (placeholder bindings for UI) =====
+        public ObservableCollection<string> Models { get; } = new() { "Andra (beta)", "Basic", "Studio" };
+        public string SelectedModel
+        {
+            get => _selectedModel;
+            set { _selectedModel = value; OnPropertyChanged(); }
+        }
+        private string _selectedModel = "Andra (beta)";
+
+        public int Transpose
+        {
+            get => _transpose;
+            set { _transpose = value; OnPropertyChanged(); }
+        }
+        private int _transpose = 0;
+
+        public int NumGenerations
+        {
+            get => _numGenerations;
+            set { _numGenerations = value; OnPropertyChanged(); }
+        }
+        private int _numGenerations = 1;
+
+        public ObservableCollection<string> Algorithms { get; } = new() { "Dio", "HAR", "Classic" };
+        public string SelectedAlgorithm
+        {
+            get => _selectedAlgorithm;
+            set { _selectedAlgorithm = value; OnPropertyChanged(); }
+        }
+        private string _selectedAlgorithm = "Dio";
+
+        public bool CleanVocals
+        {
+            get => _cleanVocals;
+            set { _cleanVocals = value; OnPropertyChanged(); }
+        }
+        private bool _cleanVocals;
+
+        public ObservableCollection<string> Harmonies { get; } = new() { "Off", "Low", "Medium", "High" };
+        public string SelectedHarmony
+        {
+            get => _selectedHarmony;
+            set { _selectedHarmony = value; OnPropertyChanged(); }
+        }
+        private string _selectedHarmony = "Off";
+
         // ===== Commands =====
         public ICommand RecordCmd { get; }
         public ICommand StopRecordCmd { get; }
