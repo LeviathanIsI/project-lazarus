@@ -134,7 +134,7 @@
         <DockPanel Margin="4">
             <TextBlock DockPanel.Dock="Right" Text="{Binding Stats.TotalTokens, StringFormat='{}{0:N0} tokens'}" 
                        Style="{StaticResource SecondaryTextStyle}"/>
-            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextPrimaryBrush}"/>
         </DockPanel>
     </DataTemplate>
 
@@ -143,8 +143,8 @@
             <TextBlock DockPanel.Dock="Right" Text="{Binding Stats.TotalDuration, StringFormat='{}{0:hh\\:mm\\:ss}'}" 
                        Style="{StaticResource SecondaryTextStyle}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🎙️" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="🎙️" Margin="0,0,4,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextPrimaryBrush}"/>
             </StackPanel>
         </DockPanel>
     </DataTemplate>
@@ -154,8 +154,8 @@
             <TextBlock DockPanel.Dock="Right" Text="{Binding Stats.TotalItems, StringFormat='{}{0:N0} images'}" 
                        Style="{StaticResource SecondaryTextStyle}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🖼️" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="🖼️" Margin="0,0,4,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextPrimaryBrush}"/>
             </StackPanel>
         </DockPanel>
     </DataTemplate>
@@ -165,8 +165,8 @@
             <TextBlock DockPanel.Dock="Right" Text="{Binding Stats.TotalVertices, StringFormat='{}{0:N0} verts'}" 
                        Style="{StaticResource SecondaryTextStyle}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🗿" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="🗿" Margin="0,0,4,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextPrimaryBrush}"/>
             </StackPanel>
         </DockPanel>
     </DataTemplate>
@@ -176,8 +176,8 @@
             <TextBlock DockPanel.Dock="Right" Text="{Binding Stats.TotalItems, StringFormat='{}{0:N0} entities'}" 
                        Style="{StaticResource SecondaryTextStyle}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🏷️" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="🏷️" Margin="0,0,4,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextPrimaryBrush}"/>
             </StackPanel>
         </DockPanel>
     </DataTemplate>
@@ -187,8 +187,8 @@
             <TextBlock DockPanel.Dock="Right" Text="{Binding Stats.AverageDuration, StringFormat='{}{0:mm\\:ss} avg'}" 
                        Style="{StaticResource SecondaryTextStyle}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🎬" Margin="0,0,4,0"/>
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="🎬" Margin="0,0,4,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextPrimaryBrush}"/>
             </StackPanel>
         </DockPanel>
     </DataTemplate>
