@@ -138,6 +138,21 @@
                             </StackPanel>
                         </Expander>
                         
+                        <!-- Training Duration -->
+                        <StackPanel Margin="0,0,0,8">
+                            <TextBlock Text="Training Duration" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <RadioButton Content="Epochs" IsChecked="{Binding UseEpochs}" GroupName="VideoDurationMode" Margin="8,0,8,0"/>
+                                    <TextBox Width="80" Text="{Binding Params[Epochs], UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding UseEpochs}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="Steps" IsChecked="{Binding UseSteps}" GroupName="VideoDurationMode" Margin="0,0,8,0"/>
+                                    <TextBox Width="80" Text="{Binding Params[MaxSteps], UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding UseSteps}"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </StackPanel>
+                        
                         <!-- Video Augmentations -->
                         <Expander Header="Video Augmentations" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
@@ -147,6 +162,113 @@
                                     <CheckBox Content="Spatial Transforms" IsChecked="{Binding Params[SpatialTransforms], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
                                     <CheckBox Content="Noise Injection" IsChecked="{Binding Params[NoiseInjection], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
                                 </WrapPanel>
+                            </StackPanel>
+                        </Expander>
+                        
+                        <!-- Loss & Regularization -->
+                        <Expander Header="Loss and Regularization" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Loss Function / Temporal Smoothing -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Loss Function" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[LossFunction]}">
+                                            <ComboBoxItem Content="Pixel (L2)"/>
+                                            <ComboBoxItem Content="Perceptual (VGG)"/>
+                                            <ComboBoxItem Content="Temporal Consistency"/>
+                                            <ComboBoxItem Content="Combined"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Temporal Smoothing Weight" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[TemporalSmoothingWeight], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Regularization Dataset -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+                                        <TextBlock Text="Regularization Dataset (Natural Videos)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="📁" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
+                                            <TextBox Text="{Binding Params[RegularizationDataset], UpdateSourceTrigger=PropertyChanged}"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+                        
+                        <!-- Advanced Video Controls -->
+                        <Expander Header="Advanced Video Controls" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Precision / Optimizer -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Precision" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[Precision]}">
+                                            <ComboBoxItem Content="FP16"/>
+                                            <ComboBoxItem Content="BF16"/>
+                                            <ComboBoxItem Content="FP32"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Optimizer" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[Optimizer]}">
+                                            <ComboBoxItem Content="adamw"/>
+                                            <ComboBoxItem Content="adam"/>
+                                            <ComboBoxItem Content="lion"/>
+                                            <ComboBoxItem Content="sgd"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Gradient Accumulation / Checkpoint Frequency -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Gradient Accumulation Steps" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GradientAccumulation]}">
+                                            <ComboBoxItem Content="1"/>
+                                            <ComboBoxItem Content="2"/>
+                                            <ComboBoxItem Content="4"/>
+                                            <ComboBoxItem Content="8"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Checkpoint Every (steps)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[CheckpointFrequency], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 3: Validation Split -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Validation Split %" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[ValidationSplit]}">
+                                            <ComboBoxItem Content="0"/>
+                                            <ComboBoxItem Content="0.1"/>
+                                            <ComboBoxItem Content="0.15"/>
+                                            <ComboBoxItem Content="0.2"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
