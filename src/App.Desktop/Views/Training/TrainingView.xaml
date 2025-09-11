@@ -35,7 +35,83 @@
 
             <!-- Left Sidebar -->
             <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="8">
-                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
+                <ContentControl>
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Conversations">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Top" Text="Conversation Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
+                                            </DockPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Voice">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Top" Text="Voice Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="🎙️ Voice model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </DockPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Images">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Top" Text="Image Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
+                                            </DockPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="ThreeD">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Top" Text="3D Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="🗿 3D model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </DockPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Entities">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Top" Text="Entity Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="🏷️ Entity model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </DockPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Videos">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Top" Text="Video Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="🎬 Video model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </DockPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <!-- Default content -->
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Top" Text="Conversation Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
+                                    </DockPanel>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
             </Border>
 
             <!-- Center Designer or Progress -->
@@ -50,7 +126,91 @@
                     </Style>
                 </Grid.Style>
                 <Border Style="{StaticResource GlassPanelElevated}" Padding="8">
-                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
+                    <!-- Modality-specific content -->
+                    <ContentControl>
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedModality}" Value="Conversations">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel>
+                                                    <TextBlock Text="Conversations Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                                    <TextBlock Text="Configure conversation/chat model training settings, datasets, and parameters." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedModality}" Value="Voice">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel>
+                                                    <TextBlock Text="Voice Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                                    <TextBlock Text="Train voice synthesis, recognition, or audio processing models." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                    <TextBlock Text="🎙️ Audio Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedModality}" Value="Images">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel>
+                                                    <TextBlock Text="Image Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                                    <TextBlock Text="Train image generation, classification, or processing models." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedModality}" Value="ThreeD">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel>
+                                                    <TextBlock Text="3D Models Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                                    <TextBlock Text="Train 3D model generation, mesh processing, or spatial understanding models." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                    <TextBlock Text="🗿 3D Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedModality}" Value="Entities">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel>
+                                                    <TextBlock Text="Entities Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                                    <TextBlock Text="Train named entity recognition, relationship extraction, or knowledge graph models." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                    <TextBlock Text="🏷️ Entity Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedModality}" Value="Videos">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel>
+                                                    <TextBlock Text="Video Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                                    <TextBlock Text="Train video generation, analysis, or motion understanding models." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                    <TextBlock Text="🎬 Video Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                                <!-- Default content for Conversations -->
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel>
+                                            <TextBlock Text="Conversations Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
+                                            <TextBlock Text="Configure conversation/chat model training settings, datasets, and parameters." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                            <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
                 </Border>
             </Grid>
             <!-- Full-screen Progress Surface (visible when IsProgressMode) -->
@@ -72,7 +232,83 @@
 
             <!-- Right Inspector -->
             <Border Grid.Column="4" Style="{StaticResource GlassPanel}" Padding="8">
-                <views:InspectorView DataContext="{Binding Inspector}"/>
+                <ContentControl>
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Conversations">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <StackPanel>
+                                                <TextBlock Text="Conversation Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <views:InspectorView DataContext="{Binding Inspector}"/>
+                                            </StackPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Voice">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <StackPanel>
+                                                <TextBlock Text="Voice Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Voice training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </StackPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Images">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <StackPanel>
+                                                <TextBlock Text="Image Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <views:InspectorView DataContext="{Binding Inspector}"/>
+                                            </StackPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="ThreeD">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <StackPanel>
+                                                <TextBlock Text="3D Model Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="3D model training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </StackPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Entities">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <StackPanel>
+                                                <TextBlock Text="Entity Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Entity training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </StackPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectedModality}" Value="Videos">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <StackPanel>
+                                                <TextBlock Text="Video Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Video training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </StackPanel>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <!-- Default content -->
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <StackPanel>
+                                        <TextBlock Text="Conversation Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        <views:InspectorView DataContext="{Binding Inspector}"/>
+                                    </StackPanel>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
             </Border>
         </Grid>
 
