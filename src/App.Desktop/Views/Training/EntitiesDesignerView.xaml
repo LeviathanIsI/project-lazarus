@@ -97,27 +97,55 @@
                         <Expander Header="Lip Sync and Mouth Movement" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
                                 <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="8"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <StackPanel Grid.Column="0" Margin="0,0,0,8">
+                                    <!-- Row 1: Viseme Set / Frame Interpolation -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
                                         <TextBlock Text="Viseme Set" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                                         <ComboBox SelectedValue="{Binding Params[VisemeSet]}">
                                             <ComboBoxItem Content="ARPAbet"/>
                                             <ComboBoxItem Content="IPA"/>
                                             <ComboBoxItem Content="Rhubarb"/>
+                                            <ComboBoxItem Content="Custom"/>
                                         </ComboBox>
                                     </StackPanel>
                                     
-                                    <StackPanel Grid.Column="2" Margin="0,0,0,8">
-                                        <TextBlock Text="Frame Rate (FPS)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                                        <ComboBox SelectedValue="{Binding Params[FrameRate]}">
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Frame Interpolation (FPS)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[FrameInterpolation]}">
                                             <ComboBoxItem Content="24"/>
                                             <ComboBoxItem Content="30"/>
                                             <ComboBoxItem Content="60"/>
+                                            <ComboBoxItem Content="120"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Mouth Sensitivity / Latency Tolerance -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Mouth Blendshape Sensitivity" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[MouthSensitivity]}">
+                                            <ComboBoxItem Content="0.5 (Subtle)"/>
+                                            <ComboBoxItem Content="1.0 (Normal)"/>
+                                            <ComboBoxItem Content="1.5 (Expressive)"/>
+                                            <ComboBoxItem Content="2.0 (Exaggerated)"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Latency Tolerance (ms)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[LatencyTolerance]}">
+                                            <ComboBoxItem Content="50"/>
+                                            <ComboBoxItem Content="100"/>
+                                            <ComboBoxItem Content="150"/>
+                                            <ComboBoxItem Content="200"/>
                                         </ComboBox>
                                     </StackPanel>
                                 </Grid>
@@ -127,11 +155,165 @@
                         <!-- Gesture Animation Expander -->
                         <Expander Header="Gesture and Body Animation" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
-                                <WrapPanel>
-                                    <CheckBox Content="Hair Physics" IsChecked="{Binding Params[HairPhysics], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
-                                    <CheckBox Content="Cloth Physics" IsChecked="{Binding Params[ClothPhysics], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
-                                    <CheckBox Content="Secondary Motion" IsChecked="{Binding Params[SecondaryMotion], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
-                                </WrapPanel>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Gesture Mapping / Animation Presets -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Gesture Mapping Mode" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GestureMappingMode]}">
+                                            <ComboBoxItem Content="Rule-based"/>
+                                            <ComboBoxItem Content="Learned (AI)"/>
+                                            <ComboBoxItem Content="Hybrid"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Animation Presets" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[AnimationPresets]}">
+                                            <ComboBoxItem Content="Idle"/>
+                                            <ComboBoxItem Content="Excited"/>
+                                            <ComboBoxItem Content="Angry"/>
+                                            <ComboBoxItem Content="Neutral"/>
+                                            <ComboBoxItem Content="Thoughtful"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Gesture Intensity / Blendshape Weights -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Gesture Intensity" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GestureIntensity]}">
+                                            <ComboBoxItem Content="0.3 (Subtle)"/>
+                                            <ComboBoxItem Content="0.7 (Moderate)"/>
+                                            <ComboBoxItem Content="1.0 (Normal)"/>
+                                            <ComboBoxItem Content="1.5 (Expressive)"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Blendshape Weights (Facial)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[BlendshapeWeights], UpdateSourceTrigger=PropertyChanged}" PlaceholderText="brows,eyes,cheeks"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 3: Pose Regularization & Physics -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+                                        <CheckBox Content="Pose Regularization (Prevent Contortions)" IsChecked="{Binding Params[PoseRegularization], Converter={StaticResource StringToBooleanConverter}}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,8">
+                                        <WrapPanel>
+                                            <CheckBox Content="Hair Physics" IsChecked="{Binding Params[HairPhysics], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,8,4"/>
+                                            <CheckBox Content="Cloth Physics" IsChecked="{Binding Params[ClothPhysics], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,8,4"/>
+                                            <CheckBox Content="Secondary Motion" IsChecked="{Binding Params[SecondaryMotion], Converter={StaticResource StringToBooleanConverter}}"/>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+                        
+                        <!-- Timing & Multi-Modal Alignment -->
+                        <Expander Header="Timing and Multi-Modal Alignment" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Audio-Motion Offset / Motion Sampling Rate -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Audio-to-Motion Offset (ms)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[AudioMotionOffset]}">
+                                            <ComboBoxItem Content="-100 (Gestures Lead)"/>
+                                            <ComboBoxItem Content="0 (Synchronized)"/>
+                                            <ComboBoxItem Content="50 (Slight Lag)"/>
+                                            <ComboBoxItem Content="100 (Follow Audio)"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Motion Sampling Rate (FPS)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[MotionSamplingRate]}">
+                                            <ComboBoxItem Content="24"/>
+                                            <ComboBoxItem Content="30"/>
+                                            <ComboBoxItem Content="60"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Synchronization Target -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+                                        <TextBlock Text="Synchronization Target" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[SynchronizationTarget]}">
+                                            <ComboBoxItem Content="Audio (Speech-driven)"/>
+                                            <ComboBoxItem Content="Video (Visual-driven)"/>
+                                            <ComboBoxItem Content="Text (Content-driven)"/>
+                                            <ComboBoxItem Content="Multi-Modal"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+                        
+                        <!-- Advanced Entity Controls -->
+                        <Expander Header="Advanced Entity Controls" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <!-- Camera & Emotion -->
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Camera Tracking / Emotion Inference -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Camera Tracking Mode" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[CameraTrackingMode]}">
+                                            <ComboBoxItem Content="Fixed"/>
+                                            <ComboBoxItem Content="Look-at"/>
+                                            <ComboBoxItem Content="Scene-follow"/>
+                                            <ComboBoxItem Content="Dynamic"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Emotion Inference Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[EmotionInferenceModel]}">
+                                            <ComboBoxItem Content="Basic (Rule-based)"/>
+                                            <ComboBoxItem Content="BERT Emotion"/>
+                                            <ComboBoxItem Content="Custom LLM"/>
+                                            <ComboBoxItem Content="Multi-Modal"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Regularization Dataset -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+                                        <TextBlock Text="Regularization Dataset (Idle Talking-Heads)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="📁" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
+                                            <TextBox Text="{Binding Params[RegularizationDataset], UpdateSourceTrigger=PropertyChanged}" 
+                                                     PlaceholderText="Optional: path to idle talking-heads for smoother states"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
