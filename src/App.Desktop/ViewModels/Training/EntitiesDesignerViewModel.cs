@@ -26,6 +26,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand ImportCommand { get; }
         public ICommand CreateJobCommand { get; }
         public ICommand ClearCommand { get; }
+        public ICommand SetLearningRateCommand { get; }
         
         public EntitiesDesignerViewModel(ITrainingService trainingService)
         {
@@ -35,10 +36,10 @@ namespace Lazarus.Desktop.ViewModels.Training
             ImportCommand = new RelayCommand(async _ => await ImportAsync());
             CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), _ => !HasJob);
             ClearCommand = new RelayCommand(_ => Clear());
+            SetLearningRateCommand = new RelayCommand<string>(rate => SetLearningRate(rate));
             
-            Params["BaseModel"] = "entity-recognizer";
-            Params["TrainingType"] = "NER";
-            Params["LearningRate"] = "3e-4";
+            // Set comprehensive entity defaults
+            SetDefaultParameters();
         }
         
         public void SetCurrentJob(TrainingJob? job)
@@ -76,6 +77,51 @@ namespace Lazarus.Desktop.ViewModels.Training
             Draft.Voices.Clear();
             Draft.Datasets.Clear();
             Draft.Params.Clear();
+            SetDefaultParameters();
+        }
+
+        private void SetDefaultParameters()
+        {
+            // Core Entity Parameters
+            Params["Base3DModel"] = "human-rigged";
+            Params["VoiceModel"] = "expressive-voice";
+            Params["RecognitionType"] = "Full Multi-Modal";
+            Params["LearningRate"] = "5e-4";
+
+            // Lip Sync & Mouth Movement
+            Params["VisemeSet"] = "ARPAbet";
+            Params["FrameInterpolation"] = "30";
+            Params["MouthSensitivity"] = "1.0 (Normal)";
+            Params["LatencyTolerance"] = "100";
+
+            // Gesture & Body Animation
+            Params["GestureMappingMode"] = "Learned (AI)";
+            Params["AnimationPresets"] = "Neutral";
+            Params["GestureIntensity"] = "1.0 (Normal)";
+            Params["BlendshapeWeights"] = "1.0,0.8,0.6";
+            Params["PoseRegularization"] = "true";
+
+            // Timing & Multi-Modal Alignment
+            Params["AudioMotionOffset"] = "0 (Synchronized)";
+            Params["MotionSamplingRate"] = "30";
+            Params["SynchronizationTarget"] = "Multi-Modal";
+
+            // Advanced Entity Controls
+            Params["CameraTrackingMode"] = "Look-at";
+            Params["EmotionInferenceModel"] = "BERT Emotion";
+            Params["HairPhysics"] = "true";
+            Params["ClothPhysics"] = "false";
+            Params["SecondaryMotion"] = "true";
+            Params["RegularizationDataset"] = "";
+        }
+
+        private void SetLearningRate(string? rate)
+        {
+            if (!string.IsNullOrWhiteSpace(rate))
+            {
+                Params["LearningRate"] = rate;
+                OnPropertyChanged("LearningRate");
+            }
         }
     }
 }
