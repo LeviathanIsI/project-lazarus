@@ -6,7 +6,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="../Styles/AudioTheme.xaml"/>
+        <ResourceDictionary Source="/Styles/AudioTheme.xaml"/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
