@@ -93,45 +93,243 @@
             
             <!-- Right: Configuration -->
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
-                <StackPanel>
-                    <TextBlock Text="Configuration" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                    
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource {x:Type ComboBox}}" SelectedValue="{Binding Params[BaseModel]}">
-                            <ComboBoxItem Content="llama-2-7b-chat"/>
-                            <ComboBoxItem Content="llama-2-13b-chat"/>
-                            <ComboBoxItem Content="mistral-7b-instruct"/>
-                            <ComboBoxItem Content="codellama-7b-instruct"/>
-                        </ComboBox>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Configuration" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <!-- Core Settings -->
+                        <TextBlock Text="Core Settings" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
+                        
+                        <Grid Margin="0,0,0,12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Row 1: Base Model / Training Type -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[BaseModel]}">
+                                    <ComboBoxItem Content="llama-2-7b-chat"/>
+                                    <ComboBoxItem Content="llama-2-13b-chat"/>
+                                    <ComboBoxItem Content="mistral-7b-instruct"/>
+                                    <ComboBoxItem Content="codellama-7b-instruct"/>
+                                    <ComboBoxItem Content="openchat-3.5"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                <TextBlock Text="Training Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[TrainingType]}">
+                                    <ComboBoxItem Content="LoRA"/>
+                                    <ComboBoxItem Content="QLoRA"/>
+                                    <ComboBoxItem Content="Full Fine-tune"/>
+                                    <ComboBoxItem Content="DPO"/>
+                                    <ComboBoxItem Content="RLHF"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <!-- Row 2: Learning Rate with Quick-Select -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+                                <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <DockPanel>
+                                    <TextBox DockPanel.Dock="Right" 
+                                             Width="120" 
+                                             Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
+                                             Margin="8,0,0,0"/>
+                                    <WrapPanel>
+                                        <Button Content="1e-3" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-3" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                        <Button Content="5e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-4" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                        <Button Content="2e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="2e-4" Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,4,0"/>
+                                        <Button Content="1e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-4" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                        <Button Content="5e-5" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-5" Style="{StaticResource SolidDarkButton}"/>
+                                    </WrapPanel>
+                                </DockPanel>
+                            </StackPanel>
+                            
+                            <!-- Row 3: Batch Size / Gradient Accumulation -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+                                <TextBlock Text="Batch Size" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding Params[BatchSize], UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,8">
+                                <TextBlock Text="Gradient Accumulation" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding Params[GradientAccumulation], UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            
+                            <!-- Row 4: Max Sequence Length / Chat Template -->
+                            <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,8">
+                                <TextBlock Text="Max Sequence Length" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[MaxSeqLength]}">
+                                    <ComboBoxItem Content="1024"/>
+                                    <ComboBoxItem Content="2048"/>
+                                    <ComboBoxItem Content="4096"/>
+                                    <ComboBoxItem Content="8192"/>
+                                    <ComboBoxItem Content="16384"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,8">
+                                <TextBlock Text="Chat Template" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[ChatTemplate]}">
+                                    <ComboBoxItem Content="ChatML"/>
+                                    <ComboBoxItem Content="Alpaca"/>
+                                    <ComboBoxItem Content="Vicuna"/>
+                                    <ComboBoxItem Content="ShareGPT"/>
+                                    <ComboBoxItem Content="Custom"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <!-- Row 5: Training Duration -->
+                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+                                <TextBlock Text="Training Duration" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <RadioButton Content="Epochs" IsChecked="{Binding UseEpochs}" GroupName="DurationMode" Margin="8,0,8,0"/>
+                                        <TextBox Width="80" Text="{Binding Params[Epochs], UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding UseEpochs}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton Content="Steps" IsChecked="{Binding UseSteps}" GroupName="DurationMode" Margin="0,0,8,0"/>
+                                        <TextBox Width="80" Text="{Binding Params[MaxSteps], UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding UseSteps}"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- Advanced Settings -->
+                        <Expander Header="Advanced Settings" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Warmup Steps / LR Scheduler -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Warmup Steps" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[WarmupSteps], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="LR Scheduler" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[LRScheduler]}">
+                                            <ComboBoxItem Content="linear"/>
+                                            <ComboBoxItem Content="cosine"/>
+                                            <ComboBoxItem Content="cosine_with_restarts"/>
+                                            <ComboBoxItem Content="polynomial"/>
+                                            <ComboBoxItem Content="constant"/>
+                                            <ComboBoxItem Content="constant_with_warmup"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Optimizer / Loss Objective -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Optimizer" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[Optimizer]}">
+                                            <ComboBoxItem Content="adamw_torch"/>
+                                            <ComboBoxItem Content="adamw_hf"/>
+                                            <ComboBoxItem Content="adafactor"/>
+                                            <ComboBoxItem Content="sgd"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Loss Objective" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[LossObjective]}">
+                                            <ComboBoxItem Content="cross_entropy"/>
+                                            <ComboBoxItem Content="dpo"/>
+                                            <ComboBoxItem Content="orpo"/>
+                                            <ComboBoxItem Content="kto"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 3: LoRA Parameters -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,12">
+                                        <TextBlock Text="LoRA/Adapter Settings" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Rank (r)" Style="{StaticResource SecondaryTextStyle}" FontSize="11" Margin="0,0,0,2"/>
+                                                <TextBox Text="{Binding Params[LoRArank], UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Alpha" Style="{StaticResource SecondaryTextStyle}" FontSize="11" Margin="0,0,0,2"/>
+                                                <TextBox Text="{Binding Params[LoRAalpha], UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Column="4">
+                                                <TextBlock Text="Dropout" Style="{StaticResource SecondaryTextStyle}" FontSize="11" Margin="0,0,0,2"/>
+                                                <TextBox Text="{Binding Params[LoRAdropout], UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 4: Validation & Evaluation -->
+                                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Validation Split %" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[ValidationSplit], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Eval Every (steps)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[EvalSteps], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 5: Checkpointing -->
+                                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Checkpoint Every" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[SaveSteps], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Keep Last N" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[KeepCheckpoints], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 6: Advanced Options -->
+                                    <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
+                                        <CheckBox Content="Gradient checkpointing (saves VRAM)" 
+                                                  IsChecked="{Binding Params[GradientCheckpointing], Converter={StaticResource StringToBooleanConverter}}" 
+                                                  Margin="0,0,0,4"/>
+                                        <CheckBox Content="Flash Attention 2 (faster training)" 
+                                                  IsChecked="{Binding Params[FlashAttention], Converter={StaticResource StringToBooleanConverter}}" 
+                                                  Margin="0,0,0,4"/>
+                                        <CheckBox Content="Pack sequences (better GPU utilization)" 
+                                                  IsChecked="{Binding Params[PackSequences], Converter={StaticResource StringToBooleanConverter}}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
                     </StackPanel>
-                    
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Training Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource {x:Type ComboBox}}" SelectedValue="{Binding Params[TrainingType]}">
-                            <ComboBoxItem Content="LoRA"/>
-                            <ComboBoxItem Content="QLoRA"/>
-                            <ComboBoxItem Content="Full Fine-tune"/>
-                            <ComboBoxItem Content="DPO"/>
-                        </ComboBox>
-                    </StackPanel>
-                    
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource {x:Type TextBox}}"/>
-                    </StackPanel>
-                    
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Chat Template" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource {x:Type ComboBox}}" SelectedValue="{Binding Params[ChatTemplate]}">
-                            <ComboBoxItem Content="ChatML"/>
-                            <ComboBoxItem Content="Alpaca"/>
-                            <ComboBoxItem Content="Vicuna"/>
-                            <ComboBoxItem Content="ShareGPT"/>
-                        </ComboBox>
-                    </StackPanel>
-                </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
         
