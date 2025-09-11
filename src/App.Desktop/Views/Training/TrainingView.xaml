@@ -23,16 +23,13 @@
 
         <!-- Top modality switch -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="16,12,16,8">
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Conversations" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Conversations}" Margin="0,0,8,0"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Voice" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Voice}" Margin="0,0,8,0"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Images" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Images}" Margin="0,0,8,0"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="3D Models" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=ThreeD}" Margin="0,0,8,0"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Entities" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Entities}" Margin="0,0,8,0"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Videos" IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Videos}"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}"
-                          Content="Design Progress"
-                          Margin="16,0,0,0"
-                          IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=DesignProgress}"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Conversations" Command="{Binding SetModalityCommand}" CommandParameter="Conversations" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Conversations}" Margin="0,0,8,0"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Voice" Command="{Binding SetModalityCommand}" CommandParameter="Voice" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Voice}" Margin="0,0,8,0"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Images" Command="{Binding SetModalityCommand}" CommandParameter="Images" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Images}" Margin="0,0,8,0"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="3D Models" Command="{Binding SetModalityCommand}" CommandParameter="ThreeD" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=ThreeD}" Margin="0,0,8,0"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Entities" Command="{Binding SetModalityCommand}" CommandParameter="Entities" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Entities}" Margin="0,0,8,0"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Videos" Command="{Binding SetModalityCommand}" CommandParameter="Videos" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Videos}"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Design Progress" Command="{Binding SetModalityCommand}" CommandParameter="DesignProgress" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=DesignProgress}"/>
         </StackPanel>
 
         <!-- Main regions -->

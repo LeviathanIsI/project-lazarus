@@ -42,7 +42,6 @@ public class ModalityToLeftHeaderConverter : IValueConverter
             "ThreeD" => "3D Models",
             "Entities" => "Entities",
             "Videos" => "Video Files",
-            "Design Progress" => "Mission Control",
             "DesignProgress" => "Mission Control",
             _ => "Models"
         };
@@ -70,7 +69,6 @@ public class ModalityToRightHeaderConverter : IValueConverter
             "ThreeD" => "3D Model Details",
             "Entities" => "Entity Details",
             "Videos" => "Video Details",
-            "Design Progress" => "Job Details",
             "DesignProgress" => "Job Details",
             _ => "Details"
         };
@@ -107,5 +105,26 @@ public class MillisecondsToSecondsConverter : IValueConverter
             return (int)(sec * 1000);
 
         return 0;
+    }
+}
+
+/// <summary>
+/// Generic equality converter: returns true when value.ToString() == parameter.ToString().
+/// </summary>
+public class EqualityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is null || parameter is null) return false;
+        return string.Equals(value.ToString(), parameter.ToString(), StringComparison.Ordinal);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool b && b)
+        {
+            return parameter?.ToString() ?? string.Empty;
+        }
+        return Binding.DoNothing;
     }
 }

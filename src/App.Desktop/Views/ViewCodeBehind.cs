@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows;
 
 namespace Lazarus.Desktop.Views
 {
@@ -9,7 +10,7 @@ namespace Lazarus.Desktop.Views
     {
         public OrchestratorSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/OrchestratorSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -20,7 +21,7 @@ namespace Lazarus.Desktop.Views
     {
         public AudioSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/AudioSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -31,7 +32,7 @@ namespace Lazarus.Desktop.Views
     {
         public TrainingSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/TrainingSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -42,7 +43,7 @@ namespace Lazarus.Desktop.Views
     {
         public AdvancedSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/AdvancedSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -53,7 +54,7 @@ namespace Lazarus.Desktop.Views
     {
         public AvatarSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/AvatarSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -64,7 +65,7 @@ namespace Lazarus.Desktop.Views
     {
         public RunnersSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/RunnersSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -75,7 +76,7 @@ namespace Lazarus.Desktop.Views
     {
         public RagSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/RagSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -86,7 +87,7 @@ namespace Lazarus.Desktop.Views
     {
         public LoggingSettingsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/LoggingSettingsView.xaml", System.UriKind.Relative));
         }
     }
 
@@ -97,7 +98,7 @@ namespace Lazarus.Desktop.Views
     {
         public GlobalActionsView()
         {
-            InitializeComponent();
+            System.Windows.Application.LoadComponent(this, new System.Uri("/Lazarus.Desktop;component/Views/GlobalActionsView.xaml", System.UriKind.Relative));
         }
     }
 }

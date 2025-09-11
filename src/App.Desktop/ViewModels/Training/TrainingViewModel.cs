@@ -43,28 +43,28 @@ namespace Lazarus.Desktop.ViewModels.Training
             { 
                 if (SetProperty(ref _selectedModality, value))
                 {
-                    // Switch active designer based on modality
-                    ActiveDesigner = value switch
-                    {
-                        "Conversations" => Conversations,
-                        "Voice" => Voice,
-                        "Images" => Images,
-                        "ThreeD" => ThreeDModels,
-                        "Entities" => Entities,
-                        "Videos" => Videos,
-                        "Design Progress" => DesignProgress,
-                        "DesignProgress" => DesignProgress,
-                        _ => Conversations
-                    };
-                    
-                    // Keep SelectedModality normalized to avoid converter string mismatches
-                    if (value == "Design Progress")
-                        _selectedModality = "DesignProgress";
-                    OnPropertyChanged(nameof(SelectedModality));
-                    
-                    IsProgressMode = (_selectedModality == "DesignProgress");
+                    ApplySelectedModality(value);
                 }
             }
+        }
+
+        private void ApplySelectedModality(string value)
+        {
+            // Switch active designer based on modality
+            ActiveDesigner = value switch
+            {
+                "Conversations" => Conversations,
+                "Voice" => Voice,
+                "Images" => Images,
+                "ThreeD" => ThreeDModels,
+                "Entities" => Entities,
+                "Videos" => Videos,
+                "DesignProgress" => DesignProgress,
+                _ => Conversations
+            };
+
+            OnPropertyChanged(nameof(SelectedModality));
+            OnPropertyChanged(nameof(ActiveDesigner));
         }
 
         private bool _isProgressMode;
@@ -79,6 +79,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand StopCommand { get; }
         public ICommand ExportCommand { get; }
         public ICommand ToggleMonitorDockCommand { get; }
+        public ICommand SetModalityCommand { get; }
 
         public bool CanStart { get; private set; } = true;
         public bool CanPause { get; private set; } = false;
@@ -111,6 +112,12 @@ namespace Lazarus.Desktop.ViewModels.Training
             StopCommand = new RelayCommand(async _ => await StopSelectedJobsAsync(), _ => CanStop);
             ExportCommand = new RelayCommand(async _ => await ExportSelectedJobAsync(), _ => CanExport);
             ToggleMonitorDockCommand = new RelayCommand(_ => IsMonitorOpen = !IsMonitorOpen);
+            SetModalityCommand = new RelayCommand<string>(m =>
+            {
+                if (string.IsNullOrWhiteSpace(m)) return;
+                _selectedModality = m;
+                ApplySelectedModality(m);
+            });
             
             // Wire up cross-VM communication
             JobsSidebar.SelectedJobChanged += OnSelectedJobChanged;

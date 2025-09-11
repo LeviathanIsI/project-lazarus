@@ -36,6 +36,7 @@
             <converters:ModalityToLeftHeaderConverter x:Key="ModalityToLeftHeaderConverter"/>
             <converters:ModalityToRightHeaderConverter x:Key="ModalityToRightHeaderConverter"/>
             <converters:MillisecondsToSecondsConverter x:Key="MillisecondsToSecondsConverter"/>
+            <converters:EqualityConverter x:Key="EqualityConverter"/>
 
             <!-- Ensure all ScrollViewers respond to mouse wheel scrolling -->
             <Style TargetType="ScrollViewer">
