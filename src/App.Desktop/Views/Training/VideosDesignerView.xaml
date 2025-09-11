@@ -36,15 +36,121 @@
             </Border>
             
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
-                <StackPanel>
-                    <TextBlock Text="Video Parameters" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Video Configuration" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <!-- Core Video Parameters -->
+                        <TextBlock Text="Core Parameters" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
                     
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource GlassTextBoxStyle}"/>
+                        <!-- Base Model / Batch Size -->
+                        <DockPanel Margin="0,0,0,8">
+                            <StackPanel DockPanel.Dock="Left" Width="160">
+                                <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[BaseModel]}">
+                                    <ComboBoxItem Content="stable-video-diffusion"/>
+                                    <ComboBoxItem Content="animatediff"/>
+                                    <ComboBoxItem Content="pika-labs"/>
+                                    <ComboBoxItem Content="runway-gen2"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Margin="8,0,0,0">
+                                <TextBlock Text="Batch Size (Clips)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[BatchSize]}">
+                                    <ComboBoxItem Content="1"/>
+                                    <ComboBoxItem Content="2"/>
+                                    <ComboBoxItem Content="4"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </DockPanel>
+                        
+                        <!-- Learning Rate with Quick-Select -->
+                        <StackPanel Margin="0,0,0,8">
+                            <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" 
+                                         Width="120" 
+                                         Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
+                                         Margin="8,0,0,0"/>
+                                <WrapPanel>
+                                    <Button Content="1e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-4" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="5e-5" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-5" Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,4,0"/>
+                                    <Button Content="1e-5" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-5" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="5e-6" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-6" Style="{StaticResource SolidDarkButton}"/>
+                                </WrapPanel>
+                            </DockPanel>
+                        </StackPanel>
+                        
+                        <!-- Frame Settings Expander -->
+                        <Expander Header="Frame and Sequence Settings" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Resolution" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[Resolution]}">
+                                            <ComboBoxItem Content="256x256"/>
+                                            <ComboBoxItem Content="512x512"/>
+                                            <ComboBoxItem Content="768x768"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Clip Length (frames)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[ClipLength]}">
+                                            <ComboBoxItem Content="8"/>
+                                            <ComboBoxItem Content="16"/>
+                                            <ComboBoxItem Content="24"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Frame Rate (FPS)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[FrameRate]}">
+                                            <ComboBoxItem Content="12"/>
+                                            <ComboBoxItem Content="24"/>
+                                            <ComboBoxItem Content="30"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Stride/Overlap" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[StrideOverlap]}">
+                                            <ComboBoxItem Content="No Overlap"/>
+                                            <ComboBoxItem Content="50% Overlap"/>
+                                            <ComboBoxItem Content="75% Overlap"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+                        
+                        <!-- Video Augmentations -->
+                        <Expander Header="Video Augmentations" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <WrapPanel>
+                                    <CheckBox Content="Temporal Jitter" IsChecked="{Binding Params[TemporalJitter], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    <CheckBox Content="Color Jitter" IsChecked="{Binding Params[ColorJitter], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    <CheckBox Content="Spatial Transforms" IsChecked="{Binding Params[SpatialTransforms], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    <CheckBox Content="Noise Injection" IsChecked="{Binding Params[NoiseInjection], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
                     </StackPanel>
-                </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
         
