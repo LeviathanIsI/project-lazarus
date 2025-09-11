@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Lazarus.Shared.Contracts;
+using Lazarus.Shared.Training;
 
 namespace Lazarus.Desktop.ViewModels.Training
 {
