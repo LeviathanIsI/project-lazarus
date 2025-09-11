@@ -88,7 +88,8 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="*" Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                            <!-- GridViewColumn.Width expects a double; star sizing is invalid at runtime -->
+                            <GridViewColumn Width="220" Header="Name" DisplayMemberBinding="{Binding Name}"/>
                             <GridViewColumn Width="90" Header="Duration" DisplayMemberBinding="{Binding Duration}"/>
                             <GridViewColumn Width="85" Header="Size" DisplayMemberBinding="{Binding Size}"/>
                             <GridViewColumn Width="140" Header="Modified">
