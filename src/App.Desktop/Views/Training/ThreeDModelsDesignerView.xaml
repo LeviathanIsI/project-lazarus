@@ -134,7 +134,67 @@
                         <Expander Header="Advanced 3D Settings" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
                                 <!-- Comprehensive 3D training parameters here -->
-                                <TextBlock Text="NeRF, Mesh and Point Cloud training controls" Style="{StaticResource SecondaryTextStyle}"/>
+                                <!-- NeRF (Neural Radiance Fields) Settings -->
+                                <TextBlock Text="NeRF Settings" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
+                                
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Ray Batch Size / Near Clipping -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Ray Batch Size" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[RayBatchSize], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Near Clipping Plane" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[NearClipping], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Far Clipping / Scene Scale -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Far Clipping Plane" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[FarClipping], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Scene Scale" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[SceneScale], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <!-- NeRF Options -->
+                                <StackPanel Margin="0,0,0,16">
+                                    <TextBlock Text="NeRF Regularization" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                    <WrapPanel>
+                                        <CheckBox Content="TV Loss" IsChecked="{Binding Params[TVLoss], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                        <CheckBox Content="Sparsity Loss" IsChecked="{Binding Params[SparsityLoss], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                        <CheckBox Content="View Jitter" IsChecked="{Binding Params[ViewJitter], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                                
+                                <!-- Mesh Training Settings -->
+                                <TextBlock Text="Mesh Training" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
+                                <WrapPanel Margin="0,0,0,12">
+                                    <CheckBox Content="Surface Smoothing" IsChecked="{Binding Params[SurfaceSmoothing], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    <CheckBox Content="Laplacian Reg" IsChecked="{Binding Params[LaplacianReg], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    <CheckBox Content="Normal Consistency" IsChecked="{Binding Params[NormalConsistency], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                </WrapPanel>
+                                
+                                <!-- Point Cloud Training -->
+                                <TextBlock Text="Point Cloud Training" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
+                                <WrapPanel>
+                                    <CheckBox Content="Color Learning (XYZRGB)" IsChecked="{Binding Params[ColorLearning], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                    <CheckBox Content="Spatial Augmentations" IsChecked="{Binding Params[SpatialAugmentations], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
+                                </WrapPanel>
                             </StackPanel>
                         </Expander>
                     </StackPanel>

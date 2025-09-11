@@ -139,6 +139,40 @@ namespace Lazarus.Desktop.ViewModels.Training
             Params["HierarchicalSampling"] = "true";
             Params["WhiteBackground"] = "false";
             Params["RawNoiseStd"] = "true";
+
+            // NeRF Advanced Settings
+            Params["RayBatchSize"] = "8192";
+            Params["NearClipping"] = "0.1";
+            Params["FarClipping"] = "10.0";
+            Params["SceneScale"] = "1.0";
+            Params["CoarseFineSteps"] = "64,128";
+            Params["RenderResolution"] = "800x800";
+            Params["NerfRegWeight"] = "0.001";
+            Params["TVLoss"] = "true";
+            Params["SparsityLoss"] = "false";
+
+            // Mesh Training Settings
+            Params["VertexCountLimit"] = "100K";
+            Params["TextureResolution"] = "1024x1024";
+            Params["SurfaceLossFunction"] = "Chamfer Distance";
+            Params["LaplacianSmoothingWeight"] = "0.1";
+            Params["MeshCheckpointFreq"] = "1000";
+            Params["DecimationToggle"] = "false";
+
+            // Point Cloud Training Settings
+            Params["NumberOfPoints"] = "100K";
+            Params["PointRadius"] = "0.01";
+            Params["DistanceMetric"] = "Chamfer Distance";
+            Params["NoiseInjection"] = "0.001";
+            Params["ColorLearning"] = "true";
+            Params["SpatialAugmentations"] = "true";
+
+            // General Advanced Controls
+            Params["AdvancedOptimizer"] = "adamw";
+            Params["AdvancedLRScheduler"] = "cosine";
+            Params["AdvancedGradClipNorm"] = "1.0";
+            Params["AdvancedPrecision"] = "FP16";
+            Params["AdvancedValidationSplit"] = "0.1";
         }
 
         private void SetLearningRate(string? rate)
