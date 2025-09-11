@@ -341,20 +341,25 @@
                 Padding="12"
                 MinHeight="64">
             <DockPanel LastChildFill="True">
-                <StackPanel Orientation="Horizontal">
+                <!-- Left controls -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}" Style="{StaticResource SolidDarkButton}"/>
                     <Button Command="{Binding StopCmd}" Content="⏹" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
                 </StackPanel>
+
+                <!-- Right side info and device chooser -->
+                <ComboBox Width="220" Margin="16,0,0,0" DockPanel.Dock="Right"
+                          ItemsSource="{Binding OutputDevices}"
+                          SelectedItem="{Binding SelectedOutputDevice}"/>
+                <TextBlock Text="{Binding DurationText}" Margin="8,0,0,0" DockPanel.Dock="Right"/>
+                <TextBlock Text="/" Margin="6,0,0,0" DockPanel.Dock="Right"/>
+                <TextBlock Text="{Binding PositionText}" Margin="12,0,0,0" DockPanel.Dock="Right"/>
+
+                <!-- Slider fills remaining space -->
                 <Slider Margin="16,0,16,0" Style="{StaticResource RainbowGlassSliderStyle}"
                         Minimum="0"
                         Maximum="{Binding DurationSeconds}"
                         Value="{Binding PositionSeconds, Mode=TwoWay}"/>
-                <TextBlock Text="{Binding PositionText}" Margin="8,0"/>
-                <TextBlock Text="/" Margin="4,0"/>
-                <TextBlock Text="{Binding DurationText}" Margin="4,0"/>
-                <ComboBox Width="220" Margin="12,0,0,0"
-                          ItemsSource="{Binding OutputDevices}"
-                          SelectedItem="{Binding SelectedOutputDevice}"/>
             </DockPanel>
         </Border>
     </Grid>
