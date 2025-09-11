@@ -25,28 +25,61 @@
                 Style="{StaticResource GlassCardStyle}"
                 Padding="12">
             <DockPanel LastChildFill="True">
-                <!-- Toolbar -->
-                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                        <Button Content="Upload audio" Command="{Binding ImportCmd}"
-                                Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
-                        <Button Content="Record audio" Command="{Binding RecordCmd}"
-                                Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                        <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview" Margin="0,0,8,0"/>
-                        <ComboBox Width="140" SelectedItem="{Binding SortMode}">
-                            <ComboBoxItem Content="Name"/>
-                            <ComboBoxItem Content="Date"/>
-                            <ComboBoxItem Content="Size"/>
-                            <ComboBoxItem Content="Duration"/>
-                        </ComboBox>
-                    </StackPanel>
-                </DockPanel>
+                <!-- Toolbar (wraps on narrow widths) -->
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" ItemHeight="32">
+                    <Button Content="Upload audio" Command="{Binding ImportCmd}"
+                            Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,8"/>
+                    <Button Content="Record audio" Command="{Binding RecordCmd}"
+                            Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,8"/>
+                    <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview"
+                                  Margin="0,0,8,8">
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton">
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
+                                <Setter Property="Padding" Value="12,8"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border x:Name="Root" CornerRadius="8"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                  Margin="{TemplateBinding Padding}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource RainbowFlowBrush}"/>
+                                                    <Setter TargetName="Root" Property="BorderThickness" Value="2"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Root" Property="Background" Value="#2A2A2A"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter TargetName="Root" Property="Opacity" Value="0.6"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+                    <ComboBox Width="120" SelectedItem="{Binding SortMode}" Margin="0,0,0,8">
+                        <ComboBoxItem Content="Name"/>
+                        <ComboBoxItem Content="Date"/>
+                        <ComboBoxItem Content="Size"/>
+                        <ComboBoxItem Content="Duration"/>
+                    </ComboBox>
+                </WrapPanel>
 
                 <!-- Search (WPF-compatible placeholder/watermark) -->
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                     <TextBox x:Name="SearchBox"
+                             Style="{StaticResource GlassTextBoxStyle}"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Text="Search audio…"
                                Margin="6,0,0,0"
@@ -68,11 +101,22 @@
 
                 <!-- List -->
                 <ListView ItemsSource="{Binding Items}"
+                          Background="Transparent" BorderThickness="0"
                           SelectedItem="{Binding ActiveItem, Mode=TwoWay}"
                           SelectionMode="Extended"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.ScrollUnit="Pixel">
+                    <ListView.Resources>
+                        <!-- Dark column header style -->
+                        <Style TargetType="GridViewColumnHeader">
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="Padding" Value="8,6"/>
+                        </Style>
+                    </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">
                             <GridViewColumn Width="80" Header="Wave">
@@ -231,17 +275,17 @@
                 </Border>
 
                 <!-- Actions -->
-                <WrapPanel Grid.Row="2" ItemWidth="180" ItemHeight="40" Margin="0,8,0,0">
-                    <Button Content="Transcribe (ASR)" Command="{Binding TranscribeCmd}" />
-                    <Button Content="Noise-Reduce" Command="{Binding NoiseReduceCmd}" />
-                    <Button Content="VAD Trim" Command="{Binding VadTrimCmd}" />
-                    <Button Content="Normalize" Command="{Binding NormalizeCmd}" />
-                    <Button Content="Convert…" Command="{Binding ConvertCmd}" />
-                    <Button Content="Split on Silence" Command="{Binding SplitOnSilenceCmd}" />
-                    <Button Content="Synthesize (TTS)" Command="{Binding SynthesizeCmd}" />
-                    <Button Content="Clone Voice" Command="{Binding CloneVoiceCmd}" />
-                    <Button Content="Open Folder" Command="{Binding OpenFolderCmd}" />
-                    <Button Content="Delete" Command="{Binding DeleteCmd}" />
+                <WrapPanel Grid.Row="2" ItemHeight="40" Margin="0,8,0,0">
+                    <Button Content="Transcribe (ASR)" Command="{Binding TranscribeCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Noise-Reduce" Command="{Binding NoiseReduceCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="VAD Trim" Command="{Binding VadTrimCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Normalize" Command="{Binding NormalizeCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Convert…" Command="{Binding ConvertCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Split on Silence" Command="{Binding SplitOnSilenceCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Synthesize (TTS)" Command="{Binding SynthesizeCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Clone Voice" Command="{Binding CloneVoiceCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Open Folder" Command="{Binding OpenFolderCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
+                    <Button Content="Delete" Command="{Binding DeleteCmd}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,8"/>
                 </WrapPanel>
 
                 <!-- Jobs -->
@@ -253,7 +297,7 @@
                                 <DataTemplate>
                                     <StackPanel Margin="0,0,0,8">
                                         <TextBlock Text="{Binding Title}"/>
-                                        <ProgressBar Value="{Binding ProgressPercent}" Height="6"/>
+                                        <ProgressBar Value="{Binding ProgressPercent}" Height="12" Style="{StaticResource RainbowGlassProgressBarStyle}"/>
                                         <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Text="{Binding StatusText}"/>
                                     </StackPanel>
                                 </DataTemplate>
@@ -297,8 +341,8 @@
                 Padding="8">
             <DockPanel LastChildFill="True">
                 <StackPanel Orientation="Horizontal">
-                    <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}"/>
-                    <Button Command="{Binding StopCmd}" Content="⏹" Margin="8,0,0,0"/>
+                    <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}" Style="{StaticResource SolidDarkButton}"/>
+                    <Button Command="{Binding StopCmd}" Content="⏹" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
                 </StackPanel>
                 <Slider Margin="12,0"
                         Minimum="0"
