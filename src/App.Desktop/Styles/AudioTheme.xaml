@@ -46,7 +46,7 @@
     <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
   </Style>
 
-  <Style x:Key="ToggleButton" TargetType="ToggleButton" BasedOn="{StaticResource Button}">
+  <Style x:Key="ToggleButton" TargetType="ToggleButton">
     <Setter Property="Foreground" Value="{StaticResource Text}"/>
     <Setter Property="Background" Value="{StaticResource Surface}"/>
     <Setter Property="Template">
