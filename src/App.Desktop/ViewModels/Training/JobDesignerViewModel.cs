@@ -14,6 +14,10 @@ namespace Lazarus.Desktop.ViewModels.Training
         private readonly ITrainingService _trainingService;
         private TrainingJob? _currentJob;
         
+        // Draft configuration that exists before job creation
+        public TrainingDraft Draft { get; } = new();
+        public bool HasJob => _currentJob != null;
+        
         // Datasets tab
         public ObservableCollection<TrainingDatasetRef> AvailableDatasets { get; } = new();
         public ObservableCollection<TrainingDatasetRef> SelectedDatasets { get; } = new();
@@ -46,7 +50,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         
         private long _estimatedVRAM;
         public long EstimatedVRAM { get => _estimatedVRAM; set => SetProperty(ref _estimatedVRAM, value); }
-        
+
         // Overview strip
         private string? _overviewStatus;
         public string? OverviewStatus { get => _overviewStatus; set => SetProperty(ref _overviewStatus, value); }
@@ -73,6 +77,34 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand CreateDatasetTemplateCommand { get; }
         public ICommand ValidateConversationFormatCommand { get; }
         public ICommand EditDatasetCommand { get; }
+        public ICommand CreateJobCommand { get; }
+        
+        // Parameter indexer for unified draft/job editing
+        public string this[string key]
+        {
+            get
+            {
+                if (HasJob && _currentJob!.ConfigId != null) 
+                {
+                    // TODO: Get from job config
+                    return "";
+                }
+                return Draft.Params.TryGetValue(key, out var value) ? value : "";
+            }
+            set
+            {
+                if (HasJob && _currentJob!.ConfigId != null)
+                {
+                    // TODO: Update job config
+                }
+                else
+                {
+                    Draft.Params[key] = value;
+                }
+                OnPropertyChanged($"Item[{key}]");
+                OnPropertyChanged(nameof(Draft));
+            }
+        }
         
         public JobDesignerViewModel(ITrainingService trainingService)
         {
@@ -89,6 +121,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             CreateDatasetTemplateCommand = new RelayCommand(async _ => await CreateDatasetTemplateAsync());
             ValidateConversationFormatCommand = new RelayCommand(async _ => await ValidateConversationFormatAsync());
             EditDatasetCommand = new RelayCommand<TrainingDatasetRef>(dataset => EditDataset(dataset));
+            CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), () => !HasJob);
             
             // TODO(training): Load initial data
             LoadModelsAndRecipes();
@@ -98,11 +131,17 @@ namespace Lazarus.Desktop.ViewModels.Training
         public void SetSelectedJob(TrainingJob? job)
         {
             _currentJob = job;
+            OnPropertyChanged(nameof(HasJob));
+            OnPropertyChanged(nameof(CurrentJob));
+            
             if (job != null)
             {
                 _ = LoadJobDataAsync(job);
             }
+            // Don't clear draft - keep it for when user deselects
         }
+        
+        public TrainingJob? CurrentJob => _currentJob;
         
         public void Dispose()
         {
@@ -178,10 +217,52 @@ namespace Lazarus.Desktop.ViewModels.Training
         
         private void SelectDataset(TrainingDatasetRef? dataset)
         {
-            if (dataset != null && !SelectedDatasets.Contains(dataset))
+            if (dataset == null) return;
+            
+            if (HasJob)
             {
-                SelectedDatasets.Add(dataset);
-                _ = EstimateResourcesAsync();
+                if (!SelectedDatasets.Contains(dataset))
+                {
+                    SelectedDatasets.Add(dataset);
+                    _ = EstimateResourcesAsync();
+                }
+            }
+            else
+            {
+                // Add to draft
+                if (!Draft.Datasets.Contains(dataset))
+                {
+                    Draft.Datasets.Add(dataset);
+                    OnPropertyChanged(nameof(Draft));
+                    _ = EstimateResourcesAsync();
+                }
+            }
+        }
+        
+        private async Task CreateJobAsync()
+        {
+            if (HasJob) return;
+            
+            try
+            {
+                var job = await _trainingService.CreateJobAsync(Draft.Name, Draft.Modality);
+                job.OutputPath = Draft.OutputPath;
+                
+                // Transfer datasets from draft
+                foreach (var dataset in Draft.Datasets)
+                {
+                    job.DatasetIds.Add(dataset.Id);
+                }
+                
+                // TODO: Transfer other configuration from draft
+                await _trainingService.UpdateJobAsync(job);
+                
+                // This will be handled by the parent ViewModel to update selection
+                System.Diagnostics.Debug.WriteLine($"Created job: {job.Name}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to create job: {ex.Message}");
             }
         }
         
@@ -270,7 +351,7 @@ namespace Lazarus.Desktop.ViewModels.Training
                 System.Diagnostics.Debug.WriteLine($"Edit dataset: {dataset.Name}");
             }
         }
-        
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {

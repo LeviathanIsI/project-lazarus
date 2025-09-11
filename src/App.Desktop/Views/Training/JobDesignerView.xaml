@@ -45,7 +45,19 @@
                     </Border>
                     
                     <!-- Available datasets -->
-                    <TextBlock Grid.Row="1" Text="Available Conversation Datasets" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
+                    <DockPanel Grid.Row="1" Margin="8,8,8,4">
+                        <TextBlock Text="Available Conversation Datasets" Style="{StaticResource H4TextStyle}" DockPanel.Dock="Left"/>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <TextBlock Text="{Binding HasJob, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Job Mode|Draft Mode'}" 
+                                       Style="{StaticResource SecondaryTextStyle}" 
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <Button Content="Create Job" 
+                                    Command="{Binding CreateJobCommand}" 
+                                    Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                    Visibility="{Binding HasJob, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}"/>
+                        </StackPanel>
+                    </DockPanel>
                     <ListView Grid.Row="2" 
                               ItemsSource="{Binding AvailableDatasets}"
                               Style="{StaticResource VirtualizedListView}"
@@ -94,12 +106,17 @@
                     </ListView>
                     
                     <!-- Selected datasets -->
-                    <TextBlock Grid.Row="3" Text="Selected for Training" Style="{StaticResource H4TextStyle}" Margin="8,8,8,4"/>
+                    <TextBlock Grid.Row="3" Text="{Binding HasJob, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Job Datasets|Draft Datasets'}" 
+                               Style="{StaticResource H4TextStyle}" 
+                               Margin="8,8,8,4"/>
+                    
+                    <!-- Show job datasets when job exists -->
                     <ListView Grid.Row="4" 
                               ItemsSource="{Binding SelectedDatasets}"
                               Style="{StaticResource VirtualizedListView}"
                               Margin="8,0,8,8"
-                              MinHeight="120">
+                              MinHeight="120"
+                              Visibility="{Binding HasJob, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <DockPanel Margin="4" LastChildFill="True">
@@ -149,6 +166,51 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    
+                    <!-- Show draft datasets when no job -->
+                    <ListView Grid.Row="4" 
+                              ItemsSource="{Binding Draft.Datasets}"
+                              Style="{StaticResource VirtualizedListView}"
+                              Margin="8,0,8,8"
+                              MinHeight="120"
+                              Visibility="{Binding HasJob, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="4" LastChildFill="True">
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <Button Content="Sample" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.PreviewDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"
+                                                Margin="0,0,4,0"
+                                                ToolTip="Preview conversation samples"/>
+                                        <Button Content="Remove" 
+                                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.RemoveDatasetCommand}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SolidDarkButton}"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <TextBlock Text="📝" Margin="0,0,4,0"/>
+                                                <TextBlock Text="Draft" Style="{StaticResource SecondaryTextStyle}"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <DockPanel Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding Stats.TotalTokens, StringFormat='Total: {0:N0} tokens'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       FontSize="10"/>
+                                            <TextBlock Text="{Binding Stats.TotalItems, StringFormat='{0:N0} conversations'}" 
+                                                       Style="{StaticResource SecondaryTextStyle}" 
+                                                       FontSize="10" 
+                                                       HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </Grid>
             </TabItem>
             
@@ -185,7 +247,7 @@
                             
                             <StackPanel Grid.Row="0" Grid.Column="2">
                                 <TextBlock Text="Training Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                                <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                                <ComboBox Style="{StaticResource GlassComboBoxStyle}" SelectedValue="{Binding Draft.TrainingType}">
                                     <ComboBoxItem Content="LoRA Fine-tuning" IsSelected="True"/>
                                     <ComboBoxItem Content="QLoRA Fine-tuning"/>
                                     <ComboBoxItem Content="Full Fine-tuning"/>
@@ -198,7 +260,7 @@
                                 <TextBlock Text="Output Path" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                                 <DockPanel>
                                     <Button DockPanel.Dock="Right" Content="📁" Style="{StaticResource SolidDarkButton}" Margin="4,0,0,0"/>
-                                    <TextBox Text="./models/my-chat-model" Style="{StaticResource GlassTextBoxStyle}"/>
+                                    <TextBox Text="{Binding Draft.OutputPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource GlassTextBoxStyle}"/>
                                 </DockPanel>
                             </StackPanel>
                         </Grid>
@@ -281,7 +343,7 @@
                             
                             <StackPanel Grid.Row="0" Grid.Column="0">
                                 <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                                <TextBox Text="2e-4" Style="{StaticResource GlassTextBoxStyle}"/>
+                                <TextBox Text="{Binding Draft.LearningRate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource GlassTextBoxStyle}"/>
                             </StackPanel>
                             
                             <StackPanel Grid.Row="0" Grid.Column="2">
