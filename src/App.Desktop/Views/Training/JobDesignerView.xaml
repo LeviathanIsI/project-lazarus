@@ -48,7 +48,7 @@
                     <DockPanel Grid.Row="1" Margin="8,8,8,4">
                         <TextBlock Text="Available Conversation Datasets" Style="{StaticResource H4TextStyle}" DockPanel.Dock="Left"/>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <TextBlock Text="{Binding HasJob, Converter={StaticResource BoolToVis}, ConverterParameter='Job Mode|Draft Mode'}" 
+                            <TextBlock Text="Draft Mode" 
                                        Style="{StaticResource SecondaryTextStyle}" 
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
@@ -115,7 +115,6 @@
                               Style="{StaticResource VirtualizedListView}"
                               Margin="8,0,8,8"
                               MinHeight="120"
-                              Visibility="{Binding HasJob, Converter={StaticResource BoolToVis}}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <DockPanel Margin="4" LastChildFill="True">

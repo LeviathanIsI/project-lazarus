@@ -128,27 +128,27 @@
                         Style="{StaticResource RainbowAccentButton.AutoFit}" 
                         Margin="0,0,8,0"
                         ToolTip="Start selected training jobs (Ctrl+Enter)"
-                        Visibility="{Binding JobDesigner.HasJob, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+"/>
                 <Button Content="Pause"   
                         Command="{Binding PauseCommand}"   
                         IsEnabled="{Binding CanPause}"   
                         Style="{StaticResource SolidDarkButton}" 
                         Margin="0,0,8,0"
                         ToolTip="Pause running jobs (Ctrl+P)"
-                        Visibility="{Binding JobDesigner.HasJob, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+"/>
                 <Button Content="Stop"    
                         Command="{Binding StopCommand}"    
                         IsEnabled="{Binding CanStop}"    
                         Style="{StaticResource SolidDarkButton}" 
                         Margin="0,0,8,0"
                         ToolTip="Stop running/paused jobs (Ctrl+.)"
-                        Visibility="{Binding JobDesigner.HasJob, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+"/>
                 <Button Content="Export"  
                         Command="{Binding ExportCommand}"  
                         IsEnabled="{Binding CanExport}"  
                         Style="{StaticResource SolidDarkButton}"
                         ToolTip="Export completed job results"
-                        Visibility="{Binding JobDesigner.HasJob, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+"/>
             </StackPanel>
         </DockPanel>
     </Grid>
