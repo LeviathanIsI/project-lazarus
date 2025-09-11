@@ -13,7 +13,7 @@
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="48"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="380"/>
@@ -27,7 +27,7 @@
                 Padding="16">
             <DockPanel LastChildFill="True">
                 <!-- Toolbar (wraps on narrow widths) -->
-                <WrapPanel DockPanel.Dock="Top" Margin="0,4,0,12" ItemHeight="32">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,4,0,12">
                     <Button Content="Upload audio" Command="{Binding ImportCmd}"
                             Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,8"/>
                     <Button Content="Record audio" Command="{Binding RecordCmd}"
@@ -315,7 +315,8 @@
         <Border Grid.Row="1" Grid.ColumnSpan="3"
                 Style="{StaticResource GlassCardStyle}"
                 Margin="12,12,12,12"
-                Padding="12">
+                Padding="12"
+                MinHeight="64">
             <DockPanel LastChildFill="True">
                 <StackPanel Orientation="Horizontal">
                     <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}" Style="{StaticResource SolidDarkButton}"/>
