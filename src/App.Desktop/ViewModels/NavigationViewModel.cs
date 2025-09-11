@@ -151,7 +151,16 @@ namespace Lazarus.Desktop.ViewModels
             try
             {
                 var view = new Views.Audio.AudioView();
-                // Optionally wire a scoped ViewModel via DI if needed later
+                // Wire a scoped ViewModel via DI
+                if (App.ServiceProvider != null)
+                {
+                    try
+                    {
+                        var vm = App.ServiceProvider.GetRequiredService<Lazarus.Desktop.ViewModels.Audio.AudioViewModel>();
+                        view.DataContext = vm;
+                    }
+                    catch { /* leave DataContext null if DI not ready */ }
+                }
                 return view;
             }
             catch (Exception ex)

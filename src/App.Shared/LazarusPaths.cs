@@ -184,6 +184,39 @@ public static class LazarusPaths
     }
 
     /// <summary>
+    /// Audio workspace under %LOCALAPPDATA%\Lazarus\Audio
+    /// </summary>
+    public static class Audio
+    {
+        public static readonly string RootDir   = Path.Combine(Root, "Audio");
+        public static readonly string Input     = Path.Combine(RootDir, "Input");
+        public static readonly string Processed = Path.Combine(RootDir, "Processed");
+        public static readonly string Temp      = Path.Combine(RootDir, "Temp");
+        public static readonly string Models    = Path.Combine(RootDir, "Models");
+        public static readonly string Models_Asr   = Path.Combine(Models, "ASR");
+        public static readonly string Models_Tts   = Path.Combine(Models, "TTS");
+        public static readonly string Models_Tts_Piper = Path.Combine(Models_Tts, "Piper");
+        public static readonly string Models_Vad   = Path.Combine(Models, "VAD");
+        public static readonly string Engines   = Path.Combine(RootDir, "Engines");
+        public static readonly string Waveforms = Path.Combine(Temp, "waveforms");
+
+        /// <summary>
+        /// Create only missing directories. Never deletes.
+        /// </summary>
+        public static void EnsureDirectories()
+        {
+            var dirs = new[]
+            {
+                RootDir, Input, Processed, Temp, Models, Models_Asr, Models_Tts, Models_Tts_Piper, Models_Vad, Engines, Waveforms
+            };
+            foreach (var d in dirs)
+            {
+                try { Directory.CreateDirectory(d); } catch { /* best-effort */ }
+            }
+        }
+    }
+
+    /// <summary>
     /// User content under %LOCALAPPDATA%\Lazarus\User-Content
     /// </summary>
     public static class UserContent

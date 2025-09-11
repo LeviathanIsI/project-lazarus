@@ -9,6 +9,7 @@ using Lazarus.Backend.Services.Chat;
 using Lazarus.Backend.Services.Image;
 using Lazarus.Shared.Enums;
 using Lazarus.Backend.Services.Settings;
+using Lazarus.Backend.Services.Audio;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +45,7 @@ public static class ServiceCollectionExtensions
 
         // Add core services
         services.AddLazarusCore(configuration);
-        services.AddLazarusUI();
+        services.AddLazarusUI(configuration);
         services.AddLazarusViewModels();
         services.AddLazarusBackgroundServices();
 
@@ -150,7 +151,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddLazarusUI(this IServiceCollection services)
+        public static IServiceCollection AddLazarusUI(this IServiceCollection services, IConfiguration configuration)
         {
             // Singleton services for app-wide state
         services.AddSingleton<INavigationService, NavigationService>();
@@ -174,6 +175,27 @@ public static class ServiceCollectionExtensions
 
         // Chat persistence service (singleton that creates scoped repos internally)
         services.AddSingleton<Lazarus.Desktop.Services.IChatService, ChatService>();
+        
+        // Audio service - use preview mode if configured (legacy v1 API)
+        var audioPreviewMode = configuration.GetValue<bool>("AudioUi:PreviewMode", false);
+        if (audioPreviewMode)
+        {
+            services.AddSingleton<IAudioService, AudioServicePreview>();
+        }
+        else
+        {
+            services.AddSingleton<IAudioService, AudioService>();
+        }
+
+        // Audio V2 contracts/services (thin, testable stubs)
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IAudioLibrary, Lazarus.Backend.Services.Audio.AudioLibraryStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IAudioTransport, Lazarus.Backend.Services.Audio.AudioTransportStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IAsrService, Lazarus.Backend.Services.Audio.AsrServiceStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.INoiseService, Lazarus.Backend.Services.Audio.NoiseServiceStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IVadService, Lazarus.Backend.Services.Audio.VadServiceStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IConversionService, Lazarus.Backend.Services.Audio.ConversionServiceStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.ITtsService, Lazarus.Backend.Services.Audio.TtsServiceStub>();
+        services.AddSingleton<Lazarus.Backend.Services.Audio.IVoiceCloneService, Lazarus.Backend.Services.Audio.VoiceCloneServiceStub>();
 
         return services;
     }
