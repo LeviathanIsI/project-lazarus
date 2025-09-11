@@ -37,6 +37,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand PauseCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand ExportCommand { get; }
+        public ICommand ToggleMonitorDockCommand { get; }
 
         public bool CanStart { get; private set; } = true;
         public bool CanPause { get; private set; } = false;
@@ -56,6 +57,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             PauseCommand = new RelayCommand(async _ => await PauseSelectedJobsAsync(), _ => CanPause);
             StopCommand = new RelayCommand(async _ => await StopSelectedJobsAsync(), _ => CanStop);
             ExportCommand = new RelayCommand(async _ => await ExportSelectedJobAsync(), _ => CanExport);
+            ToggleMonitorDockCommand = new RelayCommand(_ => IsMonitorOpen = !IsMonitorOpen);
             
             // Wire up cross-VM communication
             JobsSidebar.SelectedJobChanged += OnSelectedJobChanged;

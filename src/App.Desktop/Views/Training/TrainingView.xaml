@@ -63,7 +63,7 @@
                                         <Setter.Value>
                                             <DockPanel>
                                                 <TextBlock DockPanel.Dock="Top" Text="Voice Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="🎙️ Voice model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
                                             </DockPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -83,7 +83,7 @@
                                         <Setter.Value>
                                             <DockPanel>
                                                 <TextBlock DockPanel.Dock="Top" Text="3D Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="🗿 3D model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
                                             </DockPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -93,7 +93,7 @@
                                         <Setter.Value>
                                             <DockPanel>
                                                 <TextBlock DockPanel.Dock="Top" Text="Entity Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="🏷️ Entity model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
                                             </DockPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -103,7 +103,7 @@
                                         <Setter.Value>
                                             <DockPanel>
                                                 <TextBlock DockPanel.Dock="Top" Text="Video Models" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="🎬 Video model training coming soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:JobsSidebarView DataContext="{Binding JobsSidebar}"/>
                                             </DockPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -157,7 +157,7 @@
                                                 <StackPanel>
                                                     <TextBlock Text="Voice Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
                                                     <TextBlock Text="Train voice synthesis, recognition, or audio processing models." TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                                    <TextBlock Text="🎙️ Audio Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
                                                 </StackPanel>
                                             </Setter.Value>
                                         </Setter>
@@ -179,7 +179,7 @@
                                                 <StackPanel>
                                                     <TextBlock Text="3D Models Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
                                                     <TextBlock Text="Train 3D model generation, mesh processing, or spatial understanding models." TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                                    <TextBlock Text="🗿 3D Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
                                                 </StackPanel>
                                             </Setter.Value>
                                         </Setter>
@@ -190,7 +190,7 @@
                                                 <StackPanel>
                                                     <TextBlock Text="Entities Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
                                                     <TextBlock Text="Train named entity recognition, relationship extraction, or knowledge graph models." TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                                    <TextBlock Text="🏷️ Entity Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
                                                 </StackPanel>
                                             </Setter.Value>
                                         </Setter>
@@ -201,7 +201,7 @@
                                                 <StackPanel>
                                                     <TextBlock Text="Video Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
                                                     <TextBlock Text="Train video generation, analysis, or motion understanding models." TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                                    <TextBlock Text="🎬 Video Training Features Coming Soon" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}"/>
+                                                    <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
                                                 </StackPanel>
                                             </Setter.Value>
                                         </Setter>
@@ -260,7 +260,7 @@
                                         <Setter.Value>
                                             <StackPanel>
                                                 <TextBlock Text="Voice Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="Voice training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:InspectorView DataContext="{Binding Inspector}"/>
                                             </StackPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -280,7 +280,7 @@
                                         <Setter.Value>
                                             <StackPanel>
                                                 <TextBlock Text="3D Model Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="3D model training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:InspectorView DataContext="{Binding Inspector}"/>
                                             </StackPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -290,7 +290,7 @@
                                         <Setter.Value>
                                             <StackPanel>
                                                 <TextBlock Text="Entity Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="Entity training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:InspectorView DataContext="{Binding Inspector}"/>
                                             </StackPanel>
                                         </Setter.Value>
                                     </Setter>
@@ -300,7 +300,7 @@
                                         <Setter.Value>
                                             <StackPanel>
                                                 <TextBlock Text="Video Details" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
-                                                <TextBlock Text="Video training details will be shown here when available." TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"/>
+                                                <views:InspectorView DataContext="{Binding Inspector}"/>
                                             </StackPanel>
                                         </Setter.Value>
                                     </Setter>
