@@ -201,7 +201,7 @@
                                     
                                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
                                         <TextBlock Text="Blendshape Weights (Facial)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                                        <TextBox Text="{Binding Params[BlendshapeWeights], UpdateSourceTrigger=PropertyChanged}" PlaceholderText="brows,eyes,cheeks"/>
+                                        <TextBox Text="{Binding Params[BlendshapeWeights], UpdateSourceTrigger=PropertyChanged}"/>
                                     </StackPanel>
                                     
                                     <!-- Row 3: Pose Regularization & Physics -->
@@ -309,8 +309,7 @@
                                         <TextBlock Text="Regularization Dataset (Idle Talking-Heads)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                                         <DockPanel>
                                             <Button DockPanel.Dock="Right" Content="📁" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
-                                            <TextBox Text="{Binding Params[RegularizationDataset], UpdateSourceTrigger=PropertyChanged}" 
-                                                     PlaceholderText="Optional: path to idle talking-heads for smoother states"/>
+                                            <TextBox Text="{Binding Params[RegularizationDataset], UpdateSourceTrigger=PropertyChanged}"/>
                                         </DockPanel>
                                     </StackPanel>
                                 </Grid>
