@@ -57,7 +57,7 @@
                   </DataTemplate>
                 </GridViewColumn.CellTemplate>
               </GridViewColumn>
-              <GridViewColumn Width="*" Header="Name" DisplayMemberBinding="{Binding FileName}"/>
+              <GridViewColumn Width="260" Header="Name" DisplayMemberBinding="{Binding FileName}"/>
               <GridViewColumn Width="80" Header="Duration" DisplayMemberBinding="{Binding DurationDisplay}"/>
               <GridViewColumn Width="80" Header="Size" DisplayMemberBinding="{Binding SizeDisplay}"/>
               <GridViewColumn Width="130" Header="Modified">
