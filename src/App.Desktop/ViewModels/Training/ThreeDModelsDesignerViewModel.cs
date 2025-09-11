@@ -150,12 +150,14 @@ namespace Lazarus.Desktop.ViewModels.Training
             Params["NerfRegWeight"] = "0.001";
             Params["TVLoss"] = "true";
             Params["SparsityLoss"] = "false";
+            Params["TVLossWeight"] = "0.001";
+            Params["SparsityLossWeight"] = "0.0001";
 
             // Mesh Training Settings
             Params["VertexCountLimit"] = "100K";
             Params["TextureResolution"] = "1024x1024";
             Params["SurfaceLossFunction"] = "Chamfer Distance";
-            Params["LaplacianSmoothingWeight"] = "0.1";
+            Params["LaplacianWeight"] = "0.1";
             Params["MeshCheckpointFreq"] = "1000";
             Params["DecimationToggle"] = "false";
 
@@ -168,11 +170,12 @@ namespace Lazarus.Desktop.ViewModels.Training
             Params["SpatialAugmentations"] = "true";
 
             // General Advanced Controls
-            Params["AdvancedOptimizer"] = "adamw";
-            Params["AdvancedLRScheduler"] = "cosine";
-            Params["AdvancedGradClipNorm"] = "1.0";
-            Params["AdvancedPrecision"] = "FP16";
-            Params["AdvancedValidationSplit"] = "0.1";
+            Params["GeneralOptimizer"] = "adamw";
+            Params["GeneralLRScheduler"] = "cosine";
+            Params["GeneralGradClip"] = "1.0";
+            Params["GeneralPrecision"] = "FP16";
+            Params["GeneralValidationSplit"] = "0.1";
+            Params["GeneralTrainingSteps"] = "100000";
         }
 
         private void SetLearningRate(string? rate)

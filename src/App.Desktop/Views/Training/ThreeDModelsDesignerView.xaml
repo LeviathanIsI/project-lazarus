@@ -171,6 +171,46 @@
                                     </StackPanel>
                                 </Grid>
                                 
+                                <!-- Additional NeRF Settings -->
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Coarse→Fine Steps / Render Resolution -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Coarse→Fine Sampling Steps" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[CoarseFineSteps], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Render Resolution" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[RenderResolution]}">
+                                            <ComboBoxItem Content="256x256"/>
+                                            <ComboBoxItem Content="512x512"/>
+                                            <ComboBoxItem Content="800x800"/>
+                                            <ComboBoxItem Content="1024x1024"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: TV Loss Weight / Sparsity Loss Weight -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="TV Loss Weight" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[TVLossWeight], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Sparsity Loss Weight" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[SparsityLossWeight], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Grid>
+                                
                                 <!-- NeRF Options -->
                                 <StackPanel Margin="0,0,0,16">
                                     <TextBlock Text="NeRF Regularization" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
@@ -183,6 +223,67 @@
                                 
                                 <!-- Mesh Training Settings -->
                                 <TextBlock Text="Mesh Training" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
+                                
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Vertex Count / Texture Resolution -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Vertex Count Limit" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[VertexCountLimit]}">
+                                            <ComboBoxItem Content="10K"/>
+                                            <ComboBoxItem Content="50K"/>
+                                            <ComboBoxItem Content="100K"/>
+                                            <ComboBoxItem Content="500K"/>
+                                            <ComboBoxItem Content="1M"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Texture Resolution (UV)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[TextureResolution]}">
+                                            <ComboBoxItem Content="512x512"/>
+                                            <ComboBoxItem Content="1024x1024"/>
+                                            <ComboBoxItem Content="2048x2048"/>
+                                            <ComboBoxItem Content="4096x4096"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Surface Loss / Laplacian Weight -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Surface Loss Function" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[SurfaceLossFunction]}">
+                                            <ComboBoxItem Content="Chamfer Distance"/>
+                                            <ComboBoxItem Content="Normal Consistency"/>
+                                            <ComboBoxItem Content="Combined"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Laplacian Weight" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[LaplacianWeight], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 3: Checkpoint Frequency / Decimation -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Checkpoint Every (steps)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[MeshCheckpointFreq], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,8">
+                                        <CheckBox Content="Decimation Toggle (Simplify)" IsChecked="{Binding Params[DecimationToggle], Converter={StaticResource StringToBooleanConverter}}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                                
                                 <WrapPanel Margin="0,0,0,12">
                                     <CheckBox Content="Surface Smoothing" IsChecked="{Binding Params[SurfaceSmoothing], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
                                     <CheckBox Content="Laplacian Reg" IsChecked="{Binding Params[LaplacianReg], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
@@ -191,10 +292,123 @@
                                 
                                 <!-- Point Cloud Training -->
                                 <TextBlock Text="Point Cloud Training" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
-                                <WrapPanel>
+                                
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Number of Points / Point Radius -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Number of Points" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[NumberOfPoints]}">
+                                            <ComboBoxItem Content="10K"/>
+                                            <ComboBoxItem Content="50K"/>
+                                            <ComboBoxItem Content="100K"/>
+                                            <ComboBoxItem Content="500K"/>
+                                            <ComboBoxItem Content="1M"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Point Radius/Kernel Size" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[PointRadius], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Distance Metric / Noise Injection -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Distance Metric" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[DistanceMetric]}">
+                                            <ComboBoxItem Content="Chamfer Distance"/>
+                                            <ComboBoxItem Content="Earth Mover's Distance"/>
+                                            <ComboBoxItem Content="Hausdorff Distance"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Noise Injection (Gaussian)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[NoiseInjection], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <WrapPanel Margin="0,0,0,16">
                                     <CheckBox Content="Color Learning (XYZRGB)" IsChecked="{Binding Params[ColorLearning], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
                                     <CheckBox Content="Spatial Augmentations" IsChecked="{Binding Params[SpatialAugmentations], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
                                 </WrapPanel>
+                                
+                                <!-- General Advanced Controls (All 3D Types) -->
+                                <TextBlock Text="General Advanced Controls" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
+                                
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Row 1: Optimizer / LR Scheduler -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Optimizer" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GeneralOptimizer]}">
+                                            <ComboBoxItem Content="adam"/>
+                                            <ComboBoxItem Content="adamw"/>
+                                            <ComboBoxItem Content="rmsprop"/>
+                                            <ComboBoxItem Content="sgd"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="LR Scheduler" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GeneralLRScheduler]}">
+                                            <ComboBoxItem Content="linear"/>
+                                            <ComboBoxItem Content="cosine"/>
+                                            <ComboBoxItem Content="step"/>
+                                            <ComboBoxItem Content="exponential"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 2: Gradient Clipping / Precision -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Gradient Clipping (norm)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[GeneralGradClip], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Precision" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GeneralPrecision]}">
+                                            <ComboBoxItem Content="FP32"/>
+                                            <ComboBoxItem Content="FP16"/>
+                                            <ComboBoxItem Content="bfloat16"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Row 3: Validation Split / Additional Training Controls -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Validation Split %" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <ComboBox SelectedValue="{Binding Params[GeneralValidationSplit]}">
+                                            <ComboBoxItem Content="0"/>
+                                            <ComboBoxItem Content="0.1"/>
+                                            <ComboBoxItem Content="0.15"/>
+                                            <ComboBoxItem Content="0.2"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,8">
+                                        <TextBlock Text="Training Steps Override" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                        <TextBox Text="{Binding Params[GeneralTrainingSteps], UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
