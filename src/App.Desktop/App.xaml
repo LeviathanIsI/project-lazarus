@@ -25,6 +25,7 @@
                 <!-- Settings section view templates -->
                 <ResourceDictionary Source="Resources/SettingsTemplates.xaml"/>
                 <!-- Training resources (panels, chips, dataset previews) -->
+                <ResourceDictionary Source="Resources/Training/TrainingResources.xaml"/>
                 <ResourceDictionary Source="Resources/TrainingStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
