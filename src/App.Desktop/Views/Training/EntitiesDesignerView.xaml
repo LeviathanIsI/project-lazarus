@@ -41,7 +41,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Recognition Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}">
                             <ComboBoxItem Content="Named Entity Recognition"/>
                             <ComboBoxItem Content="Relationship Extraction"/>
                             <ComboBoxItem Content="Knowledge Graph"/>

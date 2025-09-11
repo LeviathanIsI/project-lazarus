@@ -98,7 +98,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}" SelectedValue="{Binding Params[BaseModel]}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}" SelectedValue="{Binding Params[BaseModel]}">
                             <ComboBoxItem Content="llama-2-7b-chat"/>
                             <ComboBoxItem Content="llama-2-13b-chat"/>
                             <ComboBoxItem Content="mistral-7b-instruct"/>
@@ -108,7 +108,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Training Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}" SelectedValue="{Binding Params[TrainingType]}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}" SelectedValue="{Binding Params[TrainingType]}">
                             <ComboBoxItem Content="LoRA"/>
                             <ComboBoxItem Content="QLoRA"/>
                             <ComboBoxItem Content="Full Fine-tune"/>
@@ -119,12 +119,12 @@
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource GlassTextBoxStyle}"/>
+                                 Style="{StaticResource {x:Type TextBox}}"/>
                     </StackPanel>
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Chat Template" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}" SelectedValue="{Binding Params[ChatTemplate]}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}" SelectedValue="{Binding Params[ChatTemplate]}">
                             <ComboBoxItem Content="ChatML"/>
                             <ComboBoxItem Content="Alpaca"/>
                             <ComboBoxItem Content="Vicuna"/>

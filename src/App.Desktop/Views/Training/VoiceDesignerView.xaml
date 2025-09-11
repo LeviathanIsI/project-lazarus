@@ -75,7 +75,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}">
                             <ComboBoxItem Content="whisper-large"/>
                             <ComboBoxItem Content="whisper-medium"/>
                             <ComboBoxItem Content="wav2vec2"/>
@@ -85,13 +85,13 @@
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Sample Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding Params[SampleRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource GlassTextBoxStyle}"/>
+                                 Style="{StaticResource {x:Type TextBox}}"/>
                     </StackPanel>
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource GlassTextBoxStyle}"/>
+                                 Style="{StaticResource {x:Type TextBox}}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -66,7 +66,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}">
                             <ComboBoxItem Content="nerf-base"/>
                             <ComboBoxItem Content="gaussian-splatting"/>
                             <ComboBoxItem Content="instant-ngp"/>
@@ -76,7 +76,7 @@
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource GlassTextBoxStyle}"/>
+                                 Style="{StaticResource {x:Type TextBox}}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -75,7 +75,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}">
                             <ComboBoxItem Content="stable-diffusion-xl"/>
                             <ComboBoxItem Content="stable-diffusion-2.1"/>
                             <ComboBoxItem Content="dall-e-3"/>
@@ -84,7 +84,7 @@
                     
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Resolution" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource GlassComboBoxStyle}">
+                        <ComboBox Style="{StaticResource {x:Type ComboBox}}">
                             <ComboBoxItem Content="512x512"/>
                             <ComboBoxItem Content="768x768"/>
                             <ComboBoxItem Content="1024x1024"/>
@@ -94,7 +94,7 @@
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource GlassTextBoxStyle}"/>
+                                 Style="{StaticResource {x:Type TextBox}}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
