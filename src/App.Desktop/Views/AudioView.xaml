@@ -34,8 +34,7 @@
                                 Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,0"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                        <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview" Margin="0,0,8,0"
-                                      Style="{StaticResource SecondaryGlassButtonStyle}"/>
+                        <ToggleButton IsChecked="{Binding IsPreviewEnabled}" Content="👁 Preview" Margin="0,0,8,0"/>
                         <ComboBox Width="140" SelectedItem="{Binding SortMode}">
                             <ComboBoxItem Content="Name"/>
                             <ComboBoxItem Content="Date"/>
