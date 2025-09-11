@@ -32,7 +32,7 @@
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}"
                           Content="Design Progress"
                           Margin="16,0,0,0"
-                          IsChecked="{Binding SelectedModality, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Design Progress}"/>
+                          IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=DesignProgress}"/>
         </StackPanel>
 
         <!-- Main regions -->

@@ -57,7 +57,12 @@ namespace Lazarus.Desktop.ViewModels.Training
                         _ => Conversations
                     };
                     
-                    IsProgressMode = (value == "Design Progress" || value == "DesignProgress");
+                    // Keep SelectedModality normalized to avoid converter string mismatches
+                    if (value == "Design Progress")
+                        _selectedModality = "DesignProgress";
+                    OnPropertyChanged(nameof(SelectedModality));
+                    
+                    IsProgressMode = (_selectedModality == "DesignProgress");
                 }
             }
         }
