@@ -24,10 +24,10 @@
         <!-- LEFT: Library -->
         <Border Grid.Row="0" Grid.Column="0"
                 Style="{StaticResource GlassCardStyle}"
-                Padding="12">
+                Padding="16">
             <DockPanel LastChildFill="True">
                 <!-- Toolbar (wraps on narrow widths) -->
-                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" ItemHeight="32">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,4,0,12" ItemHeight="32">
                     <Button Content="Upload audio" Command="{Binding ImportCmd}"
                             Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,8,8"/>
                     <Button Content="Record audio" Command="{Binding RecordCmd}"
@@ -314,13 +314,14 @@
         <!-- BOTTOM: Transport -->
         <Border Grid.Row="1" Grid.ColumnSpan="3"
                 Style="{StaticResource GlassCardStyle}"
-                Padding="8">
+                Margin="12,12,12,12"
+                Padding="12">
             <DockPanel LastChildFill="True">
                 <StackPanel Orientation="Horizontal">
                     <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}" Style="{StaticResource SolidDarkButton}"/>
                     <Button Command="{Binding StopCmd}" Content="⏹" Style="{StaticResource SolidDarkButton}" Margin="8,0,0,0"/>
                 </StackPanel>
-                <Slider Margin="12,0" Style="{StaticResource RainbowGlassSliderStyle}"
+                <Slider Margin="16,0,16,0" Style="{StaticResource RainbowGlassSliderStyle}"
                         Minimum="0"
                         Maximum="{Binding DurationSeconds}"
                         Value="{Binding PositionSeconds, Mode=TwoWay}"/>
