@@ -138,7 +138,7 @@ namespace Lazarus.Desktop.ViewModels
                 "Models" => new Views.ModelsView(),
                 "ThreeDModels" => new Views.ThreeDModelsView(),
                 "Audio" => CreateAudioViewSafe(),
-                "Training" => new Views.Training.TrainingView(),
+                "Training" => CreateTrainingViewSafe(),
                 "Settings" => CreateSettingsViewSafe(),
                 _ => new Views.DashboardView()
             };
@@ -193,6 +193,21 @@ namespace Lazarus.Desktop.ViewModels
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Failed to create ChatSessionsView");
+                return new Views.DashboardView();
+            }
+        }
+
+        private object CreateTrainingViewSafe()
+        {
+            try
+            {
+                // TrainingView creates its own ViewModel, just return the view
+                return new Views.Training.TrainingView();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to create TrainingView");
+                // Fall back to dashboard to avoid showing stale content
                 return new Views.DashboardView();
             }
         }

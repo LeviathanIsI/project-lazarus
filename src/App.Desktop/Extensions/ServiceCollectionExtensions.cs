@@ -11,6 +11,7 @@ using Lazarus.Shared.Enums;
 using Lazarus.Backend.Services.Settings;
 using Lazarus.Backend.Services.Audio;
 using Lazarus.Desktop.ViewModels;
+using Lazarus.Shared.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,6 +49,9 @@ public static class ServiceCollectionExtensions
         services.AddLazarusUI(configuration);
         services.AddLazarusViewModels();
         services.AddLazarusBackgroundServices();
+        
+        // Add training services (TODO: replace with actual implementation)
+        services.AddSingleton<ITrainingService, MockTrainingService>();
 
         return services;
     }
