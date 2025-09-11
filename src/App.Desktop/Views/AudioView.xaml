@@ -292,15 +292,33 @@
                                 ToolTip="Drag the handle to set transpose"/>
                         <TextBlock Text="{Binding Transpose}" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right" Margin="0,2,0,0"/>
 
-                        <TextBlock Text="No. of generations" Style="{StaticResource SecondaryTextStyle}" Margin="0,12,0,4"/>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="-" Width="28" Style="{StaticResource SolidDarkButton}" Command="{Binding DecreaseNumGenerationsCmd}"/>
-                            <TextBox Width="48" Margin="6,0" HorizontalContentAlignment="Center"
-                                     Text="{Binding NumGenerations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource GlassTextBoxStyle}"/>
-                            <Button Content="+" Width="28" Style="{StaticResource SolidDarkButton}" Command="{Binding IncreaseNumGenerationsCmd}"/>
+                        <TextBlock Text="No. of generations" Style="{StaticResource SecondaryTextStyle}" Margin="0,14,0,6"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,4">
+                            <Button Content="–" Style="{StaticResource SolidDarkButton.Compact}" Command="{Binding DecreaseNumGenerationsCmd}" ToolTip="Decrease"/>
+                            <Grid Margin="8,0" Width="64">
+                                <TextBox x:Name="NumGenBox"
+                                         HorizontalContentAlignment="Center"
+                                         Text="{Binding NumGenerations, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource GlassTextBoxStyle}"/>
+                                <!-- Placeholder watermark -->
+                                <TextBlock Text="1–4" Foreground="{StaticResource TextSecondaryBrush}"
+                                           IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=NumGenBox}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <Button Content="+" Style="{StaticResource SolidDarkButton.Compact}" Command="{Binding IncreaseNumGenerationsCmd}" ToolTip="Increase"/>
                         </StackPanel>
-                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True"
+                        <TextBlock Text="Number of output variations to generate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,6"/>
+                        <Slider Minimum="1" Maximum="4" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Ticks="1,2,3,4"
                                 Value="{Binding NumGenerations}" Style="{StaticResource RainbowGlassSliderStyle}"
                                 ToolTip="Drag the handle to set number of generations"/>
 
