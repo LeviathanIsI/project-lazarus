@@ -33,6 +33,8 @@
 
             <!-- Value Converters -->
             <converters:StringToBooleanConverter x:Key="StringToBooleanConverter"/>
+            <converters:ModalityToLeftHeaderConverter x:Key="ModalityToLeftHeaderConverter"/>
+            <converters:ModalityToRightHeaderConverter x:Key="ModalityToRightHeaderConverter"/>
             <converters:MillisecondsToSecondsConverter x:Key="MillisecondsToSecondsConverter"/>
 
             <!-- Ensure all ScrollViewers respond to mouse wheel scrolling -->

@@ -27,6 +27,62 @@ public class StringToBooleanConverter : IValueConverter
 }
 
 /// <summary>
+/// Maps the selected modality to the left panel header text.
+/// </summary>
+public class ModalityToLeftHeaderConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var modality = value?.ToString() ?? string.Empty;
+        return modality switch
+        {
+            "Conversations" => "Conversation Models",
+            "Voice" => "Voice Models",
+            "Images" => "Image Models",
+            "ThreeD" => "3D Models",
+            "Entities" => "Entities",
+            "Videos" => "Video Files",
+            "Design Progress" => "Mission Control",
+            "DesignProgress" => "Mission Control",
+            _ => "Models"
+        };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+}
+
+/// <summary>
+/// Maps the selected modality to the right panel header text.
+/// </summary>
+public class ModalityToRightHeaderConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var modality = value?.ToString() ?? string.Empty;
+        return modality switch
+        {
+            "Conversations" => "Conversation Details",
+            "Voice" => "Voice Details",
+            "Images" => "Image Details",
+            "ThreeD" => "3D Model Details",
+            "Entities" => "Entity Details",
+            "Videos" => "Video Details",
+            "Design Progress" => "Job Details",
+            "DesignProgress" => "Job Details",
+            _ => "Details"
+        };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+}
+
+/// <summary>
 /// Converts milliseconds to seconds for display
 /// </summary>
 public class MillisecondsToSecondsConverter : IValueConverter
