@@ -94,7 +94,7 @@
                         </StackPanel>
                         
                         <!-- Lip Sync Expander -->
-                        <Expander Header="Lip Sync & Mouth Movement" IsExpanded="False" Margin="0,8,0,0">
+                        <Expander Header="Lip Sync and Mouth Movement" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -125,7 +125,7 @@
                         </Expander>
                         
                         <!-- Gesture Animation Expander -->
-                        <Expander Header="Gesture & Body Animation" IsExpanded="False" Margin="0,8,0,0">
+                        <Expander Header="Gesture and Body Animation" IsExpanded="False" Margin="0,8,0,0">
                             <StackPanel Margin="0,8,0,0">
                                 <WrapPanel>
                                     <CheckBox Content="Hair Physics" IsChecked="{Binding Params[HairPhysics], Converter={StaticResource StringToBooleanConverter}}" Margin="0,0,12,4"/>
