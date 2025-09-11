@@ -9,7 +9,7 @@
     <!-- If you already have theme resources (GlassSurface, Border, etc.), they’ll apply.
          If not, WPF defaults still render fine. -->
 
-    <Grid Background="{DynamicResource AppBackgroundBrush}">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="48"/>
@@ -22,10 +22,8 @@
 
         <!-- LEFT: Library -->
         <Border Grid.Row="0" Grid.Column="0"
-                CornerRadius="12"
-                Padding="12"
-                Background="{DynamicResource GlassSurface}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                Style="{StaticResource GlassCardStyle}"
+                Padding="12">
             <DockPanel LastChildFill="True">
                 <!-- Toolbar -->
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" >
@@ -48,7 +46,7 @@
                     <TextBlock Text="Search audio…"
                                Margin="6,0,0,0"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                IsHitTestVisible="False">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
@@ -75,7 +73,7 @@
                             <GridViewColumn Width="80" Header="Wave">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Rectangle Height="16" Fill="{DynamicResource AccentBrush}">
+                                        <Rectangle Height="16" Fill="{StaticResource RainbowFlowBrush}">
                                             <Rectangle.OpacityMask>
                                                 <!-- Placeholder sparkline -->
                                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -107,14 +105,12 @@
         </Border>
 
         <!-- Divider -->
-        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource BorderBrush}" CornerRadius="4"/>
+        <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource GlassBorderBrush}" CornerRadius="4"/>
 
         <!-- RIGHT: Details -->
         <Border Grid.Row="0" Grid.Column="2"
-                CornerRadius="12"
-                Padding="12"
-                Background="{DynamicResource GlassSurfaceAlt}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                Style="{StaticResource GlassCardStyle}"
+                Padding="12">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="260"/>
@@ -125,13 +121,12 @@
 
                 <!-- Big Waveform (placeholder) -->
                 <Border Grid.Row="0" CornerRadius="10" Padding="12"
-                        Background="{DynamicResource GlassSurface}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        Style="{StaticResource GlassCardStyle}">
                     <Grid>
                         <TextBlock Text="{Binding ActiveItem.Name, FallbackValue=No Selection}"
-                                   FontSize="14" Foreground="{DynamicResource SubtleBrush}"/>
+                                   FontSize="14" Foreground="{StaticResource TextSecondaryBrush}"/>
                         <Viewbox Stretch="Fill" Margin="0,24,0,0">
-                            <Path StrokeThickness="2" Stroke="{DynamicResource AccentBrush}"
+                            <Path StrokeThickness="2" Stroke="{StaticResource RainbowFlowBrush}"
                                   Data="M 0,50 L 40,30 80,55 120,10 160,60 200,35 240,50 280,20 320,70 360,50"/>
                         </Viewbox>
                     </Grid>
@@ -139,39 +134,38 @@
 
                 <!-- File Info -->
                 <Border Grid.Row="1" Margin="0,12,0,8" Padding="12" CornerRadius="10"
-                        Background="{DynamicResource GlassSurface}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        Style="{StaticResource GlassCardStyle}">
                     <UniformGrid Columns="4" Rows="2">
                         <StackPanel>
-                            <TextBlock Text="Duration" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Duration" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Duration, FallbackValue=—}"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="Sample Rate" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Sample Rate" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.SampleRate, FallbackValue=44\,100 Hz}"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="Channels" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Channels" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Channels, FallbackValue=Mono}"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="Bitrate" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Bitrate" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Bitrate, FallbackValue=256 kbps}"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="Format" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Format" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Format, FallbackValue=wav}"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="Size" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Size" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Size, FallbackValue=—}"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="Path" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="Path" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Path, FallbackValue=—}" TextTrimming="CharacterEllipsis" Width="260"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="SHA256" Foreground="{DynamicResource SubtleBrush}" FontSize="12"/>
+                            <TextBlock Text="SHA256" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             <TextBlock Text="{Binding ActiveItem.Hash, FallbackValue=—}" TextTrimming="CharacterEllipsis" Width="260"/>
                         </StackPanel>
                     </UniformGrid>
@@ -193,8 +187,7 @@
 
                 <!-- Jobs -->
                 <Border Grid.Row="3" Margin="0,12,0,0" Padding="12" CornerRadius="10"
-                        Background="{DynamicResource GlassSurface}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        Style="{StaticResource GlassCardStyle}">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="Jobs" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ItemsControl ItemsSource="{Binding Jobs}">
@@ -203,7 +196,7 @@
                                     <StackPanel Margin="0,0,0,8">
                                         <TextBlock Text="{Binding Title}"/>
                                         <ProgressBar Value="{Binding ProgressPercent}" Height="6"/>
-                                        <TextBlock FontSize="11" Foreground="{DynamicResource SubtleBrush}"
+                                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
                                                    Text="{Binding StatusText}"/>
                                     </StackPanel>
                                 </DataTemplate>
@@ -216,9 +209,8 @@
 
         <!-- BOTTOM: Transport -->
         <Border Grid.Row="1" Grid.ColumnSpan="3"
-                CornerRadius="12"
-                Background="{DynamicResource GlassSurface}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="8">
+                Style="{StaticResource GlassCardStyle}"
+                Padding="8">
             <DockPanel LastChildFill="True">
                 <StackPanel Orientation="Horizontal">
                     <Button Command="{Binding PlayPauseCmd}" Content="{Binding PlayPauseLabel}"/>
