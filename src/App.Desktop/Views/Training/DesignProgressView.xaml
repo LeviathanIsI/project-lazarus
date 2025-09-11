@@ -2,16 +2,246 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
-        <Border Style="{StaticResource GlassPanelElevated}" Padding="16">
-            <StackPanel>
-                <TextBlock Text="Progress Mode — Charts &amp; Logs" 
-                           Style="{StaticResource H2TextStyle}" 
-                           HorizontalAlignment="Center" 
-                           Margin="0,0,0,16"/>
-                <TextBlock Text="Full-screen monitoring interface for active training jobs" 
-                           Style="{StaticResource SecondaryTextStyle}" 
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Training ▸ Design Progress" Style="{StaticResource SecondaryTextStyle}" FontSize="12"/>
+            <TextBlock Text="Mission Control - All Training Jobs" Style="{StaticResource H2TextStyle}"/>
+        </StackPanel>
+        
+        <!-- Live Monitoring Summary -->
+        <Border Grid.Row="1" Style="{StaticResource GlassPanel}" Padding="16" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Active Jobs -->
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ActiveJobsCount}" Style="{StaticResource H2TextStyle}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Active Jobs" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Total GPU Usage -->
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding TotalGpuUsage}" Style="{StaticResource H2TextStyle}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="GPU Usage" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Avg Throughput -->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding AverageThroughput}" Style="{StaticResource H2TextStyle}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Samples/sec" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- ETA to Complete All -->
+                <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding EtaAllJobs}" Style="{StaticResource H2TextStyle}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="ETA All Jobs" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
+        
+        <!-- Main Dashboard Grid -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left: Active Jobs Panel -->
+            <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="Active Training Jobs" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
+                    
+                    <!-- Active Jobs List -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
+                        <ItemsControl ItemsSource="{Binding ActiveJobs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <DockPanel Margin="0,0,0,8">
+                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Modality}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <Border CornerRadius="4" Padding="6,2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Running">
+                                                                        <Setter Property="Background" Value="#10B981"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Queued">
+                                                                        <Setter Property="Background" Value="#F59E0B"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                        <Setter Property="Background" Value="#EF4444"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock Text="{Binding Status}" FontSize="10"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                                            </DockPanel>
+                                            <ProgressBar Value="{Binding Progress}" Height="4" Style="{StaticResource MeterBar}" Margin="0,0,0,4"/>
+                                            <DockPanel>
+                                                <TextBlock Text="{Binding CurrentStep, StringFormat='Step {0} / {1}'}" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                                                <TextBlock Text="{Binding Eta}" Style="{StaticResource SecondaryTextStyle}" FontSize="11" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    
+                    <!-- Mission Control Actions -->
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button Content="⏸️ Pause All" Command="{Binding PauseAllCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
+                        <Button Content="🛑 Stop All" Command="{Binding StopAllCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
+                        <Button Content="📊 Export Reports" Command="{Binding ExportReportsCommand}" Style="{StaticResource RainbowAccentButton.AutoFit}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Right: Dashboard Tabs -->
+            <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
+                <TabControl Background="Transparent" BorderThickness="0">
+                    
+                    <!-- Live Monitoring Tab -->
+                    <TabItem Header="Live Monitoring">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                            <StackPanel>
+                                <!-- Loss Curves Visualization -->
+                                <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Training Loss Curves" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        <Grid Height="200" Background="#10FFFFFF">
+                                            <TextBlock Text="📈 Real-time loss curves visualization" 
+                                                       HorizontalAlignment="Center" 
+                                                       VerticalAlignment="Center" 
+                                                       Style="{StaticResource SecondaryTextStyle}"/>
+                                        </Grid>
+                                        <DockPanel Margin="0,8,0,0">
+                                            <TextBlock Text="Training: 0.234" Style="{StaticResource SecondaryTextStyle}"/>
+                                            <TextBlock Text="Validation: 0.289" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- System Resources -->
+                                <Border Style="{StaticResource GlassPanel}" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="System Resources" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        
+                                        <!-- GPU Usage -->
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="GPU 0 (RTX 4090)" Style="{StaticResource SecondaryTextStyle}"/>
+                                            <TextBlock Text="87% • 22.1/24.0 GB • 72°C" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                        <ProgressBar Value="0.87" Height="6" Style="{StaticResource MeterBar}" Margin="0,0,0,12"/>
+                                        
+                                        <!-- CPU & Throughput -->
+                                        <DockPanel>
+                                            <TextBlock Text="CPU Usage • Throughput" Style="{StaticResource SecondaryTextStyle}"/>
+                                            <TextBlock Text="45% • 1,234 samples/sec" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                        <ProgressBar Value="0.45" Height="6" Style="{StaticResource MeterBar}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    
+                    <!-- Cross-Modality Links Tab -->
+                    <TabItem Header="Cross-Modality Links">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                            <StackPanel>
+                                <!-- Entity Multi-Modal Builds -->
+                                <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Entity Builds (Multi-Modal Fusion)" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        
+                                        <Border Style="{StaticResource GlassPanel}" Padding="8">
+                                            <StackPanel>
+                                                <TextBlock Text="Virtual Assistant Avatar" FontWeight="Medium"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="🗿 human-rigged" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="→ 🎵 expressive-voice" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="→ 🎭 gesture-ai" Style="{StaticResource SecondaryTextStyle}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Video Dependencies -->
+                                <Border Style="{StaticResource GlassPanel}" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="Conversation-Voice Pairs" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        
+                                        <Border Style="{StaticResource GlassPanel}" Padding="8">
+                                            <StackPanel>
+                                                <TextBlock Text="Customer Support System" FontWeight="Medium"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="💬 support-chat-model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="→ 🎵 professional-voice" Style="{StaticResource SecondaryTextStyle}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    
+                    <!-- Sample Previews Tab -->
+                    <TabItem Header="Sample Previews">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                            <StackPanel>
+                                <!-- Voice Samples -->
+                                <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="🎵 Voice Samples" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="▶️" Command="{Binding PlaySampleCommand}" CommandParameter="voice" Style="{StaticResource RainbowAccentButton.AutoFit}"/>
+                                            <StackPanel>
+                                                <TextBlock Text="sample-voice-output.wav"/>
+                                                <TextBlock Text="3.2s • 22.05kHz • Expressive" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Video Samples -->
+                                <Border Style="{StaticResource GlassPanel}" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="🎬 Video Samples" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="▶️" Command="{Binding PlaySampleCommand}" CommandParameter="video" Style="{StaticResource RainbowAccentButton.AutoFit}"/>
+                                            <StackPanel>
+                                                <TextBlock Text="sample-video-output.mp4"/>
+                                                <TextBlock Text="2.5s • 512x512 • 24fps" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
