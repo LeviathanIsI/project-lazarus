@@ -215,7 +215,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsShellViewModel>();
             services.AddTransient<ChatSessionsViewModel>();
-            services.AddTransient<Lazarus.Desktop.ViewModels.Audio.AudioViewModel>();
+            services.AddTransient<AudioViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();
