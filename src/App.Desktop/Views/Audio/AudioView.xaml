@@ -404,7 +404,7 @@
                                 
                                 <!-- Metadata -->
                                 <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="File Information" Style="{StaticResource LabelStyle}" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                    <TextBlock Text="File Information" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,8" FontWeight="SemiBold"/>
                                     <Grid Margin="0,0,0,12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -431,7 +431,7 @@
                                                    TextWrapping="Wrap" Margin="8,2,0,2" FontSize="11"/>
                                     </Grid>
                                     
-                                    <TextBlock Text="Technical Details" Style="{StaticResource LabelStyle}" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Technical Details" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,8" FontWeight="SemiBold"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
