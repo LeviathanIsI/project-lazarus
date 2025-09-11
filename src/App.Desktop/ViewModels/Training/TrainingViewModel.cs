@@ -18,12 +18,50 @@ namespace Lazarus.Desktop.ViewModels.Training
         public JobDesignerViewModel JobDesigner { get; }
         public MonitorDockViewModel MonitorDock { get; }
         public InspectorViewModel Inspector { get; }
+        
+        // Modality-specific designers
+        public ConversationsDesignerViewModel Conversations { get; }
+        public VoiceDesignerViewModel Voice { get; }
+        public ImagesDesignerViewModel Images { get; }
+        public ThreeDModelsDesignerViewModel ThreeDModels { get; }
+        public EntitiesDesignerViewModel Entities { get; }
+        public VideosDesignerViewModel Videos { get; }
+        public DesignProgressViewModel DesignProgress { get; }
+        
+        private object? _activeDesigner;
+        public object? ActiveDesigner
+        {
+            get => _activeDesigner;
+            set => SetProperty(ref _activeDesigner, value);
+        }
 
         private string _selectedModality = "Conversations";
         public string SelectedModality
         {
             get => _selectedModality;
-            set { _selectedModality = value; OnPropertyChanged(); }
+            set 
+            { 
+                if (SetProperty(ref _selectedModality, value))
+                {
+                    // Switch active designer based on modality
+                    ActiveDesigner = value switch
+                    {
+                        "Conversations" => Conversations,
+                        "Voice" => Voice,
+                        "Images" => Images,
+                        "ThreeD" => ThreeDModels,
+                        "Entities" => Entities,
+                        "Videos" => Videos,
+                        _ => Conversations
+                    };
+                    
+                    // Handle design progress toggle separately
+                    if (value == "DesignProgress")
+                    {
+                        IsProgressMode = true;
+                    }
+                }
+            }
         }
 
         private bool _isProgressMode;
@@ -52,6 +90,18 @@ namespace Lazarus.Desktop.ViewModels.Training
             JobDesigner = new JobDesignerViewModel(_trainingService);
             MonitorDock = new MonitorDockViewModel(_trainingService);
             Inspector = new InspectorViewModel(_trainingService);
+            
+            // Create modality-specific designers
+            Conversations = new ConversationsDesignerViewModel(_trainingService);
+            Voice = new VoiceDesignerViewModel(_trainingService);
+            Images = new ImagesDesignerViewModel(_trainingService);
+            ThreeDModels = new ThreeDModelsDesignerViewModel(_trainingService);
+            Entities = new EntitiesDesignerViewModel(_trainingService);
+            Videos = new VideosDesignerViewModel(_trainingService);
+            DesignProgress = new DesignProgressViewModel();
+            
+            // Set default active designer
+            ActiveDesigner = Conversations;
             
             StartCommand = new RelayCommand(async _ => await StartSelectedJobsAsync(), _ => CanStart);
             PauseCommand = new RelayCommand(async _ => await PauseSelectedJobsAsync(), _ => CanPause);
@@ -83,6 +133,16 @@ namespace Lazarus.Desktop.ViewModels.Training
             JobDesigner.SetSelectedJob(selectedJob);
             Inspector.SetSelectedJob(selectedJob);
             MonitorDock.SetSelectedJob(selectedJob);
+            
+            // Notify all modality designers
+            Conversations.SetCurrentJob(selectedJob);
+            Voice.SetCurrentJob(selectedJob);
+            Images.SetCurrentJob(selectedJob);
+            ThreeDModels.SetCurrentJob(selectedJob);
+            Entities.SetCurrentJob(selectedJob);
+            Videos.SetCurrentJob(selectedJob);
+            DesignProgress.SetCurrentJob(selectedJob);
+            
             UpdateCanExecuteStates();
         }
         

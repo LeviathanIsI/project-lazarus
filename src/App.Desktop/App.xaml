@@ -5,6 +5,8 @@
         <ResourceDictionary
             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
             xmlns:views="clr-namespace:Lazarus.Desktop.Views"
+            xmlns:vmtraining="clr-namespace:Lazarus.Desktop.ViewModels.Training"
+            xmlns:viewstraining="clr-namespace:Lazarus.Desktop.Views.Training"
             xmlns:converters="clr-namespace:Lazarus.Desktop.Converters"
             xmlns:behaviors="clr-namespace:Lazarus.Desktop.Behaviors">
             <ResourceDictionary.MergedDictionaries>
@@ -75,6 +77,29 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:GlobalActionsViewModel}">
                 <views:GlobalActionsView/>
+            </DataTemplate>
+            
+            <!-- Training modality designer templates -->
+            <DataTemplate DataType="{x:Type vmtraining:ConversationsDesignerViewModel}">
+                <viewstraining:ConversationsDesignerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmtraining:VoiceDesignerViewModel}">
+                <viewstraining:VoiceDesignerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmtraining:ImagesDesignerViewModel}">
+                <viewstraining:ImagesDesignerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmtraining:ThreeDModelsDesignerViewModel}">
+                <viewstraining:ThreeDModelsDesignerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmtraining:EntitiesDesignerViewModel}">
+                <viewstraining:EntitiesDesignerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmtraining:VideosDesignerViewModel}">
+                <viewstraining:VideosDesignerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmtraining:DesignProgressViewModel}">
+                <viewstraining:DesignProgressView/>
             </DataTemplate>
 
             <!-- Fallback debug template: shows when no specific template matches -->

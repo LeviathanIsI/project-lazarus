@@ -62,11 +62,7 @@
                     </Style>
                 </Grid.Style>
                 <Border Style="{StaticResource GlassPanelElevated}" Padding="8">
-                    <StackPanel>
-                        <TextBlock Text="Conversations Training" Style="{StaticResource H2TextStyle}" Margin="0,0,0,16"/>
-                        <TextBlock Text="Configure conversation/chat model training settings, datasets, and parameters." TextWrapping="Wrap" Margin="0,0,0,8"/>
-                        <views:JobDesignerView DataContext="{Binding JobDesigner}"/>
-                    </StackPanel>
+                    <ContentControl Content="{Binding ActiveDesigner}"/>
                 </Border>
             </Grid>
             <!-- Full-screen Progress Surface (visible when IsProgressMode) -->
