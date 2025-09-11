@@ -26,6 +26,28 @@ namespace Lazarus.Desktop.ViewModels.Training
         public ICommand ImportCommand { get; }
         public ICommand CreateJobCommand { get; }
         public ICommand ClearCommand { get; }
+        public ICommand SetLearningRateCommand { get; }
+        public ICommand SetBatchSizeCommand { get; }
+
+        // UI state for training duration selection
+        private bool _useEpochs = true;
+        public bool UseEpochs
+        {
+            get => _useEpochs;
+            set
+            {
+                if (SetProperty(ref _useEpochs, value))
+                {
+                    OnPropertyChanged(nameof(UseSteps));
+                }
+            }
+        }
+
+        public bool UseSteps
+        {
+            get => !_useEpochs;
+            set => UseEpochs = !value;
+        }
         
         public ThreeDModelsDesignerViewModel(ITrainingService trainingService)
         {
@@ -35,10 +57,11 @@ namespace Lazarus.Desktop.ViewModels.Training
             ImportCommand = new RelayCommand(async _ => await ImportAsync());
             CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), _ => !HasJob);
             ClearCommand = new RelayCommand(_ => Clear());
+            SetLearningRateCommand = new RelayCommand<string>(rate => SetLearningRate(rate));
+            SetBatchSizeCommand = new RelayCommand<string>(size => SetBatchSize(size));
             
-            Params["BaseModel"] = "nerf-base";
-            Params["TrainingType"] = "NeRF";
-            Params["LearningRate"] = "5e-4";
+            // Set comprehensive 3D defaults
+            SetDefaultParameters();
         }
         
         public void SetCurrentJob(TrainingJob? job)
@@ -75,6 +98,65 @@ namespace Lazarus.Desktop.ViewModels.Training
             Draft.ModelFiles.Clear();
             Draft.Datasets.Clear();
             Draft.Params.Clear();
+            SetDefaultParameters();
+        }
+
+        private void SetDefaultParameters()
+        {
+            // Core 3D settings
+            Params["BaseModel"] = "instant-ngp";
+            Params["TrainingType"] = "NeRF";
+            Params["Resolution"] = "512³";
+            Params["SamplesPerRay"] = "128";
+            Params["LearningRate"] = "1e-3";
+            Params["BatchSize"] = "4096";
+            Params["Epochs"] = "200";
+            Params["MaxSteps"] = "100000";
+
+            // Loss and precision
+            Params["LossFunction"] = "L2 (MSE)";
+            Params["Precision"] = "FP16";
+
+            // Advanced settings
+            Params["Optimizer"] = "adam";
+            Params["LRScheduler"] = "cosine";
+            Params["RegularizationWeight"] = "0.01";
+            Params["ValidationSplit"] = "0.1";
+            Params["GradClipNorm"] = "1.0";
+            Params["CheckpointFreq"] = "1000";
+
+            // 3D Augmentation
+            Params["ViewJitter"] = "true";
+            Params["LightingChanges"] = "false";
+            Params["CameraPoseNoise"] = "true";
+
+            // Mesh regularization
+            Params["SurfaceSmoothing"] = "true";
+            Params["LaplacianReg"] = "false";
+            Params["NormalConsistency"] = "true";
+
+            // NeRF options
+            Params["HierarchicalSampling"] = "true";
+            Params["WhiteBackground"] = "false";
+            Params["RawNoiseStd"] = "true";
+        }
+
+        private void SetLearningRate(string? rate)
+        {
+            if (!string.IsNullOrWhiteSpace(rate))
+            {
+                Params["LearningRate"] = rate;
+                OnPropertyChanged("LearningRate");
+            }
+        }
+
+        private void SetBatchSize(string? size)
+        {
+            if (!string.IsNullOrWhiteSpace(size))
+            {
+                Params["BatchSize"] = size;
+                OnPropertyChanged("BatchSize");
+            }
         }
     }
 }

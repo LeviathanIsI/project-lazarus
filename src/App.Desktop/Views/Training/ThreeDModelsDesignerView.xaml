@@ -61,24 +61,84 @@
             </Border>
             
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
-                <StackPanel>
-                    <TextBlock Text="3D Parameters" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="3D Model Configuration" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
+                        
+                        <!-- Core 3D Settings -->
+                        <TextBlock Text="Core Settings" Style="{StaticResource H3TextStyle}" FontSize="14" Margin="0,0,0,8"/>
                     
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <ComboBox Style="{StaticResource {x:Type ComboBox}}">
-                            <ComboBoxItem Content="nerf-base"/>
-                            <ComboBoxItem Content="gaussian-splatting"/>
-                            <ComboBoxItem Content="instant-ngp"/>
-                        </ComboBox>
+                        <!-- Base Model / Training Type -->
+                        <DockPanel Margin="0,0,0,8">
+                            <StackPanel DockPanel.Dock="Left" Width="160">
+                                <TextBlock Text="Base Model" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[BaseModel]}">
+                                    <ComboBoxItem Content="instant-ngp"/>
+                                    <ComboBoxItem Content="nerf-base"/>
+                                    <ComboBoxItem Content="gaussian-splatting"/>
+                                    <ComboBoxItem Content="dreamfusion"/>
+                                    <ComboBoxItem Content="threestudio"/>
+                                    <ComboBoxItem Content="point-e"/>
+                                    <ComboBoxItem Content="shap-e"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Margin="8,0,0,0">
+                                <TextBlock Text="Training Type" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding Params[TrainingType]}">
+                                    <ComboBoxItem Content="NeRF"/>
+                                    <ComboBoxItem Content="Gaussian Splats"/>
+                                    <ComboBoxItem Content="Mesh"/>
+                                    <ComboBoxItem Content="Point Cloud"/>
+                                    <ComboBoxItem Content="Voxel Grid"/>
+                                    <ComboBoxItem Content="Text-to-3D"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </DockPanel>
+                        
+                        <!-- Learning Rate with Quick-Select -->
+                        <StackPanel Margin="0,0,0,8">
+                            <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" 
+                                         Width="120" 
+                                         Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
+                                         Margin="8,0,0,0"/>
+                                <WrapPanel>
+                                    <Button Content="1e-2" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-2" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="5e-3" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-3" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="1e-3" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-3" Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,4,0"/>
+                                    <Button Content="5e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-4" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="1e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-4" Style="{StaticResource SolidDarkButton}"/>
+                                </WrapPanel>
+                            </DockPanel>
+                        </StackPanel>
+                        
+                        <!-- Batch Size with Quick-Select -->
+                        <StackPanel Margin="0,0,0,8">
+                            <TextBlock Text="Batch Size (Rays/Patches per Step)" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" 
+                                         Width="120" 
+                                         Text="{Binding Params[BatchSize], UpdateSourceTrigger=PropertyChanged}" 
+                                         Margin="8,0,0,0"/>
+                                <WrapPanel>
+                                    <Button Content="1024" Command="{Binding SetBatchSizeCommand}" CommandParameter="1024" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="4096" Command="{Binding SetBatchSizeCommand}" CommandParameter="4096" Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,4,0"/>
+                                    <Button Content="8192" Command="{Binding SetBatchSizeCommand}" CommandParameter="8192" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
+                                    <Button Content="16384" Command="{Binding SetBatchSizeCommand}" CommandParameter="16384" Style="{StaticResource SolidDarkButton}"/>
+                                </WrapPanel>
+                            </DockPanel>
+                        </StackPanel>
+                        
+                        <!-- Advanced 3D Settings -->
+                        <Expander Header="Advanced 3D Settings" IsExpanded="False" Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0">
+                                <!-- Comprehensive 3D training parameters here -->
+                                <TextBlock Text="NeRF, Mesh & Point Cloud training controls" Style="{StaticResource SecondaryTextStyle}"/>
+                            </StackPanel>
+                        </Expander>
                     </StackPanel>
-                    
-                    <StackPanel Margin="0,0,0,8">
-                        <TextBlock Text="Learning Rate" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
-                                 Style="{StaticResource {x:Type TextBox}}"/>
-                    </StackPanel>
-                </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
         
