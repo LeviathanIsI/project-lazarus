@@ -196,10 +196,10 @@
                                             </StackPanel>
                                         </DockPanel>
                                         <DockPanel Margin="0,4,0,0">
-                                            <TextBlock Text="{Binding Stats.TotalTokens, StringFormat='Total: {0:N0} tokens'}" 
+                                            <TextBlock Text="Draft dataset" 
                                                        Style="{StaticResource SecondaryTextStyle}" 
                                                        FontSize="10"/>
-                                            <TextBlock Text="{Binding Stats.TotalItems, StringFormat='{0:N0} conversations'}" 
+                                            <TextBlock Text="Ready to create job" 
                                                        Style="{StaticResource SecondaryTextStyle}" 
                                                        FontSize="10" 
                                                        HorizontalAlignment="Right"/>

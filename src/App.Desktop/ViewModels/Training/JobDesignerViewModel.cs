@@ -121,7 +121,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             CreateDatasetTemplateCommand = new RelayCommand(async _ => await CreateDatasetTemplateAsync());
             ValidateConversationFormatCommand = new RelayCommand(async _ => await ValidateConversationFormatAsync());
             EditDatasetCommand = new RelayCommand<TrainingDatasetRef>(dataset => EditDataset(dataset));
-            CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), () => !HasJob);
+            CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), _ => !HasJob);
             
             // TODO(training): Load initial data
             LoadModelsAndRecipes();
