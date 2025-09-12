@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Lazarus.Shared.Contracts;
+using Lazarus.Backend.Services;
 
 namespace Lazarus.Desktop.ViewModels.Training
 {
@@ -86,7 +87,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         public bool CanStop  { get; private set; } = false;
         public bool CanExport{ get; private set; } = false;
 
-        public TrainingViewModel(ITrainingService trainingService)
+        public TrainingViewModel(ITrainingService trainingService, IConversationTrainingService conversationService)
         {
             _trainingService = trainingService ?? throw new ArgumentNullException(nameof(trainingService));
             
@@ -96,7 +97,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             Inspector = new InspectorViewModel(_trainingService);
             
             // Create modality-specific designers
-            Conversations = new ConversationsDesignerViewModel(_trainingService);
+            Conversations = new ConversationsDesignerViewModel(_trainingService, conversationService);
             Voice = new VoiceDesignerViewModel(_trainingService);
             Images = new ImagesDesignerViewModel(_trainingService);
             ThreeDModels = new ThreeDModelsDesignerViewModel(_trainingService);
@@ -115,7 +116,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             SetModalityCommand = new RelayCommand<string>(m =>
             {
                 if (string.IsNullOrWhiteSpace(m)) return;
-                SelectedModality = m;   // <— was _selectedModality = m; ApplySelectedModality(m);
+                SelectedModality = m;   // <ï¿½ was _selectedModality = m; ApplySelectedModality(m);
             });
 
             // Wire up cross-VM communication
@@ -172,6 +173,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         // TODO(training): Implement job control methods
         private async Task StartSelectedJobsAsync()
         {
+            // For now, delegate to broader training service which handles multiple jobs
             var jobIds = JobsSidebar.SelectedJobs.Where(j => j.Status == TrainingStatus.Draft || j.Status == TrainingStatus.Paused).Select(j => j.Id);
             await _trainingService.StartMultipleAsync(jobIds);
         }
@@ -193,8 +195,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             var job = JobsSidebar.SelectedJobs.FirstOrDefault();
             if (job?.Status == TrainingStatus.Completed)
             {
-                // TODO(training): Show file dialog for export path
-                await _trainingService.ExportJobAsync(job.Id, job.OutputPath);
+                await _trainingService.ExportJobAsync(job.Id, job.OutputPath ?? string.Empty);
             }
         }
 

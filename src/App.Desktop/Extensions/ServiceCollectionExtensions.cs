@@ -50,8 +50,9 @@ public static class ServiceCollectionExtensions
         services.AddLazarusViewModels();
         services.AddLazarusBackgroundServices();
         
-        // Add training services (TODO: replace with actual implementation)
-        services.AddSingleton<ITrainingService, MockTrainingService>();
+        // Training services
+        services.AddSingleton<ITrainingService, MockTrainingService>(); // legacy broader training surface
+        services.AddSingleton<Lazarus.Backend.Services.IConversationTrainingService, Lazarus.Backend.Services.ConversationTrainingService>();
 
         return services;
     }
@@ -162,7 +163,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IBinaryValidationService, BinaryValidationService>();
         services.AddSingleton<IHardwareInfoService, HardwareInfoService>();
-        services.AddSingleton<ISystemMetricsService, SystemMetricsService>();
         services.AddSingleton<IModelCatalogService, ModelCatalogService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
         services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();
