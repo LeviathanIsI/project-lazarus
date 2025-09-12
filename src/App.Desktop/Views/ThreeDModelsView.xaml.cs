@@ -48,6 +48,9 @@ namespace Lazarus.Desktop.Views
             InitializeComponent();
             Loaded += OnLoaded;
             DataContextChanged += OnDataContextChanged;
+            // Allow hotkeys (W/E/R) to be handled at the view level
+            Focusable = true;
+            PreviewKeyDown += OnPreviewKeyDown;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -96,6 +99,7 @@ namespace Lazarus.Desktop.Views
             }
             catch { }
             HookPreviewLoader();
+            try { Focus(); } catch { }
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -323,7 +327,7 @@ namespace Lazarus.Desktop.Views
             }
         }
 
-                private void OnResetTransform(object sender, RoutedEventArgs e)
+        private void OnResetTransform(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -331,6 +335,23 @@ namespace Lazarus.Desktop.Views
                 _rotX.Angle = 0; _rotY.Angle = 0; _rotZ.Angle = 0;
                 _scaleModel.ScaleX = 1; _scaleModel.ScaleY = 1; _scaleModel.ScaleZ = 1;
                 ApplyTransformToScene(_modelTransform);
+            }
+            catch { }
+        }
+
+        // Hotkeys: W=Translate, E=Rotate, R=Scale; Esc=None (Alt reserved for camera)
+        private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt)) return;
+                switch (e.Key)
+                {
+                    case Key.W: _editMode = EditMode.Translate; e.Handled = true; break;
+                    case Key.E: _editMode = EditMode.Rotate; e.Handled = true; break;
+                    case Key.R: _editMode = EditMode.Scale; e.Handled = true; break;
+                    case Key.Escape: _editMode = EditMode.None; e.Handled = true; break;
+                }
             }
             catch { }
         }
@@ -501,12 +522,12 @@ namespace Lazarus.Desktop.Views
             // Model edit without toggles: infer mode from keys or mouse button
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left || e.ChangedButton == System.Windows.Input.MouseButton.Right)
             {
-                if (Keyboard.IsKeyDown(Key.W)) _editMode = EditMode.Translate;
-                else if (Keyboard.IsKeyDown(Key.E)) _editMode = EditMode.Rotate;
-                else if (Keyboard.IsKeyDown(Key.R)) _editMode = EditMode.Scale;
-                else
+                if (_editMode == EditMode.None)
                 {
-                    _editMode = (e.ChangedButton == System.Windows.Input.MouseButton.Left) ? EditMode.Rotate : EditMode.Translate;
+                    if (Keyboard.IsKeyDown(Key.W)) _editMode = EditMode.Translate;
+                    else if (Keyboard.IsKeyDown(Key.E)) _editMode = EditMode.Rotate;
+                    else if (Keyboard.IsKeyDown(Key.R)) _editMode = EditMode.Scale;
+                    else _editMode = (e.ChangedButton == System.Windows.Input.MouseButton.Left) ? EditMode.Rotate : EditMode.Translate;
                 }
                 _isEditingModel = true; try { _hxViewport.CaptureMouse(); } catch { } e.Handled = true;
             }
@@ -522,7 +543,7 @@ namespace Lazarus.Desktop.Views
             }
             if (_isEditingModel)
             {
-                _isEditingModel = false; _editMode = EditMode.None; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
+                _isEditingModel = false; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
                 e.Handled = true;
             }
         }
