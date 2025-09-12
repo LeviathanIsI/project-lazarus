@@ -136,7 +136,7 @@ namespace Lazarus.Desktop.ViewModels
                 "Videos" => new Views.VideosView(),
                 "Entities" => new Views.EntitiesView(),
                 "Models" => new Views.ModelsView(),
-                "ThreeDModels" => new Views.ThreeDModelsView(),
+                "ThreeDModels" => CreateThreeDModelsViewSafe(),
                 "Audio" => CreateAudioViewSafe(),
                 "Training" => CreateTrainingViewSafe(),
                 "Settings" => CreateSettingsViewSafe(),
@@ -145,6 +145,25 @@ namespace Lazarus.Desktop.ViewModels
 
             // Notify property changes
             OnPropertyChanged(nameof(CurrentViewName));
+        }
+
+        private object CreateThreeDModelsViewSafe()
+        {
+            try
+            {
+                var view = new Views.ThreeDModelsView();
+                if (App.ServiceProvider != null)
+                {
+                    var vm = App.ServiceProvider.GetRequiredService<ThreeDModelsViewModel>();
+                    view.DataContext = vm;
+                }
+                return view;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to create ThreeDModelsView");
+                return new Views.DashboardView();
+            }
         }
 
         private object CreateAudioViewSafe()

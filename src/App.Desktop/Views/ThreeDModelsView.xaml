@@ -36,12 +36,14 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Import Models"
+                                Command="{Binding ImportModelsCommand}"
                                 Style="{StaticResource RainbowAccentButton.AutoFit}"
                                 Margin="0,0,12,0"
                                 AutomationProperties.Name="Import 3D model files"
                                 AutomationProperties.HelpText="Import existing 3D models for viewing and editing"/>
                         
                         <Button Content="Generate Model"
+                                Command="{Binding GenerateModelCommand}"
                                 Style="{StaticResource RainbowAccentButton.AutoFit}"
                                 AutomationProperties.Name="Generate new 3D model"
                                 AutomationProperties.HelpText="Create new 3D models using AI generation"/>
@@ -61,7 +63,7 @@
                         <StackPanel>
                             <TextBlock Text="Total Models" 
                                        Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="0" 
+                            <TextBlock Text="{Binding TotalModels}" 
                                        Style="{StaticResource H1TextStyle}"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
@@ -73,7 +75,7 @@
                         <StackPanel>
                             <TextBlock Text="Generated Today" 
                                        Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="0" 
+                            <TextBlock Text="{Binding GeneratedToday}" 
                                        Style="{StaticResource H1TextStyle}"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
@@ -86,10 +88,19 @@
                             <TextBlock Text="Render Status" 
                                        Style="{StaticResource SecondaryTextStyle}"/>
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                <Ellipse Width="12" Height="12" 
-                                         Fill="{StaticResource SuccessBrush}" 
-                                         Margin="0,0,8,0"/>
-                                <TextBlock Text="Ready" 
+                                <Ellipse Width="12" Height="12" Margin="0,0,8,0">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{StaticResource ErrorBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRenderReady}" Value="True">
+                                                    <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="{Binding RenderStatusText}" 
                                            Style="{StaticResource H2TextStyle}"/>
                             </StackPanel>
                         </StackPanel>
@@ -100,7 +111,7 @@
                         <StackPanel>
                             <TextBlock Text="Storage Used" 
                                        Style="{StaticResource SecondaryTextStyle}"/>
-                            <TextBlock Text="0 MB" 
+                            <TextBlock Text="{Binding StorageUsedText}" 
                                        Style="{StaticResource H1TextStyle}"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
