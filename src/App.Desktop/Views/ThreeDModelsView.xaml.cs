@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Lazarus.Desktop.ViewModels;
 using Assimp;
+// Helix imports removed for now due to package TFM issues
 
 namespace Lazarus.Desktop.Views
 {
@@ -22,6 +23,7 @@ namespace Lazarus.Desktop.Views
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            // Attach legacy WPF content root for preview
             try { ModelRoot.Content = _modelGroup; } catch { }
             HookPreviewLoader();
         }
@@ -85,6 +87,8 @@ namespace Lazarus.Desktop.Views
             }
         }
 
+        // Helix path removed in this pass
+
         private Model3D? LoadWithAssimp(string path)
         {
             try
@@ -140,7 +144,7 @@ namespace Lazarus.Desktop.Views
                             Positions = positions,
                             TriangleIndices = indices
                         };
-                        var gm = new GeometryModel3D(mg, mat) { BackMaterial = mat };
+                        var gm = new System.Windows.Media.Media3D.GeometryModel3D(mg, mat) { BackMaterial = mat };
                         group.Children.Add(gm);
                     }
                 }
@@ -153,7 +157,7 @@ namespace Lazarus.Desktop.Views
             }
         }
 
-        private GeometryModel3D? LoadObj(string path)
+        private System.Windows.Media.Media3D.GeometryModel3D? LoadObj(string path)
         {
             var positions = new System.Collections.Generic.List<Point3D>();
             var triangles = new Int32Collection();
@@ -191,13 +195,13 @@ namespace Lazarus.Desktop.Views
                 if (positions.Count == 0 || triangles.Count == 0) return null;
                 var mesh = new MeshGeometry3D { Positions = new Point3DCollection(positions), TriangleIndices = triangles };
                 var mat = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
-                var model = new GeometryModel3D(mesh, mat) { BackMaterial = mat };
+                var model = new System.Windows.Media.Media3D.GeometryModel3D(mesh, mat) { BackMaterial = mat };
                 return model;
             }
             catch { return null; }
         }
 
-        private GeometryModel3D? LoadAsciiStl(string path)
+        private System.Windows.Media.Media3D.GeometryModel3D? LoadAsciiStl(string path)
         {
             try
             {
@@ -220,7 +224,7 @@ namespace Lazarus.Desktop.Views
                 if (positions.Count == 0) return null;
                 var mesh = new MeshGeometry3D { Positions = new Point3DCollection(positions), TriangleIndices = triangles };
                 var mat = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
-                return new GeometryModel3D(mesh, mat) { BackMaterial = mat };
+                return new System.Windows.Media.Media3D.GeometryModel3D(mesh, mat) { BackMaterial = mat };
             }
             catch { return null; }
         }
