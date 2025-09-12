@@ -6,6 +6,8 @@
     <Color x:Key="BackgroundColor">#0A0A0F</Color>
     <Color x:Key="CardBackgroundColor">#0A0A0F</Color>
     <Color x:Key="CardOverlayColor">#1A1A1A</Color>
+    <!-- Surface: neutral container background consistent with dark glass theme -->
+    <Color x:Key="SurfaceColor">{StaticResource CardOverlayColor}</Color>
     <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
     <Color x:Key="TextSecondaryColor">#A0A0A0</Color>
     <Color x:Key="GlassBorderColor">#19FFFFFF</Color>
@@ -14,6 +16,7 @@
     <!-- Fundamental brushes -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource GlassBorderColor}"/>
