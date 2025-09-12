@@ -280,6 +280,8 @@
                     <ScrollViewer x:Name="MessagesScrollViewer"
                                   VerticalScrollBarVisibility="Auto"
                                   Padding="24"
+                                  xmlns:behaviors="clr-namespace:Lazarus.Desktop.Behaviors"
+                                  behaviors:AutoScrollBehavior.Enable="True"
                                   AutomationProperties.Name="Conversation messages"
                                   AutomationProperties.LiveSetting="Polite">
                         <ItemsControl ItemsSource="{Binding Messages}"
