@@ -201,7 +201,7 @@
                             <!-- Overlay text hints -->
                             <StackPanel x:Name="PreviewOverlay" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Selected.Name}" Style="{StaticResource H2TextStyle}" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="PreviewHint" Text="Use OBJ/STL for preview (FBX/GLTF coming)" Style="{StaticResource TertiaryTextStyle}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="PreviewHint" Text="Preview supports OBJ/STL/FBX" Style="{StaticResource TertiaryTextStyle}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
 

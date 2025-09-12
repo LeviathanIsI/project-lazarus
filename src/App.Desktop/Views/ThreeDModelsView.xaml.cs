@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Lazarus.Desktop.ViewModels;
+using Assimp;
 
 namespace Lazarus.Desktop.Views
 {
@@ -50,7 +51,7 @@ namespace Lazarus.Desktop.Views
                 }
 
                 var ext = System.IO.Path.GetExtension(path) ?? string.Empty;
-                GeometryModel3D? model = null;
+                Model3D? model = null;
                 if (string.Equals(ext, ".obj", StringComparison.OrdinalIgnoreCase))
                 {
                     model = LoadObj(path);
@@ -58,6 +59,10 @@ namespace Lazarus.Desktop.Views
                 else if (string.Equals(ext, ".stl", StringComparison.OrdinalIgnoreCase))
                 {
                     model = LoadAsciiStl(path);
+                }
+                else if (string.Equals(ext, ".fbx", StringComparison.OrdinalIgnoreCase))
+                {
+                    model = LoadWithAssimp(path);
                 }
 
                 if (model != null)
@@ -68,7 +73,7 @@ namespace Lazarus.Desktop.Views
                     return true;
                 }
 
-                PreviewHint.Text = "Preview not available for this format (try OBJ/STL).";
+                PreviewHint.Text = "Preview not available for this format (try OBJ/STL/FBX).";
                 PreviewOverlay.Visibility = Visibility.Visible;
                 return false;
             }
@@ -77,6 +82,74 @@ namespace Lazarus.Desktop.Views
                 PreviewHint.Text = "Failed to load model.";
                 PreviewOverlay.Visibility = Visibility.Visible;
                 return false;
+            }
+        }
+
+        private Model3D? LoadWithAssimp(string path)
+        {
+            try
+            {
+                using var ctx = new AssimpContext();
+                var flags = PostProcessSteps.Triangulate
+                         | PostProcessSteps.GenerateSmoothNormals
+                         | PostProcessSteps.JoinIdenticalVertices
+                         | PostProcessSteps.ImproveCacheLocality;
+                var scene = ctx.ImportFile(path, flags);
+                if (scene == null || !scene.HasMeshes) return null;
+
+                var group = new Model3DGroup();
+                var mat = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
+
+                foreach (var mesh in scene.Meshes)
+                {
+                    if (mesh.VertexCount <= 0 || mesh.FaceCount <= 0) continue;
+
+                    var positions = new Point3DCollection(mesh.VertexCount);
+                    for (int i = 0; i < mesh.VertexCount; i++)
+                    {
+                        var v = mesh.Vertices[i];
+                        positions.Add(new Point3D(v.X, v.Y, v.Z));
+                    }
+
+                    var indices = new Int32Collection();
+                    foreach (var face in mesh.Faces)
+                    {
+                        // We requested triangulation; guard anyway
+                        if (face.IndexCount == 3)
+                        {
+                            indices.Add(face.Indices[0]);
+                            indices.Add(face.Indices[1]);
+                            indices.Add(face.Indices[2]);
+                        }
+                        else if (face.IndexCount > 3)
+                        {
+                            // Simple fan triangulation fallback
+                            for (int k = 1; k < face.IndexCount - 1; k++)
+                            {
+                                indices.Add(face.Indices[0]);
+                                indices.Add(face.Indices[k]);
+                                indices.Add(face.Indices[k + 1]);
+                            }
+                        }
+                    }
+
+                    if (positions.Count > 0 && indices.Count > 0)
+                    {
+                        var mg = new MeshGeometry3D
+                        {
+                            Positions = positions,
+                            TriangleIndices = indices
+                        };
+                        var gm = new GeometryModel3D(mg, mat) { BackMaterial = mat };
+                        group.Children.Add(gm);
+                    }
+                }
+
+                return group.Children.Count > 0 ? group : null;
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -168,8 +241,11 @@ namespace Lazarus.Desktop.Views
             if (size <= 0) size = 1;
             var center = new Point3D(bounds.X + bounds.SizeX / 2, bounds.Y + bounds.SizeY / 2, bounds.Z + bounds.SizeZ / 2);
             PreviewCamera.Position = new Point3D(center.X, center.Y, center.Z + size * 2.5);
-            PreviewCamera.LookDirection = new Vector3D(center.X - PreviewCamera.Position.X, center.Y - PreviewCamera.Position.Y, center.Z - PreviewCamera.Position.Z);
-            PreviewCamera.UpDirection = new Vector3D(0, 1, 0);
+            PreviewCamera.LookDirection = new System.Windows.Media.Media3D.Vector3D(
+                center.X - PreviewCamera.Position.X,
+                center.Y - PreviewCamera.Position.Y,
+                center.Z - PreviewCamera.Position.Z);
+            PreviewCamera.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
         }
     }
 }
