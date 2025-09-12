@@ -113,6 +113,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
     {
         Directory.CreateDirectory(ImportRoot);
         Directory.CreateDirectory(GeneratedRoot);
+        SeedSampleIfEmpty();
     }
 
     private void StartWatchers()
@@ -189,6 +190,16 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
             GeneratedToday = Models.Count(m => m.Origin == ModelOrigin.Generated && m.LastWrite.Date == today);
             var bytes = Models.Sum(m => m.SizeBytes);
             StorageUsedText = FormatBytes(bytes);
+
+            if (Models.Count == 0)
+            {
+                // Ensure a sample exists and refresh once
+                if (SeedSampleIfEmpty())
+                {
+                    ReloadLibraryAndStats();
+                    return;
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -320,6 +331,43 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
             if (!File.Exists(candidate)) return candidate;
         }
     }
+
+    private static bool SeedSampleIfEmpty()
+    {
+        try
+        {
+            var hasAny = Directory.Exists(ImportRoot) &&
+                         Directory.EnumerateFiles(ImportRoot, "*", SearchOption.AllDirectories)
+                         .Any(f => ModelExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase));
+            if (hasAny) return false;
+
+            Directory.CreateDirectory(ImportRoot);
+            var sample = Path.Combine(ImportRoot, "sample-cube.obj");
+            if (!File.Exists(sample))
+            {
+                File.WriteAllText(sample, SampleObjCube);
+            }
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private const string SampleObjCube = "# Lazarus sample cube\\n" +
+        "o Cube\\n" +
+        "v -0.5 -0.5 0.5\\n" +
+        "v 0.5 -0.5 0.5\\n" +
+        "v 0.5 0.5 0.5\\n" +
+        "v -0.5 0.5 0.5\\n" +
+        "v -0.5 -0.5 -0.5\\n" +
+        "v 0.5 -0.5 -0.5\\n" +
+        "v 0.5 0.5 -0.5\\n" +
+        "v -0.5 0.5 -0.5\\n" +
+        "f 1 2 3 4\\n" +
+        "f 5 6 7 8\\n" +
+        "f 1 5 8 4\\n" +
+        "f 2 6 7 3\\n" +
+        "f 4 3 7 8\\n" +
+        "f 1 2 6 5\\n";
 
     private static string FormatBytes(long bytes)
     {

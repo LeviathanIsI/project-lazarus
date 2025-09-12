@@ -134,7 +134,10 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <ListView ItemsSource="{Binding ModelsView}" SelectedItem="{Binding Selected}" 
+                        <ListView ItemsSource="{Binding ModelsView}"
+                                  SelectedItem="{Binding Selected}"
+                                  Style="{StaticResource GlassListViewStyle}"
+                                  ItemContainerStyle="{StaticResource GlassListViewItemStyle}"
                                   BorderThickness="0" DockPanel.Dock="Bottom">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
@@ -196,6 +199,13 @@
                         <StackPanel Grid.Row="1" Margin="0,16,0,0">
                             <TextBlock Text="Details" Style="{StaticResource BodyStrongTextStyle}"/>
                             <Grid Margin="0,8,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="160"/>
                                     <ColumnDefinition Width="*"/>
