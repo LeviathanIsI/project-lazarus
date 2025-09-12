@@ -405,20 +405,38 @@
                             
                         </TextBox>
                         
-                        <!-- Send Button -->
-                        <Button Grid.Column="1"
-                                x:Name="SendButton"
-                                Command="{Binding SendMessageCommand}"
-                                Style="{StaticResource IconButton.Dark}"
-                                IsDefault="True"
-                                AutomationProperties.Name="Send message"
-                                AutomationProperties.HelpText="Sends your message to the AI assistant">
-                            <Viewbox Width="20" Height="20">
-                                <Canvas Width="24" Height="24">
-                                    <Path Data="M2 21L23 12L2 3V10L17 12L2 14V21Z" Fill="White"/>
-                                </Canvas>
-                            </Viewbox>
-                        </Button>
+                        <!-- Send / Stop Buttons (mutually exclusive) -->
+                        <Grid Grid.Column="1">
+                            <!-- Send -->
+                            <Button x:Name="SendButton"
+                                    Command="{Binding SendMessageCommand}"
+                                    Style="{StaticResource IconButton.Dark}"
+                                    IsDefault="True"
+                                    Visibility="{Binding IsStreaming, Converter={StaticResource NotBoolToVis}}"
+                                    AutomationProperties.Name="Send message"
+                                    AutomationProperties.HelpText="Sends your message to the AI assistant">
+                                <Viewbox Width="20" Height="20">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="M2 21L23 12L2 3V10L17 12L2 14V21Z" Fill="White"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+
+                            <!-- Stop (cancel inference) -->
+                            <Button x:Name="StopButton"
+                                    Command="{Binding CancelInferenceCommand}"
+                                    Style="{StaticResource IconButton.Dark}"
+                                    IsDefault="False"
+                                    Visibility="{Binding IsStreaming, Converter={StaticResource BoolToVis}}"
+                                    AutomationProperties.Name="Stop generation"
+                                    AutomationProperties.HelpText="Stops the current AI response">
+                                <Viewbox Width="20" Height="20">
+                                    <Canvas Width="24" Height="24">
+                                        <Rectangle Width="14" Height="14" Fill="White" RadiusX="2" RadiusY="2" Canvas.Left="5" Canvas.Top="5"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>

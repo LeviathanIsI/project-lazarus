@@ -1,4 +1,4 @@
-﻿using Lazarus.Data.Entities;
+using Lazarus.Data.Entities;
 using Lazarus.Data.Enums;
 using Lazarus.Desktop.Services;
 using Lazarus.Shared.Settings;
@@ -171,6 +171,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         DeleteChatCommand = new RelayCommand<ChatItemViewModel>(async vm => await DeleteChatAsync(vm), vm => vm != null || SelectedConversation != null);
         BeginRenameChatCommand = new RelayCommand<ChatItemViewModel>(vm => { if (vm != null) vm.IsEditing = true; });
         CommitRenameChatCommand = new RelayCommand<ChatItemViewModel>(async vm => { if (vm != null) await CommitRenameAsync(vm); });
+        CancelInferenceCommand = new RelayCommand(() => _cts?.Cancel(), () => IsStreaming);
 
         // Subscribe to runner state changes
         _runnerStatus.RunnerStateChanged += OnRunnerStateChanged;
@@ -201,6 +202,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     public ICommand DeleteChatCommand { get; }
     public ICommand BeginRenameChatCommand { get; }
     public ICommand CommitRenameChatCommand { get; }
+    public ICommand CancelInferenceCommand { get; }
 
     public string InputText
     {
@@ -975,3 +977,6 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         [JsonPropertyName("content")] public string? Content { get; set; }
     }
 }
+
+
+
