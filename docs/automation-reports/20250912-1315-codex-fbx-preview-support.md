@@ -59,3 +59,5 @@ modified  "\357\200\272\357\200\252\357\200\252"
 ## 8) Risks / Rollback
 - Risk: Native Assimp DLL load issues on some environments. Mitigation: AssimpNet package ships runtime assets; verify on target machines.
 - Rollback: git revert of the commit below.
+
+<!-- After SHA: dc6c7c675d961827d3a01bc7b9b1715573a1d1b1 -->
