@@ -56,3 +56,5 @@ modified  "\357\200\272\357\200\252\357\200\252"
 ## 8) Risks / Rollback
 - Risk: Some FBX contain embedded textures; current pass handles external files only.
 - Rollback: revert this commit; toggles and material changes are isolated to the view.
+
+<!-- After SHA: 6168d6503c114be35375c62f5286367e0c53c085 -->
