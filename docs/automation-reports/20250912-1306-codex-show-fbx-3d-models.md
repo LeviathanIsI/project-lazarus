@@ -38,3 +38,5 @@ added  docs/automation-reports/20250912-1306-codex-show-fbx-3d-models.md
 ## 8) Risks / Rollback
 - Risk: None (no code changes). Mitigation: N/A
 - Rollback: N/A
+
+<!-- After SHA: 0c6cd6441aa28d41e8f99ef5216ec47905fa1768 -->
