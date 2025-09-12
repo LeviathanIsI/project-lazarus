@@ -3,12 +3,17 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Input;
 using System.Windows.Controls.Primitives;
 using Lazarus.Desktop.ViewModels;
 using Assimp;
 using HelixToolkit.Wpf.SharpDX;
+using System.IO;
+using Lazarus.Shared;
+using Lazarus.Backend.Services.Assets;
+using System.Threading.Tasks;
 
 namespace Lazarus.Desktop.Views
 {
@@ -26,6 +31,14 @@ namespace Lazarus.Desktop.Views
         private LineGeometryModel3D? _gridModel;
         private GroupModel3D? _axisGroup;
         private double _lastSceneExtent = 1.0;
+        private Viewport3DX? _miniAxisViewport = null;
+        // Model transform/gizmo state
+        private Transform3DGroup _modelTransform = new Transform3DGroup();
+        private TranslateTransform3D _trModel = new TranslateTransform3D(0, 0, 0);
+        private AxisAngleRotation3D _rotX = new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), 0);
+        private AxisAngleRotation3D _rotY = new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(0, 1, 0), 0);
+        private AxisAngleRotation3D _rotZ = new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(0, 0, 1), 0);
+        private bool _isEditingModel;
 
         public ThreeDModelsView()
         {
@@ -210,18 +223,18 @@ namespace Lazarus.Desktop.Views
                             var am = scene.Materials[mesh.MaterialIndex];
                             if (am.HasTextureDiffuse)
                             {
-                                var tex = am.TextureDiffuse;
-                                var baseDir = System.IO.Path.GetDirectoryName(path);
-                                var texPath = System.IO.Path.Combine(baseDir ?? string.Empty, tex.FilePath);
-                                if (System.IO.File.Exists(texPath))
+                                var ds = OpenTextureStream(scene, path, am.TextureDiffuse.FilePath);
+                                if (ds != null)
                                 {
-                                    using var fs = System.IO.File.OpenRead(texPath);
-                                    var pm = new HelixToolkit.Wpf.SharpDX.PhongMaterial
+                                    using (ds)
                                     {
-                                        DiffuseColor = new SharpDX.Color4(1,1,1,1),
-                                        DiffuseMap = new HelixToolkit.Wpf.SharpDX.TextureModel(fs)
-                                    };
-                                    mat = pm;
+                                        var pm = new HelixToolkit.Wpf.SharpDX.PhongMaterial
+                                        {
+                                            DiffuseColor = new SharpDX.Color4(1,1,1,1),
+                                            DiffuseMap = new HelixToolkit.Wpf.SharpDX.TextureModel(ds)
+                                        };
+                                        mat = pm;
+                                    }
                                 }
                             }
                             else if (am.HasColorDiffuse)
@@ -229,6 +242,22 @@ namespace Lazarus.Desktop.Views
                                 var c = am.ColorDiffuse; // Assimp Color4D
                                 mat = new HelixToolkit.Wpf.SharpDX.PhongMaterial { DiffuseColor = new SharpDX.Color4(c.R, c.G, c.B, c.A) };
                             }
+                            // Normal map (external or embedded)
+                            try
+                            {
+                                string? normalPath = null;
+                                if (am.HasTextureNormal) normalPath = am.TextureNormal.FilePath;
+                                else if (am.HasTextureHeight) normalPath = am.TextureHeight.FilePath;
+                                if (!string.IsNullOrWhiteSpace(normalPath) && mat is HelixToolkit.Wpf.SharpDX.PhongMaterial pm2)
+                                {
+                                    var ns = OpenTextureStream(scene, path, normalPath);
+                                    if (ns != null)
+                                    {
+                                        using (ns) pm2.NormalMap = new HelixToolkit.Wpf.SharpDX.TextureModel(ns);
+                                    }
+                                }
+                            }
+                            catch { }
                         }
                     }
                     catch { mat = defaultMat; }
@@ -252,6 +281,14 @@ namespace Lazarus.Desktop.Views
                 var axisEnabled = (FindName("AxisToggle") as ToggleButton)?.IsChecked ?? true;
                 if (gridEnabled) EnsureGrid(new Point3D(cx, min.Y, cz), _lastSceneExtent);
                 if (axisEnabled) EnsureAxis(new Point3D(cx, cy, cz), _lastSceneExtent * 0.6);
+
+                // Prepare and apply model transform (rotate X/Y/Z then translate)
+                _modelTransform.Children.Clear();
+                _modelTransform.Children.Add(new RotateTransform3D(_rotY));
+                _modelTransform.Children.Add(new RotateTransform3D(_rotX));
+                _modelTransform.Children.Add(new RotateTransform3D(_rotZ));
+                _modelTransform.Children.Add(_trModel);
+                ApplyTransformToScene(_modelTransform);
                 return _hxRoot != null && _hxRoot.Children.Count > 0;
             }
             catch
@@ -263,6 +300,59 @@ namespace Lazarus.Desktop.Views
         private void FitHelixToView()
         {
             try { _hxViewport?.ZoomExtents(); } catch { }
+            try { SyncMiniAxis(); } catch { }
+        }
+
+        private void ApplyTransformToScene(Transform3D t)
+        {
+            if (_hxRoot == null) return;
+            foreach (var c in _hxRoot.Children)
+            {
+                if (c is MeshGeometryModel3D m) m.Transform = t;
+                else if (c is GroupModel3D g)
+                {
+                    foreach (var cc in g.Children) if (cc is MeshGeometryModel3D mm) mm.Transform = t;
+                }
+            }
+        }
+
+        private void OnEditModeChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var moveToggle = FindName("MoveToggle") as ToggleButton;
+                var rotToggle = FindName("RotateToggle") as ToggleButton;
+                var move = moveToggle?.IsChecked ?? false;
+                var rot = rotToggle?.IsChecked ?? false;
+
+                // Enforce mutual exclusivity
+                if (sender == moveToggle && move && rotToggle != null) rotToggle.IsChecked = false;
+                if (sender == rotToggle && rot && moveToggle != null) moveToggle.IsChecked = false;
+
+                // Update editing state and cursor
+                _isEditingModel = (moveToggle?.IsChecked ?? false) || (rotToggle?.IsChecked ?? false);
+                if (_isEditingModel)
+                {
+                    try { _hxViewport?.ReleaseMouseCapture(); } catch { }
+                    Cursor = Cursors.Hand;
+                }
+                else
+                {
+                    Cursor = Cursors.Arrow;
+                }
+            }
+            catch { }
+        }
+
+        private void OnResetTransform(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _trModel.OffsetX = 0; _trModel.OffsetY = 0; _trModel.OffsetZ = 0;
+                _rotX.Angle = 0; _rotY.Angle = 0; _rotZ.Angle = 0;
+                ApplyTransformToScene(_modelTransform);
+            }
+            catch { }
         }
 
         // UI Actions
@@ -388,6 +478,7 @@ namespace Lazarus.Desktop.Views
             cam.Position = new Point3D(_pivot.X, _pivot.Y, _pivot.Z + dist);
             cam.LookDirection = new System.Windows.Media.Media3D.Vector3D(_pivot.X - cam.Position.X, _pivot.Y - cam.Position.Y, _pivot.Z - cam.Position.Z);
             cam.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+            try { SyncMiniAxis(); } catch { }
         }
 
         private void OnViewTop(object sender, RoutedEventArgs e)
@@ -397,6 +488,7 @@ namespace Lazarus.Desktop.Views
             cam.Position = new Point3D(_pivot.X, _pivot.Y + dist, _pivot.Z);
             cam.LookDirection = new System.Windows.Media.Media3D.Vector3D(_pivot.X - cam.Position.X, _pivot.Y - cam.Position.Y, _pivot.Z - cam.Position.Z);
             cam.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 0, -1);
+            // Sync mini-axis when method available
         }
 
         private void OnViewIso(object sender, RoutedEventArgs e)
@@ -407,27 +499,46 @@ namespace Lazarus.Desktop.Views
             cam.Position = new Point3D(_pivot.X + dir.X * dist, _pivot.Y + dir.Y * dist, _pivot.Z + dir.Z * dist);
             cam.LookDirection = new System.Windows.Media.Media3D.Vector3D(_pivot.X - cam.Position.X, _pivot.Y - cam.Position.Y, _pivot.Z - cam.Position.Z);
             cam.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+            try { SyncMiniAxis(); } catch { }
         }
 
         // Maya-style navigation handlers
         private void OnViewportMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (_hxViewport == null) return;
-            if (Keyboard.Modifiers != ModifierKeys.Alt)
-            {
-                // Block default Helix gestures so we only use Maya-style
-                e.Handled = true; return;
-            }
             _lastMouse = e.GetPosition(_hxViewport);
-            _isOrbit = e.ChangedButton == System.Windows.Input.MouseButton.Left;
-            _isPan   = e.ChangedButton == System.Windows.Input.MouseButton.Middle;
-            _isZoom  = e.ChangedButton == System.Windows.Input.MouseButton.Right;
-            e.Handled = true;
+            var alt = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
+
+            if (alt)
+            {
+                _isOrbit = e.ChangedButton == System.Windows.Input.MouseButton.Left;
+                _isPan   = e.ChangedButton == System.Windows.Input.MouseButton.Middle;
+                _isZoom  = e.ChangedButton == System.Windows.Input.MouseButton.Right;
+                if (_isOrbit || _isPan || _isZoom) { try { _hxViewport.CaptureMouse(); } catch { } e.Handled = true; }
+                return;
+            }
+
+            var move = (FindName("MoveToggle") as ToggleButton)?.IsChecked ?? false;
+            var rot = (FindName("RotateToggle") as ToggleButton)?.IsChecked ?? false;
+            if ((move || rot) && e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            {
+                _isEditingModel = true; try { _hxViewport.CaptureMouse(); } catch { } e.Handled = true;
+            }
         }
 
         private void OnViewportMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            _isOrbit = _isPan = _isZoom = false; e.Handled = true;
+            if (_isOrbit || _isPan || _isZoom)
+            {
+                _isOrbit = _isPan = _isZoom = false; 
+                try { _hxViewport?.ReleaseMouseCapture(); } catch { }
+                e.Handled = true;
+            }
+            if (_isEditingModel)
+            {
+                _isEditingModel = false; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
+                e.Handled = true;
+            }
         }
 
         private void OnViewportMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -449,6 +560,40 @@ namespace Lazarus.Desktop.Views
                 else if (_isZoom)
                 {
                     Zoom(cam, dy);
+                }
+                _lastMouse = cur; e.Handled = true; try { SyncMiniAxis(); } catch { }
+            }
+            else if (_isEditingModel)
+            {
+                var move = (FindName("MoveToggle") as ToggleButton)?.IsChecked ?? false;
+                var rot = (FindName("RotateToggle") as ToggleButton)?.IsChecked ?? false;
+                double scale = Math.Max(0.001, _lastSceneExtent * 0.002);
+                if (move)
+                {
+                    var shift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+                    if (shift)
+                    {
+                        _trModel.OffsetY += -dy * scale; // vertical move
+                    }
+                    else
+                    {
+                        _trModel.OffsetX += dx * scale;
+                        _trModel.OffsetZ += -dy * scale;
+                    }
+                    ApplyTransformToScene(_modelTransform);
+                }
+                else if (rot)
+                {
+                    if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    {
+                        _rotZ.Angle += dx * 0.25;
+                    }
+                    else
+                    {
+                        _rotY.Angle += dx * 0.25;
+                        _rotX.Angle += -dy * 0.25;
+                    }
+                    ApplyTransformToScene(_modelTransform);
                 }
                 _lastMouse = cur; e.Handled = true;
             }
@@ -508,6 +653,24 @@ namespace Lazarus.Desktop.Views
             var dir = look; dir.Normalize();
             cam.LookDirection = dir * newDist;
             cam.Position = new Point3D(_pivot.X - cam.LookDirection.X, _pivot.Y - cam.LookDirection.Y, _pivot.Z - cam.LookDirection.Z);
+        }
+
+        // Keep a small corner axis in sync when present
+        private void SyncMiniAxis()
+        {
+            try
+            {
+                if (_miniAxisViewport?.Camera is not HelixToolkit.Wpf.SharpDX.PerspectiveCamera mini) return;
+                if (_hxViewport?.Camera is not HelixToolkit.Wpf.SharpDX.PerspectiveCamera cam) return;
+                var look = new System.Windows.Media.Media3D.Vector3D(cam.LookDirection.X, cam.LookDirection.Y, cam.LookDirection.Z);
+                if (look.Length == 0) look = new System.Windows.Media.Media3D.Vector3D(0, 0, -1);
+                look.Normalize();
+                double dist = 3.0;
+                mini.Position = new Point3D(-look.X * dist, -look.Y * dist, -look.Z * dist);
+                mini.LookDirection = new System.Windows.Media.Media3D.Vector3D(look.X * dist, look.Y * dist, look.Z * dist);
+                mini.UpDirection = cam.UpDirection;
+            }
+            catch { }
         }
 
         // Helix path removed in this pass
@@ -664,6 +827,104 @@ namespace Lazarus.Desktop.Views
         private void FitToView(Rect3D bounds)
         {
             try { _hxViewport?.ZoomExtents(); } catch { }
+            try { SyncMiniAxis(); } catch { }
+        }
+
+        // Open texture stream from external file or embedded texture (Assimp)
+        private static Stream? OpenTextureStream(Assimp.Scene scene, string modelPath, string texPath)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(texPath) && texPath.StartsWith("*"))
+                {
+                    if (int.TryParse(texPath.Substring(1), out var idx))
+                    {
+                        if (scene.HasTextures && idx >= 0 && idx < scene.Textures.Count)
+                        {
+                            var et = scene.Textures[idx];
+                            try
+                            {
+                                if (et.HasCompressedData)
+                                {
+                                    return new MemoryStream(et.CompressedData, writable: false);
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    return null;
+                }
+                else
+                {
+                    var baseDir = Path.GetDirectoryName(modelPath) ?? string.Empty;
+                    var full = Path.Combine(baseDir, texPath ?? string.Empty);
+                    if (File.Exists(full)) return File.OpenRead(full);
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        private void OnCaptureView(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_helixHost == null) return;
+                int w = Math.Max(1, (int)_helixHost.ActualWidth);
+                int h = Math.Max(1, (int)_helixHost.ActualHeight);
+                var rtb = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(_helixHost);
+                var enc = new PngBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(rtb));
+                Directory.CreateDirectory(Lazarus.Shared.LazarusPaths.SystemData.Temp);
+                var file = Path.Combine(Lazarus.Shared.LazarusPaths.SystemData.Temp, $"viewport-{DateTime.Now:yyyyMMdd-HHmmss}.png");
+                using var fs = File.Create(file);
+                enc.Save(fs);
+            }
+            catch { }
+        }
+
+        private async void OnCaptureTurntable(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_helixHost == null || _hxViewport?.Camera is not HelixToolkit.Wpf.SharpDX.PerspectiveCamera cam) return;
+                var dir = Path.Combine(LazarusPaths.SystemData.Temp, $"turntable-{DateTime.Now:yyyyMMdd-HHmmss}");
+                Directory.CreateDirectory(dir);
+                int frames = 120; double step = 360.0 / frames;
+                var pivot = _pivot; var up = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                var startPos = cam.Position; var startUp = cam.UpDirection;
+                for (int i = 0; i < frames; i++)
+                {
+                    var rot = new RotateTransform3D(new AxisAngleRotation3D(up, step), pivot);
+                    cam.Position = rot.Transform(cam.Position);
+                    cam.LookDirection = new System.Windows.Media.Media3D.Vector3D(pivot.X - cam.Position.X, pivot.Y - cam.Position.Y, pivot.Z - cam.Position.Z);
+                    await Task.Delay(1);
+                    int w = Math.Max(1, (int)_helixHost.ActualWidth);
+                    int h = Math.Max(1, (int)_helixHost.ActualHeight);
+                    var rtb = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
+                    rtb.Render(_helixHost);
+                    var enc = new PngBitmapEncoder();
+                    enc.Frames.Add(BitmapFrame.Create(rtb));
+                    var file = Path.Combine(dir, $"frame-{i:D4}.png");
+                    using var fs = File.Create(file); enc.Save(fs);
+                }
+                cam.Position = startPos; cam.UpDirection = startUp;
+                cam.LookDirection = new System.Windows.Media.Media3D.Vector3D(pivot.X - cam.Position.X, pivot.Y - cam.Position.Y, pivot.Z - cam.Position.Z);
+                try
+                {
+                    var svc = Lazarus.Desktop.App.ServiceProvider?.GetService(typeof(IAssetPipelineService)) as IAssetPipelineService;
+                    if (svc != null)
+                    {
+                        var output = Path.Combine(dir, "turntable.mp4");
+                        var pattern = Path.Combine(dir, "frame-%04d.png");
+                        var args = $"-y -framerate 30 -i \"{pattern}\" -pix_fmt yuv420p \"{output}\"";
+                        await svc.RunAsync(AssetTool.Ffmpeg, args, dir);
+                    }
+                }
+                catch { }
+            }
+            catch { }
         }
     }
 }
