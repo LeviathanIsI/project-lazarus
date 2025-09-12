@@ -49,6 +49,8 @@ public static class LazarusPaths
         public static readonly string LoRAAdapters = Path.Combine(RootDir, "LoRA-Adapters");
         public static readonly string Tokenizers   = Path.Combine(RootDir, "Tokenizers");
         public static readonly string Diffusers    = Path.Combine(RootDir, "Diffusers");
+        // Material presets (PBR definitions, glTF snippets)
+        public static readonly string Materials    = Path.Combine(RootDir, "Materials");
     }
 
     /// <summary>
@@ -67,6 +69,13 @@ public static class LazarusPaths
         public static readonly string StylePresets_Hypernetworks = Path.Combine(RootDir, "Style-Presets", "Hypernetworks");
         public static readonly string Upscale      = Path.Combine(RootDir, "Upscale-Models");
         public static readonly string Vae          = Path.Combine(RootDir, "VAE-Models");
+        // PBR/Viewport assets & texture pipelines
+        public static readonly string IblMaps      = Path.Combine(RootDir, "IBL-Maps");
+        public static readonly string Shaders      = Path.Combine(RootDir, "Shaders");
+        public static readonly string TextureTools = Path.Combine(RootDir, "Texture-Tools");
+        public static readonly string TextureTools_KtxCache      = Path.Combine(TextureTools, "KTX-Cache");
+        public static readonly string TextureTools_GltfTransform = Path.Combine(TextureTools, "Gltf-Transform");
+        public static readonly string TextureTools_Gltfpack      = Path.Combine(TextureTools, "Gltfpack");
     }
 
     /// <summary>
@@ -190,6 +199,17 @@ public static class LazarusPaths
         public static readonly string Config_Theme    = Path.Combine(Config, "UI-Theme");
         public static readonly string TrainingRecipes = Path.Combine(Config, "Training-Recipes");
         public static readonly string Pipelines       = Path.Combine(Config, "Pipelines");
+        // Asset pipeline system data
+        public static readonly string Thumbnails      = Path.Combine(RootDir, "Thumbnails");
+        public static readonly string Thumbnails3D    = Path.Combine(Thumbnails, "3D");
+        public static readonly string Physics         = Path.Combine(RootDir, "Physics");
+        public static readonly string Physics_Meshes  = Path.Combine(Physics, "Meshes");
+        public static readonly string Tools           = Path.Combine(RootDir, "Tools");
+        public static readonly string Tools_Ffmpeg    = Path.Combine(Tools, "ffmpeg");
+        public static readonly string Tools_Ktx       = Path.Combine(Tools, "ktx");
+        public static readonly string Tools_Basisu    = Path.Combine(Tools, "basisu");
+        public static readonly string Tools_GltfTransform = Path.Combine(Tools, "gltf-transform");
+        public static readonly string Tools_Gltfpack  = Path.Combine(Tools, "gltfpack");
     }
 
     /// <summary>
@@ -282,6 +302,9 @@ public static class LazarusPaths
         // Shared
         public static readonly string Shared_Ffmpeg = Path.Combine(SharedRoot, "ffmpeg");
         public static readonly string Shared_Utils  = Path.Combine(SharedRoot, "utils");
+        // Helix/Assimp caches
+        public static readonly string HelixRoot    = Path.Combine(RootDir, "Helix");
+        public static readonly string Helix_AssimpCache = Path.Combine(HelixRoot, "Assimp-Cache");
 
         /// <summary>
         /// Resolve a runner folder path, preferring domain-specific layout and falling back to legacy flat path.

@@ -71,6 +71,14 @@ public class AppSettings : INotifyPropertyChanged
     private bool _autoDownloadUpdates;
     private bool _sendAnonymousUsage;
     private bool _sendCrashReports;
+    
+    // Toolchain / Asset pipeline
+    private string _toolFfmpegPath = string.Empty;
+    private string _toolToktxPath = string.Empty;
+    private string _toolBasisuPath = string.Empty;
+    private string _toolGltfTransformPath = string.Empty;
+    private string _toolGltfpackPath = string.Empty;
+    private bool _preferBundledTools = true;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -554,6 +562,55 @@ public class AppSettings : INotifyPropertyChanged
     {
         get => _sendCrashReports;
         set { _sendCrashReports = value; OnPropertyChanged(nameof(SendCrashReports)); }
+    }
+
+    // Toolchain Settings
+    [JsonPropertyName("toolFfmpegPath")]
+    [Description("Path to ffmpeg executable. If empty, uses bundled under System-Data/Tools/ffmpeg.")]
+    public string ToolFfmpegPath
+    {
+        get => _toolFfmpegPath ?? string.Empty;
+        set { _toolFfmpegPath = value ?? string.Empty; OnPropertyChanged(nameof(ToolFfmpegPath)); }
+    }
+
+    [JsonPropertyName("toolToktxPath")]
+    [Description("Path to toktx executable (KTX-Software). If empty, uses System-Data/Tools/ktx.")]
+    public string ToolToktxPath
+    {
+        get => _toolToktxPath ?? string.Empty;
+        set { _toolToktxPath = value ?? string.Empty; OnPropertyChanged(nameof(ToolToktxPath)); }
+    }
+
+    [JsonPropertyName("toolBasisuPath")]
+    [Description("Path to basisu encoder. If empty, uses System-Data/Tools/basisu.")]
+    public string ToolBasisuPath
+    {
+        get => _toolBasisuPath ?? string.Empty;
+        set { _toolBasisuPath = value ?? string.Empty; OnPropertyChanged(nameof(ToolBasisuPath)); }
+    }
+
+    [JsonPropertyName("toolGltfTransformPath")]
+    [Description("Path to glTF-Transform CLI (gltf-transform). If empty, uses System-Data/Tools/gltf-transform.")]
+    public string ToolGltfTransformPath
+    {
+        get => _toolGltfTransformPath ?? string.Empty;
+        set { _toolGltfTransformPath = value ?? string.Empty; OnPropertyChanged(nameof(ToolGltfTransformPath)); }
+    }
+
+    [JsonPropertyName("toolGltfpackPath")]
+    [Description("Path to gltfpack executable. If empty, uses System-Data/Tools/gltfpack.")]
+    public string ToolGltfpackPath
+    {
+        get => _toolGltfpackPath ?? string.Empty;
+        set { _toolGltfpackPath = value ?? string.Empty; OnPropertyChanged(nameof(ToolGltfpackPath)); }
+    }
+
+    [JsonPropertyName("preferBundledTools")]
+    [Description("Prefer tools placed under System-Data/Tools if available.")]
+    public bool PreferBundledTools
+    {
+        get => _preferBundledTools;
+        set { _preferBundledTools = value; OnPropertyChanged(nameof(PreferBundledTools)); }
     }
 
     protected virtual void OnPropertyChanged(string propertyName)

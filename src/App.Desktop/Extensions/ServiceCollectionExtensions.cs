@@ -102,6 +102,9 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<IOrchestratorClient>(sp => sp.GetRequiredService<OrchestratorClient>());
 
+        // Asset pipeline CLI runner (tools like ffmpeg, toktx, etc.)
+        services.AddSingleton<Lazarus.Backend.Services.Assets.IAssetPipelineService, Lazarus.Backend.Services.Assets.AssetPipelineService>();
+
         services.AddHttpClient<OrchestratorRunnerClient>((serviceProvider, httpClient) =>
         {
             var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<OrchestratorOptions>>().Value;
