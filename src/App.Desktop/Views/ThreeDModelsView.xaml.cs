@@ -42,6 +42,14 @@ namespace Lazarus.Desktop.Views
         private bool _isEditingModel;
         private enum EditMode { None, Translate, Rotate, Scale }
         private EditMode _editMode = EditMode.None;
+        // On-model gizmo state
+        private GroupModel3D? _gizmoGroup;
+        private LineGeometryModel3D? _gizmoX;
+        private LineGeometryModel3D? _gizmoY;
+        private LineGeometryModel3D? _gizmoZ;
+        private enum GizmoAxis { None, X, Y, Z }
+        private GizmoAxis _activeAxis = GizmoAxis.None;
+        private bool _draggingGizmo = false;
 
         public ThreeDModelsView()
         {
@@ -93,6 +101,7 @@ namespace Lazarus.Desktop.Views
                 _hxViewport.PreviewMouseDown += OnViewportMouseDown;
                 _hxViewport.PreviewMouseMove += OnViewportMouseMove;
                 _hxViewport.PreviewMouseUp += OnViewportMouseUp;
+                try { _hxViewport.CameraChanged += (s, a) => { try { UpdateGizmoTransform(); } catch { } }; } catch { }
 
                 // Disable default Helix mouse gestures to avoid conflicts
                 // Default Helix gestures are suppressed by handling Preview* events
@@ -300,6 +309,7 @@ namespace Lazarus.Desktop.Views
                 _modelTransform.Children.Add(new TranslateTransform3D(_pivot.X, _pivot.Y, _pivot.Z));
                 _modelTransform.Children.Add(_trModel);
                 ApplyTransformToScene(_modelTransform);
+                try { EnsureGizmo(); UpdateGizmoTransform(); } catch { }
                 return _hxRoot != null && _hxRoot.Children.Count > 0;
             }
             catch
@@ -335,6 +345,7 @@ namespace Lazarus.Desktop.Views
                 _rotX.Angle = 0; _rotY.Angle = 0; _rotZ.Angle = 0;
                 _scaleModel.ScaleX = 1; _scaleModel.ScaleY = 1; _scaleModel.ScaleZ = 1;
                 ApplyTransformToScene(_modelTransform);
+                try { UpdateGizmoTransform(); } catch { }
             }
             catch { }
         }
@@ -347,13 +358,79 @@ namespace Lazarus.Desktop.Views
                 if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt)) return;
                 switch (e.Key)
                 {
-                    case Key.W: _editMode = EditMode.Translate; e.Handled = true; break;
-                    case Key.E: _editMode = EditMode.Rotate; e.Handled = true; break;
-                    case Key.R: _editMode = EditMode.Scale; e.Handled = true; break;
-                    case Key.Escape: _editMode = EditMode.None; e.Handled = true; break;
+                    case Key.W: _editMode = EditMode.Translate; EnsureGizmo(); UpdateGizmoTransform(); e.Handled = true; break;
+                    case Key.E: _editMode = EditMode.Rotate; EnsureGizmo(); UpdateGizmoTransform(); e.Handled = true; break;
+                    case Key.R: _editMode = EditMode.Scale; EnsureGizmo(); UpdateGizmoTransform(); e.Handled = true; break;
+                    case Key.Escape: _editMode = EditMode.None; HideGizmo(); e.Handled = true; break;
                 }
             }
             catch { }
+        }
+
+        private void EnsureGizmo()
+        {
+            if (_hxRoot == null) return;
+            if (_editMode == EditMode.None) { HideGizmo(); return; }
+            _gizmoGroup ??= new GroupModel3D();
+            if (_gizmoX == null || _gizmoY == null || _gizmoZ == null)
+            {
+                _gizmoX = BuildGizmoAxis(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), System.Windows.Media.Colors.IndianRed, "gizmo:X");
+                _gizmoY = BuildGizmoAxis(new System.Windows.Media.Media3D.Vector3D(0, 1, 0), System.Windows.Media.Colors.DarkSeaGreen, "gizmo:Y");
+                _gizmoZ = BuildGizmoAxis(new System.Windows.Media.Media3D.Vector3D(0, 0, 1), System.Windows.Media.Colors.SteelBlue, "gizmo:Z");
+                _gizmoGroup.Children.Clear();
+                _gizmoGroup.Children.Add(_gizmoX);
+                _gizmoGroup.Children.Add(_gizmoY);
+                _gizmoGroup.Children.Add(_gizmoZ);
+            }
+            if (!_hxRoot.Children.Contains(_gizmoGroup)) _hxRoot.Children.Add(_gizmoGroup);
+        }
+
+        private void HideGizmo()
+        {
+            if (_hxRoot != null && _gizmoGroup != null && _hxRoot.Children.Contains(_gizmoGroup))
+                _hxRoot.Children.Remove(_gizmoGroup);
+        }
+
+        private LineGeometryModel3D BuildGizmoAxis(System.Windows.Media.Media3D.Vector3D dir, System.Windows.Media.Color color, string tag)
+        {
+            var positions = new HelixToolkit.Wpf.SharpDX.Vector3Collection
+            {
+                new SharpDX.Vector3(0,0,0),
+                new SharpDX.Vector3((float)dir.X, (float)dir.Y, (float)dir.Z)
+            };
+            var indices = new HelixToolkit.Wpf.SharpDX.IntCollection { 0, 1 };
+            var geom = new LineGeometry3D { Positions = positions, Indices = indices };
+            return new LineGeometryModel3D { Geometry = geom, Color = color, Thickness = 2.5, IsHitTestVisible = true, Tag = tag.Replace("gizmo:", "gizmo:trans:") };
+        }
+
+        private System.Windows.Media.Media3D.Vector3D GetWorldAxisDirection(GizmoAxis axis)
+        {
+            var v = axis switch { GizmoAxis.X => new System.Windows.Media.Media3D.Vector3D(1, 0, 0), GizmoAxis.Y => new System.Windows.Media.Media3D.Vector3D(0, 1, 0), GizmoAxis.Z => new System.Windows.Media.Media3D.Vector3D(0, 0, 1), _ => new System.Windows.Media.Media3D.Vector3D(0, 0, 0) };
+            // Apply object rotations (Y -> X -> Z) to get local axis in world space
+            var p = new System.Windows.Media.Media3D.Point3D(v.X, v.Y, v.Z);
+            p = new RotateTransform3D(_rotY).Transform(p);
+            p = new RotateTransform3D(_rotX).Transform(p);
+            p = new RotateTransform3D(_rotZ).Transform(p);
+            var w = new System.Windows.Media.Media3D.Vector3D(p.X, p.Y, p.Z);
+            if (w.Length > 0) w.Normalize();
+            return w;
+        }
+
+        private void UpdateGizmoTransform()
+        {
+            if (_gizmoGroup == null || _hxViewport?.Camera is not HelixToolkit.Wpf.SharpDX.PerspectiveCamera cam) return;
+            // Size scales with distance to keep roughly constant on screen
+            var wp = new System.Windows.Media.Media3D.Point3D(_pivot.X + _trModel.OffsetX, _pivot.Y + _trModel.OffsetY, _pivot.Z + _trModel.OffsetZ);
+            var d = (wp - cam.Position).Length;
+            double fovRad = Math.PI * cam.FieldOfView / 180.0;
+            double s = Math.Max(0.05, d * Math.Tan(fovRad * 0.5) * 0.25);
+            var tg = new Transform3DGroup();
+            tg.Children.Add(new ScaleTransform3D(s, s, s));
+            tg.Children.Add(new RotateTransform3D(_rotY));
+            tg.Children.Add(new RotateTransform3D(_rotX));
+            tg.Children.Add(new RotateTransform3D(_rotZ));
+            tg.Children.Add(new TranslateTransform3D(wp.X, wp.Y, wp.Z));
+            _gizmoGroup.Transform = tg;
         }
 
         // UI Actions
@@ -519,6 +596,28 @@ namespace Lazarus.Desktop.Views
                 return;
             }
 
+            // Hit-test gizmo when in edit mode
+            if (_editMode != EditMode.None)
+            {
+                try
+                {
+                    var hits = _hxViewport.FindHits(_lastMouse);
+                    foreach (var h in hits)
+                    {
+                        if (h?.ModelHit is Element3D elem && elem.Tag is string tag && tag.StartsWith("gizmo:"))
+                        {
+                            if (tag.EndsWith(":X")) _activeAxis = GizmoAxis.X;
+                            else if (tag.EndsWith(":Y")) _activeAxis = GizmoAxis.Y;
+                            else if (tag.EndsWith(":Z")) _activeAxis = GizmoAxis.Z;
+                            _draggingGizmo = true; _isEditingModel = true;
+                            try { _hxViewport.CaptureMouse(); } catch { }
+                            e.Handled = true; return;
+                        }
+                    }
+                }
+                catch { }
+            }
+
             // Model edit without toggles: infer mode from keys or mouse button
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left || e.ChangedButton == System.Windows.Input.MouseButton.Right)
             {
@@ -543,7 +642,7 @@ namespace Lazarus.Desktop.Views
             }
             if (_isEditingModel)
             {
-                _isEditingModel = false; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
+                _isEditingModel = false; _draggingGizmo = false; _activeAxis = GizmoAxis.None; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
                 e.Handled = true;
             }
         }
@@ -577,42 +676,81 @@ namespace Lazarus.Desktop.Views
                 {
                     case EditMode.Translate:
                     {
-                        var shift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
-                        if (shift)
+                        if (_draggingGizmo && _activeAxis != GizmoAxis.None && _hxViewport?.Camera is HelixToolkit.Wpf.SharpDX.PerspectiveCamera cam2)
                         {
-                            _trModel.OffsetY += -dy * tScale; // vertical move
+                            var rightV = Normalize(System.Windows.Media.Media3D.Vector3D.CrossProduct(new System.Windows.Media.Media3D.Vector3D(cam2.LookDirection.X, cam2.LookDirection.Y, cam2.LookDirection.Z), cam2.UpDirection));
+                            var upV = Normalize(cam2.UpDirection);
+                            var worldDelta = rightV * dx * tScale + upV * (-dy * tScale);
+                            var axisDir = GetWorldAxisDirection(_activeAxis);
+                            var amount = System.Windows.Media.Media3D.Vector3D.DotProduct(worldDelta, axisDir);
+                            var move = axisDir; if (move.Length > 0) { move.Normalize(); move *= amount; }
+                            _trModel.OffsetX += move.X; _trModel.OffsetY += move.Y; _trModel.OffsetZ += move.Z;
                         }
                         else
                         {
-                            _trModel.OffsetX += dx * tScale;
-                            _trModel.OffsetZ += -dy * tScale;
+                            var shift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+                            if (shift) _trModel.OffsetY += -dy * tScale; // vertical move
+                            else { _trModel.OffsetX += dx * tScale; _trModel.OffsetZ += -dy * tScale; }
                         }
                         ApplyTransformToScene(_modelTransform);
+                        try { UpdateGizmoTransform(); } catch { }
                         break;
                     }
                     case EditMode.Rotate:
                     {
-                        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                        if (_draggingGizmo && _activeAxis != GizmoAxis.None)
                         {
-                            _rotZ.Angle += dx * 0.25; // roll
+                            var axisDir = GetWorldAxisDirection(_activeAxis);
+                            var rightV = new System.Windows.Media.Media3D.Vector3D(1,0,0); var upV = new System.Windows.Media.Media3D.Vector3D(0,1,0);
+                            if (_hxViewport?.Camera is HelixToolkit.Wpf.SharpDX.PerspectiveCamera cam2)
+                            {
+                                rightV = Normalize(System.Windows.Media.Media3D.Vector3D.CrossProduct(new System.Windows.Media.Media3D.Vector3D(cam2.LookDirection.X, cam2.LookDirection.Y, cam2.LookDirection.Z), cam2.UpDirection));
+                                upV = Normalize(cam2.UpDirection);
+                            }
+                            var along = System.Windows.Media.Media3D.Vector3D.DotProduct(rightV, axisDir) * dx + System.Windows.Media.Media3D.Vector3D.DotProduct(upV, axisDir) * (-dy);
+                            var dAng = along * 0.5; // degrees
+                            if (_activeAxis == GizmoAxis.X) _rotX.Angle += dAng;
+                            else if (_activeAxis == GizmoAxis.Y) _rotY.Angle += dAng;
+                            else if (_activeAxis == GizmoAxis.Z) _rotZ.Angle += dAng;
                         }
                         else
                         {
-                            _rotY.Angle += dx * 0.25;   // yaw
-                            _rotX.Angle += -dy * 0.25;  // pitch
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) _rotZ.Angle += dx * 0.25; // roll
+                            else { _rotY.Angle += dx * 0.25; _rotX.Angle += -dy * 0.25; }
                         }
                         ApplyTransformToScene(_modelTransform);
+                        try { UpdateGizmoTransform(); } catch { }
                         break;
                     }
                     case EditMode.Scale:
                     {
-                        // Uniform exponential scale based on vertical drag
-                        var factor = Math.Exp(-dy * 0.01);
-                        var sx = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleX * factor));
-                        var sy = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleY * factor));
-                        var sz = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleZ * factor));
-                        _scaleModel.ScaleX = sx; _scaleModel.ScaleY = sy; _scaleModel.ScaleZ = sz;
+                        if (_draggingGizmo && _activeAxis != GizmoAxis.None)
+                        {
+                            var axisDir = GetWorldAxisDirection(_activeAxis);
+                            var rightV = new System.Windows.Media.Media3D.Vector3D(1,0,0); var upV = new System.Windows.Media.Media3D.Vector3D(0,1,0);
+                            if (_hxViewport?.Camera is HelixToolkit.Wpf.SharpDX.PerspectiveCamera cam2)
+                            {
+                                rightV = Normalize(System.Windows.Media.Media3D.Vector3D.CrossProduct(new System.Windows.Media.Media3D.Vector3D(cam2.LookDirection.X, cam2.LookDirection.Y, cam2.LookDirection.Z), cam2.UpDirection));
+                                upV = Normalize(cam2.UpDirection);
+                            }
+                            var along = System.Windows.Media.Media3D.Vector3D.DotProduct(rightV, axisDir) * dx + System.Windows.Media.Media3D.Vector3D.DotProduct(upV, axisDir) * (-dy);
+                            var factorAxis = Math.Exp(along * 0.01);
+                            double minS = 0.001, maxS = 1000;
+                            if (_activeAxis == GizmoAxis.X) _scaleModel.ScaleX = Math.Max(minS, Math.Min(maxS, _scaleModel.ScaleX * factorAxis));
+                            if (_activeAxis == GizmoAxis.Y) _scaleModel.ScaleY = Math.Max(minS, Math.Min(maxS, _scaleModel.ScaleY * factorAxis));
+                            if (_activeAxis == GizmoAxis.Z) _scaleModel.ScaleZ = Math.Max(minS, Math.Min(maxS, _scaleModel.ScaleZ * factorAxis));
+                        }
+                        else
+                        {
+                            // Uniform exponential scale based on vertical drag
+                            var factor = Math.Exp(-dy * 0.01);
+                            var sx = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleX * factor));
+                            var sy = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleY * factor));
+                            var sz = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleZ * factor));
+                            _scaleModel.ScaleX = sx; _scaleModel.ScaleY = sy; _scaleModel.ScaleZ = sz;
+                        }
                         ApplyTransformToScene(_modelTransform);
+                        try { UpdateGizmoTransform(); } catch { }
                         break;
                     }
                 }
