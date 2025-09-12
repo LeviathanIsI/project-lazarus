@@ -2,5 +2,7 @@
   <PropertyGroup>
     <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
     <StartupProject>App.Desktop</StartupProject>
+    <!-- Suppress restore-time warning NU1701 for legacy SharpDX/Helix packages until upstream publishes net8 assets -->
+    <RestoreNoWarn>$(RestoreNoWarn);NU1701</RestoreNoWarn>
   </PropertyGroup>
 </Project>

@@ -31,7 +31,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="HelixToolkit.SharpDX.Core" Version="2.27.3" />
-    <PackageReference Include="HelixToolkit.Wpf.SharpDX" Version="2.27.3" />
+    <PackageReference Include="HelixToolkit.Wpf.SharpDX" Version="2.27.3" NoWarn="NU1701" />
     <PackageReference Include="SharpGLTF.Core" Version="1.0.5" />
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
