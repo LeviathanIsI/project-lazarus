@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -11,7 +10,6 @@ internal sealed class SystemMetricsService : ISystemMetricsService
     private readonly ILogger<SystemMetricsService> _logger;
     private readonly Timer _timer;
     private PerformanceCounter? _cpuCounter;
-    private PerformanceCounter? _ramAvailableMb;
     private ulong _totalRamBytes;
 
     // GPU via WMI (usage not directly available; we approximate via EngineUtilization if NVAPI unavailable)
@@ -30,20 +28,18 @@ internal sealed class SystemMetricsService : ISystemMetricsService
         try
         {
             _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total", true);
-            _ramAvailableMb = new PerformanceCounter("Memory", "Available MBytes");
-
             // Warm-up read to avoid first-sample spikes
             _ = _cpuCounter.NextValue();
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to initialize performance counters");
+            _logger.LogWarning(ex, "Failed to initialize CPU performance counter");
         }
 
         try
         {
-            // Total physical memory
-            _totalRamBytes = new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory;
+            // Total physical memory via GlobalMemoryStatusEx for accuracy
+            _totalRamBytes = QueryTotalPhysicalBytes();
 
             // GPU name and VRAM via WMI
             using var searcher = new ManagementObjectSearcher("select Name, AdapterRAM from Win32_VideoController");
@@ -88,9 +84,11 @@ internal sealed class SystemMetricsService : ISystemMetricsService
         {
             var cpu = _cpuCounter != null ? Math.Clamp(_cpuCounter.NextValue(), 0, 100) : 0;
 
+            // Live RAM via GlobalMemoryStatusEx
+            var (totalBytes, availBytes) = QueryMemoryStatus();
+            if (totalBytes > 0) _totalRamBytes = totalBytes; // refresh if changed (rare)
             double totalGb = _totalRamBytes / (1024.0 * 1024.0 * 1024.0);
-            double availableMb = _ramAvailableMb != null ? _ramAvailableMb.NextValue() : 0;
-            double usedGb = Math.Max(0, totalGb - (availableMb / 1024.0));
+            double usedGb = Math.Max(0, (totalBytes - availBytes) / (1024.0 * 1024.0 * 1024.0));
 
             // GPU usage best-effort: not trivial via WMI; leave at 0 if unavailable
             // Future: plug NVML/NVAPI when present
@@ -116,7 +114,40 @@ internal sealed class SystemMetricsService : ISystemMetricsService
     {
         _timer.Dispose();
         _cpuCounter?.Dispose();
-        _ramAvailableMb?.Dispose();
+    }
+
+    // P/Invoke for accurate physical memory totals
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MEMORYSTATUSEX
+    {
+        public uint dwLength;
+        public uint dwMemoryLoad;
+        public ulong ullTotalPhys;
+        public ulong ullAvailPhys;
+        public ulong ullTotalPageFile;
+        public ulong ullAvailPageFile;
+        public ulong ullTotalVirtual;
+        public ulong ullAvailVirtual;
+        public ulong ullAvailExtendedVirtual;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+
+    private static ulong QueryTotalPhysicalBytes()
+    {
+        var ms = new MEMORYSTATUSEX { dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>() };
+        return GlobalMemoryStatusEx(ref ms) ? ms.ullTotalPhys : 0UL;
+    }
+
+    private static (ulong total, ulong avail) QueryMemoryStatus()
+    {
+        var ms = new MEMORYSTATUSEX { dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>() };
+        if (GlobalMemoryStatusEx(ref ms))
+        {
+            return (ms.ullTotalPhys, ms.ullAvailPhys);
+        }
+        return (0UL, 0UL);
     }
 }
 
