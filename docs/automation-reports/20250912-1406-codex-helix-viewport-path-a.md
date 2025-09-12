@@ -56,3 +56,5 @@ modified  "\357\200\272\357\200\252\357\200\252"
 ## 8) Risks / Rollback
 - Risk: HelixToolkit WPF SharpDX is restored for .NET Framework; allowed via NU1701. If runtime issues appear, revert to WPF preview quickly.
 - Rollback: revert this commit and remove Helix packages.
+
+<!-- After SHA: 3eb8bdc5eb7b8d0e3b84018e5a44ddd347293f7f -->
