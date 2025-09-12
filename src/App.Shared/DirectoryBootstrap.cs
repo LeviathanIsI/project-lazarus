@@ -57,6 +57,16 @@ public static class DirectoryBootstrap
         LazarusPaths.SystemData.Tools_GltfTransform,
         LazarusPaths.SystemData.Tools_Gltfpack,
 
+        // System-Data/Training
+        LazarusPaths.SystemData.Training.RootDir,
+        LazarusPaths.SystemData.Training.DatasetsRoot,
+        LazarusPaths.SystemData.Training.Datasets_Conversations,
+        LazarusPaths.SystemData.Training.Datasets_Preferences,
+        LazarusPaths.SystemData.Training.Datasets_Eval,
+        LazarusPaths.SystemData.Training.JobsRoot,
+        LazarusPaths.SystemData.Training.OutputsRoot,
+        LazarusPaths.SystemData.Training.Outputs_Adapters,
+
         LazarusPaths.UserContent.GeneratedOutput,
         LazarusPaths.UserContent.InputFiles,
         LazarusPaths.UserContent.Projects,

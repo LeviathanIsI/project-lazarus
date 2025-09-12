@@ -210,6 +210,27 @@ public static class LazarusPaths
         public static readonly string Tools_Basisu    = Path.Combine(Tools, "basisu");
         public static readonly string Tools_GltfTransform = Path.Combine(Tools, "gltf-transform");
         public static readonly string Tools_Gltfpack  = Path.Combine(Tools, "gltfpack");
+
+        /// <summary>
+        /// Training workspace under %LOCALAPPDATA%\Lazarus\System-Data\Training
+        /// </summary>
+        public static class Training
+        {
+            public static readonly string RootDir = Path.Combine(SystemData.RootDir, "Training");
+
+            // Datasets normalized for trainers (JSONL/parquet etc.)
+            public static readonly string DatasetsRoot        = Path.Combine(RootDir, "Datasets");
+            public static readonly string Datasets_Conversations = Path.Combine(DatasetsRoot, "Conversations");
+            public static readonly string Datasets_Preferences    = Path.Combine(DatasetsRoot, "Preferences");
+            public static readonly string Datasets_Eval           = Path.Combine(DatasetsRoot, "Eval");
+
+            // Jobs: per-run working directories with manifests/config/checkpoints
+            public static readonly string JobsRoot    = Path.Combine(RootDir, "Jobs");
+
+            // Outputs copied/promoted from Jobs/<id>/artifacts
+            public static readonly string OutputsRoot   = Path.Combine(RootDir, "Outputs");
+            public static readonly string Outputs_Adapters = Path.Combine(OutputsRoot, "Adapters");
+        }
     }
 
     /// <summary>
@@ -458,6 +479,15 @@ public static class LazarusPaths
             SystemData.Config_Theme,
             SystemData.TrainingRecipes,
             SystemData.Pipelines,
+            // System-Data/Training
+            SystemData.Training.RootDir,
+            SystemData.Training.DatasetsRoot,
+            SystemData.Training.Datasets_Conversations,
+            SystemData.Training.Datasets_Preferences,
+            SystemData.Training.Datasets_Eval,
+            SystemData.Training.JobsRoot,
+            SystemData.Training.OutputsRoot,
+            SystemData.Training.Outputs_Adapters,
 
             UserContent.RootDir,
             UserContent.GeneratedOutput,
