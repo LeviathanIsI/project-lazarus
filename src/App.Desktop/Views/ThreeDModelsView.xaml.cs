@@ -32,13 +32,16 @@ namespace Lazarus.Desktop.Views
         private GroupModel3D? _axisGroup;
         private double _lastSceneExtent = 1.0;
         private Viewport3DX? _miniAxisViewport = null;
-        // Model transform/gizmo state
+        // Model transform state
         private Transform3DGroup _modelTransform = new Transform3DGroup();
+        private ScaleTransform3D _scaleModel = new ScaleTransform3D(1, 1, 1);
         private TranslateTransform3D _trModel = new TranslateTransform3D(0, 0, 0);
         private AxisAngleRotation3D _rotX = new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), 0);
         private AxisAngleRotation3D _rotY = new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(0, 1, 0), 0);
         private AxisAngleRotation3D _rotZ = new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(0, 0, 1), 0);
         private bool _isEditingModel;
+        private enum EditMode { None, Translate, Rotate, Scale }
+        private EditMode _editMode = EditMode.None;
 
         public ThreeDModelsView()
         {
@@ -282,11 +285,15 @@ namespace Lazarus.Desktop.Views
                 if (gridEnabled) EnsureGrid(new Point3D(cx, min.Y, cz), _lastSceneExtent);
                 if (axisEnabled) EnsureAxis(new Point3D(cx, cy, cz), _lastSceneExtent * 0.6);
 
-                // Prepare and apply model transform (rotate X/Y/Z then translate)
+                // Prepare and apply model transform
+                // Order: move model to origin (pivot), scale, rotate Y/X/Z, move back to pivot, then apply user translation
                 _modelTransform.Children.Clear();
+                _modelTransform.Children.Add(new TranslateTransform3D(-_pivot.X, -_pivot.Y, -_pivot.Z));
+                _modelTransform.Children.Add(_scaleModel);
                 _modelTransform.Children.Add(new RotateTransform3D(_rotY));
                 _modelTransform.Children.Add(new RotateTransform3D(_rotX));
                 _modelTransform.Children.Add(new RotateTransform3D(_rotZ));
+                _modelTransform.Children.Add(new TranslateTransform3D(_pivot.X, _pivot.Y, _pivot.Z));
                 _modelTransform.Children.Add(_trModel);
                 ApplyTransformToScene(_modelTransform);
                 return _hxRoot != null && _hxRoot.Children.Count > 0;
@@ -316,40 +323,13 @@ namespace Lazarus.Desktop.Views
             }
         }
 
-        private void OnEditModeChanged(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var moveToggle = FindName("MoveToggle") as ToggleButton;
-                var rotToggle = FindName("RotateToggle") as ToggleButton;
-                var move = moveToggle?.IsChecked ?? false;
-                var rot = rotToggle?.IsChecked ?? false;
-
-                // Enforce mutual exclusivity
-                if (sender == moveToggle && move && rotToggle != null) rotToggle.IsChecked = false;
-                if (sender == rotToggle && rot && moveToggle != null) moveToggle.IsChecked = false;
-
-                // Update editing state and cursor
-                _isEditingModel = (moveToggle?.IsChecked ?? false) || (rotToggle?.IsChecked ?? false);
-                if (_isEditingModel)
-                {
-                    try { _hxViewport?.ReleaseMouseCapture(); } catch { }
-                    Cursor = Cursors.Hand;
-                }
-                else
-                {
-                    Cursor = Cursors.Arrow;
-                }
-            }
-            catch { }
-        }
-
-        private void OnResetTransform(object sender, RoutedEventArgs e)
+                private void OnResetTransform(object sender, RoutedEventArgs e)
         {
             try
             {
                 _trModel.OffsetX = 0; _trModel.OffsetY = 0; _trModel.OffsetZ = 0;
                 _rotX.Angle = 0; _rotY.Angle = 0; _rotZ.Angle = 0;
+                _scaleModel.ScaleX = 1; _scaleModel.ScaleY = 1; _scaleModel.ScaleZ = 1;
                 ApplyTransformToScene(_modelTransform);
             }
             catch { }
@@ -518,10 +498,16 @@ namespace Lazarus.Desktop.Views
                 return;
             }
 
-            var move = (FindName("MoveToggle") as ToggleButton)?.IsChecked ?? false;
-            var rot = (FindName("RotateToggle") as ToggleButton)?.IsChecked ?? false;
-            if ((move || rot) && e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            // Model edit without toggles: infer mode from keys or mouse button
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left || e.ChangedButton == System.Windows.Input.MouseButton.Right)
             {
+                if (Keyboard.IsKeyDown(Key.W)) _editMode = EditMode.Translate;
+                else if (Keyboard.IsKeyDown(Key.E)) _editMode = EditMode.Rotate;
+                else if (Keyboard.IsKeyDown(Key.R)) _editMode = EditMode.Scale;
+                else
+                {
+                    _editMode = (e.ChangedButton == System.Windows.Input.MouseButton.Left) ? EditMode.Rotate : EditMode.Translate;
+                }
                 _isEditingModel = true; try { _hxViewport.CaptureMouse(); } catch { } e.Handled = true;
             }
         }
@@ -536,7 +522,7 @@ namespace Lazarus.Desktop.Views
             }
             if (_isEditingModel)
             {
-                _isEditingModel = false; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
+                _isEditingModel = false; _editMode = EditMode.None; try { _hxViewport?.ReleaseMouseCapture(); } catch { }
                 e.Handled = true;
             }
         }
@@ -565,35 +551,49 @@ namespace Lazarus.Desktop.Views
             }
             else if (_isEditingModel)
             {
-                var move = (FindName("MoveToggle") as ToggleButton)?.IsChecked ?? false;
-                var rot = (FindName("RotateToggle") as ToggleButton)?.IsChecked ?? false;
-                double scale = Math.Max(0.001, _lastSceneExtent * 0.002);
-                if (move)
+                double tScale = Math.Max(0.001, _lastSceneExtent * 0.002);
+                switch (_editMode)
                 {
-                    var shift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
-                    if (shift)
+                    case EditMode.Translate:
                     {
-                        _trModel.OffsetY += -dy * scale; // vertical move
+                        var shift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+                        if (shift)
+                        {
+                            _trModel.OffsetY += -dy * tScale; // vertical move
+                        }
+                        else
+                        {
+                            _trModel.OffsetX += dx * tScale;
+                            _trModel.OffsetZ += -dy * tScale;
+                        }
+                        ApplyTransformToScene(_modelTransform);
+                        break;
                     }
-                    else
+                    case EditMode.Rotate:
                     {
-                        _trModel.OffsetX += dx * scale;
-                        _trModel.OffsetZ += -dy * scale;
+                        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                        {
+                            _rotZ.Angle += dx * 0.25; // roll
+                        }
+                        else
+                        {
+                            _rotY.Angle += dx * 0.25;   // yaw
+                            _rotX.Angle += -dy * 0.25;  // pitch
+                        }
+                        ApplyTransformToScene(_modelTransform);
+                        break;
                     }
-                    ApplyTransformToScene(_modelTransform);
-                }
-                else if (rot)
-                {
-                    if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    case EditMode.Scale:
                     {
-                        _rotZ.Angle += dx * 0.25;
+                        // Uniform exponential scale based on vertical drag
+                        var factor = Math.Exp(-dy * 0.01);
+                        var sx = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleX * factor));
+                        var sy = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleY * factor));
+                        var sz = Math.Max(0.001, Math.Min(1000, _scaleModel.ScaleZ * factor));
+                        _scaleModel.ScaleX = sx; _scaleModel.ScaleY = sy; _scaleModel.ScaleZ = sz;
+                        ApplyTransformToScene(_modelTransform);
+                        break;
                     }
-                    else
-                    {
-                        _rotY.Angle += dx * 0.25;
-                        _rotX.Angle += -dy * 0.25;
-                    }
-                    ApplyTransformToScene(_modelTransform);
                 }
                 _lastMouse = cur; e.Handled = true;
             }
@@ -928,3 +928,4 @@ namespace Lazarus.Desktop.Views
         }
     }
 }
+
