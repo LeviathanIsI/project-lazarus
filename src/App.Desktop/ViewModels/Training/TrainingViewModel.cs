@@ -50,7 +50,6 @@ namespace Lazarus.Desktop.ViewModels.Training
 
         private void ApplySelectedModality(string value)
         {
-            // Switch active designer based on modality
             ActiveDesigner = value switch
             {
                 "Conversations" => Conversations,
@@ -63,9 +62,10 @@ namespace Lazarus.Desktop.ViewModels.Training
                 _ => Conversations
             };
 
-            OnPropertyChanged(nameof(SelectedModality));
+            // no normalization, no overlay hacks
             OnPropertyChanged(nameof(ActiveDesigner));
         }
+
 
         private bool _isProgressMode;
         public bool IsProgressMode { get => _isProgressMode; set { _isProgressMode = value; OnPropertyChanged(); } }
@@ -115,10 +115,9 @@ namespace Lazarus.Desktop.ViewModels.Training
             SetModalityCommand = new RelayCommand<string>(m =>
             {
                 if (string.IsNullOrWhiteSpace(m)) return;
-                _selectedModality = m;
-                ApplySelectedModality(m);
+                SelectedModality = m;   // <— was _selectedModality = m; ApplySelectedModality(m);
             });
-            
+
             // Wire up cross-VM communication
             JobsSidebar.SelectedJobChanged += OnSelectedJobChanged;
             

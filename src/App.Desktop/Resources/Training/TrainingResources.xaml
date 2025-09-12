@@ -4,6 +4,9 @@
     <!-- Glass panels and chips -->
     <Style x:Key="GlassPanel" TargetType="Border" BasedOn="{StaticResource StaticGlassCardStyle}"/>
     <Style x:Key="GlassPanelElevated" TargetType="Border" BasedOn="{StaticResource RainbowBorderCardStyle}"/>
+    
+    <!-- Alias: generic card style for training views -->
+    <Style x:Key="CardStyle" TargetType="Border" BasedOn="{StaticResource GlassPanel}"/>
     <Style x:Key="GlassPill" TargetType="Border" BasedOn="{StaticResource StaticGlassCardStyle}">
         <Setter Property="CornerRadius" Value="12"/>
     </Style>

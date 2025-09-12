@@ -4,6 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:Lazarus.Desktop.Views.Training"
+             xmlns:viewstraining="clr-namespace:Lazarus.Desktop.Views.Training"
+             xmlns:vmtraining="clr-namespace:Lazarus.Desktop.ViewModels.Training"
              mc:Ignorable="d">
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.InputBindings>
@@ -29,7 +31,14 @@
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="3D Models" Command="{Binding SetModalityCommand}" CommandParameter="ThreeD" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=ThreeD}" Margin="0,0,8,0"/>
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Entities" Command="{Binding SetModalityCommand}" CommandParameter="Entities" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Entities}" Margin="0,0,8,0"/>
             <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Videos" Command="{Binding SetModalityCommand}" CommandParameter="Videos" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=Videos}"/>
-            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" Content="Design Progress" Command="{Binding SetModalityCommand}" CommandParameter="DesignProgress" IsChecked="{Binding SelectedModality, Mode=TwoWay, Converter={StaticResource StringToBooleanConverter}, ConverterParameter=DesignProgress}"/>
+            <ToggleButton Style="{StaticResource GlassToggleButtonStyle}" 
+              Content="Design Progress"
+              Command="{Binding SetModalityCommand}"
+              CommandParameter="DesignProgress"
+              IsChecked="{Binding SelectedModality, Mode=TwoWay, 
+                         Converter={StaticResource StringToBooleanConverter}, 
+                         ConverterParameter=DesignProgress}"/>
+
         </StackPanel>
 
         <!-- Main regions -->
@@ -54,9 +63,34 @@
             </Border>
 
             <!-- Center Surface: current designer or Design Progress via DataTemplates -->
+            <!-- Replace your ContentControl section with this exact code -->
             <Grid Grid.Column="2">
                 <Border Style="{StaticResource GlassPanelElevated}" Padding="8">
-                    <ContentControl Content="{Binding ActiveDesigner}"/>
+                    <ContentControl Content="{Binding ActiveDesigner}">
+                        <ContentControl.Resources>
+                            <DataTemplate DataType="{x:Type vmtraining:ConversationsDesignerViewModel}">
+                                <viewstraining:ConversationsDesignerView/>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type vmtraining:VoiceDesignerViewModel}">
+                                <viewstraining:VoiceDesignerView/>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type vmtraining:ImagesDesignerViewModel}">
+                                <viewstraining:ImagesDesignerView/>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type vmtraining:ThreeDModelsDesignerViewModel}">
+                                <viewstraining:ThreeDModelsDesignerView/>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type vmtraining:EntitiesDesignerViewModel}">
+                                <viewstraining:EntitiesDesignerView/>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type vmtraining:VideosDesignerViewModel}">
+                                <viewstraining:VideosDesignerView/>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type vmtraining:DesignProgressViewModel}">
+                                <viewstraining:DesignProgressView/>
+                            </DataTemplate>
+                        </ContentControl.Resources>
+                    </ContentControl>
                 </Border>
             </Grid>
 

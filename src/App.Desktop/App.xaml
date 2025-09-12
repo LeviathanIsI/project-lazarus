@@ -16,6 +16,7 @@
                 <ResourceDictionary Source="Resources/Styles/Buttons.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/Chips.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/Bubbles.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/Tabs.xaml"/>
                 <ResourceDictionary Source="Themes/Glassmorphic.xaml"/>
                 <ResourceDictionary Source="Themes/GlassmorphicControls.xaml"/>
 

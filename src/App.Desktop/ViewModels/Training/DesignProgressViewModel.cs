@@ -4,18 +4,36 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Lazarus.Shared.Contracts;
 using Lazarus.Shared.Training;
+using Lazarus.Desktop.Services;
 
 namespace Lazarus.Desktop.ViewModels.Training
 {
     public sealed class DesignProgressViewModel : ViewModelBase
     {
         private readonly ITrainingService _trainingService;
+        private readonly ISystemMetricsService? _metrics;
         
         public string Title => "Design Progress";
         
         // Mission Control Properties
         public int ActiveJobsCount => 3;
-        public string TotalGpuUsage => "87%";
+        private double _cpuPercent;
+        public double CpuPercent { get => _cpuPercent; private set => SetProperty(ref _cpuPercent, value); }
+
+        private double _gpuPercent;
+        public double GpuPercent { get => _gpuPercent; private set => SetProperty(ref _gpuPercent, value); }
+
+        private double _ramUsedGb;
+        public double RamUsedGb { get => _ramUsedGb; private set => SetProperty(ref _ramUsedGb, value); }
+
+        private double _ramTotalGb;
+        public double RamTotalGb { get => _ramTotalGb; private set => SetProperty(ref _ramTotalGb, value); }
+
+        public string CpuUsageText => $"{CpuPercent:0}%";
+        public string GpuUsageText => GpuPercent <= 0 ? "n/a" : $"{GpuPercent:0}%";
+        public string RamUsageText => RamTotalGb > 0 ? $"{RamUsedGb:0.0}/{RamTotalGb:0.0} GB" : "n/a";
+
+        public string TotalGpuUsage => GpuUsageText;
         public string AverageThroughput => "1.2K";
         public string EtaAllJobs => "2h 15m";
         
@@ -40,6 +58,17 @@ namespace Lazarus.Desktop.ViewModels.Training
         public DesignProgressViewModel(ITrainingService trainingService)
         {
             _trainingService = trainingService ?? throw new ArgumentNullException(nameof(trainingService));
+            // Try resolve optional metrics service from global provider
+            try
+            {
+                _metrics = App.ServiceProvider.GetService(typeof(ISystemMetricsService)) as ISystemMetricsService;
+                if (_metrics != null)
+                {
+                    _metrics.MetricsUpdated += OnMetricsUpdated;
+                    _metrics.Start();
+                }
+            }
+            catch { }
             
             // Initialize sample active jobs data
             ActiveJobs = new ObservableCollection<TrainingJobSummary>
@@ -81,6 +110,18 @@ namespace Lazarus.Desktop.ViewModels.Training
             StopAllCommand = new RelayCommand(_ => StopAllJobs());
             ExportReportsCommand = new RelayCommand(_ => ExportReports());
             PlaySampleCommand = new RelayCommand<string>(PlaySample);
+        }
+
+        private void OnMetricsUpdated(object? sender, SystemMetrics e)
+        {
+            CpuPercent = e.CpuUsagePercent;
+            GpuPercent = e.GpuUsagePercent;
+            RamUsedGb = e.RamUsedGb;
+            RamTotalGb = e.RamTotalGb;
+            OnPropertyChanged(nameof(CpuUsageText));
+            OnPropertyChanged(nameof(GpuUsageText));
+            OnPropertyChanged(nameof(RamUsageText));
+            OnPropertyChanged(nameof(TotalGpuUsage));
         }
         
         public void SetCurrentJob(TrainingJob? job)

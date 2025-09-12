@@ -7,15 +7,15 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,12">
             <TextBlock Text="Training ▸ Design Progress" Style="{StaticResource SecondaryTextStyle}" FontSize="12"/>
             <TextBlock Text="Mission Control - All Training Jobs" Style="{StaticResource H2TextStyle}"/>
         </StackPanel>
-        
+
         <!-- Live Monitoring Summary -->
-        <Border Grid.Row="1" Style="{StaticResource GlassPanel}" Padding="16" Margin="0,0,0,12">
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="16" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -59,7 +59,7 @@
             </Grid.ColumnDefinitions>
             
             <!-- Left: Active Jobs Panel -->
-            <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="12">
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Padding="12">
                 <StackPanel>
                     <TextBlock Text="Active Training Jobs" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
                     
@@ -68,7 +68,7 @@
                         <ItemsControl ItemsSource="{Binding ActiveJobs}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,8">
+                                    <Border Style="{StaticResource CardStyle}" Padding="12" Margin="0,0,0,8">
                                         <StackPanel>
                                             <DockPanel Margin="0,0,0,8">
                                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -94,7 +94,7 @@
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
                                             </DockPanel>
-                                            <ProgressBar Value="{Binding Progress}" Height="4" Style="{StaticResource MeterBar}" Margin="0,0,0,4"/>
+                                            <ProgressBar Value="{Binding Progress}" Height="4" Margin="0,0,0,4"/>
                                             <DockPanel>
                                                 <TextBlock Text="{Binding CurrentStep, StringFormat='Step {0} / {1}'}" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
                                                 <TextBlock Text="{Binding Eta}" Style="{StaticResource SecondaryTextStyle}" FontSize="11" HorizontalAlignment="Right"/>
@@ -110,21 +110,21 @@
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                         <Button Content="⏸️ Pause All" Command="{Binding PauseAllCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
                         <Button Content="🛑 Stop All" Command="{Binding StopAllCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-                        <Button Content="📊 Export Reports" Command="{Binding ExportReportsCommand}" Style="{StaticResource RainbowAccentButton.AutoFit}"/>
+                        <Button Content="📊 Export Reports" Command="{Binding ExportReportsCommand}" Style="{StaticResource RainbowAccentButton}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
             
             <!-- Right: Dashboard Tabs -->
-            <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
-                <TabControl Background="Transparent" BorderThickness="0">
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}" Padding="12">
+                <TabControl Style="{StaticResource GlassTabControl}">
                     
                     <!-- Live Monitoring Tab -->
-                    <TabItem Header="Live Monitoring">
+                    <TabItem Header="Live Monitoring" Style="{StaticResource GlassTabItem}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
                             <StackPanel>
                                 <!-- Loss Curves Visualization -->
-                                <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                                <Border Style="{StaticResource CardStyle}" Padding="12" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock Text="Training Loss Curves" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                                         <Grid Height="200" Background="#10FFFFFF">
@@ -141,23 +141,30 @@
                                 </Border>
                                 
                                 <!-- System Resources -->
-                                <Border Style="{StaticResource GlassPanel}" Padding="12">
+                                <Border Style="{StaticResource CardStyle}" Padding="12">
                                     <StackPanel>
                                         <TextBlock Text="System Resources" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                                         
                                         <!-- GPU Usage -->
                                         <DockPanel Margin="0,0,0,8">
                                             <TextBlock Text="GPU 0 (RTX 4090)" Style="{StaticResource SecondaryTextStyle}"/>
-                                            <TextBlock Text="87% • 22.1/24.0 GB • 72°C" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding TotalGpuUsage}" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
                                         </DockPanel>
-                                        <ProgressBar Value="0.87" Height="6" Style="{StaticResource MeterBar}" Margin="0,0,0,12"/>
+                                        <ProgressBar Value="{Binding GpuPercent, Mode=OneWay}" Height="6" Margin="0,0,0,12" Maximum="100"/>
                                         
                                         <!-- CPU & Throughput -->
                                         <DockPanel>
-                                            <TextBlock Text="CPU Usage • Throughput" Style="{StaticResource SecondaryTextStyle}"/>
-                                            <TextBlock Text="45% • 1,234 samples/sec" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="CPU Usage" Style="{StaticResource SecondaryTextStyle}"/>
+                                            <TextBlock Text="{Binding CpuUsageText}" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
                                         </DockPanel>
-                                        <ProgressBar Value="0.45" Height="6" Style="{StaticResource MeterBar}"/>
+                                        <ProgressBar Value="{Binding CpuPercent, Mode=OneWay}" Height="6" Maximum="100"/>
+                                        
+                                        <!-- RAM -->
+                                        <DockPanel Margin="0,8,0,0">
+                                            <TextBlock Text="RAM" Style="{StaticResource SecondaryTextStyle}"/>
+                                            <TextBlock Text="{Binding RamUsageText}" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                        <ProgressBar Value="{Binding RamUsedGb, Mode=OneWay}" Maximum="{Binding RamTotalGb, Mode=OneWay}" Height="6"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -165,15 +172,15 @@
                     </TabItem>
                     
                     <!-- Cross-Modality Links Tab -->
-                    <TabItem Header="Cross-Modality Links">
+                    <TabItem Header="Cross-Modality Links" Style="{StaticResource GlassTabItem}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
                             <StackPanel>
                                 <!-- Entity Multi-Modal Builds -->
-                                <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                                <Border Style="{StaticResource CardStyle}" Padding="12" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock Text="Entity Builds (Multi-Modal Fusion)" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                                         
-                                        <Border Style="{StaticResource GlassPanel}" Padding="8">
+                                        <Border Style="{StaticResource CardStyle}" Padding="8">
                                             <StackPanel>
                                                 <TextBlock Text="Virtual Assistant Avatar" FontWeight="Medium"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
@@ -187,11 +194,11 @@
                                 </Border>
                                 
                                 <!-- Video Dependencies -->
-                                <Border Style="{StaticResource GlassPanel}" Padding="12">
+                                <Border Style="{StaticResource CardStyle}" Padding="12">
                                     <StackPanel>
                                         <TextBlock Text="Conversation-Voice Pairs" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                                         
-                                        <Border Style="{StaticResource GlassPanel}" Padding="8">
+                                        <Border Style="{StaticResource CardStyle}" Padding="8">
                                             <StackPanel>
                                                 <TextBlock Text="Customer Support System" FontWeight="Medium"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
@@ -207,15 +214,15 @@
                     </TabItem>
                     
                     <!-- Sample Previews Tab -->
-                    <TabItem Header="Sample Previews">
+                    <TabItem Header="Sample Previews" Style="{StaticResource GlassTabItem}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
                             <StackPanel>
                                 <!-- Voice Samples -->
-                                <Border Style="{StaticResource GlassPanel}" Padding="12" Margin="0,0,0,12">
+                                <Border Style="{StaticResource CardStyle}" Padding="12" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock Text="🎵 Voice Samples" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                                         <DockPanel>
-                                            <Button DockPanel.Dock="Right" Content="▶️" Command="{Binding PlaySampleCommand}" CommandParameter="voice" Style="{StaticResource RainbowAccentButton.AutoFit}"/>
+                                            <Button DockPanel.Dock="Right" Content="▶️" Command="{Binding PlaySampleCommand}" CommandParameter="voice" Style="{StaticResource RainbowAccentButton}"/>
                                             <StackPanel>
                                                 <TextBlock Text="sample-voice-output.wav"/>
                                                 <TextBlock Text="3.2s • 22.05kHz • Expressive" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
@@ -225,11 +232,11 @@
                                 </Border>
                                 
                                 <!-- Video Samples -->
-                                <Border Style="{StaticResource GlassPanel}" Padding="12">
+                                <Border Style="{StaticResource CardStyle}" Padding="12">
                                     <StackPanel>
                                         <TextBlock Text="🎬 Video Samples" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                                         <DockPanel>
-                                            <Button DockPanel.Dock="Right" Content="▶️" Command="{Binding PlaySampleCommand}" CommandParameter="video" Style="{StaticResource RainbowAccentButton.AutoFit}"/>
+                                            <Button DockPanel.Dock="Right" Content="▶️" Command="{Binding PlaySampleCommand}" CommandParameter="video" Style="{StaticResource RainbowAccentButton}"/>
                                             <StackPanel>
                                                 <TextBlock Text="sample-video-output.mp4"/>
                                                 <TextBlock Text="2.5s • 512x512 • 24fps" Style="{StaticResource SecondaryTextStyle}" FontSize="11"/>
