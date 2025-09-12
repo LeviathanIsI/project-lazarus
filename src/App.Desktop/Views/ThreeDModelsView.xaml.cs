@@ -23,6 +23,8 @@ namespace Lazarus.Desktop.Views
         private HelixToolkit.Wpf.SharpDX.DefaultEffectsManager? _effectsManager;
         private Viewport3DX? _hxViewport;
         private GroupModel3D? _hxRoot;
+        private System.Collections.Generic.List<MeshGeometryModel3D> _modelMeshes = new System.Collections.Generic.List<MeshGeometryModel3D>();
+        private System.Collections.Generic.List<MeshGeometryModel3D> _selectedMeshes = new System.Collections.Generic.List<MeshGeometryModel3D>();
         private System.Windows.Point _lastMouse;
         private bool _isOrbit, _isPan, _isZoom;
         private Point3D _pivot = new Point3D(0,0,0);
@@ -129,7 +131,7 @@ namespace Lazarus.Desktop.Views
             try
             {
                 _modelGroup.Children.Clear();
-                try { _hxRoot?.Children.Clear(); } catch { }
+                try { _hxRoot?.Children.Clear(); _modelMeshes.Clear(); _selectedMeshes.Clear(); } catch { }
                 if (string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
                 {
                     PreviewOverlay.Visibility = Visibility.Visible;
@@ -285,6 +287,7 @@ namespace Lazarus.Desktop.Views
                         CullMode = SharpDX.Direct3D11.CullMode.Back
                     };
                     _hxRoot?.Children.Add(model);
+                    _modelMeshes.Add(model);
                 }
 
                 // Set pivot to scene center
@@ -309,6 +312,9 @@ namespace Lazarus.Desktop.Views
                 _modelTransform.Children.Add(new TranslateTransform3D(_pivot.X, _pivot.Y, _pivot.Z));
                 _modelTransform.Children.Add(_trModel);
                 ApplyTransformToScene(_modelTransform);
+                // Default selection = whole model for now
+                _selectedMeshes.Clear();
+                _selectedMeshes.AddRange(_modelMeshes);
                 try { EnsureGizmo(); UpdateGizmoTransform(); } catch { }
                 return _hxRoot != null && _hxRoot.Children.Count > 0;
             }
@@ -327,14 +333,8 @@ namespace Lazarus.Desktop.Views
         private void ApplyTransformToScene(Transform3D t)
         {
             if (_hxRoot == null) return;
-            foreach (var c in _hxRoot.Children)
-            {
-                if (c is MeshGeometryModel3D m) m.Transform = t;
-                else if (c is GroupModel3D g)
-                {
-                    foreach (var cc in g.Children) if (cc is MeshGeometryModel3D mm) mm.Transform = t;
-                }
-            }
+            var targets = _selectedMeshes.Count > 0 ? _selectedMeshes : _modelMeshes;
+            foreach (var m in targets) m.Transform = t;
         }
 
         private void OnResetTransform(object sender, RoutedEventArgs e)
@@ -617,6 +617,24 @@ namespace Lazarus.Desktop.Views
                 }
                 catch { }
             }
+
+            // Selection: click on any mesh to select the model (first pass)
+            try
+            {
+                var hits = _hxViewport.FindHits(_lastMouse);
+                foreach (var h in hits)
+                {
+                    if (h?.ModelHit is MeshGeometryModel3D mm && _modelMeshes.Contains(mm))
+                    {
+                        _selectedMeshes.Clear();
+                        _selectedMeshes.AddRange(_modelMeshes); // select entire import for now
+                        // Keep pivot at model center (already computed), just ensure gizmo shows
+                        EnsureGizmo(); UpdateGizmoTransform();
+                        break;
+                    }
+                }
+            }
+            catch { }
 
             // Model edit without toggles: infer mode from keys or mouse button
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left || e.ChangedButton == System.Windows.Input.MouseButton.Right)
