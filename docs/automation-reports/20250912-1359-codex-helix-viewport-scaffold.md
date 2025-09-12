@@ -60,3 +60,5 @@ modified  "\357\200\272\357\200\252\357\200\252"
 ## 8) Risks / Rollback
 - Risk: HelixToolkit SharpDX is netframework-targeted; compatibility relies on NuGet fallback. 
 - Rollback: remove Helix packages and NU1701 suppression from App.Desktop.csproj.
+
+<!-- After SHA: 2964f038bd8297b740e1b1dd10ba448619f1bbdd -->
