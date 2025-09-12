@@ -23,6 +23,20 @@ public static class AutoScrollBehavior
     public static void SetEnable(DependencyObject element, bool value) => element.SetValue(EnableProperty, value);
     public static bool GetEnable(DependencyObject element) => (bool)element.GetValue(EnableProperty);
 
+    public static readonly DependencyProperty IsAtBottomProperty =
+        DependencyProperty.RegisterAttached(
+            "IsAtBottom",
+            typeof(bool),
+            typeof(AutoScrollBehavior),
+            new PropertyMetadata(true));
+
+    public static bool GetIsAtBottom(DependencyObject element) => (bool)element.GetValue(IsAtBottomProperty);
+    public static void SetIsAtBottom(DependencyObject element, bool value) => element.SetValue(IsAtBottomProperty, value);
+
+    // Routed command exposed for buttons to trigger ScrollToEnd easily
+    public static readonly System.Windows.Input.RoutedUICommand ScrollToEndCommand =
+        new System.Windows.Input.RoutedUICommand("ScrollToEnd", nameof(ScrollToEndCommand), typeof(AutoScrollBehavior));
+
     private sealed class State
     {
         public bool WasAtBottom;
@@ -40,6 +54,13 @@ public static class AutoScrollBehavior
                 _states.GetOrCreateValue(sv).WasAtBottom = IsAtBottom(sv);
                 sv.ScrollChanged += OnScrollChanged;
                 sv.Loaded += OnLoaded;
+
+                // Hook command binding once for this viewer
+                var binding = new System.Windows.Input.CommandBinding(
+                    ScrollToEndCommand,
+                    (s, _) => sv.ScrollToEnd(),
+                    (s, e2) => e2.CanExecute = true);
+                sv.CommandBindings.Add(binding);
             }
             else
             {
@@ -77,6 +98,7 @@ public static class AutoScrollBehavior
 
         // Update state based on current positions (post-change)
         state.WasAtBottom = IsAtBottom(sv);
+        SetIsAtBottom(sv, state.WasAtBottom);
     }
 
     private static bool IsAtBottom(ScrollViewer sv)
@@ -86,4 +108,3 @@ public static class AutoScrollBehavior
         return sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - epsilon;
     }
 }
-

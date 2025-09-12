@@ -2,13 +2,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Lazarus.Desktop.Controls"
-             xmlns:conv="clr-namespace:Lazarus.Desktop.Converters">
+             xmlns:conv="clr-namespace:Lazarus.Desktop.Converters"
+             xmlns:behaviors="clr-namespace:Lazarus.Desktop.Behaviors">
     
     <!-- DataContext inherited from parent or set via ViewModelLocator -->
     
     <UserControl.Resources>
         <!-- Converters for visibility gating -->
         <conv:BoolToVisibilityConverter x:Key="BoolToVis" Collapse="True"/>
+        <conv:BoolToVisibilityConverter x:Key="NotBoolToVis" Invert="True" Collapse="True"/>
         <conv:StringNotEmptyToVisibilityConverter x:Key="ContentToVis" Collapse="True"/>
         <!-- No local merges; rely on App.xaml global resources -->
     </UserControl.Resources>
@@ -359,7 +361,19 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        
                     </ScrollViewer>
+                    
+                    <!-- Jump to latest when not at bottom -->
+                    <Button Content="Jump to latest"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Margin="16"
+                            Padding="12,8"
+                            Style="{StaticResource RainbowAccentButton.AutoFit}"
+                            Command="{x:Static behaviors:AutoScrollBehavior.ScrollToEndCommand}"
+                            CommandTarget="{Binding ElementName=MessagesScrollViewer}"
+                            Visibility="{Binding ElementName=MessagesScrollViewer, Path=(behaviors:AutoScrollBehavior.IsAtBottom), Converter={StaticResource NotBoolToVis}}"/>
                 </Grid>
 
                 <!-- Input Area -->
