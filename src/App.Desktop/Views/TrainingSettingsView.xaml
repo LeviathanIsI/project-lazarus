@@ -1,0 +1,105 @@
+<UserControl x:Class="Lazarus.Desktop.Views.TrainingSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Lazarus.Desktop.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:TrainingSettingsViewModel}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,20,0">
+            <!-- Section Header -->
+            <TextBlock Text="{Binding SectionTitle}" FontSize="20" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding SectionDescription}" FontSize="12"
+                       Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+            <!-- Checkpoint Frequency -->
+            <TextBlock Text="Checkpoint Frequency" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Checkpoint every" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <Slider Grid.Column="1"
+                        Value="{Binding CheckpointFrequencyMinutes, Mode=TwoWay}"
+                        Minimum="1" Maximum="120" TickFrequency="5" IsSnapToTickEnabled="True"
+                        ToolTip="Minutes between automatic checkpoints"/>
+                <TextBlock Grid.Column="2"
+                           Text="{Binding CheckpointFrequencyMinutes, StringFormat='{}{0} minutes'}"
+                           VerticalAlignment="Center" Margin="10,0,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="How often to save training checkpoints (minutes)."/>
+
+            <!-- Batch Size -->
+            <TextBlock Text="Batching" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Batch size" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <Slider Grid.Column="1"
+                        Value="{Binding BatchSize, Mode=TwoWay}"
+                        Minimum="1" Maximum="1024" TickFrequency="1" IsSnapToTickEnabled="True"
+                        ToolTip="Training batch size"/>
+                <TextBlock Grid.Column="2" Text="{Binding BatchSize}" VerticalAlignment="Center"
+                           Margin="10,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Larger batches may improve throughput but require more memory."/>
+
+            <!-- Learning Rate -->
+            <TextBlock Text="Optimization" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,16,0,8"/>
+            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,12"/>
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Learning rate" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBox Grid.Column="1" Text="{Binding LearningRate, Mode=TwoWay, StringFormat=F6}"
+                         ToolTip="Base learning rate (e.g., 0.001)"/>
+                <TextBlock Grid.Column="2" Text="Typical range 1e-5 — 1e-2"
+                           VerticalAlignment="Center" Margin="10,0,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+            </Grid>
+
+            <!-- Max Epochs -->
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Max epochs" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <Slider Grid.Column="1"
+                        Value="{Binding MaxEpochs, Mode=TwoWay}"
+                        Minimum="1" Maximum="1000" TickFrequency="1" IsSnapToTickEnabled="True"
+                        ToolTip="Upper bound on training epochs"/>
+                <TextBlock Grid.Column="2" Text="{Binding MaxEpochs}"
+                           VerticalAlignment="Center" Margin="10,0,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,12"
+                       Text="Stop training when this many epochs have completed."/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+
