@@ -1,7 +1,10 @@
 using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
@@ -10,11 +13,21 @@ using Lazarus.Desktop.Services;
 
 namespace Lazarus.Desktop.ViewModels;
 
-public sealed class ThreeDModelsViewModel : ViewModelBase
+public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
 {
     private readonly ILogger<ThreeDModelsViewModel> _logger;
     private readonly IOrchestratorClient _orchestratorClient;
+    private FileSystemWatcher? _watchImport;
+    private FileSystemWatcher? _watchGenerated;
 
+    // Supported extensions
+    public static readonly string[] ModelExtensions = new[] { ".obj", ".fbx", ".gltf", ".glb", ".stl" };
+
+    // Folders
+    private static string ImportRoot => Path.Combine(LazarusPaths.SharedResources.ImportExport, "Import", "3D-Models");
+    private static string GeneratedRoot => Path.Combine(LazarusPaths.UserContent.GeneratedOutput, "3D-Models");
+
+    // ===== Stats =====
     private int _totalModels;
     public int TotalModels { get => _totalModels; private set => SetProperty(ref _totalModels, value); }
 
@@ -27,15 +40,43 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
     public bool IsRenderReady => _orchestratorClient.IsHealthy;
     public string RenderStatusText => IsRenderReady ? "Ready" : "Offline";
 
+    // ===== Library =====
+    public ObservableCollection<ModelItem> Models { get; } = new();
+    public ICollectionView ModelsView { get; }
+
+    private ModelItem? _selected;
+    public ModelItem? Selected
+    {
+        get => _selected;
+        set
+        {
+            if (SetProperty(ref _selected, value))
+            {
+                OnPropertyChanged(nameof(HasSelection));
+                // Hook for preview loader (Helix / custom)
+                _previewLoader?.Invoke(value?.FullPath);
+            }
+        }
+    }
+    public bool HasSelection => Selected != null;
+
+    private string _search = "";
+    public string Search
+    {
+        get => _search;
+        set { if (SetProperty(ref _search, value)) ModelsView.Refresh(); }
+    }
+
+    private Func<string?, bool>? _previewLoader; // injected from the View (keeps MVVM, no code-behind logic leak)
+
+    // ===== Commands =====
     public ICommand ImportModelsCommand { get; }
     public ICommand GenerateModelCommand { get; }
-
-    private static readonly string[] ModelExtensions = new[] { ".obj", ".fbx", ".gltf", ".glb", ".stl" };
-
-    // Import destination (under shared Import-Export)
-    private static string ImportRoot => System.IO.Path.Combine(LazarusPaths.SharedResources.ImportExport, "Import", "3D-Models");
-    // Generated output placeholder (user content)
-    private static string GeneratedRoot => System.IO.Path.Combine(LazarusPaths.UserContent.GeneratedOutput, "3D-Models");
+    public ICommand DeleteSelectedCommand { get; }
+    public ICommand RevealInExplorerCommand { get; }
+    public ICommand SortByNameCommand { get; }
+    public ICommand SortByDateCommand { get; }
+    public ICommand SortBySizeCommand { get; }
 
     public ThreeDModelsViewModel(ILogger<ThreeDModelsViewModel> logger, IOrchestratorClient orchestratorClient)
     {
@@ -44,8 +85,16 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
 
         ImportModelsCommand = new RelayCommand(ImportModels);
         GenerateModelCommand = new RelayCommand(GenerateModelPlaceholder);
+        DeleteSelectedCommand = new RelayCommand(DeleteSelected, () => HasSelection);
+        RevealInExplorerCommand = new RelayCommand(RevealInExplorer, () => HasSelection);
+        SortByNameCommand = new RelayCommand(() => ApplySort(nameof(ModelItem.Name)));
+        SortByDateCommand = new RelayCommand(() => ApplySort(nameof(ModelItem.LastWrite)));
+        SortBySizeCommand = new RelayCommand(() => ApplySort(nameof(ModelItem.SizeBytes)));
 
-        // Track orchestrator health for status pill
+        ModelsView = CollectionViewSource.GetDefaultView(Models);
+        ModelsView.Filter = Filter;
+        ApplySort(nameof(ModelItem.LastWrite), descending: true);
+
         _orchestratorClient.HealthStatusChanged += (_, __) =>
         {
             OnPropertyChanged(nameof(IsRenderReady));
@@ -53,34 +102,119 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
         };
 
         EnsureFolders();
-        RefreshStats();
+        StartWatchers();
+        ReloadLibraryAndStats();
     }
+
+    // Let the View supply a preview loader (Helix, etc.) without breaking MVVM
+    public void SetPreviewLoader(Func<string?, bool> loader) => _previewLoader = loader;
 
     private void EnsureFolders()
     {
-        try { Directory.CreateDirectory(ImportRoot); } catch { }
-        try { Directory.CreateDirectory(GeneratedRoot); } catch { }
+        Directory.CreateDirectory(ImportRoot);
+        Directory.CreateDirectory(GeneratedRoot);
     }
 
-    private void RefreshStats()
+    private void StartWatchers()
     {
         try
         {
-            var files = Directory.Exists(ImportRoot)
-                ? Directory.EnumerateFiles(ImportRoot, "*", SearchOption.AllDirectories)
-                    .Where(f => ModelExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
-                    .ToList()
-                : new System.Collections.Generic.List<string>();
+            _watchImport = NewWatcher(ImportRoot);
+            _watchGenerated = NewWatcher(GeneratedRoot);
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "Failed to start watchers"); }
+    }
 
-            TotalModels = files.Count;
+    private FileSystemWatcher NewWatcher(string path)
+    {
+        var w = new FileSystemWatcher(path)
+        {
+            IncludeSubdirectories = true,
+            EnableRaisingEvents = true
+        };
+        w.Created += (_, __) => DebouncedReload();
+        w.Changed += (_, __) => DebouncedReload();
+        w.Renamed += (_, __) => DebouncedReload();
+        w.Deleted += (_, __) => DebouncedReload();
+        return w;
+    }
+
+    private DateTime _lastReload = DateTime.MinValue;
+    private void DebouncedReload()
+    {
+        // Simple debounce to avoid thrash on batch copies
+        var now = DateTime.Now;
+        if ((now - _lastReload).TotalMilliseconds < 250) return;
+        _lastReload = now;
+        Application.Current.Dispatcher.Invoke(ReloadLibraryAndStats);
+    }
+
+    private void ReloadLibraryAndStats()
+    {
+        try
+        {
+            var allFiles = new[]
+            {
+                Directory.Exists(ImportRoot)
+                    ? Directory.EnumerateFiles(ImportRoot, "*", SearchOption.AllDirectories)
+                    : Enumerable.Empty<string>(),
+                Directory.Exists(GeneratedRoot)
+                    ? Directory.EnumerateFiles(GeneratedRoot, "*", SearchOption.AllDirectories)
+                    : Enumerable.Empty<string>()
+            }
+            .SelectMany(x => x)
+            .Where(f => ModelExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+            // Rebuild library
+            Models.Clear();
+            foreach (var f in allFiles)
+            {
+                Models.Add(new ModelItem
+                {
+                    Name = Path.GetFileName(f),
+                    FullPath = f,
+                    Extension = Path.GetExtension(f),
+                    SizeBytes = SafeGetLength(f),
+                    LastWrite = SafeGetLastWriteTime(f),
+                    Origin = f.StartsWith(GeneratedRoot, StringComparison.OrdinalIgnoreCase) ? ModelOrigin.Generated : ModelOrigin.Imported
+                });
+            }
+            ModelsView.Refresh();
+
+            // Stats
+            TotalModels = Models.Count;
             var today = DateTime.Today;
-            GeneratedToday = files.Count(f => SafeGetLastWriteTime(f).Date == today);
-            var bytes = files.Sum(f => SafeGetLength(f));
+            GeneratedToday = Models.Count(m => m.Origin == ModelOrigin.Generated && m.LastWrite.Date == today);
+            var bytes = Models.Sum(m => m.SizeBytes);
             StorageUsedText = FormatBytes(bytes);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to refresh 3D models stats");
+            _logger.LogWarning(ex, "Failed to reload 3D library/stats");
+        }
+
+        // Keep command enablement in sync
+        (DeleteSelectedCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (RevealInExplorerCommand as RelayCommand)?.RaiseCanExecuteChanged();
+    }
+
+    private bool Filter(object? o)
+    {
+        if (o is not ModelItem m) return false;
+        if (string.IsNullOrWhiteSpace(Search)) return true;
+        var s = Search.Trim();
+        return m.Name.Contains(s, StringComparison.OrdinalIgnoreCase)
+            || m.Extension.Contains(s, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ApplySort(string property, bool descending = false)
+    {
+        using (ModelsView.DeferRefresh())
+        {
+            ModelsView.SortDescriptions.Clear();
+            ModelsView.SortDescriptions.Add(new SortDescription(property, descending ? ListSortDirection.Descending : ListSortDirection.Ascending));
         }
     }
 
@@ -94,8 +228,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
                 Filter = "3D Models (*.obj;*.fbx;*.gltf;*.glb;*.stl)|*.obj;*.fbx;*.gltf;*.glb;*.stl|All files (*.*)|*.*",
                 Multiselect = true
             };
-            if (dlg.ShowDialog() != true)
-                return;
+            if (dlg.ShowDialog() != true) return;
 
             EnsureFolders();
 
@@ -104,9 +237,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
                 try
                 {
                     var name = Path.GetFileName(src);
-                    var dest = Path.Combine(ImportRoot, name);
-                    // Avoid overwriting by adding suffix if needed
-                    dest = EnsureUniquePath(dest);
+                    var dest = EnsureUniquePath(Path.Combine(ImportRoot, name));
                     File.Copy(src, dest, overwrite: false);
                 }
                 catch (Exception exFile)
@@ -115,7 +246,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
                 }
             }
 
-            RefreshStats();
+            ReloadLibraryAndStats();
         }
         catch (Exception ex)
         {
@@ -128,18 +259,13 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
     {
         try
         {
-            // Placeholder: create a stub file to simulate generation output
             EnsureFolders();
             var stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var outPath = Path.Combine(GeneratedRoot, $"generated_{stamp}.obj");
-            File.WriteAllText(outPath, "# Lazarus 3D placeholder OBJ\n# TODO: Integrate backend runner");
+            File.WriteAllText(outPath, "# Lazarus 3D placeholder OBJ\n# TODO: Integrate backend runner\n");
 
-            // Also drop it in the import folder to make it visible in stats for now
-            var imported = Path.Combine(ImportRoot, Path.GetFileName(outPath));
-            File.Copy(outPath, EnsureUniquePath(imported), overwrite: false);
-
-            _logger.LogInformation("Generated placeholder 3D model at {Path}", outPath);
-            RefreshStats();
+            ReloadLibraryAndStats();
+            Selected = Models.FirstOrDefault(m => string.Equals(m.FullPath, outPath, StringComparison.OrdinalIgnoreCase));
         }
         catch (Exception ex)
         {
@@ -148,15 +274,39 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
         }
     }
 
-    private static DateTime SafeGetLastWriteTime(string file)
+    private void DeleteSelected()
     {
-        try { return File.GetLastWriteTime(file); } catch { return DateTime.MinValue; }
+        if (Selected == null) return;
+        try
+        {
+            var path = Selected.FullPath;
+            File.Delete(path);
+            Selected = null;
+            ReloadLibraryAndStats();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Delete failed for selected file");
+            MessageBox.Show($"Could not delete:\n{ex.Message}", "Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
-    private static long SafeGetLength(string file)
+    private void RevealInExplorer()
     {
-        try { return new FileInfo(file).Length; } catch { return 0; }
+        if (Selected == null) return;
+        try
+        {
+            var args = $"/e,/select,\"{Selected.FullPath}\"";
+            System.Diagnostics.Process.Start("explorer.exe", args);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "RevealInExplorer failed");
+        }
     }
+
+    private static DateTime SafeGetLastWriteTime(string f) { try { return File.GetLastWriteTime(f); } catch { return DateTime.MinValue; } }
+    private static long SafeGetLength(string f) { try { return new FileInfo(f).Length; } catch { return 0; } }
 
     private static string EnsureUniquePath(string path)
     {
@@ -164,10 +314,11 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
         var dir = Path.GetDirectoryName(path)!;
         var name = Path.GetFileNameWithoutExtension(path);
         var ext = Path.GetExtension(path);
-        int i = 1;
-        string candidate;
-        do { candidate = Path.Combine(dir, $"{name} ({i++}){ext}"); } while (File.Exists(candidate));
-        return candidate;
+        for (int i = 1; ; i++)
+        {
+            var candidate = Path.Combine(dir, $"{name} ({i}){ext}");
+            if (!File.Exists(candidate)) return candidate;
+        }
     }
 
     private static string FormatBytes(long bytes)
@@ -175,11 +326,38 @@ public sealed class ThreeDModelsViewModel : ViewModelBase
         string[] sizes = { "B", "KB", "MB", "GB", "TB" };
         double len = bytes;
         int order = 0;
-        while (len >= 1024 && order < sizes.Length - 1)
-        {
-            order++;
-            len /= 1024;
-        }
+        while (len >= 1024 && order < sizes.Length - 1) { order++; len /= 1024; }
+        return $"{len:0.#} {sizes[order]}";
+    }
+
+    protected override void OnDisposing()
+    {
+        try { _watchImport?.Dispose(); } catch { }
+        try { _watchGenerated?.Dispose(); } catch { }
+        base.OnDisposing();
+    }
+}
+
+public enum ModelOrigin { Imported, Generated }
+
+public sealed class ModelItem : ViewModelBase
+{
+    public string Name { get; init; } = "";
+    public string FullPath { get; init; } = "";
+    public string Extension { get; init; } = "";
+    public long SizeBytes { get; init; }
+    public DateTime LastWrite { get; init; }
+    public ModelOrigin Origin { get; init; }
+    public string SizeText => SizeBytes <= 0 ? "�" : FormatBytes(SizeBytes);
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1) { order++; len /= 1024; }
         return $"{len:0.#} {sizes[order]}";
     }
 }
+
+

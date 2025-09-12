@@ -915,5 +915,40 @@
 
     <!-- (Removed duplicate GlassToggleButtonStyle; single definition lives above) -->
 
-</ResourceDictionary>
+
+    <!-- ====================
+         SEARCH BOX WITH WATERMARK (uses Tag as placeholder)
+         ==================== -->
+    <Style x:Key="SearchBox.GlassWatermark" TargetType="TextBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="#1A1A20"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <ScrollViewer x:Name="PART_ContentHost" Background="{TemplateBinding Background}"/>
+                        <TextBlock x:Name="Watermark"
+                                   Text="{TemplateBinding Tag}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="8,0,0,0"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False"
+                                   Visibility="Collapsed"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Watermark" Property="Opacity" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style></ResourceDictionary>
+
 
