@@ -6,13 +6,16 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Lazarus.Desktop.ViewModels;
 using Assimp;
-// Helix imports removed for now due to package TFM issues
+using HelixToolkit.Wpf.SharpDX;
 
 namespace Lazarus.Desktop.Views
 {
     public partial class ThreeDModelsView : UserControl
     {
         private Model3DGroup _modelGroup = new Model3DGroup();
+        private HelixToolkit.Wpf.SharpDX.DefaultEffectsManager? _effectsManager;
+        private Viewport3DX? _hxViewport;
+        private GroupModel3D? _hxRoot;
 
         public ThreeDModelsView()
         {
@@ -23,8 +26,31 @@ namespace Lazarus.Desktop.Views
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            // Attach legacy WPF content root for preview
-            try { ModelRoot.Content = _modelGroup; } catch { }
+            // Initialize Helix viewport (DX11) in code
+            try
+            {
+                _effectsManager = new HelixToolkit.Wpf.SharpDX.DefaultEffectsManager();
+                _hxViewport = new Viewport3DX
+                {
+                    EffectsManager = _effectsManager,
+                    Camera = new HelixToolkit.Wpf.SharpDX.PerspectiveCamera
+                    {
+                        Position = new System.Windows.Media.Media3D.Point3D(0, 1, 3),
+                        LookDirection = new System.Windows.Media.Media3D.Vector3D(0, -0.3, -3),
+                        UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 1, 0),
+                        FieldOfView = 45
+                    },
+                    IsShadowMappingEnabled = false
+                };
+                _hxRoot = new GroupModel3D();
+                _hxViewport.Items.Add(new AmbientLight3D { Color = System.Windows.Media.Colors.Gray });
+                _hxViewport.Items.Add(new DirectionalLight3D { Color = System.Windows.Media.Colors.White, Direction = new System.Windows.Media.Media3D.Vector3D(-1, -1, -2) });
+                _hxViewport.Items.Add(new DirectionalLight3D { Color = System.Windows.Media.Colors.LightGray, Direction = new System.Windows.Media.Media3D.Vector3D(1, 1, 2) });
+                _hxViewport.Items.Add(_hxRoot);
+                HelixHost.Children.Clear();
+                HelixHost.Children.Add(_hxViewport);
+            }
+            catch { }
             HookPreviewLoader();
         }
 
@@ -46,6 +72,7 @@ namespace Lazarus.Desktop.Views
             try
             {
                 _modelGroup.Children.Clear();
+                try { _hxRoot?.Children.Clear(); } catch { }
                 if (string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
                 {
                     PreviewOverlay.Visibility = Visibility.Visible;
@@ -54,17 +81,18 @@ namespace Lazarus.Desktop.Views
 
                 var ext = System.IO.Path.GetExtension(path) ?? string.Empty;
                 Model3D? model = null;
-                if (string.Equals(ext, ".obj", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(ext, ".obj", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(ext, ".stl", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(ext, ".fbx", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(ext, ".gltf", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(ext, ".glb", StringComparison.OrdinalIgnoreCase))
                 {
-                    model = LoadObj(path);
-                }
-                else if (string.Equals(ext, ".stl", StringComparison.OrdinalIgnoreCase))
-                {
-                    model = LoadAsciiStl(path);
-                }
-                else if (string.Equals(ext, ".fbx", StringComparison.OrdinalIgnoreCase))
-                {
-                    model = LoadWithAssimp(path);
+                    if (TryLoadWithHelixAssimp(path))
+                    {
+                        FitHelixToView();
+                        PreviewOverlay.Visibility = Visibility.Collapsed;
+                        return true;
+                    }
                 }
 
                 if (model != null)
@@ -75,7 +103,7 @@ namespace Lazarus.Desktop.Views
                     return true;
                 }
 
-                PreviewHint.Text = "Preview not available for this format (try OBJ/STL/FBX).";
+                PreviewHint.Text = "Preview not available (see logs).";
                 PreviewOverlay.Visibility = Visibility.Visible;
                 return false;
             }
@@ -85,6 +113,77 @@ namespace Lazarus.Desktop.Views
                 PreviewOverlay.Visibility = Visibility.Visible;
                 return false;
             }
+        }
+
+        private bool TryLoadWithHelixAssimp(string path)
+        {
+            try
+            {
+                using var ctx = new AssimpContext();
+                var flags = PostProcessSteps.Triangulate | PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.ImproveCacheLocality;
+                var scene = ctx.ImportFile(path, flags);
+                if (scene == null || !scene.HasMeshes) return false;
+
+                var mat = HelixToolkit.Wpf.SharpDX.PhongMaterials.Gray;
+                foreach (var mesh in scene.Meshes)
+                {
+                    if (mesh.VertexCount <= 0 || mesh.FaceCount <= 0) continue;
+
+                    var positions = new SharpDX.Vector3[mesh.VertexCount];
+                    for (int i = 0; i < mesh.VertexCount; i++)
+                    {
+                        var v = mesh.Vertices[i];
+                        positions[i] = new SharpDX.Vector3(v.X, v.Y, v.Z);
+                    }
+
+                    var indicesList = new System.Collections.Generic.List<int>();
+                    foreach (var face in mesh.Faces)
+                    {
+                        if (face.IndexCount == 3)
+                        {
+                            indicesList.Add(face.Indices[0]);
+                            indicesList.Add(face.Indices[1]);
+                            indicesList.Add(face.Indices[2]);
+                        }
+                        else if (face.IndexCount > 3)
+                        {
+                            for (int k = 1; k < face.IndexCount - 1; k++)
+                            {
+                                indicesList.Add(face.Indices[0]);
+                                indicesList.Add(face.Indices[k]);
+                                indicesList.Add(face.Indices[k + 1]);
+                            }
+                        }
+                    }
+
+                    if (positions.Length == 0 || indicesList.Count == 0) continue;
+
+                    var geom = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D
+                    {
+                        Positions = new HelixToolkit.Wpf.SharpDX.Vector3Collection(positions),
+                        Indices = new HelixToolkit.Wpf.SharpDX.IntCollection(indicesList)
+                    };
+
+                    var model = new HelixToolkit.Wpf.SharpDX.MeshGeometryModel3D
+                    {
+                        Geometry = geom,
+                        Material = mat,
+                        CullMode = SharpDX.Direct3D11.CullMode.Back
+                    };
+                    _hxRoot?.Children.Add(model);
+                }
+
+                return _hxRoot != null && _hxRoot.Children.Count > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void FitHelixToView()
+        {
+            try { _hxViewport?.ZoomExtents(); } catch { }
         }
 
         // Helix path removed in this pass
@@ -102,7 +201,7 @@ namespace Lazarus.Desktop.Views
                 if (scene == null || !scene.HasMeshes) return null;
 
                 var group = new Model3DGroup();
-                var mat = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
+                var mat = new System.Windows.Media.Media3D.DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
 
                 foreach (var mesh in scene.Meshes)
                 {
@@ -139,7 +238,7 @@ namespace Lazarus.Desktop.Views
 
                     if (positions.Count > 0 && indices.Count > 0)
                     {
-                        var mg = new MeshGeometry3D
+                        var mg = new System.Windows.Media.Media3D.MeshGeometry3D
                         {
                             Positions = positions,
                             TriangleIndices = indices
@@ -193,8 +292,8 @@ namespace Lazarus.Desktop.Views
                 }
 
                 if (positions.Count == 0 || triangles.Count == 0) return null;
-                var mesh = new MeshGeometry3D { Positions = new Point3DCollection(positions), TriangleIndices = triangles };
-                var mat = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
+                var mesh = new System.Windows.Media.Media3D.MeshGeometry3D { Positions = new Point3DCollection(positions), TriangleIndices = triangles };
+                var mat = new System.Windows.Media.Media3D.DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
                 var model = new System.Windows.Media.Media3D.GeometryModel3D(mesh, mat) { BackMaterial = mat };
                 return model;
             }
@@ -222,8 +321,8 @@ namespace Lazarus.Desktop.Views
                     }
                 }
                 if (positions.Count == 0) return null;
-                var mesh = new MeshGeometry3D { Positions = new Point3DCollection(positions), TriangleIndices = triangles };
-                var mat = new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
+                var mesh = new System.Windows.Media.Media3D.MeshGeometry3D { Positions = new Point3DCollection(positions), TriangleIndices = triangles };
+                var mat = new System.Windows.Media.Media3D.DiffuseMaterial(new SolidColorBrush(Color.FromRgb(210, 210, 210)));
                 return new System.Windows.Media.Media3D.GeometryModel3D(mesh, mat) { BackMaterial = mat };
             }
             catch { return null; }
@@ -240,16 +339,7 @@ namespace Lazarus.Desktop.Views
 
         private void FitToView(Rect3D bounds)
         {
-            if (bounds.IsEmpty) return;
-            var size = Math.Max(bounds.SizeX, Math.Max(bounds.SizeY, bounds.SizeZ));
-            if (size <= 0) size = 1;
-            var center = new Point3D(bounds.X + bounds.SizeX / 2, bounds.Y + bounds.SizeY / 2, bounds.Z + bounds.SizeZ / 2);
-            PreviewCamera.Position = new Point3D(center.X, center.Y, center.Z + size * 2.5);
-            PreviewCamera.LookDirection = new System.Windows.Media.Media3D.Vector3D(
-                center.X - PreviewCamera.Position.X,
-                center.Y - PreviewCamera.Position.Y,
-                center.Z - PreviewCamera.Position.Z);
-            PreviewCamera.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+            try { _hxViewport?.ZoomExtents(); } catch { }
         }
     }
 }
