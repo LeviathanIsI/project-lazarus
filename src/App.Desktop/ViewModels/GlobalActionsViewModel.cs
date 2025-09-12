@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Lazarus.Desktop.ViewModels;
 
-public sealed class GlobalActionsViewModel : SettingsSectionBase
+public sealed partial class GlobalActionsViewModel : SettingsSectionBase
 {
     private readonly ILogger<GlobalActionsViewModel> _logger;
 
@@ -95,12 +95,23 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
         // System Operations - Maintenance
         ClearCacheCommand = new RelayCommand(() =>
         {
-            var cacheDir = SettingsPaths.CacheDirectory;
-            if (Directory.Exists(cacheDir))
+            try
             {
-                Directory.Delete(cacheDir, true);
-                Directory.CreateDirectory(cacheDir);
-                _logger.LogInformation("Cache cleared");
+                var cacheDir = SettingsPaths.CacheDirectory;
+                if (!Directory.Exists(cacheDir))
+                {
+                    Directory.CreateDirectory(cacheDir);
+                    _logger.LogInformation("Cache folder created (was missing)");
+                    return;
+                }
+
+                // Avoid nuking the orchestrator shadow folder while it may be running
+                DeleteDirectoryContentsSafely(cacheDir, new[] { "OrchestratorHost" });
+                _logger.LogInformation("Cache cleared (excluding active orchestrator shadow directory if present)");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Clear Cache encountered issues; some files may be in use");
             }
         });
         
@@ -132,12 +143,23 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
         });
         CleanTempFilesCommand = new RelayCommand(() =>
         {
-            var tempDir = SettingsPaths.TempDirectory;
-            if (Directory.Exists(tempDir))
+            try
             {
-                Directory.Delete(tempDir, true);
-                Directory.CreateDirectory(tempDir);
-                _logger.LogInformation("Temp files cleaned");
+                var tempDir = SettingsPaths.TempDirectory;
+                if (!Directory.Exists(tempDir))
+                {
+                    Directory.CreateDirectory(tempDir);
+                    _logger.LogInformation("Temp folder created (was missing)");
+                    return;
+                }
+
+                // Treat temp under the same cache root; exclude orchestrator shadow
+                DeleteDirectoryContentsSafely(tempDir, new[] { "OrchestratorHost" });
+                _logger.LogInformation("Temp files cleaned (excluding active orchestrator shadow directory if present)");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Clean Temp encountered issues; some files may be in use");
             }
         });
 
@@ -404,5 +426,77 @@ public sealed class GlobalActionsViewModel : SettingsSectionBase
     protected override void ResetToDefault()
     {
         // Global actions don't have settings to reset
+    }
+}
+
+public sealed partial class GlobalActionsViewModel
+{
+    private void DeleteDirectoryContentsSafely(string rootDir, string[]? excludeDirNames = null)
+    {
+        excludeDirNames ??= Array.Empty<string>();
+
+        try
+        {
+            // Delete files in root
+            foreach (var file in Directory.EnumerateFiles(rootDir))
+            {
+                TryDeleteFile(file);
+            }
+
+            // Delete subdirectories except excluded
+            foreach (var dir in Directory.EnumerateDirectories(rootDir))
+            {
+                var name = Path.GetFileName(dir);
+                if (excludeDirNames.Any(x => string.Equals(x, name, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                TryDeleteDirectoryRecursive(dir);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Non-fatal issue while enumerating for deletion");
+        }
+    }
+
+    private static void TryDeleteDirectoryRecursive(string dir)
+    {
+        try
+        {
+            Directory.Delete(dir, true);
+        }
+        catch
+        {
+            // Fall back to best-effort recursive deletion
+            try
+            {
+                foreach (var file in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories))
+                {
+                    TryDeleteFile(file);
+                }
+                foreach (var sub in Directory.EnumerateDirectories(dir, "*", SearchOption.AllDirectories).Reverse())
+                {
+                    try { Directory.Delete(sub, false); } catch { }
+                }
+                try { Directory.Delete(dir, false); } catch { }
+            }
+            catch { }
+        }
+    }
+
+    private static void TryDeleteFile(string file)
+    {
+        try
+        {
+            // Skip obvious binaries that may be in use
+            var ext = Path.GetExtension(file);
+            if (string.Equals(ext, ".dll", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ext, ".exe", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            File.SetAttributes(file, FileAttributes.Normal);
+            File.Delete(file);
+        }
+        catch { }
     }
 }
