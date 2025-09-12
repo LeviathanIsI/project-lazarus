@@ -48,6 +48,7 @@ public static class LazarusPaths
         public static readonly string Embeddings   = Path.Combine(RootDir, "Embeddings");
         public static readonly string LoRAAdapters = Path.Combine(RootDir, "LoRA-Adapters");
         public static readonly string Tokenizers   = Path.Combine(RootDir, "Tokenizers");
+        public static readonly string Diffusers    = Path.Combine(RootDir, "Diffusers");
     }
 
     /// <summary>
@@ -178,9 +179,17 @@ public static class LazarusPaths
         public static readonly string Config    = Path.Combine(RootDir, "Configuration");
         public static readonly string Database  = Path.Combine(RootDir, "Database");
         public static readonly string Logs      = Path.Combine(RootDir, "Logs");
+        public static readonly string Temp      = Path.Combine(RootDir, "Temp");
 
         // We may create this subfolder for model presets.
         public static readonly string ModelPresets = Path.Combine(Config, "Model-Presets");
+
+        // Additional configuration subfolders
+        public static readonly string Config_App      = Path.Combine(Config, "App");
+        public static readonly string Config_Paths    = Path.Combine(Config, "Paths");
+        public static readonly string Config_Theme    = Path.Combine(Config, "UI-Theme");
+        public static readonly string TrainingRecipes = Path.Combine(Config, "Training-Recipes");
+        public static readonly string Pipelines       = Path.Combine(Config, "Pipelines");
     }
 
     /// <summary>
@@ -225,6 +234,7 @@ public static class LazarusPaths
         public static readonly string GeneratedOutput = Path.Combine(RootDir, "Generated-Output");
         public static readonly string InputFiles      = Path.Combine(RootDir, "Input-Files");
         public static readonly string Projects        = Path.Combine(RootDir, "Projects");
+        public static readonly string Scratch         = Path.Combine(RootDir, "Scratch");
     }
 
     /// <summary>
@@ -358,6 +368,7 @@ public static class LazarusPaths
             Models.Embeddings,
             Models.LoRAAdapters,
             Models.Tokenizers,
+            Models.Diffusers,
 
             GenAssets.RootDir,
             GenAssets.ControlNet,
@@ -418,11 +429,21 @@ public static class LazarusPaths
             SystemData.ModelPresets,
             SystemData.Database,
             SystemData.Logs,
+            SystemData.Temp,
+            SystemData.Config_App,
+            SystemData.Config_Paths,
+            SystemData.Config_Theme,
+            SystemData.TrainingRecipes,
+            SystemData.Pipelines,
 
             UserContent.RootDir,
             UserContent.GeneratedOutput,
             UserContent.InputFiles,
             UserContent.Projects,
+            UserContent.Scratch,
+
+            // New top-level project workspace root (project-specific trees created later)
+            Path.Combine(Root, "Projects"),
 
             // Prepare Runners root so users can drop engines here
             Runners.RootDir,
@@ -459,6 +480,52 @@ public static class LazarusPaths
             // Shared utilities
             Runners.Shared_Ffmpeg,
             Runners.Shared_Utils,
+
+            // Engine-scoped runner trees (per-backend)
+            Path.Combine(Root, "Runners", "LlamaCpp"),
+            Path.Combine(Root, "Runners", "LlamaCpp", "Binaries"),
+            Path.Combine(Root, "Runners", "LlamaCpp", "Config"),
+            Path.Combine(Root, "Runners", "LlamaCpp", "Cache"),
+            Path.Combine(Root, "Runners", "vLLM"),
+            Path.Combine(Root, "Runners", "vLLM", "Env"),
+            Path.Combine(Root, "Runners", "vLLM", "Config"),
+            Path.Combine(Root, "Runners", "vLLM", "Cache"),
+            Path.Combine(Root, "Runners", "ExLlamaV2"),
+            Path.Combine(Root, "Runners", "ExLlamaV2", "Binaries"),
+            Path.Combine(Root, "Runners", "ExLlamaV2", "Config"),
+            Path.Combine(Root, "Runners", "ExLlamaV2", "Cache"),
+
+            // Trainers
+            Path.Combine(Root, "Trainers"),
+            Path.Combine(Root, "Trainers", "LLaMA-Factory"),
+            Path.Combine(Root, "Trainers", "LLaMA-Factory", "Env"),
+            Path.Combine(Root, "Trainers", "LLaMA-Factory", "Config"),
+            Path.Combine(Root, "Trainers", "LLaMA-Factory", "Logs"),
+            Path.Combine(Root, "Trainers", "Axolotl"),
+            Path.Combine(Root, "Trainers", "Axolotl", "Env"),
+            Path.Combine(Root, "Trainers", "Axolotl", "Config"),
+            Path.Combine(Root, "Trainers", "Axolotl", "Logs"),
+            Path.Combine(Root, "Trainers", "Unsloth"),
+            Path.Combine(Root, "Trainers", "Unsloth", "Env"),
+            Path.Combine(Root, "Trainers", "Unsloth", "Config"),
+            Path.Combine(Root, "Trainers", "Unsloth", "Logs"),
+
+            // Global audio engines & voices
+            Path.Combine(Root, "Audio"),
+            Path.Combine(Root, "Audio", "ASR"),
+            Path.Combine(Root, "Audio", "ASR", "faster-whisper-Models"),
+            Path.Combine(Root, "Audio", "ASR", "Cache"),
+            Path.Combine(Root, "Audio", "TTS"),
+            Path.Combine(Root, "Audio", "TTS", "Piper-Models"),
+            Path.Combine(Root, "Audio", "TTS", "Voices"),
+            Path.Combine(Root, "Audio", "LipSync"),
+            Path.Combine(Root, "Audio", "LipSync", "Rhubarb"),
+
+            // Global avatars assets
+            Path.Combine(Root, "Avatars"),
+            Path.Combine(Root, "Avatars", "Characters"),
+            Path.Combine(Root, "Avatars", "Rigs"),
+            Path.Combine(Root, "Avatars", "Poses"),
         };
 
         // Distinct by path
