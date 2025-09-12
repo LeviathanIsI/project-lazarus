@@ -18,14 +18,12 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
     private readonly ILogger<ThreeDModelsViewModel> _logger;
     private readonly IOrchestratorClient _orchestratorClient;
     private FileSystemWatcher? _watchImport;
-    private FileSystemWatcher? _watchGenerated;
 
     // Supported extensions
     public static readonly string[] ModelExtensions = new[] { ".obj", ".fbx", ".gltf", ".glb", ".stl" };
 
-    // Folders
-    private static string ImportRoot => Path.Combine(LazarusPaths.SharedResources.ImportExport, "Import", "3D-Models");
-    private static string GeneratedRoot => Path.Combine(LazarusPaths.UserContent.GeneratedOutput, "3D-Models");
+    // Library root (Avatar assets)
+    private static string LibraryRoot => LazarusPaths.AvatarAssets.Models3D;
 
     // ===== Stats =====
     private int _totalModels;
@@ -111,17 +109,14 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
 
     private void EnsureFolders()
     {
-        Directory.CreateDirectory(ImportRoot);
-        Directory.CreateDirectory(GeneratedRoot);
-        SeedSampleIfEmpty();
+        Directory.CreateDirectory(LibraryRoot);
     }
 
     private void StartWatchers()
     {
         try
         {
-            _watchImport = NewWatcher(ImportRoot);
-            _watchGenerated = NewWatcher(GeneratedRoot);
+            _watchImport = NewWatcher(LibraryRoot);
         }
         catch (Exception ex) { _logger.LogWarning(ex, "Failed to start watchers"); }
     }
@@ -143,7 +138,6 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
     private DateTime _lastReload = DateTime.MinValue;
     private void DebouncedReload()
     {
-        // Simple debounce to avoid thrash on batch copies
         var now = DateTime.Now;
         if ((now - _lastReload).TotalMilliseconds < 250) return;
         _lastReload = now;
@@ -154,21 +148,14 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var allFiles = new[]
-            {
-                Directory.Exists(ImportRoot)
-                    ? Directory.EnumerateFiles(ImportRoot, "*", SearchOption.AllDirectories)
-                    : Enumerable.Empty<string>(),
-                Directory.Exists(GeneratedRoot)
-                    ? Directory.EnumerateFiles(GeneratedRoot, "*", SearchOption.AllDirectories)
+            var allFiles =
+                Directory.Exists(LibraryRoot)
+                    ? Directory.EnumerateFiles(LibraryRoot, "*", SearchOption.AllDirectories)
                     : Enumerable.Empty<string>()
-            }
-            .SelectMany(x => x)
             .Where(f => ModelExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-            // Rebuild library
             Models.Clear();
             foreach (var f in allFiles)
             {
@@ -179,34 +166,22 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
                     Extension = Path.GetExtension(f),
                     SizeBytes = SafeGetLength(f),
                     LastWrite = SafeGetLastWriteTime(f),
-                    Origin = f.StartsWith(GeneratedRoot, StringComparison.OrdinalIgnoreCase) ? ModelOrigin.Generated : ModelOrigin.Imported
+                    Origin = ModelOrigin.Imported
                 });
             }
             ModelsView.Refresh();
 
-            // Stats
             TotalModels = Models.Count;
             var today = DateTime.Today;
-            GeneratedToday = Models.Count(m => m.Origin == ModelOrigin.Generated && m.LastWrite.Date == today);
+            GeneratedToday = Models.Count(m => m.LastWrite.Date == today);
             var bytes = Models.Sum(m => m.SizeBytes);
             StorageUsedText = FormatBytes(bytes);
-
-            if (Models.Count == 0)
-            {
-                // Ensure a sample exists and refresh once
-                if (SeedSampleIfEmpty())
-                {
-                    ReloadLibraryAndStats();
-                    return;
-                }
-            }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to reload 3D library/stats");
         }
 
-        // Keep command enablement in sync
         (DeleteSelectedCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (RevealInExplorerCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
@@ -248,7 +223,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
                 try
                 {
                     var name = Path.GetFileName(src);
-                    var dest = EnsureUniquePath(Path.Combine(ImportRoot, name));
+                    var dest = EnsureUniquePath(Path.Combine(LibraryRoot, name));
                     File.Copy(src, dest, overwrite: false);
                 }
                 catch (Exception exFile)
@@ -268,21 +243,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
 
     private void GenerateModelPlaceholder()
     {
-        try
-        {
-            EnsureFolders();
-            var stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            var outPath = Path.Combine(GeneratedRoot, $"generated_{stamp}.obj");
-            File.WriteAllText(outPath, "# Lazarus 3D placeholder OBJ\n# TODO: Integrate backend runner\n");
-
-            ReloadLibraryAndStats();
-            Selected = Models.FirstOrDefault(m => string.Equals(m.FullPath, outPath, StringComparison.OrdinalIgnoreCase));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Generate model placeholder failed");
-            MessageBox.Show($"Failed to generate model: {ex.Message}", "Generation Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+        MessageBox.Show("Model generation is not yet implemented.", "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void DeleteSelected()
@@ -332,42 +293,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private static bool SeedSampleIfEmpty()
-    {
-        try
-        {
-            var hasAny = Directory.Exists(ImportRoot) &&
-                         Directory.EnumerateFiles(ImportRoot, "*", SearchOption.AllDirectories)
-                         .Any(f => ModelExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase));
-            if (hasAny) return false;
-
-            Directory.CreateDirectory(ImportRoot);
-            var sample = Path.Combine(ImportRoot, "sample-cube.obj");
-            if (!File.Exists(sample))
-            {
-                File.WriteAllText(sample, SampleObjCube);
-            }
-            return true;
-        }
-        catch { return false; }
-    }
-
-    private const string SampleObjCube = "# Lazarus sample cube\\n" +
-        "o Cube\\n" +
-        "v -0.5 -0.5 0.5\\n" +
-        "v 0.5 -0.5 0.5\\n" +
-        "v 0.5 0.5 0.5\\n" +
-        "v -0.5 0.5 0.5\\n" +
-        "v -0.5 -0.5 -0.5\\n" +
-        "v 0.5 -0.5 -0.5\\n" +
-        "v 0.5 0.5 -0.5\\n" +
-        "v -0.5 0.5 -0.5\\n" +
-        "f 1 2 3 4\\n" +
-        "f 5 6 7 8\\n" +
-        "f 1 5 8 4\\n" +
-        "f 2 6 7 3\\n" +
-        "f 4 3 7 8\\n" +
-        "f 1 2 6 5\\n";
+    
 
     private static string FormatBytes(long bytes)
     {
@@ -381,7 +307,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
     protected override void OnDisposing()
     {
         try { _watchImport?.Dispose(); } catch { }
-        try { _watchGenerated?.Dispose(); } catch { }
+        
         base.OnDisposing();
     }
 }
@@ -407,5 +333,13 @@ public sealed class ModelItem : ViewModelBase
         return $"{len:0.#} {sizes[order]}";
     }
 }
+
+
+
+
+
+
+
+
 
 
