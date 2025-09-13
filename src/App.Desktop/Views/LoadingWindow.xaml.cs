@@ -8,16 +8,15 @@ using Lazarus.Desktop.Services;
 namespace Lazarus.Desktop.Views
 {
     /// <summary>
-    /// Loading window that displays during application initialization
+    /// Dark ceremony loading window for Lazarus resurrection
     /// </summary>
     public partial class LoadingWindow : Window
     {
         private readonly ILogger<LoadingWindow>? _logger;
         private readonly IInitializationManager _initializationManager;
-        private readonly Storyboard _pulseAnimation;
-        private readonly Storyboard _rotateAnimation;
-        private readonly Storyboard _innerRotateAnimation;
-        private readonly Storyboard _typewriterAnimation;
+        private readonly Storyboard _flickerAnimation;
+        private readonly Storyboard _orbSpinAnimation;
+        private readonly Storyboard _glitchAnimation;
         private bool _isInitialized = false;
 
         public event EventHandler? InitializationCompleted;
@@ -31,62 +30,48 @@ namespace Lazarus.Desktop.Views
             _initializationManager = initializationManager ?? throw new ArgumentNullException(nameof(initializationManager));
             
             // Get animations from resources
-            _pulseAnimation = (Storyboard)FindResource("PulseAnimation");
-            _rotateAnimation = (Storyboard)FindResource("RotateAnimation");
-            _typewriterAnimation = (Storyboard)FindResource("TypewriterAnimation");
-            
-            // Create inner rotation animation
-            _innerRotateAnimation = new Storyboard();
-            var innerRotateAnimation = new DoubleAnimation
-            {
-                From = 0,
-                To = -360,
-                Duration = TimeSpan.FromSeconds(1.5),
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            Storyboard.SetTarget(innerRotateAnimation, InnerRotateTransform);
-            Storyboard.SetTargetProperty(innerRotateAnimation, new PropertyPath("Angle"));
-            _innerRotateAnimation.Children.Add(innerRotateAnimation);
+            _flickerAnimation = (Storyboard)FindResource("FlickerAnimation");
+            _orbSpinAnimation = (Storyboard)FindResource("OrbSpinAnimation");
+            _glitchAnimation = (Storyboard)FindResource("GlitchAnimation");
 
-            // Start animations
-            StartAnimations();
+            // Start the dark ceremony
+            StartDarkCeremony();
             
             // Subscribe to initialization events
             _initializationManager.InitializationProgressChanged += OnInitializationProgressChanged;
             _initializationManager.InitializationCompleted += OnInitializationCompleted;
             _initializationManager.InitializationFailed += OnInitializationFailed;
             
-            // Start initialization process
+            // Begin the resurrection sequence
             _ = StartInitializationAsync();
         }
 
-        private void StartAnimations()
+        private void StartDarkCeremony()
         {
             try
             {
-                _pulseAnimation?.Begin();
-                _rotateAnimation?.Begin();
-                _innerRotateAnimation?.Begin();
-                _typewriterAnimation?.Begin();
+                _flickerAnimation?.Begin();
+                _orbSpinAnimation?.Begin();
+                _logger?.LogInformation("Dark ceremony initiated - Lazarus resurrection in progress");
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Failed to start loading animations");
+                _logger?.LogWarning(ex, "Failed to start dark ceremony animations");
             }
         }
 
-        private void StopAnimations()
+        private void StopDarkCeremony()
         {
             try
             {
-                _pulseAnimation?.Stop();
-                _rotateAnimation?.Stop();
-                _innerRotateAnimation?.Stop();
-                _typewriterAnimation?.Stop();
+                _flickerAnimation?.Stop();
+                _orbSpinAnimation?.Stop();
+                _glitchAnimation?.Stop();
+                _logger?.LogInformation("Dark ceremony concluded");
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Failed to stop loading animations");
+                _logger?.LogWarning(ex, "Failed to stop dark ceremony animations");
             }
         }
 
@@ -94,9 +79,9 @@ namespace Lazarus.Desktop.Views
         {
             try
             {
-                _logger?.LogInformation("Starting Lazarus initialization...");
+                _logger?.LogInformation("Initiating Lazarus resurrection sequence...");
                 
-                // Set timeout
+                // Set resurrection timeout
                 var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
                 var initTask = _initializationManager.InitializeAsync();
                 
@@ -104,8 +89,8 @@ namespace Lazarus.Desktop.Views
                 
                 if (completedTask == timeoutTask)
                 {
-                    _logger?.LogWarning("Initialization timed out after 30 seconds");
-                    ShowError("Initialization timed out. The application may be taking longer than expected to start.");
+                    _logger?.LogWarning("Resurrection sequence timed out after 30 seconds");
+                    ShowCorruption("Resurrection timeout. Neural pathways may be compromised.");
                 }
                 else
                 {
@@ -114,8 +99,8 @@ namespace Lazarus.Desktop.Views
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Initialization failed with exception");
-                ShowError($"Initialization failed: {ex.Message}");
+                _logger?.LogError(ex, "Resurrection sequence failed with exception");
+                ShowCorruption($"Resurrection failed: {ex.Message}");
             }
         }
 
@@ -123,9 +108,25 @@ namespace Lazarus.Desktop.Views
         {
             Dispatcher.Invoke(() =>
             {
-                ProgressText.Text = e.Message;
-                _logger?.LogDebug("Initialization progress: {Progress}", e.Message);
+                // Convert corporate messages to dark ceremony language
+                var darkMessage = ConvertToDarkCeremony(e.Message);
+                ProgressText.Text = darkMessage;
+                _logger?.LogDebug("Resurrection progress: {Progress}", darkMessage);
             });
+        }
+        
+        private string ConvertToDarkCeremony(string message)
+        {
+            return message.ToLower() switch
+            {
+                var msg when msg.Contains("bootstrapping") => "Summoning directory spirits...",
+                var msg when msg.Contains("database") => "Awakening data phantoms...",
+                var msg when msg.Contains("orchestrator") => "Binding service wraiths...",
+                var msg when msg.Contains("backend") => "Resurrecting core entities...",
+                var msg when msg.Contains("agent") => "Establishing neural communion...",
+                var msg when msg.Contains("finalizing") => "Completing the dark ritual...",
+                _ => "Channeling arcane energies..."
+            };
         }
 
         private void OnInitializationCompleted(object? sender, EventArgs e)
@@ -135,20 +136,19 @@ namespace Lazarus.Desktop.Views
                 if (_isInitialized) return;
                 _isInitialized = true;
                 
-                _logger?.LogInformation("Initialization completed successfully");
-                ProgressText.Text = "Ready!";
-                ProgressBar.IsIndeterminate = false;
-                ProgressBar.Value = 100;
+                _logger?.LogInformation("Lazarus resurrection completed successfully");
+                StatusText.Text = "LAZARUS RISEN";
+                ProgressText.Text = "The dark ceremony is complete...";
                 
-                // Stop animations
-                StopAnimations();
+                // Stop the dark ceremony
+                StopDarkCeremony();
                 
-                // Fade out effect
+                // Elegant fade out with purple glow
                 var fadeOut = new DoubleAnimation
                 {
                     From = 1.0,
                     To = 0.0,
-                    Duration = TimeSpan.FromMilliseconds(500)
+                    Duration = TimeSpan.FromMilliseconds(800)
                 };
                 
                 fadeOut.Completed += (s, args) =>
@@ -165,25 +165,23 @@ namespace Lazarus.Desktop.Views
         {
             Dispatcher.Invoke(() =>
             {
-                _logger?.LogError("Initialization failed: {Error}", e.Error);
-                ShowError(e.Error);
+                _logger?.LogError("Lazarus resurrection failed: {Error}", e.Error);
+                ShowCorruption(e.Error);
             });
         }
 
-        private void ShowError(string errorMessage)
+        private void ShowCorruption(string errorMessage)
         {
-            StopAnimations();
+            StopDarkCeremony();
             
-            LoadingText.Text = "INITIALIZATION FAILED";
-            LoadingText.Foreground = new System.Windows.Media.SolidColorBrush(
-                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF6B6B"));
+            // Switch to error state with glitch effects
+            LoadingContainer.Visibility = Visibility.Collapsed;
+            ErrorContainer.Visibility = Visibility.Visible;
             
-            ProgressText.Visibility = Visibility.Collapsed;
-            ProgressBar.Visibility = Visibility.Collapsed;
+            // Start glitch animation
+            _glitchAnimation?.Begin();
             
-            ErrorMessage.Text = errorMessage;
-            ErrorPanel.Visibility = Visibility.Visible;
-            
+            _logger?.LogError("Dark ceremony corrupted: {Error}", errorMessage);
             InitializationFailed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -191,34 +189,31 @@ namespace Lazarus.Desktop.Views
         {
             try
             {
-                // Reset UI
-                ErrorPanel.Visibility = Visibility.Collapsed;
-                ProgressText.Visibility = Visibility.Visible;
-                ProgressBar.Visibility = Visibility.Visible;
-                ProgressBar.IsIndeterminate = true;
+                _logger?.LogInformation("User requested resurrection retry");
                 
-                LoadingText.Text = "INITIALIZING LAZARUS...";
-                LoadingText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFFFFF"));
+                // Reset to loading state
+                ErrorContainer.Visibility = Visibility.Collapsed;
+                LoadingContainer.Visibility = Visibility.Visible;
                 
-                ProgressText.Text = "Retrying...";
+                StatusText.Text = "RESURRECTING LAZARUS";
+                ProgressText.Text = "Reinitiating dark ceremony...";
                 
-                // Restart animations
-                StartAnimations();
+                // Restart the dark ceremony
+                StartDarkCeremony();
                 
-                // Retry initialization
+                // Retry the resurrection sequence
                 await StartInitializationAsync();
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Retry failed");
-                ShowError($"Retry failed: {ex.Message}");
+                _logger?.LogError(ex, "Resurrection retry failed");
+                ShowCorruption($"Resurrection retry failed: {ex.Message}");
             }
         }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
-            _logger?.LogInformation("User requested exit during initialization");
+            _logger?.LogInformation("User terminated Lazarus resurrection ceremony");
             Application.Current.Shutdown();
         }
 
@@ -229,8 +224,8 @@ namespace Lazarus.Desktop.Views
             _initializationManager.InitializationCompleted -= OnInitializationCompleted;
             _initializationManager.InitializationFailed -= OnInitializationFailed;
             
-            // Stop animations
-            StopAnimations();
+            // Stop the dark ceremony
+            StopDarkCeremony();
             
             base.OnClosed(e);
         }
