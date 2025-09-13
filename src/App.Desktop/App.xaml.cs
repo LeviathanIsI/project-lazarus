@@ -191,6 +191,10 @@ namespace Lazarus.Desktop
                 services.AddLazarusDesktop(context.Configuration);
                 services.AddLazarusHosting();
 
+                // Register WPF windows for DI resolution
+                services.AddTransient<MainWindow>();
+                services.AddTransient<Views.LoadingWindow>();
+
                 // Factory that creates SelectableAdapter given an AdapterInfo at runtime
                 services.AddTransient<Func<Lazarus.Shared.AdapterInfo, Lazarus.Desktop.ViewModels.SelectableAdapter>>(sp =>
                 {
