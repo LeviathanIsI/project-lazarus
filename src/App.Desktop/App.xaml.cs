@@ -24,7 +24,6 @@ namespace Lazarus.Desktop
         private IHost? _host;
         private ILogger<App>? _logger;
         private LoadingWindow? _loadingWindow;
-        private IInitializationManager? _initializationManager;
         private bool _disposed;
 
         /// <summary>
@@ -50,8 +49,10 @@ namespace Lazarus.Desktop
                 ServiceProvider = _host.Services;
                 _logger = ServiceProvider.GetRequiredService<ILogger<App>>();
 
-                // Show loading window first
-                await ShowLoadingWindowAsync().ConfigureAwait(true);
+                _logger.LogInformation("Host started successfully, beginning UI initialization");
+
+                // Show loading window through DI
+                await ShowLoadingWindowThroughDIAsync().ConfigureAwait(true);
             }
             catch (TaskCanceledException tex)
             {
@@ -243,16 +244,14 @@ namespace Lazarus.Desktop
             }
         }
 
-        private async Task ShowLoadingWindowAsync()
+        private async Task ShowLoadingWindowThroughDIAsync()
         {
             try
             {
-                // Get initialization manager
-                _initializationManager = ServiceProvider.GetRequiredService<IInitializationManager>();
+                _logger?.LogInformation("Resolving loading window through DI");
                 
-                // Create loading window
-                var loadingLogger = ServiceProvider.GetService<ILogger<LoadingWindow>>();
-                _loadingWindow = new LoadingWindow(_initializationManager, loadingLogger);
+                // Resolve loading window through DI (all dependencies will be injected)
+                _loadingWindow = ServiceProvider.GetRequiredService<Views.LoadingWindow>();
                 
                 // Subscribe to events
                 _loadingWindow.InitializationCompleted += OnInitializationCompleted;
@@ -261,14 +260,13 @@ namespace Lazarus.Desktop
                 // Show loading window
                 _loadingWindow.Show();
                 
-                _logger?.LogInformation("Loading window displayed, starting initialization");
+                _logger?.LogInformation("Loading window displayed through DI, starting initialization");
                 
-                // Start initialization (this will trigger the loading window to handle the process)
-                await _initializationManager.InitializeAsync();
+                // The loading window will handle its own initialization process
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to show loading window");
+                _logger?.LogError(ex, "Failed to show loading window through DI");
                 // Fall back to direct main window initialization
                 await InitializeMainWindowAsync().ConfigureAwait(true);
             }
@@ -305,33 +303,39 @@ namespace Lazarus.Desktop
 
         private Task InitializeMainWindowAsync()
         {
-            // Initialize services that need async setup
-            var themeService = ServiceProvider.GetRequiredService<Services.IThemeService>();
-            var navigationService = ServiceProvider.GetRequiredService<Services.INavigationService>();
-
-            // Apply initial theme
-            var uiOptions = ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Configuration.UIOptions>>().Value;
-            themeService.ApplyTheme(uiOptions.Theme);
-
-            // Create and configure ViewModelLocator for XAML binding
-            var viewModelLocator = ServiceProvider.GetRequiredService<ViewModelLocator>();
-            Resources["ViewModelLocator"] = viewModelLocator;
-
-            // Create main window and set DataContext IMMEDIATELY
-            var mainViewModel = viewModelLocator.MainViewModel;
-            var mainWindow = new MainWindow
+            try
             {
-                DataContext = mainViewModel  // Set EARLY before any rendering
-            };
-            MainWindow = mainWindow;
+                _logger?.LogInformation("Resolving main window through DI");
+                
+                // Initialize services that need async setup
+                var themeService = ServiceProvider.GetRequiredService<Services.IThemeService>();
+                var navigationService = ServiceProvider.GetRequiredService<Services.INavigationService>();
 
-            // Show window FIRST so UI is visible
-            mainWindow.Show();
+                // Apply initial theme
+                var uiOptions = ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Configuration.UIOptions>>().Value;
+                themeService.ApplyTheme(uiOptions.Theme);
 
-            // Navigate to startup view AFTER window is shown
-            navigationService.NavigateTo(uiOptions.StartupView);
+                // Create and configure ViewModelLocator for XAML binding
+                var viewModelLocator = ServiceProvider.GetRequiredService<ViewModelLocator>();
+                Resources["ViewModelLocator"] = viewModelLocator;
 
-            _logger?.LogInformation("Main window initialized and displayed");
+                // Resolve main window through DI
+                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                MainWindow = mainWindow;
+
+                // Show window FIRST so UI is visible
+                mainWindow.Show();
+
+                // Navigate to startup view AFTER window is shown
+                navigationService.NavigateTo(uiOptions.StartupView);
+
+                _logger?.LogInformation("Main window initialized and displayed through DI");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to initialize main window through DI");
+                throw;
+            }
 
             return Task.CompletedTask;
         }

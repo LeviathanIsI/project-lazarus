@@ -51,6 +51,10 @@ public static class ServiceCollectionExtensions
         
         // Add initialization services
         services.AddSingleton<IInitializationManager, InitializationManager>();
+        
+        // Register windows for DI resolution
+        services.AddTransient<MainWindow>();
+        services.AddTransient<Views.LoadingWindow>();
         services.AddLazarusBackgroundServices();
         
         // Training services
