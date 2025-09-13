@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -180,6 +181,64 @@ namespace Lazarus.Backend.Services
                             });
                             await File.WriteAllTextAsync(wrapper, content, new System.Text.UTF8Encoding(false), ct);
                         }
+
+                        if (profile.Trainer == Lazarus.Shared.Training.TrainerBackend.LLaMAFactory)
+                        {
+                            // Spawn LLaMAFactory training using direct_train.py with hydra overrides
+                            _ = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    var lfRoot = Path.Combine(LazarusPaths.Root, "Trainers", "LLaMA-Factory");
+                                    var (exe, baseArgs) = DetectPython();
+                                    var overrides = BuildLfOverrides(profile, jobDir);
+                                    var argList = new List<string>();
+                                    if (!string.IsNullOrWhiteSpace(baseArgs)) argList.Add(baseArgs);
+                                    argList.Add('"' + wrapper.Replace("\\", "/") + '"');
+                                    argList.AddRange(overrides);
+
+                                    var psi = new ProcessStartInfo(exe, string.Join(" ", argList))
+                                    {
+                                        WorkingDirectory = jobDir,
+                                        CreateNoWindow = true,
+                                        UseShellExecute = false,
+                                        RedirectStandardOutput = true,
+                                        RedirectStandardError = true
+                                    };
+                                    // Ensure Python can import llamafactory if it's a local repo under Trainers
+                                    if (Directory.Exists(lfRoot))
+                                    {
+                                        var existing = Environment.GetEnvironmentVariable("PYTHONPATH") ?? string.Empty;
+                                        psi.Environment["PYTHONPATH"] = string.IsNullOrEmpty(existing) ? lfRoot : existing + Path.PathSeparator + lfRoot;
+                                    }
+                                    // Favor forward slashes in env paths if consumed later
+                                    psi.Environment["HF_HOME"] = LazarusPaths.Models.RootDir.Replace('\\','/');
+
+                                    using var proc = Process.Start(psi);
+                                    if (proc != null)
+                                    {
+                                        await Task.WhenAll(
+                                            PumpAsync(proc.StandardOutput, logPath, job.Cts.Token),
+                                            PumpAsync(proc.StandardError, logPath, job.Cts.Token)
+                                        );
+                                        proc.WaitForExit();
+                                        job.Status = proc.ExitCode == 0 ? TrainingStatus.Completed : TrainingStatus.Failed;
+                                        job.ModifiedUtc = DateTime.UtcNow;
+                                        StateChanged?.Invoke(this, new TrainingStateChangedEventArgs { JobId = job.Id, Status = job.Status.ToString() });
+                                    }
+                                }
+                                catch (Exception runEx)
+                                {
+                                    await File.AppendAllTextAsync(logPath, $"{DateTime.UtcNow:o} launch error: {runEx.Message}\n");
+                                    job.Status = TrainingStatus.Failed;
+                                    job.ModifiedUtc = DateTime.UtcNow;
+                                    StateChanged?.Invoke(this, new TrainingStateChangedEventArgs { JobId = job.Id, Status = job.Status.ToString() });
+                                }
+                            }, job.Cts.Token);
+
+                            // Return early — process runs asynchronously; progress will be updated via logs (future enhancement)
+                            return;
+                        }
                     }
                 }
             }
@@ -345,6 +404,94 @@ namespace Lazarus.Backend.Services
                 }
             }
             await writer.FlushAsync();
+        }
+
+        private static (string exe, string baseArgs) DetectPython()
+        {
+            try
+            {
+                // Prefer py -3.12 if available
+                var ok = TryRun("py", "-3.12 --version", out var output);
+                if (ok && output.Contains("3.12")) return ("py", "-3.12");
+            }
+            catch { }
+            return ("python", "");
+        }
+
+        private static bool TryRun(string exe, string args, out string output)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo(exe, args)
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+                using var p = Process.Start(psi);
+                if (p == null) { output = string.Empty; return false; }
+                var stdout = p.StandardOutput.ReadToEnd();
+                var stderr = p.StandardError.ReadToEnd();
+                p.WaitForExit(1500);
+                output = string.IsNullOrWhiteSpace(stdout) ? stderr : stdout;
+                return p.ExitCode == 0 || !string.IsNullOrWhiteSpace(output);
+            }
+            catch { output = string.Empty; return false; }
+        }
+
+        private static IEnumerable<string> BuildLfOverrides(Lazarus.Shared.Training.TrainingProfile profile, string jobDir)
+        {
+            // Favor forward slashes for trainer compatibility
+            string Fwd(string p) => p.Replace("\\", "/");
+
+            var list = new List<string>
+            {
+                $"model_name_or_path={Fwd(profile.BaseModel)}",
+                "datasets=[sharegpt]",
+                "dataset_dir=.",
+                $"template={profile.ChatTemplate.ToLowerInvariant()}",
+                $"learning_rate={profile.LearningRate}",
+                profile.Epochs.HasValue ? $"num_train_epochs={profile.Epochs.Value}" : $"max_steps={profile.MaxSteps ?? 0}",
+                $"per_device_train_batch_size={profile.PerDeviceBatch}",
+                $"gradient_accumulation_steps={profile.GradAccum}",
+                $"cutoff_len={profile.MaxSeqLen}",
+                $"lr_scheduler_type={profile.LrScheduler}",
+                $"optim={profile.Optimizer}",
+                $"eval_steps={profile.EvalEverySteps}",
+                $"save_steps={profile.SaveEverySteps}",
+                "evaluation_strategy=steps",
+                $"output_dir={Fwd(Path.Combine(jobDir, "artifacts"))}"
+            };
+
+            var ft = profile.UseLoRA ? "lora" : "full";
+            list.Add($"finetuning_type={ft}");
+            if (profile.UseLoRA)
+            {
+                list.Add($"lora_rank={profile.LoRARank}");
+                list.Add($"lora_alpha={profile.LoRAAlpha}");
+                list.Add($"lora_dropout={profile.LoRADropout}");
+            }
+            list.Add("gradient_checkpointing=False");
+            list.Add("use_flash_attn=False");
+            list.Add("packing=False");
+            return list;
+        }
+
+        private static async Task PumpAsync(StreamReader reader, string logPath, CancellationToken ct)
+        {
+            try
+            {
+                while (!reader.EndOfStream && !ct.IsCancellationRequested)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if (line != null)
+                    {
+                        await File.AppendAllTextAsync(logPath, line + Environment.NewLine);
+                    }
+                }
+            }
+            catch { }
         }
     }
 
