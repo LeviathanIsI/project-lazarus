@@ -381,7 +381,7 @@
                        Visibility="{Binding NeedsPreferenceData, Converter={StaticResource BoolToVisibility}}"
                        Margin="0,0,8,0"/>
             <Button Content="Create &amp; Start" Command="{Binding CreateAndStartCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
-            <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" Width="180" Height="6" VerticalAlignment="Center"/>
+            <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" Width="180" Height="6" VerticalAlignment="Center"/>
             <Button Content="Start" Command="{Binding StartCommand}" Style="{StaticResource SolidDarkButton}" Margin="8,0,8,0"/>
             <Button Content="Pause" Command="{Binding PauseCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
             <Button Content="Stop" Command="{Binding StopCommand}" Style="{StaticResource SolidDarkButton}" Margin="0,0,8,0"/>
