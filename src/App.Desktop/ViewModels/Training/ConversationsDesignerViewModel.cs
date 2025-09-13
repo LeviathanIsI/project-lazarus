@@ -26,14 +26,37 @@ namespace Lazarus.Desktop.ViewModels.Training
         public TrainerBackend SelectedTrainer
         {
             get => _selectedTrainer;
-            set { if (SetProperty(ref _selectedTrainer, value)) RaiseCommandCanExecutes(); }
+            set
+            {
+                if (SetProperty(ref _selectedTrainer, value))
+                {
+                    ApplyTrainerIntelligence();
+                    RaiseCommandCanExecutes();
+                }
+            }
         }
         private TrainerBackend _selectedTrainer = TrainerBackend.LLaMAFactory;
 
         public TrainingTask SelectedTask
         {
             get => _selectedTask;
-            set { if (SetProperty(ref _selectedTask, value)) OnPropertyChanged(nameof(NeedsPreferenceData)); }
+            set
+            {
+                if (SetProperty(ref _selectedTask, value))
+                {
+                    OnPropertyChanged(nameof(NeedsPreferenceData));
+                    // Adjust LR for LLaMAFactory when task implies full FT vs adapters
+                    if (SelectedTrainer == TrainerBackend.LLaMAFactory)
+                    {
+                        var trainingType = Params["TrainingType"]?.Trim();
+                        if (string.Equals(trainingType, "Full Fine-tune", StringComparison.OrdinalIgnoreCase))
+                            Params["LearningRate"] = "5e-5";
+                        else
+                            Params["LearningRate"] = "2e-4";
+                        OnPropertyChanged(nameof(Params));
+                    }
+                }
+            }
         }
         private TrainingTask _selectedTask = TrainingTask.SFT;
 
@@ -56,6 +79,20 @@ namespace Lazarus.Desktop.ViewModels.Training
         // Progress
         private double _progress;
         public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
+
+        // LLaMAFactory compatibility status
+        public enum LfStatus { None, Valid, Warning, Error }
+        private LfStatus _lfStatus;
+        public LfStatus LlamaFactoryStatus { get => _lfStatus; private set { if (SetProperty(ref _lfStatus, value)) OnPropertyChanged(nameof(IsLfStatusVisible)); } }
+        private string _lfStatusMessage = string.Empty;
+        public string LlamaFactoryStatusMessage { get => _lfStatusMessage; private set => SetProperty(ref _lfStatusMessage, value); }
+        public bool IsLfStatusVisible => SelectedTrainer == TrainerBackend.LLaMAFactory && LlamaFactoryStatus != LfStatus.None;
+
+        // Visibility flags for incompatible options
+        private bool _showGcOption = true, _showFa2Option = true, _showPackSeqOption = true;
+        public bool ShowGradientCheckpointingOption { get => _showGcOption; private set => SetProperty(ref _showGcOption, value); }
+        public bool ShowFlashAttention2Option { get => _showFa2Option; private set => SetProperty(ref _showFa2Option, value); }
+        public bool ShowPackSequencesOption { get => _showPackSeqOption; private set => SetProperty(ref _showPackSeqOption, value); }
 
         // Commands
         public ICommand ImportTrainCommand { get; }
@@ -109,6 +146,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             SetLearningRateCommand = new RelayCommand<string>(rate => SetLearningRate(rate));
 
             _svc.ProgressChanged += OnProgressChanged;
+            ApplyTrainerIntelligence();
         }
 
         public void SetCurrentJob(TrainingJob? job)
@@ -159,6 +197,14 @@ namespace Lazarus.Desktop.ViewModels.Training
             if (HasJob) return false;
             try
             {
+                // Last-moment validations and intelligent defaults
+                if (SelectedTrainer == TrainerBackend.LLaMAFactory)
+                {
+                    AutoSetChatTemplateFromBaseModel();
+                    AutoSetLearningRateForTrainer();
+                    if (!ValidateBaseModelPath()) return false;
+                    EstimateVramAndWarn();
+                }
                 var profile = BuildProfileFromParams();
                 var job = await _svc.CreateJobAsync(profile);
                 _jobId = Guid.Parse(job.Id);
@@ -327,6 +373,108 @@ namespace Lazarus.Desktop.ViewModels.Training
         private void OnProgressChanged(object? sender, TrainingProgressEventArgs e)
         {
             if (_jobId.HasValue && e.JobId == _jobId.Value) Progress = e.Progress;
+        }
+
+        // --- LLaMAFactory intelligence helpers ---
+        private void ApplyTrainerIntelligence()
+        {
+            var isLf = SelectedTrainer == TrainerBackend.LLaMAFactory;
+            ShowGradientCheckpointingOption = !isLf; // hide when LF due to functools.partial bug
+            ShowFlashAttention2Option = !isLf;       // hide (not supported on Windows builds)
+            ShowPackSequencesOption = !isLf;         // hide (incompatible on Windows mixed precision)
+
+            if (isLf)
+            {
+                AutoSetChatTemplateFromBaseModel();
+                AutoSetLearningRateForTrainer();
+                Params["Optimizer"] = "adamw_torch";
+                Params["LRScheduler"] = "linear";
+                Params["GradientAccumulation"] = "4";
+                OnPropertyChanged(nameof(Params));
+                LlamaFactoryStatus = LfStatus.Warning;
+                LlamaFactoryStatusMessage = "LLaMAFactory: adjusted params for Windows; FA2/GC/Pack hidden";
+            }
+            else
+            {
+                LlamaFactoryStatus = LfStatus.None;
+                LlamaFactoryStatusMessage = string.Empty;
+            }
+        }
+
+        private void AutoSetChatTemplateFromBaseModel()
+        {
+            var model = Params["BaseModel"] ?? string.Empty;
+            var template = "chatml";
+            if (model.IndexOf("Qwen", StringComparison.OrdinalIgnoreCase) >= 0) template = "qwen";
+            else if (model.IndexOf("Llama-3", StringComparison.OrdinalIgnoreCase) >= 0 || model.IndexOf("Llama3", StringComparison.OrdinalIgnoreCase) >= 0) template = "llama3";
+            else if (model.IndexOf("Mistral", StringComparison.OrdinalIgnoreCase) >= 0) template = "mistral";
+            Params["ChatTemplate"] = template;
+        }
+
+        private void AutoSetLearningRateForTrainer()
+        {
+            var trainingType = Params["TrainingType"]?.Trim();
+            if (string.Equals(trainingType, "Full Fine-tune", StringComparison.OrdinalIgnoreCase))
+                Params["LearningRate"] = "5e-5";
+            else
+                Params["LearningRate"] = "2e-4"; // LoRA/QLoRA
+        }
+
+        private bool ValidateBaseModelPath()
+        {
+            try
+            {
+                var modelPath = Params["BaseModel"] ?? string.Empty;
+                if (modelPath.Contains(".gguf", StringComparison.OrdinalIgnoreCase))
+                {
+                    LlamaFactoryStatus = LfStatus.Error;
+                    LlamaFactoryStatusMessage = "LLaMAFactory requires Hugging Face format (config.json + safetensors). GGUF is inference-only.";
+                    return false;
+                }
+
+                if (System.IO.Directory.Exists(modelPath))
+                {
+                    var required = new[] { "config.json", "tokenizer.json", "tokenizer_config.json" };
+                    var hasSt = System.IO.Directory.GetFiles(modelPath, "*.safetensors").Any();
+                    var missing = required.Any(f => !System.IO.File.Exists(System.IO.Path.Combine(modelPath, f)));
+                    if (missing || !hasSt)
+                    {
+                        LlamaFactoryStatus = LfStatus.Warning;
+                        LlamaFactoryStatusMessage = "Model appears incomplete. Need config.json, tokenizer files, and .safetensors weights.";
+                    }
+                    else
+                    {
+                        LlamaFactoryStatus = LfStatus.Valid;
+                        LlamaFactoryStatusMessage = "Model folder looks good for LLaMAFactory.";
+                    }
+                }
+                else
+                {
+                    // If it's not a directory, we still proceed but warn.
+                    LlamaFactoryStatus = LfStatus.Warning;
+                    LlamaFactoryStatusMessage = "Base model should be a local HF folder (config + safetensors).";
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LlamaFactoryStatus = LfStatus.Error;
+                LlamaFactoryStatusMessage = "Model validation failed: " + ex.Message;
+                return false;
+            }
+        }
+
+        private void EstimateVramAndWarn()
+        {
+            var batch = TryParseInt(Params["BatchSize"], 4);
+            var accum = TryParseInt(Params["GradientAccumulation"], 4);
+            var seqlen = TryParseInt(Params["MaxSeqLength"], 2048);
+            var estimated = (batch * accum * seqlen * 2) / 1024.0; // rough GB
+            if (estimated > 20)
+            {
+                LlamaFactoryStatus = LfStatus.Warning;
+                LlamaFactoryStatusMessage = $"Settings may require ~{estimated:0.#}GB VRAM. Reduce batch or sequence length.";
+            }
         }
     }
 }

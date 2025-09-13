@@ -124,11 +124,16 @@
         <DockPanel Grid.Row="2" Margin="16,0,16,8" VerticalAlignment="Bottom">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <!-- Create Job (shown when no job selected) -->
-                <Button Content="Create Job"   
-                        Command="{Binding JobDesigner.CreateJobCommand}"   
-                        Style="{StaticResource RainbowAccentButton.AutoFit}" 
+                <Button Content="Create Job"  
+                        Command="{Binding Conversations.CreateJobCommand}"
                         Margin="0,0,8,0"
-                        ToolTip="Create training job from current configuration"/>
+                        ToolTip="Create a Conversations training job from current configuration">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource RainbowAccentButton.AutoFit}">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 
                 <!-- Job control buttons (shown when job exists) -->
                 <Button Content="Start"   

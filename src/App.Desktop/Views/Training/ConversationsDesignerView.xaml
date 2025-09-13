@@ -437,17 +437,24 @@
                                     <!-- Row 6: Advanced Options -->
                                     <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
                                         <CheckBox Content="Gradient checkpointing (saves VRAM)" 
+                                                  Visibility="{Binding ShowGradientCheckpointingOption, Converter={StaticResource BoolToVisibility}}"
                                                   IsChecked="{Binding Params[GradientCheckpointing], Converter={StaticResource StringToBooleanConverter}}" 
                                                   Margin="0,0,0,4"/>
                                         <CheckBox Content="Flash Attention 2 (faster training)" 
+                                                  Visibility="{Binding ShowFlashAttention2Option, Converter={StaticResource BoolToVisibility}}"
                                                   IsChecked="{Binding Params[FlashAttention], Converter={StaticResource StringToBooleanConverter}}" 
                                                   Margin="0,0,0,4"/>
                                         <CheckBox Content="Pack sequences (better GPU utilization)" 
+                                                  Visibility="{Binding ShowPackSequencesOption, Converter={StaticResource BoolToVisibility}}"
                                                   IsChecked="{Binding Params[PackSequences], Converter={StaticResource StringToBooleanConverter}}"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Expander>
+                        <!-- LLaMAFactory status indicator -->
+                        <Border Margin="0,8,0,0" Visibility="{Binding IsLfStatusVisible, Converter={StaticResource BoolToVisibility}}" CornerRadius="6" Padding="8" Background="#20111111" BorderBrush="#303030" BorderThickness="1">
+                            <TextBlock Text="{Binding LlamaFactoryStatusMessage}" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

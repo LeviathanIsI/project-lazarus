@@ -74,6 +74,9 @@ namespace Lazarus.Backend.Services
                 : LazarusPaths.Models.BaseModels;
             Directory.CreateDirectory(outputsRoot);
 
+            // Create a Jobs/<id> working directory with manifests
+            Directory.CreateDirectory(LazarusPaths.SystemData.Training.JobsRoot);
+
             var job = new ConversationTrainingJob
             {
                 Config = new TrainingConfiguration
@@ -94,13 +97,27 @@ namespace Lazarus.Backend.Services
 
             _jobs[job.Id] = job;
 
+            // Materialize working directory and simple manifests under System-Data/Training/Jobs
+            var jobDir = Path.Combine(LazarusPaths.SystemData.Training.JobsRoot, job.Id.ToString());
+            Directory.CreateDirectory(jobDir);
+            var artifactsDir = Path.Combine(jobDir, "artifacts");
+            Directory.CreateDirectory(artifactsDir);
+            // Write profile.json for visibility
+            try
+            {
+                var profilePath = Path.Combine(jobDir, "profile.json");
+                var json = JsonSerializer.Serialize(profile, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(profilePath, json);
+            }
+            catch { /* non-fatal */ }
+
             var uiJob = new Lazarus.Shared.Contracts.TrainingJob
             {
                 Id = job.Id.ToString(),
                 Name = $"Conversations: {profile.BaseModel} {profile.Task}",
                 Modality = Lazarus.Shared.Contracts.TrainingModality.Conversations,
                 Status = Lazarus.Shared.Contracts.TrainingStatus.Draft,
-                OutputPath = job.OutputDir,
+                OutputPath = jobDir,
                 ConfigId = "uncommitted",
                 ResourcesId = "uncommitted"
             };
@@ -120,6 +137,56 @@ namespace Lazarus.Backend.Services
             var logsDir = Path.Combine(LazarusPaths.SystemData.Logs, "training");
             Directory.CreateDirectory(logsDir);
             var logPath = Path.Combine(logsDir, $"{job.Id}.log");
+
+            // Prepare dataset workspace under Jobs/<id>
+            try
+            {
+                var jobDir = Path.Combine(LazarusPaths.SystemData.Training.JobsRoot, job.Id.ToString());
+                Directory.CreateDirectory(jobDir);
+                var profilePath = Path.Combine(jobDir, "profile.json");
+                if (File.Exists(profilePath))
+                {
+                    var profile = JsonSerializer.Deserialize<Lazarus.Shared.Training.TrainingProfile>(await File.ReadAllTextAsync(profilePath, ct));
+                    if (profile != null)
+                    {
+                        // Convert to sharegpt JSONL if needed
+                        var outFile = Path.Combine(jobDir, "train_converted.jsonl");
+                        await ConvertDatasetsToShareGptAsync(profile.TrainFiles, outFile, ct);
+                        // dataset_info.json (no BOM, UTF-8)
+                        var datasetInfo = new
+                        {
+                            sharegpt = new { file_name = "train_converted.jsonl", formatting = "sharegpt" }
+                        };
+                        var dsInfoPath = Path.Combine(jobDir, "dataset_info.json");
+                        var dsJson = JsonSerializer.Serialize(datasetInfo, new JsonSerializerOptions { WriteIndented = true });
+                        await File.WriteAllTextAsync(dsInfoPath, dsJson, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), ct);
+
+                        // Ensure wrapper exists under Jobs/<id>/bin/direct_train.py
+                        var binDir = Path.Combine(jobDir, "bin");
+                        Directory.CreateDirectory(binDir);
+                        var wrapper = Path.Combine(binDir, "direct_train.py");
+                        if (!File.Exists(wrapper))
+                        {
+                            var content = string.Join('\n', new[]
+                            {
+                                "import sys",
+                                "for key in list(sys.modules.keys()):",
+                                "    if 'llamafactory' in key:",
+                                "        del sys.modules[key]",
+                                "from llamafactory.train.tuner import run_exp",
+                                "",
+                                "if __name__ == '__main__':",
+                                "    run_exp()"
+                            });
+                            await File.WriteAllTextAsync(wrapper, content, new System.Text.UTF8Encoding(false), ct);
+                        }
+                    }
+                }
+            }
+            catch (Exception prepEx)
+            {
+                await File.AppendAllTextAsync(logPath, $"{DateTime.UtcNow:o} dataset prep warning: {prepEx.Message}\n");
+            }
 
             // Simulate a training loop
             var steps = job.Config.Duration == TrainingDuration.Steps ? Math.Max(1, job.Config.Steps) : Math.Max(1, job.Config.Epochs * 100);
@@ -242,6 +309,43 @@ namespace Lazarus.Backend.Services
                 if (line is not null) yield return line;
             }
         }
+
+        private static async Task ConvertDatasetsToShareGptAsync(string[] trainFiles, string outputJsonl, CancellationToken ct)
+        {
+            await using var fs = new FileStream(outputJsonl, FileMode.Create, FileAccess.Write, FileShare.Read);
+            await using var writer = new StreamWriter(fs, new UTF8Encoding(false));
+            foreach (var src in trainFiles ?? Array.Empty<string>())
+            {
+                if (string.IsNullOrWhiteSpace(src) || !File.Exists(src)) continue;
+                await foreach (var line in ReadLinesAsync(src, ct))
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(line);
+                        if (doc.RootElement.TryGetProperty("messages", out var messages) && messages.ValueKind == JsonValueKind.Array)
+                        {
+                            var list = new List<Dictionary<string, string>>();
+                            foreach (var m in messages.EnumerateArray())
+                            {
+                                var role = m.TryGetProperty("role", out var r) ? r.GetString() ?? "" : "";
+                                var content = m.TryGetProperty("content", out var c) ? c.GetString() ?? "" : "";
+                                var from = role == "system" ? "system" : role == "user" ? "human" : "gpt";
+                                list.Add(new Dictionary<string, string> { ["from"] = from, ["value"] = content });
+                            }
+                            var obj = new Dictionary<string, object> { ["conversations"] = list };
+                            var outLine = JsonSerializer.Serialize(obj);
+                            await writer.WriteLineAsync(outLine);
+                        }
+                    }
+                    catch
+                    {
+                        // skip malformed lines
+                    }
+                }
+            }
+            await writer.FlushAsync();
+        }
     }
 
     public sealed class TrainingStateChangedEventArgs : EventArgs
@@ -250,4 +354,3 @@ namespace Lazarus.Backend.Services
         public string Status { get; init; } = string.Empty;
     }
 }
-
