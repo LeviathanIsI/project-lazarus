@@ -8,19 +8,25 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Lazarus.Shared;
 using Lazarus.Shared.Models.Training;
+using Lazarus.Shared.Training;
 
 namespace Lazarus.Backend.Services
 {
     public interface IConversationTrainingService
     {
-        event EventHandler<TrainingProgressEventArgs>? ProgressChanged;
+        // Datasets
+        Task<string> ImportFromJsonlAsync(string path, DatasetKind kind = DatasetKind.Conversations, CancellationToken ct = default);
 
-        Task<ConversationTrainingJob> CreateJobAsync(TrainingConfiguration config, CancellationToken ct = default);
+        // Jobs
+        Task<Lazarus.Shared.Contracts.TrainingJob> CreateJobAsync(Lazarus.Shared.Training.TrainingProfile profile, CancellationToken ct = default);
         Task StartTrainingAsync(Guid jobId, CancellationToken ct = default);
         Task PauseTrainingAsync(Guid jobId, CancellationToken ct = default);
         Task StopTrainingAsync(Guid jobId, CancellationToken ct = default);
-        Task<string> ExportToJsonlAsync(Guid jobId, CancellationToken ct = default);
-        Task ImportFromJsonlAsync(string filePath, CancellationToken ct = default);
+        Task<string> ExportArtifactsAsync(Guid jobId, CancellationToken ct = default);
+
+        event EventHandler<TrainingProgressEventArgs>? ProgressChanged;
+        event EventHandler<TrainingStateChangedEventArgs>? StateChanged;
+
         ConversationTrainingJob? GetJob(Guid jobId);
     }
 
@@ -54,26 +60,52 @@ namespace Lazarus.Backend.Services
         private readonly ConcurrentDictionary<Guid, ConversationTrainingJob> _jobs = new();
 
         public event EventHandler<TrainingProgressEventArgs>? ProgressChanged;
+        public event EventHandler<TrainingStateChangedEventArgs>? StateChanged;
 
         public ConversationTrainingJob? GetJob(Guid jobId) => _jobs.TryGetValue(jobId, out var j) ? j : null;
 
-        public Task<ConversationTrainingJob> CreateJobAsync(TrainingConfiguration config, CancellationToken ct = default)
+        public Task<Lazarus.Shared.Contracts.TrainingJob> CreateJobAsync(Lazarus.Shared.Training.TrainingProfile profile, CancellationToken ct = default)
         {
-            if (config is null) throw new ArgumentNullException(nameof(config));
+            if (profile is null) throw new ArgumentNullException(nameof(profile));
 
-            var outputsRoot = config.Type == TrainingType.LoRA || config.Type == TrainingType.QLoRA
-                ? LazarusPaths.Models.LoRAAdapters
+            // Choose outputs root based on adapter usage
+            var outputsRoot = profile.UseLoRA
+                ? LazarusPaths.SystemData.Training.Outputs_Adapters
                 : LazarusPaths.Models.BaseModels;
             Directory.CreateDirectory(outputsRoot);
 
             var job = new ConversationTrainingJob
             {
-                Config = config,
-                OutputDir = Path.Combine(outputsRoot, SanitizePathSegment(config.BaseModel), DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"))
+                Config = new TrainingConfiguration
+                {
+                    BaseModel = profile.BaseModel,
+                    Type = profile.UseQLoRA ? TrainingType.QLoRA : profile.UseLoRA ? TrainingType.LoRA : TrainingType.FineTuning,
+                    LearningRate = profile.LearningRate,
+                    BatchSize = profile.PerDeviceBatch,
+                    GradientAccumulation = profile.GradAccum,
+                    MaxSequenceLength = profile.MaxSeqLen,
+                    ChatTemplate = profile.ChatTemplate,
+                    Duration = profile.Epochs.HasValue ? TrainingDuration.Epochs : TrainingDuration.Steps,
+                    Steps = profile.MaxSteps ?? 0,
+                    Epochs = profile.Epochs ?? 0
+                },
+                OutputDir = Path.Combine(outputsRoot, SanitizePathSegment(profile.BaseModel), DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"))
             };
 
             _jobs[job.Id] = job;
-            return Task.FromResult(job);
+
+            var uiJob = new Lazarus.Shared.Contracts.TrainingJob
+            {
+                Id = job.Id.ToString(),
+                Name = $"Conversations: {profile.BaseModel} {profile.Task}",
+                Modality = Lazarus.Shared.Contracts.TrainingModality.Conversations,
+                Status = Lazarus.Shared.Contracts.TrainingStatus.Draft,
+                OutputPath = job.OutputDir,
+                ConfigId = "uncommitted",
+                ResourcesId = "uncommitted"
+            };
+
+            return Task.FromResult(uiJob);
         }
 
         public async Task StartTrainingAsync(Guid jobId, CancellationToken ct = default)
@@ -101,19 +133,21 @@ namespace Lazarus.Backend.Services
 
                 await File.AppendAllTextAsync(logPath, $"{DateTime.UtcNow:o} step={i}/{steps} lr={job.Config.LearningRate}\n");
                 var progress = (double)i / steps;
-                ProgressChanged?.Invoke(this, new TrainingProgressEventArgs
+                var progressArgs = new TrainingProgressEventArgs
                 {
                     JobId = job.Id,
                     Progress = progress,
                     Step = i,
                     Message = "training"
-                });
-
+                };
+                ProgressChanged?.Invoke(this, progressArgs);
+                
                 await Task.Delay(100, job.Cts.Token);
             }
 
             job.Status = TrainingStatus.Completed;
             job.ModifiedUtc = DateTime.UtcNow;
+            StateChanged?.Invoke(this, new TrainingStateChangedEventArgs { JobId = job.Id, Status = job.Status.ToString() });
         }
 
         public Task PauseTrainingAsync(Guid jobId, CancellationToken ct = default)
@@ -123,6 +157,7 @@ namespace Lazarus.Backend.Services
             job.IsPaused = true;
             job.Status = TrainingStatus.Paused;
             job.ModifiedUtc = DateTime.UtcNow;
+            StateChanged?.Invoke(this, new TrainingStateChangedEventArgs { JobId = job.Id, Status = job.Status.ToString() });
             return Task.CompletedTask;
         }
 
@@ -132,54 +167,53 @@ namespace Lazarus.Backend.Services
             job.Cts?.Cancel();
             job.Status = TrainingStatus.Stopped;
             job.ModifiedUtc = DateTime.UtcNow;
+            StateChanged?.Invoke(this, new TrainingStateChangedEventArgs { JobId = job.Id, Status = job.Status.ToString() });
             return Task.CompletedTask;
         }
 
-        public async Task<string> ExportToJsonlAsync(Guid jobId, CancellationToken ct = default)
+        public Task<string> ExportArtifactsAsync(Guid jobId, CancellationToken ct = default)
         {
             var job = RequireJob(jobId);
-            var exportRoot = Path.Combine(LazarusPaths.SharedResources.ImportExport, "training-exports");
-            Directory.CreateDirectory(exportRoot);
-            var target = Path.Combine(exportRoot, $"{job.Id}.jsonl");
-
-            await using var fs = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.Read);
-            await using var writer = new StreamWriter(fs, Encoding.UTF8);
-
-            // Minimal placeholder JSONL entry
-            var obj = new
-            {
-                messages = new object[]
-                {
-                    new { role = "system", content = "You are a helpful assistant." },
-                    new { role = "user", content = "Hello" },
-                    new { role = "assistant", content = "Hi!" }
-                }
-            };
-            var line = JsonSerializer.Serialize(obj);
-            await writer.WriteLineAsync(line);
-            await writer.FlushAsync();
-            return target;
+            Directory.CreateDirectory(job.OutputDir);
+            return Task.FromResult(job.OutputDir);
         }
 
-        public async Task ImportFromJsonlAsync(string filePath, CancellationToken ct = default)
+        public async Task<string> ImportFromJsonlAsync(string path, DatasetKind kind = DatasetKind.Conversations, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("Invalid path", nameof(filePath));
-            if (!File.Exists(filePath)) throw new FileNotFoundException("JSONL file not found", filePath);
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Invalid path", nameof(path));
+            if (!File.Exists(path)) throw new FileNotFoundException("JSONL file not found", path);
 
-            // Basic validation: ensure each line parses with a messages array
-            await foreach (var line in ReadLinesAsync(filePath, ct))
+            // Basic validation: ensure each line parses with a messages array (for conversations/preferences)
+            await foreach (var line in ReadLinesAsync(path, ct))
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
                 try
                 {
                     using var doc = JsonDocument.Parse(line);
-                    _ = doc.RootElement.GetProperty("messages");
+                    _ = doc.RootElement.TryGetProperty("messages", out _);
                 }
                 catch (Exception ex)
                 {
                     throw new InvalidDataException($"Invalid JSONL entry: {ex.Message}");
                 }
             }
+
+            // Normalize into System-Data/Training/Datasets
+            var destRoot = kind switch
+            {
+                DatasetKind.Conversations => LazarusPaths.SystemData.Training.Datasets_Conversations,
+                DatasetKind.Preferences => LazarusPaths.SystemData.Training.Datasets_Preferences,
+                DatasetKind.Eval => LazarusPaths.SystemData.Training.Datasets_Eval,
+                _ => LazarusPaths.SystemData.Training.Datasets_Conversations
+            };
+            Directory.CreateDirectory(destRoot);
+            var fileName = Path.GetFileName(path);
+            var destPath = Path.Combine(destRoot, fileName);
+            if (!File.Exists(destPath))
+            {
+                File.Copy(path, destPath, overwrite: false);
+            }
+            return destPath;
         }
 
         private ConversationTrainingJob RequireJob(Guid id)
@@ -209,6 +243,11 @@ namespace Lazarus.Backend.Services
             }
         }
     }
-}
 
+    public sealed class TrainingStateChangedEventArgs : EventArgs
+    {
+        public Guid JobId { get; init; }
+        public string Status { get; init; } = string.Empty;
+    }
+}
 

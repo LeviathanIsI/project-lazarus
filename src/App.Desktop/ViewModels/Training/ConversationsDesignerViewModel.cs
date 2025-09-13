@@ -1,172 +1,223 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Lazarus.Shared.Contracts;
 using Lazarus.Shared.Training;
 using Lazarus.Backend.Services;
-using Lazarus.Shared.Models.Training;
 using Microsoft.Win32;
 
 namespace Lazarus.Desktop.ViewModels.Training
 {
     public sealed class ConversationsDesignerViewModel : ViewModelBase
     {
-        private readonly ITrainingService _trainingService;
-        private readonly IConversationTrainingService _conversationService;
-        
+        private readonly IConversationTrainingService _svc;
+
         public string Title => "Conversations Training";
-        
+
+        // UI state
+        public ObservableCollection<string> TrainFiles { get; } = new();
+        public ObservableCollection<string> EvalFiles { get; } = new();
+        public ObservableCollection<string> PrefFiles { get; } = new();
+
+        public TrainerBackend SelectedTrainer
+        {
+            get => _selectedTrainer;
+            set { if (SetProperty(ref _selectedTrainer, value)) RaiseCommandCanExecutes(); }
+        }
+        private TrainerBackend _selectedTrainer = TrainerBackend.LLaMAFactory;
+
+        public TrainingTask SelectedTask
+        {
+            get => _selectedTask;
+            set { if (SetProperty(ref _selectedTask, value)) OnPropertyChanged(nameof(NeedsPreferenceData)); }
+        }
+        private TrainingTask _selectedTask = TrainingTask.SFT;
+
+        public bool NeedsPreferenceData => SelectedTask != TrainingTask.SFT;
+
+        // Job
         private TrainingJob? _currentJob;
         public TrainingJob? CurrentJob
         {
             get => _currentJob;
-            private set => SetProperty(ref _currentJob, value);
+            private set { if (SetProperty(ref _currentJob, value)) { OnPropertyChanged(nameof(HasJob)); RaiseCommandCanExecutes(); } }
         }
-        
         public bool HasJob => CurrentJob != null;
+        private Guid? _jobId;
+
+        // Draft bag
         public TrainingDraft Draft { get; } = new() { Modality = TrainingModality.Conversations };
         public ParameterBagProxy Params { get; }
-        
+
+        // Progress
+        private double _progress;
+        public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
+
         // Commands
-        public ICommand ImportCommand { get; }
-        public ICommand CreateJobCommand { get; }
+        public ICommand ImportTrainCommand { get; }
+        public ICommand ImportEvalCommand { get; }
+        public ICommand ImportPrefCommand { get; }
+
+        public RelayCommand CreateJobCommand { get; }
+        public RelayCommand CreateAndStartCommand { get; }
+        public RelayCommand StartCommand { get; }
+        public RelayCommand PauseCommand { get; }
+        public RelayCommand StopCommand { get; }
+        public RelayCommand ExportCommand { get; }
+
         public ICommand ClearCommand { get; }
         public ICommand SetLearningRateCommand { get; }
-        public ICommand StartCommand { get; }
-        public ICommand PauseCommand { get; }
-        public ICommand StopCommand { get; }
-        public ICommand ExportCommand { get; }
-        
-        // UI state for training duration selection
+
+        // Epochs/Steps toggle
         private bool _useEpochs = true;
         public bool UseEpochs
         {
             get => _useEpochs;
-            set
-            {
-                if (SetProperty(ref _useEpochs, value))
-                {
-                    OnPropertyChanged(nameof(UseSteps));
-                }
-            }
+            set { if (SetProperty(ref _useEpochs, value)) OnPropertyChanged(nameof(UseSteps)); }
         }
-        
-        public bool UseSteps
-        {
-            get => !_useEpochs;
-            set => UseEpochs = !value;
-        }
-        
-        private Guid? _conversationJobId;
-        private double _progress;
-        public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
+        public bool UseSteps { get => !_useEpochs; set => UseEpochs = !value; }
 
-        public ConversationsDesignerViewModel(ITrainingService trainingService, IConversationTrainingService conversationService)
+        public ConversationsDesignerViewModel(IConversationTrainingService conversationService)
         {
-            _trainingService = trainingService ?? throw new ArgumentNullException(nameof(trainingService));
-            _conversationService = conversationService ?? throw new ArgumentNullException(nameof(conversationService));
+            _svc = conversationService ?? throw new ArgumentNullException(nameof(conversationService));
             Params = new ParameterBagProxy(Draft);
-            
-            ImportCommand = new RelayCommand(async _ => await ImportAsync());
-            CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), _ => !HasJob);
+            SetDefaultParameters();
+
+            ImportTrainCommand = new RelayCommand(async _ => await ImportAsync(DatasetKind.Conversations));
+            ImportEvalCommand = new RelayCommand(async _ => await ImportAsync(DatasetKind.Eval));
+            ImportPrefCommand = new RelayCommand(async _ => await ImportAsync(DatasetKind.Preferences), _ => NeedsPreferenceData);
+
+            CreateJobCommand = new RelayCommand(async _ => await CreateJobAsync(), _ => CanCreateJob());
+            CreateAndStartCommand = new RelayCommand(async _ =>
+            {
+                if (await CreateJobAsync()) await StartAsync();
+            }, _ => CanCreateJob());
+
+            StartCommand = new RelayCommand(async _ => await StartAsync(), _ => _jobId.HasValue);
+            PauseCommand = new RelayCommand(async _ => await PauseAsync(), _ => _jobId.HasValue);
+            StopCommand = new RelayCommand(async _ => await StopAsync(), _ => _jobId.HasValue);
+            ExportCommand = new RelayCommand(async _ => await ExportAsync(), _ => _jobId.HasValue);
+
             ClearCommand = new RelayCommand(_ => Clear());
             SetLearningRateCommand = new RelayCommand<string>(rate => SetLearningRate(rate));
-            StartCommand = new RelayCommand(async _ => await StartAsync(), _ => _conversationJobId.HasValue);
-            PauseCommand = new RelayCommand(async _ => await PauseAsync(), _ => _conversationJobId.HasValue);
-            StopCommand = new RelayCommand(async _ => await StopAsync(), _ => _conversationJobId.HasValue);
-            ExportCommand = new RelayCommand(async _ => await ExportAsync(), _ => _conversationJobId.HasValue);
 
-            _conversationService.ProgressChanged += OnProgressChanged;
-            
-            // Set comprehensive default parameters
-            SetDefaultParameters();
+            _svc.ProgressChanged += OnProgressChanged;
         }
-        
+
         public void SetCurrentJob(TrainingJob? job)
         {
             CurrentJob = job;
             Params.SetCurrentJob(job);
-            OnPropertyChanged(nameof(HasJob));
         }
-        
-        private async Task ImportAsync()
+
+        private void RaiseCommandCanExecutes()
+        {
+            CreateJobCommand.RaiseCanExecuteChanged();
+            CreateAndStartCommand.RaiseCanExecuteChanged();
+            StartCommand.RaiseCanExecuteChanged();
+            PauseCommand.RaiseCanExecuteChanged();
+            StopCommand.RaiseCanExecuteChanged();
+            ExportCommand.RaiseCanExecuteChanged();
+        }
+
+        private async Task ImportAsync(DatasetKind kind)
         {
             var ofd = new OpenFileDialog
             {
-                Title = "Import Conversation JSONL",
-                Filter = "JSONL files (*.jsonl)|*.jsonl|All files (*.*)|*.*"
+                Title = $"Import {(kind == DatasetKind.Conversations ? "Conversation" : kind == DatasetKind.Preferences ? "Preference" : "Eval")} JSONL",
+                Filter = "JSONL files (*.jsonl)|*.jsonl|All files (*.*)|*.*",
+                Multiselect = true
             };
-            if (ofd.ShowDialog() == true)
+            if (ofd.ShowDialog() != true) return;
+
+            foreach (var file in ofd.FileNames)
             {
                 try
                 {
-                    await _conversationService.ImportFromJsonlAsync(ofd.FileName);
-                    System.Diagnostics.Debug.WriteLine($"Imported dataset: {ofd.FileName}");
+                    var normalized = await _svc.ImportFromJsonlAsync(file, kind);
+                    switch (kind)
+                    {
+                        case DatasetKind.Conversations: TrainFiles.Add(normalized); break;
+                        case DatasetKind.Preferences: PrefFiles.Add(normalized); break;
+                        case DatasetKind.Eval: EvalFiles.Add(normalized); break;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Failed to import JSONL: {ex.Message}");
-                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Import failed: {ex.Message}"); }
             }
+            RaiseCommandCanExecutes();
         }
-        
-        private async Task CreateJobAsync()
+
+        private async Task<bool> CreateJobAsync()
         {
-            if (HasJob) return;
-            
+            if (HasJob) return false;
             try
             {
-                var config = BuildConfigFromParams();
-                var convJob = await _conversationService.CreateJobAsync(config);
-                _conversationJobId = convJob.Id;
-                OnPropertyChanged(nameof(HasJob));
-                System.Diagnostics.Debug.WriteLine($"Created conversation training job: {convJob.Id}");
+                var profile = BuildProfileFromParams();
+                var job = await _svc.CreateJobAsync(profile);
+                _jobId = Guid.Parse(job.Id);
+                CurrentJob = job;
+                return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to create job: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Create job failed: {ex.Message}");
+                return false;
             }
         }
 
         public async Task StartAsync()
         {
-            if (!_conversationJobId.HasValue) return;
-            try { await _conversationService.StartTrainingAsync(_conversationJobId.Value); }
+            if (!_jobId.HasValue) return;
+            try { await _svc.StartTrainingAsync(_jobId.Value); }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Start failed: {ex.Message}"); }
         }
 
         public async Task PauseAsync()
         {
-            if (!_conversationJobId.HasValue) return;
-            try { await _conversationService.PauseTrainingAsync(_conversationJobId.Value); }
+            if (!_jobId.HasValue) return;
+            try { await _svc.PauseTrainingAsync(_jobId.Value); }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Pause failed: {ex.Message}"); }
         }
 
         public async Task StopAsync()
         {
-            if (!_conversationJobId.HasValue) return;
-            try { await _conversationService.StopTrainingAsync(_conversationJobId.Value); }
+            if (!_jobId.HasValue) return;
+            try { await _svc.StopTrainingAsync(_jobId.Value); }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Stop failed: {ex.Message}"); }
         }
 
         public async Task ExportAsync()
         {
-            if (!_conversationJobId.HasValue) return;
+            if (!_jobId.HasValue) return;
             try
             {
-                var path = await _conversationService.ExportToJsonlAsync(_conversationJobId.Value);
-                System.Diagnostics.Debug.WriteLine($"Exported to {path}");
+                var path = await _svc.ExportArtifactsAsync(_jobId.Value);
+                System.Diagnostics.Debug.WriteLine($"Exported artifacts to {path}");
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Export failed: {ex.Message}"); }
         }
-        
+
+        private void Clear()
+        {
+            TrainFiles.Clear();
+            EvalFiles.Clear();
+            PrefFiles.Clear();
+            Draft.Datasets.Clear();
+            Draft.Params.Clear();
+            SetDefaultParameters();
+            _jobId = null;
+            CurrentJob = null;
+            Progress = 0;
+            RaiseCommandCanExecutes();
+        }
+
         private void SetDefaultParameters()
         {
-            // Core settings
             Params["BaseModel"] = "llama-2-7b-chat";
-            Params["TrainingType"] = "LoRA";
+            Params["TrainingType"] = "LoRA";          // maps to UseLoRA/UseQLoRA
             Params["LearningRate"] = "2e-4";
             Params["BatchSize"] = "4";
             Params["GradientAccumulation"] = "4";
@@ -174,12 +225,10 @@ namespace Lazarus.Desktop.ViewModels.Training
             Params["ChatTemplate"] = "ChatML";
             Params["Epochs"] = "3";
             Params["MaxSteps"] = "1000";
-            
-            // Advanced settings
+
             Params["WarmupSteps"] = "100";
             Params["LRScheduler"] = "cosine";
             Params["Optimizer"] = "adamw_torch";
-            Params["LossObjective"] = "cross_entropy";
             Params["LoRArank"] = "16";
             Params["LoRAalpha"] = "32";
             Params["LoRAdropout"] = "0.1";
@@ -191,60 +240,86 @@ namespace Lazarus.Desktop.ViewModels.Training
             Params["FlashAttention"] = "true";
             Params["PackSequences"] = "false";
         }
-        
+
         private void SetLearningRate(string? rate)
         {
-            if (!string.IsNullOrWhiteSpace(rate))
-            {
-                Params["LearningRate"] = rate;
-                OnPropertyChanged("LearningRate");
-            }
-        }
-        
-        private void Clear()
-        {
-            Draft.Datasets.Clear();
-            Draft.Params.Clear();
-            SetDefaultParameters();
-            _conversationJobId = null;
-            Progress = 0;
-            OnPropertyChanged(nameof(HasJob));
+            if (string.IsNullOrWhiteSpace(rate)) return;
+            Params["LearningRate"] = rate;
+            OnPropertyChanged(nameof(Params));
         }
 
-        private TrainingConfiguration BuildConfigFromParams()
+        private bool CanCreateJob()
         {
-            var cfg = new TrainingConfiguration
+            if (TrainFiles.Count == 0) return false;
+            if (NeedsPreferenceData && PrefFiles.Count == 0) return false;
+            return true;
+        }
+
+        private Lazarus.Shared.Training.TrainingProfile BuildProfileFromParams()
+        {
+            var trainingType = Params["TrainingType"]?.Trim();
+            var (useLoRA, useQLoRA) = trainingType switch
             {
-                BaseModel = Params["BaseModel"],
-                Type = ParseTrainingType(Params["TrainingType"]),
-                LearningRate = TryParseDouble(Params["LearningRate"], 2e-4),
-                BatchSize = TryParseInt(Params["BatchSize"], 4),
-                GradientAccumulation = TryParseInt(Params["GradientAccumulation"], 4),
-                MaxSequenceLength = TryParseInt(Params["MaxSeqLength"], 2048),
-                ChatTemplate = Params["ChatTemplate"],
-                Duration = UseEpochs ? TrainingDuration.Epochs : TrainingDuration.Steps,
-                Steps = TryParseInt(Params["MaxSteps"], 0),
-                Epochs = TryParseInt(Params["Epochs"], 3)
+                "QLoRA" => (true, true),
+                "LoRA" => (true, false),
+                _ => (false, false) // full FT (not recommended here)
             };
-            return cfg;
+
+            return new Lazarus.Shared.Training.TrainingProfile
+            {
+                Trainer = SelectedTrainer,
+                Task = SelectedTask,
+                BaseModel = Params["BaseModel"]!,
+                ChatTemplate = Params["ChatTemplate"]!,
+                TrainFiles = TrainFiles.ToArray(),
+                EvalFiles = EvalFiles.ToArray(),
+                PreferenceFiles = NeedsPreferenceData ? PrefFiles.ToArray() : null,
+
+                LearningRate = TryParseDouble(Params["LearningRate"], 2e-4),
+                Epochs = UseEpochs ? TryParseInt(Params["Epochs"], 3) : null,
+                MaxSteps = UseSteps ? TryParseInt(Params["MaxSteps"], 0) : null,
+
+                PerDeviceBatch = TryParseInt(Params["BatchSize"], 4),
+                GradAccum = TryParseInt(Params["GradientAccumulation"], 4),
+                MaxSeqLen = TryParseInt(Params["MaxSeqLength"], 2048),
+
+                UseLoRA = useLoRA,
+                UseQLoRA = useQLoRA,
+                LoRARank = TryParseInt(Params["LoRArank"], 16),
+                LoRAAlpha = TryParseInt(Params["LoRAalpha"], 32),
+                LoRADropout = TryParseDouble(Params["LoRAdropout"], 0.1),
+
+                WarmupSteps = TryParseInt(Params["WarmupSteps"], 100),
+                LrScheduler = Params["LRScheduler"] ?? "cosine",
+                Optimizer = Params["Optimizer"] ?? "adamw_torch",
+                ValidationSplit = TryParseDoubleN(Params["ValidationSplit"], 0.1),
+                EvalEverySteps = TryParseInt(Params["EvalSteps"], 500),
+                SaveEverySteps = TryParseInt(Params["SaveSteps"], 500),
+                KeepCheckpoints = TryParseInt(Params["KeepCheckpoints"], 3),
+
+                GradientCheckpointing = TryParseBool(Params["GradientCheckpointing"], true),
+                FlashAttention = TryParseBool(Params["FlashAttention"], true),
+                PackSequences = TryParseBool(Params["PackSequences"], false),
+
+                OutputName = $"conv-{Params["BaseModel"]}-{SelectedTask.ToString().ToLower()}-{DateTime.UtcNow:yyyyMMddHHmm}"
+            };
         }
 
-        private static TrainingType ParseTrainingType(string? value) => value switch
-        {
-            "LoRA" => TrainingType.LoRA,
-            "QLoRA" => TrainingType.QLoRA,
-            _ => TrainingType.FineTuning
-        };
+        private static int TryParseInt(string? s, int def) =>
+            int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : def;
 
-        private static int TryParseInt(string? s, int def) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : def;
-        private static double TryParseDouble(string? s, double def) => double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : def;
+        private static double TryParseDouble(string? s, double def) =>
+            double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : def;
+
+        private static double? TryParseDoubleN(string? s, double? def) =>
+            double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : def;
+
+        private static bool TryParseBool(string? s, bool def) =>
+            bool.TryParse(s, out var v) ? v : def;
 
         private void OnProgressChanged(object? sender, TrainingProgressEventArgs e)
         {
-            if (_conversationJobId.HasValue && e.JobId == _conversationJobId.Value)
-            {
-                Progress = e.Progress;
-            }
+            if (_jobId.HasValue && e.JobId == _jobId.Value) Progress = e.Progress;
         }
     }
 }

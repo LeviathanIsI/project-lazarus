@@ -97,7 +97,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             Inspector = new InspectorViewModel(_trainingService);
             
             // Create modality-specific designers
-            Conversations = new ConversationsDesignerViewModel(_trainingService, conversationService);
+            Conversations = new ConversationsDesignerViewModel(conversationService);
             Voice = new VoiceDesignerViewModel(_trainingService);
             Images = new ImagesDesignerViewModel(_trainingService);
             ThreeDModels = new ThreeDModelsDesignerViewModel(_trainingService);
@@ -201,4 +201,3 @@ namespace Lazarus.Desktop.ViewModels.Training
 
     }
 }
-
