@@ -98,23 +98,36 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Grid>
-                            <Border x:Name="Outer" CornerRadius="{StaticResource BtnRadius}" Background="{TemplateBinding Background}"/>
+                            <!-- Rainbow border shown only when selected -->
+                            <Border x:Name="Rainbow" CornerRadius="{StaticResource BtnRadius}" BorderThickness="2" Opacity="0">
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#FFEF4444" Offset="0.00"/>
+                                        <GradientStop Color="#FFF59E0B" Offset="0.25"/>
+                                        <GradientStop Color="#FF10B981" Offset="0.50"/>
+                                        <GradientStop Color="#FF06B6D4" Offset="0.75"/>
+                                        <GradientStop Color="#FF3B82F6" Offset="1.00"/>
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                            </Border>
+                            <!-- Inner fill -->
+                            <Border x:Name="Fill" CornerRadius="{StaticResource BtnRadius}" Margin="1" Background="{TemplateBinding Background}"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Outer" Property="Background" Value="{StaticResource BtnBgHover}"/>
+                                <Setter TargetName="Fill" Property="Background" Value="{StaticResource BtnBgHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Outer" Property="Background" Value="{StaticResource BtnBgPressed}"/>
+                                <Setter TargetName="Fill" Property="Background" Value="{StaticResource BtnBgPressed}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Outer" Property="Background" Value="{StaticResource BtnBgHover}"/>
+                                <Setter TargetName="Rainbow" Property="Opacity" Value="1"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Foreground" Value="{StaticResource BtnFgDisabled}"/>
-                                <Setter TargetName="Outer" Property="Opacity" Value="0.75"/>
+                                <Setter TargetName="Fill" Property="Opacity" Value="0.75"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -156,7 +169,7 @@
             <!-- Left: Datasets Library -->
             <Border Grid.Column="0" Style="{StaticResource GlassPanel}" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="Conversation Datasets" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Training Datasets" Style="{StaticResource H3TextStyle}" Margin="0,0,0,8"/>
                     
                     <!-- Draft datasets (when no job) -->
                     <ItemsControl ItemsSource="{Binding Draft.Datasets}">
@@ -214,7 +227,8 @@
             
             <!-- Right: Configuration -->
             <Border Grid.Column="2" Style="{StaticResource GlassPanel}" Padding="12">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <!-- Add right padding so the vertical scrollbar never overlays input fields -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
                     <StackPanel>
                         <TextBlock Text="Configuration" Style="{StaticResource H3TextStyle}" Margin="0,0,0,12"/>
                         

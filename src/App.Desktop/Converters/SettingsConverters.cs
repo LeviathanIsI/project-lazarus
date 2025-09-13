@@ -36,7 +36,7 @@ public class ModalityToLeftHeaderConverter : IValueConverter
         var modality = value?.ToString() ?? string.Empty;
         return modality switch
         {
-            "Conversations" => "Conversation Models",
+            "Conversations" => "Training Jobs",
             "Voice" => "Voice Models",
             "Images" => "Image Models",
             "ThreeD" => "3D Models",
@@ -63,7 +63,7 @@ public class ModalityToRightHeaderConverter : IValueConverter
         var modality = value?.ToString() ?? string.Empty;
         return modality switch
         {
-            "Conversations" => "Conversation Details",
+            "Conversations" => "Training Details",
             "Voice" => "Voice Details",
             "Images" => "Image Details",
             "ThreeD" => "3D Model Details",
