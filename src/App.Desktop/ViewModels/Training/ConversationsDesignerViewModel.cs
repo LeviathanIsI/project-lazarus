@@ -227,7 +227,21 @@ namespace Lazarus.Desktop.ViewModels.Training
         public async Task StartAsync()
         {
             if (!_jobId.HasValue) return;
-            try { await _svc.StartTrainingAsync(_jobId.Value); }
+            try
+            {
+                if (SelectedTrainer == TrainerBackend.LLaMAFactory)
+                {
+                    if (LlamaFactoryStatus == LfStatus.Error) return;
+                    var (ok, _, msg) = TryDetectPython312Plus();
+                    if (!ok)
+                    {
+                        LlamaFactoryStatus = LfStatus.Error;
+                        LlamaFactoryStatusMessage = msg;
+                        return;
+                    }
+                }
+                await _svc.StartTrainingAsync(_jobId.Value);
+            }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Start failed: {ex.Message}"); }
         }
 
@@ -382,18 +396,67 @@ namespace Lazarus.Desktop.ViewModels.Training
         {
             if (string.Equals(e.PropertyName, "Item[BaseModel]", StringComparison.Ordinal))
             {
-                // React to base model path/name change
                 AutoSetChatTemplateFromBaseModel();
                 RecomputeAllowedChatTemplates();
                 EstimateVramAndWarn();
+                ValidateBaseModelPath();
                 OnPropertyChanged(nameof(Params));
+                RaiseCommandCanExecutes();
             }
             else if (string.Equals(e.PropertyName, "Item[TrainingType]", StringComparison.Ordinal))
             {
                 AutoSetLearningRateForTrainer();
                 OnPropertyChanged(nameof(Params));
+                RaiseCommandCanExecutes();
             }
         }
+
+        private static (bool ok, Version? version, string message) TryDetectPython312Plus()
+        {
+            try
+            {
+                var (okPy, verPy) = ProbePythonVersion("py", "-3.12");
+                if (okPy && verPy >= new Version(3, 12)) return (true, verPy, $"Python {verPy}");
+
+                var (okPython, verPython) = ProbePythonVersion("python", "--version");
+                if (okPython && verPython >= new Version(3, 12)) return (true, verPython, $"Python {verPython}");
+
+                var vStr = okPy ? verPy?.ToString() : okPython ? verPython?.ToString() : "not found";
+                return (false, null, $"Python 3.12+ required for CUDA 12.8 (detected: {vStr})");
+            }
+            catch (Exception ex)
+            {
+                return (false, null, $"Python version check failed: {ex.Message}");
+            }
+        }
+
+        private static (bool ok, Version? version) ProbePythonVersion(string exe, string arg)
+        {
+            try
+            {
+                var args = arg == "--version" ? arg : $"{arg} --version";
+                var psi = new System.Diagnostics.ProcessStartInfo(exe, args)
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+                using var p = System.Diagnostics.Process.Start(psi);
+                if (p == null) return (false, null);
+                var output = p.StandardOutput.ReadToEnd();
+                var err = p.StandardError.ReadToEnd();
+                p.WaitForExit(2000);
+                var txt = string.IsNullOrWhiteSpace(output) ? err : output;
+                var parts = txt?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                var verStr = parts.Length >= 2 ? parts[1] : null;
+                if (Version.TryParse(verStr, out var v)) return (true, v);
+                return (false, null);
+            }
+            catch { return (false, null); }
+        }
+
+        
 
         // --- LLaMAFactory intelligence helpers ---
         private void ApplyTrainerIntelligence()
