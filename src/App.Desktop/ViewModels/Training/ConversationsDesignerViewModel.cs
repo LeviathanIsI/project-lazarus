@@ -14,6 +14,7 @@ namespace Lazarus.Desktop.ViewModels.Training
     public sealed class ConversationsDesignerViewModel : ViewModelBase
     {
         private readonly IConversationTrainingService _svc;
+        private readonly ITrainingService _trainingService;
 
         public string Title => "Conversations Training";
 
@@ -80,9 +81,12 @@ namespace Lazarus.Desktop.ViewModels.Training
         }
         public bool UseSteps { get => !_useEpochs; set => UseEpochs = !value; }
 
-        public ConversationsDesignerViewModel(IConversationTrainingService conversationService)
+        public event EventHandler<TrainingJob>? JobCreated;
+
+        public ConversationsDesignerViewModel(IConversationTrainingService conversationService, ITrainingService trainingService)
         {
             _svc = conversationService ?? throw new ArgumentNullException(nameof(conversationService));
+            _trainingService = trainingService ?? throw new ArgumentNullException(nameof(trainingService));
             Params = new ParameterBagProxy(Draft);
             SetDefaultParameters();
 
@@ -159,6 +163,9 @@ namespace Lazarus.Desktop.ViewModels.Training
                 var job = await _svc.CreateJobAsync(profile);
                 _jobId = Guid.Parse(job.Id);
                 CurrentJob = job;
+                // Surface in the Jobs sidebar by notifying parent; optionally mirror to training service store
+                try { await _trainingService.UpdateJobAsync(job); } catch { /* mock may be no-op */ }
+                JobCreated?.Invoke(this, job);
                 return true;
             }
             catch (Exception ex)

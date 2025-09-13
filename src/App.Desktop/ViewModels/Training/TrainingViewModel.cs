@@ -97,7 +97,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             Inspector = new InspectorViewModel(_trainingService);
             
             // Create modality-specific designers
-            Conversations = new ConversationsDesignerViewModel(conversationService);
+            Conversations = new ConversationsDesignerViewModel(conversationService, _trainingService);
             Voice = new VoiceDesignerViewModel(_trainingService);
             Images = new ImagesDesignerViewModel(_trainingService);
             ThreeDModels = new ThreeDModelsDesignerViewModel(_trainingService);
@@ -121,6 +121,7 @@ namespace Lazarus.Desktop.ViewModels.Training
 
             // Wire up cross-VM communication
             JobsSidebar.SelectedJobChanged += OnSelectedJobChanged;
+            Conversations.JobCreated += OnConversationJobCreated;
             
             _disposables.Add(JobsSidebar);
             _disposables.Add(JobDesigner);
@@ -131,6 +132,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         protected override void OnDisposing()
         {
             JobsSidebar.SelectedJobChanged -= OnSelectedJobChanged;
+            Conversations.JobCreated -= OnConversationJobCreated;
             foreach (var disposable in _disposables)
             {
                 disposable?.Dispose();
@@ -197,6 +199,14 @@ namespace Lazarus.Desktop.ViewModels.Training
             {
                 await _trainingService.ExportJobAsync(job.Id, job.OutputPath ?? string.Empty);
             }
+        }
+
+        private void OnConversationJobCreated(object? sender, TrainingJob job)
+        {
+            // Surface the job in the sidebar and select it for monitoring
+            JobsSidebar.Jobs.Insert(0, job);
+            JobsSidebar.SelectedJob = job;
+            UpdateCanExecuteStates();
         }
 
     }
