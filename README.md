@@ -41,7 +41,7 @@ On first run, Lazarus will:
 
 ### Create model type folders:
 
-- These will be create for you on initial app launch in: "C:\Users\<User>\AppData\Local\Lazarus"
+- These will be created for you on initial app launch in: "C:\Users\<User>\AppData\Local\Lazarus"
 
 
 ### Place your models in the appropriate folders
