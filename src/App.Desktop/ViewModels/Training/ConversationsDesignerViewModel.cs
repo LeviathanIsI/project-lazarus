@@ -8,6 +8,9 @@ using Lazarus.Shared.Contracts;
 using Lazarus.Shared.Training;
 using Lazarus.Backend.Services;
 using Microsoft.Win32;
+using Lazarus.Shared;
+using System.Diagnostics;
+using System.IO;
 
 namespace Lazarus.Desktop.ViewModels.Training
 {
@@ -76,6 +79,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         public TrainingDraft Draft { get; } = new() { Modality = TrainingModality.Conversations };
         public ParameterBagProxy Params { get; }
         public ObservableCollection<string> AllowedChatTemplates { get; } = new();
+        public ObservableCollection<ModelOption> BaseModelOptions { get; } = new();
 
         // Progress
         private double _progress;
@@ -150,6 +154,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             Params.PropertyChanged += OnParamsPropertyChanged;
             ApplyTrainerIntelligence();
             RecomputeAllowedChatTemplates();
+            RefreshBaseModelOptions();
         }
 
         public void SetCurrentJob(TrainingJob? job)
@@ -486,6 +491,7 @@ namespace Lazarus.Desktop.ViewModels.Training
                 LlamaFactoryStatus = LfStatus.None;
                 LlamaFactoryStatusMessage = string.Empty;
             }
+            RefreshBaseModelOptions();
         }
 
         private void AutoSetChatTemplateFromBaseModel()
@@ -537,6 +543,95 @@ namespace Lazarus.Desktop.ViewModels.Training
                 AllowedChatTemplates.Add("llama3");
             }
             OnPropertyChanged(nameof(AllowedChatTemplates));
+        }
+
+        private void RefreshBaseModelOptions()
+        {
+            try
+            {
+                BaseModelOptions.Clear();
+                var root = LazarusPaths.Models.BaseModels;
+                if (!Directory.Exists(root)) return;
+                foreach (var modelDir in Directory.GetDirectories(root))
+                {
+                    var name = Path.GetFileName(modelDir);
+                    var hfDir = FindFirstDirectoryWithHfSafeTensors(modelDir);
+                    var ggufDir = FindFirstDirectoryWithGguf(modelDir);
+
+                    if (hfDir != null)
+                    {
+                        var opt = new ModelOption
+                        {
+                            Path = hfDir,
+                            Kind = "SafeTensors",
+                            Display = $"{name} [SafeTensors]"
+                        };
+                        BaseModelOptions.Add(opt);
+                    }
+                    if (ggufDir != null)
+                    {
+                        // keep for future; filter below when trainer is LF
+                        var opt = new ModelOption
+                        {
+                            Path = ggufDir,
+                            Kind = "GGUF",
+                            Display = $"{name} [GGUF]"
+                        };
+                        BaseModelOptions.Add(opt);
+                    }
+                }
+
+                // Filter incompatible entries for current trainer
+                if (SelectedTrainer == TrainerBackend.LLaMAFactory)
+                {
+                    for (int i = BaseModelOptions.Count - 1; i >= 0; i--)
+                    {
+                        if (!string.Equals(BaseModelOptions[i].Kind, "SafeTensors", StringComparison.OrdinalIgnoreCase))
+                            BaseModelOptions.RemoveAt(i);
+                    }
+                }
+                OnPropertyChanged(nameof(BaseModelOptions));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"RefreshBaseModelOptions failed: {ex.Message}");
+            }
+        }
+
+        private static string? FindFirstDirectoryWithHfSafeTensors(string root)
+        {
+            try
+            {
+                foreach (var dir in Directory.EnumerateDirectories(root, "*", SearchOption.AllDirectories).Prepend(root))
+                {
+                    var hasCfg = File.Exists(Path.Combine(dir, "config.json"));
+                    var hasTok = File.Exists(Path.Combine(dir, "tokenizer.json"));
+                    var hasTokCfg = File.Exists(Path.Combine(dir, "tokenizer_config.json"));
+                    var hasSt = Directory.EnumerateFiles(dir, "*.safetensors", SearchOption.TopDirectoryOnly).Any();
+                    if (hasCfg && hasTok && hasTokCfg && hasSt) return dir;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        private static string? FindFirstDirectoryWithGguf(string root)
+        {
+            try
+            {
+                var file = Directory.EnumerateFiles(root, "*.gguf", SearchOption.AllDirectories).FirstOrDefault();
+                if (file != null) return Path.GetDirectoryName(file);
+            }
+            catch { }
+            return null;
+        }
+
+        public sealed class ModelOption
+        {
+            public string Path { get; init; } = string.Empty;
+            public string Display { get; init; } = string.Empty;
+            public string Kind { get; init; } = string.Empty;
+            public override string ToString() => Display;
         }
 
         private void AutoSetLearningRateForTrainer()
