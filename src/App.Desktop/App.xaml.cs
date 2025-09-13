@@ -1,4 +1,6 @@
 using Lazarus.Desktop.Extensions;
+using Lazarus.Desktop.Services;
+using Lazarus.Desktop.Views;
 using Lazarus.Shared;
 using Lazarus.Desktop.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +23,8 @@ namespace Lazarus.Desktop
     {
         private IHost? _host;
         private ILogger<App>? _logger;
+        private LoadingWindow? _loadingWindow;
+        private IInitializationManager? _initializationManager;
         private bool _disposed;
 
         /// <summary>
@@ -35,14 +39,7 @@ namespace Lazarus.Desktop
 
             try
             {
-                // Ensure first-run directory layout exists before host/logging initialization
-                // Uses %LOCALAPPDATA%\Lazarus (or LAZARUS_HOME if set)
-                DirectoryBootstrap.EnsureAll();
-                // Tiny debug output to console (if visible)
-                Console.WriteLine($"LAZARUS_HOME => {LazarusPaths.Root}");
-                Console.WriteLine($"Models => {LazarusPaths.Models.RootDir}");
-
-                // Build and start the host
+                // Build and start the host first
                 _host = CreateHost(e.Args);
                 await _host.StartAsync().ConfigureAwait(true);
 
@@ -53,28 +50,8 @@ namespace Lazarus.Desktop
                 ServiceProvider = _host.Services;
                 _logger = ServiceProvider.GetRequiredService<ILogger<App>>();
 
-                _logger.LogInformation("Lazarus Desktop application started successfully");
-
-                // Debug: log root and a few resolved paths (only if logging is available)
-                _logger.LogDebug("LazarusPaths.Root: {Root}", Lazarus.Shared.LazarusPaths.Root);
-                _logger.LogDebug("LazarusPaths.FlatLogs: {FlatLogs}", Lazarus.Shared.LazarusPaths.FlatLogs);
-                _logger.LogDebug("LazarusPaths.DatabaseFile: {DbFile}", Lazarus.Shared.LazarusPaths.DatabaseFile);
-                _logger.LogDebug("LazarusPaths.UserContent.GeneratedOutput: {GenOut}", Lazarus.Shared.LazarusPaths.UserContent.GeneratedOutput);
-
-                // Perform lightweight binary validation before UI initialization
-                // Swallow cancellation so UI remains visible for diagnostics
-                try
-                {
-                    await ValidateBinariesAsync().ConfigureAwait(true);
-                }
-                catch (OperationCanceledException oce)
-                {
-                    _logger?.LogWarning(oce, "Startup binary validation cancelled; continuing to show UI for diagnostics");
-                    Debug.WriteLine("[Startup] Binary validation canceled: " + oce.Message);
-                }
-
-                // Initialize and show the main window
-                await InitializeMainWindowAsync().ConfigureAwait(true);
+                // Show loading window first
+                await ShowLoadingWindowAsync().ConfigureAwait(true);
             }
             catch (TaskCanceledException tex)
             {
@@ -264,6 +241,66 @@ namespace Lazarus.Desktop
                     _logger?.LogWarning("Binary validation issue: {Issue}", issue);
                 }
             }
+        }
+
+        private async Task ShowLoadingWindowAsync()
+        {
+            try
+            {
+                // Get initialization manager
+                _initializationManager = ServiceProvider.GetRequiredService<IInitializationManager>();
+                
+                // Create loading window
+                var loadingLogger = ServiceProvider.GetService<ILogger<LoadingWindow>>();
+                _loadingWindow = new LoadingWindow(_initializationManager, loadingLogger);
+                
+                // Subscribe to events
+                _loadingWindow.InitializationCompleted += OnInitializationCompleted;
+                _loadingWindow.InitializationFailed += OnInitializationFailed;
+                
+                // Show loading window
+                _loadingWindow.Show();
+                
+                _logger?.LogInformation("Loading window displayed, starting initialization");
+                
+                // Start initialization (this will trigger the loading window to handle the process)
+                await _initializationManager.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to show loading window");
+                // Fall back to direct main window initialization
+                await InitializeMainWindowAsync().ConfigureAwait(true);
+            }
+        }
+        
+        private async void OnInitializationCompleted(object? sender, EventArgs e)
+        {
+            try
+            {
+                _logger?.LogInformation("Initialization completed, showing main window");
+                
+                // Close loading window
+                _loadingWindow?.Close();
+                
+                // Initialize and show main window
+                await InitializeMainWindowAsync().ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to initialize main window after loading completed");
+                MessageBox.Show($"Failed to start main application: {ex.Message}", 
+                    "Lazarus Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1);
+            }
+        }
+        
+        private void OnInitializationFailed(object? sender, EventArgs e)
+        {
+            _logger?.LogError("Initialization failed");
+            
+            // Loading window will handle showing the error and retry/exit options
+            // Don't shut down here as the user might want to retry
         }
 
         private Task InitializeMainWindowAsync()

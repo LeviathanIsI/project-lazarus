@@ -48,6 +48,9 @@ public static class ServiceCollectionExtensions
         services.AddLazarusCore(configuration);
         services.AddLazarusUI(configuration);
         services.AddLazarusViewModels();
+        
+        // Add initialization services
+        services.AddSingleton<IInitializationManager, InitializationManager>();
         services.AddLazarusBackgroundServices();
         
         // Training services
