@@ -177,11 +177,17 @@
                                              Text="{Binding Params[LearningRate], UpdateSourceTrigger=PropertyChanged}" 
                                              Margin="8,0,0,0"/>
                                     <WrapPanel>
-                                        <Button Content="1e-3" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-3" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
-                                        <Button Content="5e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-4" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
-                                        <Button Content="2e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="2e-4" Style="{StaticResource RainbowAccentButton.AutoFit}" Margin="0,0,4,0"/>
-                                        <Button Content="1e-4" Command="{Binding SetLearningRateCommand}" CommandParameter="1e-4" Style="{StaticResource SolidDarkButton}" Margin="0,0,4,0"/>
-                                        <Button Content="5e-5" Command="{Binding SetLearningRateCommand}" CommandParameter="5e-5" Style="{StaticResource SolidDarkButton}"/>
+                                        <!-- ToggleButtons reflect current selection; TwoWay via EqualityConverter writes back to Params[LearningRate] -->
+                                        <ToggleButton Content="1e-3" Margin="0,0,4,0" Style="{StaticResource SolidDarkButton}"
+                                                      IsChecked="{Binding Params[LearningRate], Mode=TwoWay, Converter={StaticResource EqualityConverter}, ConverterParameter=1e-3}"/>
+                                        <ToggleButton Content="5e-4" Margin="0,0,4,0" Style="{StaticResource SolidDarkButton}"
+                                                      IsChecked="{Binding Params[LearningRate], Mode=TwoWay, Converter={StaticResource EqualityConverter}, ConverterParameter=5e-4}"/>
+                                        <ToggleButton Content="2e-4" Margin="0,0,4,0" Style="{StaticResource RainbowAccentButton.AutoFit}"
+                                                      IsChecked="{Binding Params[LearningRate], Mode=TwoWay, Converter={StaticResource EqualityConverter}, ConverterParameter=2e-4}"/>
+                                        <ToggleButton Content="1e-4" Margin="0,0,4,0" Style="{StaticResource SolidDarkButton}"
+                                                      IsChecked="{Binding Params[LearningRate], Mode=TwoWay, Converter={StaticResource EqualityConverter}, ConverterParameter=1e-4}"/>
+                                        <ToggleButton Content="5e-5" Style="{StaticResource SolidDarkButton}"
+                                                      IsChecked="{Binding Params[LearningRate], Mode=TwoWay, Converter={StaticResource EqualityConverter}, ConverterParameter=5e-5}"/>
                                     </WrapPanel>
                                 </DockPanel>
                             </StackPanel>
@@ -230,7 +236,9 @@
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <RadioButton Content="Steps" IsChecked="{Binding UseSteps}" GroupName="DurationMode" Margin="0,0,8,0"/>
-                                        <TextBox Width="80" Text="{Binding Params[MaxSteps], UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding UseSteps}"/>
+                                        <TextBox Width="120" MinWidth="100" TextAlignment="Center"
+                                                 Text="{Binding Params[MaxSteps], UpdateSourceTrigger=PropertyChanged}"
+                                                 IsEnabled="{Binding UseSteps}"/>
                                     </StackPanel>
                                 </DockPanel>
                             </StackPanel>
