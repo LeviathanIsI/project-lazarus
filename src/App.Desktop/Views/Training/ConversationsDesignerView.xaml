@@ -299,13 +299,9 @@
                             
                             <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,8">
                                 <TextBlock Text="Chat Template" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,4"/>
-                                <ComboBox SelectedValue="{Binding Params[ChatTemplate]}">
-                                    <ComboBoxItem Content="ChatML"/>
-                                    <ComboBoxItem Content="Alpaca"/>
-                                    <ComboBoxItem Content="Vicuna"/>
-                                    <ComboBoxItem Content="ShareGPT"/>
-                                    <ComboBoxItem Content="Custom"/>
-                                </ComboBox>
+                                <ComboBox ItemsSource="{Binding AllowedChatTemplates}"
+                                          SelectedValue="{Binding Params[ChatTemplate]}"
+                                          IsEditable="True"/>
                             </StackPanel>
                             
                             <!-- Row 5: Training Duration -->
@@ -452,8 +448,11 @@
                             </StackPanel>
                         </Expander>
                         <!-- LLaMAFactory status indicator -->
-                        <Border Margin="0,8,0,0" Visibility="{Binding IsLfStatusVisible, Converter={StaticResource BoolToVisibility}}" CornerRadius="6" Padding="8" Background="#20111111" BorderBrush="#303030" BorderThickness="1">
-                            <TextBlock Text="{Binding LlamaFactoryStatusMessage}" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <Border Margin="0,8,0,0" Visibility="{Binding IsLfStatusVisible, Converter={StaticResource BoolToVisibility}}" CornerRadius="6" Padding="8" Background="#141414" BorderBrush="{Binding LlamaFactoryStatus, Converter={StaticResource LfStatusToBrush}}" BorderThickness="1.5">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="{Binding LlamaFactoryStatus, Converter={StaticResource LfStatusToGlyph}}" Foreground="{Binding LlamaFactoryStatus, Converter={StaticResource LfStatusToBrush}}" FontWeight="Bold" Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding LlamaFactoryStatusMessage}" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </DockPanel>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>

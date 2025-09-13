@@ -75,6 +75,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         // Draft bag
         public TrainingDraft Draft { get; } = new() { Modality = TrainingModality.Conversations };
         public ParameterBagProxy Params { get; }
+        public ObservableCollection<string> AllowedChatTemplates { get; } = new();
 
         // Progress
         private double _progress;
@@ -146,7 +147,9 @@ namespace Lazarus.Desktop.ViewModels.Training
             SetLearningRateCommand = new RelayCommand<string>(rate => SetLearningRate(rate));
 
             _svc.ProgressChanged += OnProgressChanged;
+            Params.PropertyChanged += OnParamsPropertyChanged;
             ApplyTrainerIntelligence();
+            RecomputeAllowedChatTemplates();
         }
 
         public void SetCurrentJob(TrainingJob? job)
@@ -375,6 +378,23 @@ namespace Lazarus.Desktop.ViewModels.Training
             if (_jobId.HasValue && e.JobId == _jobId.Value) Progress = e.Progress;
         }
 
+        private void OnParamsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, "Item[BaseModel]", StringComparison.Ordinal))
+            {
+                // React to base model path/name change
+                AutoSetChatTemplateFromBaseModel();
+                RecomputeAllowedChatTemplates();
+                EstimateVramAndWarn();
+                OnPropertyChanged(nameof(Params));
+            }
+            else if (string.Equals(e.PropertyName, "Item[TrainingType]", StringComparison.Ordinal))
+            {
+                AutoSetLearningRateForTrainer();
+                OnPropertyChanged(nameof(Params));
+            }
+        }
+
         // --- LLaMAFactory intelligence helpers ---
         private void ApplyTrainerIntelligence()
         {
@@ -390,6 +410,10 @@ namespace Lazarus.Desktop.ViewModels.Training
                 Params["Optimizer"] = "adamw_torch";
                 Params["LRScheduler"] = "linear";
                 Params["GradientAccumulation"] = "4";
+                // Force-disable incompatible params so the profile is clean
+                Params["GradientCheckpointing"] = "false";
+                Params["FlashAttention"] = "false";
+                Params["PackSequences"] = "false";
                 OnPropertyChanged(nameof(Params));
                 LlamaFactoryStatus = LfStatus.Warning;
                 LlamaFactoryStatusMessage = "LLaMAFactory: adjusted params for Windows; FA2/GC/Pack hidden";
@@ -409,6 +433,47 @@ namespace Lazarus.Desktop.ViewModels.Training
             else if (model.IndexOf("Llama-3", StringComparison.OrdinalIgnoreCase) >= 0 || model.IndexOf("Llama3", StringComparison.OrdinalIgnoreCase) >= 0) template = "llama3";
             else if (model.IndexOf("Mistral", StringComparison.OrdinalIgnoreCase) >= 0) template = "mistral";
             Params["ChatTemplate"] = template;
+        }
+
+        private void RecomputeAllowedChatTemplates()
+        {
+            AllowedChatTemplates.Clear();
+            var model = (Params["BaseModel"] ?? string.Empty).ToLowerInvariant();
+            if (model.Contains("qwen"))
+            {
+                AllowedChatTemplates.Add("qwen");
+                AllowedChatTemplates.Add("chatml");
+                AllowedChatTemplates.Add("default");
+            }
+            else if (model.Contains("llama3") || model.Contains("llama-3") || model.Contains("llama"))
+            {
+                AllowedChatTemplates.Add("llama3");
+                AllowedChatTemplates.Add("llama2");
+                AllowedChatTemplates.Add("alpaca");
+                AllowedChatTemplates.Add("vicuna");
+            }
+            else if (model.Contains("mistral"))
+            {
+                AllowedChatTemplates.Add("mistral");
+                AllowedChatTemplates.Add("chatml");
+                AllowedChatTemplates.Add("default");
+            }
+            else if (model.Contains("yi"))
+            {
+                AllowedChatTemplates.Add("yi");
+                AllowedChatTemplates.Add("chatml");
+            }
+            else
+            {
+                // Fallback: keep a reasonable global set
+                AllowedChatTemplates.Add("chatml");
+                AllowedChatTemplates.Add("alpaca");
+                AllowedChatTemplates.Add("vicuna");
+                AllowedChatTemplates.Add("qwen");
+                AllowedChatTemplates.Add("mistral");
+                AllowedChatTemplates.Add("llama3");
+            }
+            OnPropertyChanged(nameof(AllowedChatTemplates));
         }
 
         private void AutoSetLearningRateForTrainer()
