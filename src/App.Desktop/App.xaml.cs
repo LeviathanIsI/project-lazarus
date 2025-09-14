@@ -5,6 +5,7 @@ using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
 using Lazarus.Desktop.Services;
 using Lazarus.Desktop.ViewModels;
@@ -112,6 +113,12 @@ namespace Lazarus.Desktop
         private static IHost CreateHost(string[] args)
         {
             var builder = Host.CreateDefaultBuilder(args);
+
+#if NET8_0_OR_GREATER
+            // Enable DI validation
+            builder.UseServiceProviderFactory(new DefaultServiceProviderFactory(
+                new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true }));
+#endif
 
             // Configure app configuration
             builder.ConfigureAppConfiguration((context, config) =>

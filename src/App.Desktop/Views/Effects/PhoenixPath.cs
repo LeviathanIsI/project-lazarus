@@ -17,6 +17,7 @@ namespace Lazarus.Desktop.Views.Effects
             DependencyProperty.Register(nameof(Progress), typeof(double), typeof(PhoenixPath),
                 new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
+
         public Geometry? Geometry
         {
             get => (Geometry?)GetValue(GeometryProperty);
@@ -28,6 +29,7 @@ namespace Lazarus.Desktop.Views.Effects
             get => (double)GetValue(ProgressProperty);
             set => SetValue(ProgressProperty, Math.Max(0, Math.Min(1, value)));
         }
+
 
         public Brush Stroke { get; set; } =
             new LinearGradientBrush(Color.FromRgb(169, 0, 255), Color.FromRgb(233, 0, 255), 0);
@@ -53,6 +55,7 @@ namespace Lazarus.Desktop.Views.Effects
         {
             if (_flare.IsRunning) InvalidateVisual();
         }
+
 
         protected override void OnRender(DrawingContext dc)
         {
@@ -221,12 +224,14 @@ namespace Lazarus.Desktop.Views.Effects
             return new PathGeometry(figs, FillRule.Nonzero, null);
         }
 
+
         readonly struct Line
         {
             public readonly Point A, B;
             public readonly double Length;
             public Line(Point a, Point b) { A = a; B = b; Length = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y)); }
         }
+
 
         static double EaseOutCubic(double x) => 1 - Math.Pow(1 - x, 3);
     }

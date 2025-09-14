@@ -16,14 +16,17 @@ namespace Lazarus.Desktop.Views.Effects
         public int MaxParticles { get; set; } = 800;
         public double AshEmission { get; set; } = 120;      // particles/sec
         public double TracerEmission { get; set; } = 30;    // particles/sec
+        public double TextFragmentEmission { get; set; } = 15; // particles/sec
         public double AshIntensity { get; set; } = 1.0;     // 0..2 scale
         public double TracerIntensity { get; set; } = 1.0;  // 0..2 scale
+        public double TextFragmentIntensity { get; set; } = 1.0; // 0..2 scale
 
         public Point OrbitCenter { get; set; }
         public double OrbitRadius { get; set; } = 220;
 
         public Color BackgroundColor { get; set; } = Color.FromRgb(12, 9, 18);
         public Color NeonColor { get; set; } = Color.FromRgb(233, 0, 255);
+        public double CorruptionLevel { get; set; } = 0.0; // 0..1 corruption level for resurrection effects
 
         public ParticleCanvas()
         {
@@ -72,6 +75,24 @@ namespace Lazarus.Desktop.Views.Effects
                     var brush = new SolidColorBrush(c);
                     dc.DrawEllipse(brush, null, new Point(p.X, p.Y), p.Size, p.Size);
                 }
+                else if (p.Kind == ParticleKind.TextFragment)
+                {
+                    // Render corrupted text fragment
+                    if (!string.IsNullOrEmpty(p.Text))
+                    {
+                        var text = new FormattedText(
+                            p.Text,
+                            System.Globalization.CultureInfo.CurrentCulture,
+                            FlowDirection.LeftToRight,
+                            new Typeface("Consolas"),
+                            p.Size,
+                            new SolidColorBrush(c),
+                            VisualTreeHelper.GetDpi(this).PixelsPerDip);
+
+                        var point = new Point(p.X - text.Width / 2, p.Y - text.Height / 2);
+                        dc.DrawText(text, point);
+                    }
+                }
                 else
                 {
                     // tracer streak
@@ -91,6 +112,7 @@ namespace Lazarus.Desktop.Views.Effects
 
             SpawnAsh((int)(AshEmission * AshIntensity * dt));
             SpawnTracers((int)(TracerEmission * TracerIntensity * dt));
+            SpawnTextFragments((int)(TextFragmentEmission * TextFragmentIntensity * dt));
 
             // simulate
             double w = ActualWidth, h = ActualHeight;
@@ -104,12 +126,27 @@ namespace Lazarus.Desktop.Views.Effects
 
                 if (p.Kind == ParticleKind.Ash)
                 {
-                    // upward drift with jitter
+                    // upward drift with jitter (normal gravity)
                     p.VX += (Noise(p.Seed, p.Age) - 0.5) * 6.0 * dt;
                     p.X += p.VX * dt;
                     p.Y += p.VY * dt;
                     p.Alpha = (1.0 - t) * 0.8;
                     p.Size *= 0.999;
+                }
+                else if (p.Kind == ParticleKind.TextFragment)
+                {
+                    // Negative gravity - upward movement defying gravity
+                    double negativeGravity = -30 - CorruptionLevel * 20; // Stronger upward force with corruption
+                    p.VY += negativeGravity * dt;
+
+                    // Horizontal drift with corruption noise
+                    p.VX += (Noise(p.Seed, p.Age) - 0.5) * 8.0 * dt;
+                    p.X += p.VX * dt;
+                    p.Y += p.VY * dt;
+
+                    // Fade based on corruption level
+                    p.Alpha = (1.0 - t) * (0.6 + CorruptionLevel * 0.4);
+                    p.Size *= 0.998; // Slightly slower size decay
                 }
                 else
                 {
@@ -184,6 +221,49 @@ namespace Lazarus.Desktop.Views.Effects
             }
         }
 
+        void SpawnTextFragments(int count)
+        {
+            if (ActualWidth <= 0 || ActualHeight <= 0) return;
+            double w = ActualWidth, h = ActualHeight;
+
+            // Text fragments spawn from random locations, often near corrupted areas
+            for (int i = 0; i < count; i++)
+            {
+                string[] textFragments = { "0x", "DEAD", "BEEF", "CAFE", "ERROR", "NULL", "∞", "∆", "∑", "∇" };
+                string text = textFragments[_rng.Next(textFragments.Length)];
+
+                var p = new Particle
+                {
+                    Kind = ParticleKind.TextFragment,
+                    X = _rng.NextDouble() * w,
+                    Y = h + _rng.NextDouble() * 50, // Start below screen
+                    VX = (_rng.NextDouble() - 0.5) * 20,
+                    VY = -10 - _rng.NextDouble() * 30, // Initial upward velocity
+                    Size = 8 + _rng.NextDouble() * 6,
+                    Life = 3.0 + _rng.NextDouble() * 4.0,
+                    Color = GetRainbowColor(_rng.NextDouble()), // Use rainbow gradient colors
+                    Alpha = 0.9,
+                    Seed = _rng.NextDouble() * 10,
+                    Text = text
+                };
+                _particles.Add(p);
+            }
+        }
+
+        Color GetRainbowColor(double t)
+        {
+            // Map 0-1 to rainbow colors
+            double r = Math.Sin(t * Math.PI * 2) * 0.5 + 0.5;
+            double g = Math.Sin((t + 0.33) * Math.PI * 2) * 0.5 + 0.5;
+            double b = Math.Sin((t + 0.66) * Math.PI * 2) * 0.5 + 0.5;
+
+            return Color.FromRgb(
+                (byte)(r * 255),
+                (byte)(g * 255),
+                (byte)(b * 255)
+            );
+        }
+
         public void Burst(int ashes = 140, int tracers = 90)
         {
             SpawnAsh(ashes);
@@ -213,9 +293,12 @@ namespace Lazarus.Desktop.Views.Effects
             // orbit-only
             public double OrbitAngle, OrbitSpeed;
 
+            // text fragments
+            public string Text;
+
             public Color Color;
         }
 
-        enum ParticleKind { Ash, Tracer }
+        enum ParticleKind { Ash, Tracer, TextFragment }
     }
 }
