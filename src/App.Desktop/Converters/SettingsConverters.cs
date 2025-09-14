@@ -89,7 +89,7 @@ public class MillisecondsToSecondsConverter : IValueConverter
     {
         if (value is int milliseconds)
             return milliseconds / 1000.0;
-        
+
         if (value is double ms)
             return ms / 1000.0;
 

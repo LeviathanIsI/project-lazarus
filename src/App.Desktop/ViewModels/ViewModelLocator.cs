@@ -104,7 +104,7 @@ public sealed class ViewModelLocator : IDisposable
                     _singletonScopes.Remove(typeof(T));
                     try { scope.Dispose(); } catch { }
                 }
-                
+
                 // Dispose the ViewModel if it implements IDisposable
                 if (viewModel is IDisposable disposable)
                 {

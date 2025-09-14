@@ -1,0 +1,208 @@
+<Window x:Class="Lazarus.Desktop.Views.LoadingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Lazarus Resurrection"
+        Width="450"
+        Height="250"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <!-- Dark Ceremony Radial Gradient Background -->
+        <RadialGradientBrush x:Key="DarkCeremonyBrush" Center="0.5,0.5" RadiusX="1.2" RadiusY="1.2">
+            <GradientStop Color="#1a0f1f" Offset="0.0"/>
+            <GradientStop Color="#000000" Offset="1.0"/>
+        </RadialGradientBrush>
+        
+        <!-- Purple Glow Effect -->
+        <DropShadowEffect x:Key="PurpleGlow" Color="#8b00ff" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+        <DropShadowEffect x:Key="RedGlow" Color="#ff0040" BlurRadius="20" ShadowDepth="0" Opacity="0.9"/>
+        
+        <!-- Flicker Animation -->
+        <Storyboard x:Key="FlickerAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="StatusText"
+                           Storyboard.TargetProperty="Opacity"
+                           From="1.0" To="0.3" Duration="0:0:1"
+                           AutoReverse="True" />
+        </Storyboard>
+        
+        <!-- Glitch Animation for Error State -->
+        <Storyboard x:Key="GlitchAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="ErrorText"
+                           Storyboard.TargetProperty="RenderTransform.X"
+                           From="0" To="2" Duration="0:0:0.15"
+                           AutoReverse="True" />
+        </Storyboard>
+        
+        <!-- Loading Orb Spin Animation -->
+        <Storyboard x:Key="OrbSpinAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="LoadingOrb"
+                           Storyboard.TargetProperty="RenderTransform.Angle"
+                           From="0" To="360" Duration="0:0:1" />
+        </Storyboard>
+    </Window.Resources>
+    
+    <!-- Main Container with Dark Ceremony Background -->
+    <Border Background="{StaticResource DarkCeremonyBrush}">
+        <Grid>
+            <!-- Loading Container -->
+            <StackPanel x:Name="LoadingContainer" 
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Center">
+                
+                <!-- Loading Orb -->
+                <Ellipse x:Name="LoadingOrb"
+                        Width="60" Height="60"
+                        StrokeThickness="2"
+                        Fill="Transparent"
+                        Margin="0,0,0,20"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.Stroke>
+                        <LinearGradientBrush>
+                            <GradientStop Color="#8b00ff20" Offset="0"/>
+                            <GradientStop Color="#8b00ff" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Ellipse.Stroke>
+                    <Ellipse.RenderTransform>
+                        <RotateTransform x:Name="OrbRotateTransform"/>
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+                
+                <!-- Status Text with Purple Glow -->
+                <TextBlock x:Name="StatusText"
+                          Text="RESURRECTING LAZARUS"
+                          FontFamily="Courier New"
+                          FontSize="12"
+                          FontWeight="Bold"
+                          Foreground="#8b00ff"
+                          HorizontalAlignment="Center"
+                          Effect="{StaticResource PurpleGlow}">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform x:Name="StatusTextTransform"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <!-- Progress Text (subtle) -->
+                <TextBlock x:Name="ProgressText"
+                          Text="Initializing neural pathways..."
+                          FontFamily="Courier New"
+                          FontSize="10"
+                          Foreground="#8b00ff60"
+                          HorizontalAlignment="Center"
+                          Margin="0,10,0,0"
+                          Opacity="0.7" />
+            </StackPanel>
+            
+            <!-- Error Container (Hidden by default) -->
+            <StackPanel x:Name="ErrorContainer" 
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Center"
+                       Visibility="Collapsed">
+                
+                <!-- Error Message with Red Glow and Glitch Effect -->
+                <TextBlock x:Name="ErrorText"
+                          Text="INITIALIZATION SEQUENCE CORRUPTED"
+                          FontFamily="Courier New"
+                          FontSize="14"
+                          FontWeight="Bold"
+                          Foreground="#ff0040"
+                          HorizontalAlignment="Center"
+                          Effect="{StaticResource RedGlow}"
+                          Margin="0,0,0,30">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform x:Name="ErrorTextTransform"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" 
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20">
+                    
+                    <!-- Retry Button -->
+                    <Button x:Name="RetryButton"
+                           Content="RETRY"
+                           Width="80"
+                           Height="30"
+                           Margin="0,0,20,0"
+                           Background="Transparent"
+                           Foreground="#8b00ff"
+                           BorderBrush="#8b00ff"
+                           BorderThickness="1"
+                           FontFamily="Courier New"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           Click="RetryButton_Click"
+                           Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                                   CornerRadius="2">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#8b00ff20"/>
+                                                    <Setter Property="Effect" Value="{StaticResource PurpleGlow}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    
+                    <!-- Exit Button -->
+                    <Button x:Name="ExitButton"
+                           Content="EXIT"
+                           Width="80"
+                           Height="30"
+                           Background="Transparent"
+                           Foreground="#ff0040"
+                           BorderBrush="#ff0040"
+                           BorderThickness="1"
+                           FontFamily="Courier New"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           Click="ExitButton_Click"
+                           Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                   BorderBrush="{TemplateBinding BorderBrush}"
+                                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                                   CornerRadius="2">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#ff004020"/>
+                                                    <Setter Property="Effect" Value="{StaticResource RedGlow}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

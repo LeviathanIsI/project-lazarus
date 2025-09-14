@@ -39,15 +39,15 @@ internal sealed class PlaybackSession : IPlaybackSession
         AudioId = audioId;
         _audioFile = new AudioFileReader(filePath);
         Duration = _audioFile.TotalTime;
-        
+
         _waveOut = new WaveOutEvent
         {
             DesiredLatency = 150
         };
         _waveOut.Init(_audioFile);
-        
+
         _waveOut.PlaybackStopped += OnPlaybackStopped;
-        
+
         // Position update timer
         _positionTimer = new Timer(_ =>
         {
@@ -56,7 +56,7 @@ internal sealed class PlaybackSession : IPlaybackSession
                 PositionChanged?.Invoke(this, Position);
             }
         }, null, Timeout.Infinite, Timeout.Infinite);
-        
+
         // Auto-play on creation
         Resume();
     }
@@ -64,7 +64,7 @@ internal sealed class PlaybackSession : IPlaybackSession
     public void Pause()
     {
         if (_state != PlaybackState.Playing) return;
-        
+
         _waveOut.Pause();
         _positionTimer.Change(Timeout.Infinite, Timeout.Infinite);
         ChangeState(PlaybackState.Paused);
@@ -73,7 +73,7 @@ internal sealed class PlaybackSession : IPlaybackSession
     public void Resume()
     {
         if (_state == PlaybackState.Playing) return;
-        
+
         _waveOut.Play();
         _positionTimer.Change(100, 100); // Update every 100ms
         ChangeState(PlaybackState.Playing);
@@ -109,7 +109,7 @@ internal sealed class PlaybackSession : IPlaybackSession
     {
         if (_disposed) return;
         _disposed = true;
-        
+
         _positionTimer?.Dispose();
         _waveOut?.Stop();
         _waveOut?.Dispose();

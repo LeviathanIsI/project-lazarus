@@ -22,7 +22,7 @@ internal sealed class UpdateService : IUpdateService
 
     public async Task<UpdateCheckResult> CheckAsync(CancellationToken cancellationToken = default)
     {
-        var current = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0,0,0,0);
+        var current = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0, 0);
         var feed = _options.CurrentValue.FeedUrl ?? Environment.GetEnvironmentVariable("LAZARUS_UPDATE_FEED");
         var notes = _options.CurrentValue.ReleaseNotesUrl;
 

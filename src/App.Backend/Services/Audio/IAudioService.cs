@@ -47,11 +47,11 @@ public interface IPlaybackSession : IDisposable
     TimeSpan Duration { get; }
     PlaybackState State { get; }
     float Volume { get; set; }
-    
+
     void Pause();
     void Resume();
     void Stop();
-    
+
     event EventHandler<PlaybackStateChangedEventArgs>? StateChanged;
     event EventHandler<TimeSpan>? PositionChanged;
 }
@@ -67,7 +67,7 @@ public sealed class PlaybackStateChangedEventArgs : EventArgs
 {
     public PlaybackState OldState { get; }
     public PlaybackState NewState { get; }
-    
+
     public PlaybackStateChangedEventArgs(PlaybackState oldState, PlaybackState newState)
     {
         OldState = oldState;

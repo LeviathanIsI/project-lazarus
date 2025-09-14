@@ -84,10 +84,10 @@ public sealed class ModelsViewModel : ViewModelBase
 
     // Collections (bound to dropdowns/lists)
     public ObservableCollection<BaseModelInfo> BaseModels { get; } = new();
-    public ObservableCollection<AdapterInfo>   Loras      { get; } = new();
+    public ObservableCollection<AdapterInfo> Loras { get; } = new();
     public ObservableCollection<TokenizerInfo> Tokenizers { get; } = new();
     public ObservableCollection<EmbeddingInfo> Embeddings { get; } = new();
-    public ObservableCollection<string>        PresetNames{ get; } = new();
+    public ObservableCollection<string> PresetNames { get; } = new();
 
     // Selections
     private BaseModelInfo? _selectedModel;
@@ -506,7 +506,7 @@ public sealed class ModelsViewModel : ViewModelBase
         }
 
         return results
-            .GroupBy(r => new Tuple<string,string>(r.Engine.ToLowerInvariant(), r.ResolvedPath), System.Collections.Generic.EqualityComparer<Tuple<string,string>>.Default)
+            .GroupBy(r => new Tuple<string, string>(r.Engine.ToLowerInvariant(), r.ResolvedPath), System.Collections.Generic.EqualityComparer<Tuple<string, string>>.Default)
             .Select(g => g.First())
             .OrderBy(r => r.Engine)
             .ThenBy(r => r.DisplayName)
@@ -563,8 +563,8 @@ public sealed class ModelsViewModel : ViewModelBase
         return engine switch
         {
             "llama.cpp" => model.Format == ModelFormat.GGUF,
-            "vllm" => model.Format == ModelFormat.HF,
-            "exllamav2" => model.Format == ModelFormat.HF,
+            "vllm" => model.Format == ModelFormat.HF || model.Format == ModelFormat.ONNX, // vLLM supports HF and ONNX
+            "exllamav2" => model.Format == ModelFormat.HF, // ExLlamaV2 primarily for HF models
             _ => false
         };
     }

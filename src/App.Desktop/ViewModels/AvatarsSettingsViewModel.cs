@@ -15,7 +15,7 @@ public class AvatarsSettingsViewModel : SettingsSectionBase
     public AvatarsSettingsViewModel(SettingsViewModel settings) : base(settings, "Avatars")
     {
         SectionDescription = "Configure virtual assistant avatar appearance and behavior";
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();

@@ -30,8 +30,9 @@ internal sealed class SimpleSubject<T> : IObservable<T>, IDisposable
     private sealed class Unsubscriber : IDisposable
     {
         private readonly List<IObserver<T>> _list; private readonly IObserver<T> _obs;
-        public Unsubscriber(List<IObserver<T>> list, IObserver<T> obs){_list=list;_obs=obs;}
-        public void Dispose(){ if(_list.Contains(_obs)) _list.Remove(_obs);} }
+        public Unsubscriber(List<IObserver<T>> list, IObserver<T> obs) { _list = list; _obs = obs; }
+        public void Dispose() { if (_list.Contains(_obs)) _list.Remove(_obs); }
+    }
 }
 
 public sealed class AudioLibraryStub : IAudioLibrary
@@ -48,7 +49,7 @@ public sealed class AudioLibraryStub : IAudioLibrary
         LazarusPaths.Audio.EnsureDirectories();
         var dest = Path.Combine(LazarusPaths.Audio.Input, Path.GetFileName(filePath));
         Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-        File.Copy(filePath, dest, overwrite:false);
+        File.Copy(filePath, dest, overwrite: false);
         var fi = new FileInfo(dest);
         var item = new AudioItem(
             Guid.NewGuid(), fi.Name, fi.FullName, TimeSpan.Zero, fi.Length,
@@ -78,8 +79,8 @@ public sealed class AudioLibraryStub : IAudioLibrary
 
 public sealed class AudioTransportStub : IAudioTransport, IDisposable
 {
-    private readonly SimpleSubject<(double pos,double tot)> _timeline = new();
-    private readonly SimpleSubject<(float,float,float,float)> _meters = new();
+    private readonly SimpleSubject<(double pos, double tot)> _timeline = new();
+    private readonly SimpleSubject<(float, float, float, float)> _meters = new();
     private readonly System.Timers.Timer _timer;
     private double _pos; private double _tot = 120;
     public IObservable<(double positionSec, double totalSec)> Timeline => _timeline;
@@ -92,15 +93,15 @@ public sealed class AudioTransportStub : IAudioTransport, IDisposable
             _pos = Math.Min(_tot, _pos + 0.2);
             _timeline.OnNext((_pos, _tot));
             var t = (float)(_pos % 1.0);
-            _meters.OnNext((0.3f + t*0.4f, 0.35f + t*0.35f, 0.2f + t*0.2f, 0.22f + t*0.18f));
+            _meters.OnNext((0.3f + t * 0.4f, 0.35f + t * 0.35f, 0.2f + t * 0.2f, 0.22f + t * 0.18f));
         };
     }
     public Task PlayAsync(Guid id, string? region = null, CancellationToken ct = default) { _timer.Start(); return Task.CompletedTask; }
-    public Task PauseAsync(){ _timer.Stop(); return Task.CompletedTask; }
-    public Task StopAsync(){ _timer.Stop(); _pos = 0; _timeline.OnNext((_pos,_tot)); return Task.CompletedTask; }
-    public Task SetOutputDeviceAsync(string deviceId){ return Task.CompletedTask; }
-    public Task SetVolumeAsync(double volume01){ return Task.CompletedTask; }
-    public void Dispose(){ _timer.Dispose(); _timeline.Dispose(); _meters.Dispose(); }
+    public Task PauseAsync() { _timer.Stop(); return Task.CompletedTask; }
+    public Task StopAsync() { _timer.Stop(); _pos = 0; _timeline.OnNext((_pos, _tot)); return Task.CompletedTask; }
+    public Task SetOutputDeviceAsync(string deviceId) { return Task.CompletedTask; }
+    public Task SetVolumeAsync(double volume01) { return Task.CompletedTask; }
+    public void Dispose() { _timer.Dispose(); _timeline.Dispose(); _meters.Dispose(); }
 }
 
 public sealed class AsrServiceStub : IAsrService

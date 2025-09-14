@@ -41,19 +41,19 @@ public class SettingsService : ISettingsService
             {
                 var json = await File.ReadAllTextAsync(SettingsPaths.SettingsFile, cancellationToken);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
-                
+
                 if (settings != null)
                 {
                     var oldSettings = _current;
                     _current = settings;
-                    
+
                     // Raise changed event
                     var changedProps = GetChangedProperties(oldSettings, _current);
                     if (changedProps.Any())
                     {
                         SettingsChanged?.Invoke(this, new SettingsChangedEventArgs(oldSettings, _current, changedProps));
                     }
-                    
+
                     _logger.LogInformation("Settings loaded from {Path}", SettingsPaths.SettingsFile);
                     return _current;
                 }
@@ -67,7 +67,7 @@ public class SettingsService : ISettingsService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load settings, using defaults");
-            
+
             // Try to restore from backup
             if (File.Exists(SettingsPaths.SettingsBackupFile))
             {
@@ -166,7 +166,7 @@ public class SettingsService : ISettingsService
         {
             var json = await File.ReadAllTextAsync(filePath, cancellationToken);
             var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
-            
+
             if (settings == null)
             {
                 throw new InvalidOperationException("Failed to deserialize settings from JSON");

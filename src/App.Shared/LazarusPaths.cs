@@ -34,7 +34,7 @@ public static class LazarusPaths
     /// <summary>
     /// SQLite file set at root (as seen in screenshots)
     /// </summary>
-    public static readonly string SqliteDb    = Path.Combine(Root, "lazarus.db");
+    public static readonly string SqliteDb = Path.Combine(Root, "lazarus.db");
     public static readonly string SqliteDbShm = Path.Combine(Root, "lazarus.db-shm");
     public static readonly string SqliteDbWal = Path.Combine(Root, "lazarus.db-wal");
 
@@ -43,14 +43,14 @@ public static class LazarusPaths
     /// </summary>
     public static class Models
     {
-        public static readonly string RootDir      = Path.Combine(Root, "Models");
-        public static readonly string BaseModels   = Path.Combine(RootDir, "Base-Models");
-        public static readonly string Embeddings   = Path.Combine(RootDir, "Embeddings");
+        public static readonly string RootDir = Path.Combine(Root, "Models");
+        public static readonly string BaseModels = Path.Combine(RootDir, "Base-Models");
+        public static readonly string Embeddings = Path.Combine(RootDir, "Embeddings");
         public static readonly string LoRAAdapters = Path.Combine(RootDir, "LoRA-Adapters");
-        public static readonly string Tokenizers   = Path.Combine(RootDir, "Tokenizers");
-        public static readonly string Diffusers    = Path.Combine(RootDir, "Diffusers");
+        public static readonly string Tokenizers = Path.Combine(RootDir, "Tokenizers");
+        public static readonly string Diffusers = Path.Combine(RootDir, "Diffusers");
         // Material presets (PBR definitions, glTF snippets)
-        public static readonly string Materials    = Path.Combine(RootDir, "Materials");
+        public static readonly string Materials = Path.Combine(RootDir, "Materials");
     }
 
     /// <summary>
@@ -58,8 +58,8 @@ public static class LazarusPaths
     /// </summary>
     public static class GenAssets
     {
-        public static readonly string RootDir      = Path.Combine(Root, "Generation-Assets");
-        public static readonly string ControlNet   = Path.Combine(RootDir, "ControlNet");
+        public static readonly string RootDir = Path.Combine(Root, "Generation-Assets");
+        public static readonly string ControlNet = Path.Combine(RootDir, "ControlNet");
         // Stable Diffusion base models live under Generation-Assets/StableDiffusion-Models (separate from LLM models)
         public static readonly string StableDiffusionModels = Path.Combine(RootDir, "StableDiffusion-Models");
         // Legacy flat folder retained for backward-compat probing; prefer structured subfolders
@@ -67,15 +67,15 @@ public static class LazarusPaths
         public static readonly string StylePresets_LoRAs = Path.Combine(RootDir, "Style-Presets", "LoRAs");
         public static readonly string StylePresets_Embeddings = Path.Combine(RootDir, "Style-Presets", "Embeddings");
         public static readonly string StylePresets_Hypernetworks = Path.Combine(RootDir, "Style-Presets", "Hypernetworks");
-        public static readonly string Upscale      = Path.Combine(RootDir, "Upscale-Models");
-        public static readonly string Vae          = Path.Combine(RootDir, "VAE-Models");
+        public static readonly string Upscale = Path.Combine(RootDir, "Upscale-Models");
+        public static readonly string Vae = Path.Combine(RootDir, "VAE-Models");
         // PBR/Viewport assets & texture pipelines
-        public static readonly string IblMaps      = Path.Combine(RootDir, "IBL-Maps");
-        public static readonly string Shaders      = Path.Combine(RootDir, "Shaders");
+        public static readonly string IblMaps = Path.Combine(RootDir, "IBL-Maps");
+        public static readonly string Shaders = Path.Combine(RootDir, "Shaders");
         public static readonly string TextureTools = Path.Combine(RootDir, "Texture-Tools");
-        public static readonly string TextureTools_KtxCache      = Path.Combine(TextureTools, "KTX-Cache");
+        public static readonly string TextureTools_KtxCache = Path.Combine(TextureTools, "KTX-Cache");
         public static readonly string TextureTools_GltfTransform = Path.Combine(TextureTools, "Gltf-Transform");
-        public static readonly string TextureTools_Gltfpack      = Path.Combine(TextureTools, "Gltfpack");
+        public static readonly string TextureTools_Gltfpack = Path.Combine(TextureTools, "Gltfpack");
     }
 
     /// <summary>
@@ -83,11 +83,11 @@ public static class LazarusPaths
     /// </summary>
     public static class VideoAssets
     {
-        public static readonly string RootDir           = Path.Combine(Root, "Video-Assets");
-        public static readonly string AnimateDiff       = Path.Combine(RootDir, "AnimateDiff");
-        public static readonly string TemporalLoRAs     = Path.Combine(RootDir, "Temporal-LoRAs");
-        public static readonly string VideoControlNet   = Path.Combine(RootDir, "Video-ControlNet");
-        public static readonly string FrameInterpolators= Path.Combine(RootDir, "Frame-Interpolators");
+        public static readonly string RootDir = Path.Combine(Root, "Video-Assets");
+        public static readonly string AnimateDiff = Path.Combine(RootDir, "AnimateDiff");
+        public static readonly string TemporalLoRAs = Path.Combine(RootDir, "Temporal-LoRAs");
+        public static readonly string VideoControlNet = Path.Combine(RootDir, "Video-ControlNet");
+        public static readonly string FrameInterpolators = Path.Combine(RootDir, "Frame-Interpolators");
     }
 
     /// <summary>
@@ -95,11 +95,11 @@ public static class LazarusPaths
     /// </summary>
     public static class AudioAssets
     {
-        public static readonly string RootDir        = Path.Combine(Root, "Audio-Assets");
-        public static readonly string AsrModels      = Path.Combine(RootDir, "ASR-Models");
-        public static readonly string TtsVoices      = Path.Combine(RootDir, "TTS-Voices");
-        public static readonly string VoiceCloning   = Path.Combine(RootDir, "Voice-Cloning");
-        public static readonly string Vad            = Path.Combine(RootDir, "VAD");
+        public static readonly string RootDir = Path.Combine(Root, "Audio-Assets");
+        public static readonly string AsrModels = Path.Combine(RootDir, "ASR-Models");
+        public static readonly string TtsVoices = Path.Combine(RootDir, "TTS-Voices");
+        public static readonly string VoiceCloning = Path.Combine(RootDir, "Voice-Cloning");
+        public static readonly string Vad = Path.Combine(RootDir, "VAD");
         public static readonly string NoiseReduction = Path.Combine(RootDir, "Noise-Reduction");
     }
 
@@ -108,11 +108,11 @@ public static class LazarusPaths
     /// </summary>
     public static class AvatarAssets
     {
-        public static readonly string RootDir   = Path.Combine(Root, "Avatar-Assets");
-        public static readonly string Models3D  = Path.Combine(RootDir, "3D-Models");
-        public static readonly string Rigs      = Path.Combine(RootDir, "Rigs");
-        public static readonly string Textures  = Path.Combine(RootDir, "Textures");
-        public static readonly string Visemes   = Path.Combine(RootDir, "Visemes");
+        public static readonly string RootDir = Path.Combine(Root, "Avatar-Assets");
+        public static readonly string Models3D = Path.Combine(RootDir, "3D-Models");
+        public static readonly string Rigs = Path.Combine(RootDir, "Rigs");
+        public static readonly string Textures = Path.Combine(RootDir, "Textures");
+        public static readonly string Visemes = Path.Combine(RootDir, "Visemes");
     }
 
     /// <summary>
@@ -120,10 +120,10 @@ public static class LazarusPaths
     /// </summary>
     public static class RagAssets
     {
-        public static readonly string RootDir   = Path.Combine(Root, "RAG-Assets");
-        public static readonly string Indexes   = Path.Combine(RootDir, "Indexes");
+        public static readonly string RootDir = Path.Combine(Root, "RAG-Assets");
+        public static readonly string Indexes = Path.Combine(RootDir, "Indexes");
         public static readonly string Documents = Path.Combine(RootDir, "Documents");
-        public static readonly string Presets   = Path.Combine(RootDir, "Presets");
+        public static readonly string Presets = Path.Combine(RootDir, "Presets");
     }
 
     /// <summary>
@@ -131,11 +131,11 @@ public static class LazarusPaths
     /// </summary>
     public static class Datasets
     {
-        public static readonly string RootDir       = Path.Combine(Root, "Datasets");
+        public static readonly string RootDir = Path.Combine(Root, "Datasets");
         public static readonly string Conversations = Path.Combine(RootDir, "Conversations");
-        public static readonly string Images        = Path.Combine(RootDir, "Images");
-        public static readonly string Video         = Path.Combine(RootDir, "Video");
-        public static readonly string Audio         = Path.Combine(RootDir, "Audio");
+        public static readonly string Images = Path.Combine(RootDir, "Images");
+        public static readonly string Video = Path.Combine(RootDir, "Video");
+        public static readonly string Audio = Path.Combine(RootDir, "Audio");
     }
 
     /// <summary>
@@ -144,9 +144,9 @@ public static class LazarusPaths
     public static class Presets
     {
         public static readonly string RootDir = Path.Combine(Root, "Presets");
-        public static readonly string Image   = Path.Combine(RootDir, "Image");
-        public static readonly string Video   = Path.Combine(RootDir, "Video");
-        public static readonly string Audio   = Path.Combine(RootDir, "Audio");
+        public static readonly string Image = Path.Combine(RootDir, "Image");
+        public static readonly string Video = Path.Combine(RootDir, "Video");
+        public static readonly string Audio = Path.Combine(RootDir, "Audio");
     }
 
     /// <summary>
@@ -173,9 +173,9 @@ public static class LazarusPaths
     /// </summary>
     public static class SharedResources
     {
-        public static readonly string RootDir       = Path.Combine(Root, "Shared-Resources");
+        public static readonly string RootDir = Path.Combine(Root, "Shared-Resources");
         public static readonly string ExternalLinks = Path.Combine(RootDir, "External-Links");
-        public static readonly string ImportExport  = Path.Combine(RootDir, "Import-Export");
+        public static readonly string ImportExport = Path.Combine(RootDir, "Import-Export");
     }
 
     /// <summary>
@@ -183,33 +183,33 @@ public static class LazarusPaths
     /// </summary>
     public static class SystemData
     {
-        public static readonly string RootDir   = Path.Combine(Root, "System-Data");
-        public static readonly string Cache     = Path.Combine(RootDir, "Cache");
-        public static readonly string Config    = Path.Combine(RootDir, "Configuration");
-        public static readonly string Database  = Path.Combine(RootDir, "Database");
-        public static readonly string Logs      = Path.Combine(RootDir, "Logs");
-        public static readonly string Temp      = Path.Combine(RootDir, "Temp");
+        public static readonly string RootDir = Path.Combine(Root, "System-Data");
+        public static readonly string Cache = Path.Combine(RootDir, "Cache");
+        public static readonly string Config = Path.Combine(RootDir, "Configuration");
+        public static readonly string Database = Path.Combine(RootDir, "Database");
+        public static readonly string Logs = Path.Combine(RootDir, "Logs");
+        public static readonly string Temp = Path.Combine(RootDir, "Temp");
 
         // We may create this subfolder for model presets.
         public static readonly string ModelPresets = Path.Combine(Config, "Model-Presets");
 
         // Additional configuration subfolders
-        public static readonly string Config_App      = Path.Combine(Config, "App");
-        public static readonly string Config_Paths    = Path.Combine(Config, "Paths");
-        public static readonly string Config_Theme    = Path.Combine(Config, "UI-Theme");
+        public static readonly string Config_App = Path.Combine(Config, "App");
+        public static readonly string Config_Paths = Path.Combine(Config, "Paths");
+        public static readonly string Config_Theme = Path.Combine(Config, "UI-Theme");
         public static readonly string TrainingRecipes = Path.Combine(Config, "Training-Recipes");
-        public static readonly string Pipelines       = Path.Combine(Config, "Pipelines");
+        public static readonly string Pipelines = Path.Combine(Config, "Pipelines");
         // Asset pipeline system data
-        public static readonly string Thumbnails      = Path.Combine(RootDir, "Thumbnails");
-        public static readonly string Thumbnails3D    = Path.Combine(Thumbnails, "3D");
-        public static readonly string Physics         = Path.Combine(RootDir, "Physics");
-        public static readonly string Physics_Meshes  = Path.Combine(Physics, "Meshes");
-        public static readonly string Tools           = Path.Combine(RootDir, "Tools");
-        public static readonly string Tools_Ffmpeg    = Path.Combine(Tools, "ffmpeg");
-        public static readonly string Tools_Ktx       = Path.Combine(Tools, "ktx");
-        public static readonly string Tools_Basisu    = Path.Combine(Tools, "basisu");
+        public static readonly string Thumbnails = Path.Combine(RootDir, "Thumbnails");
+        public static readonly string Thumbnails3D = Path.Combine(Thumbnails, "3D");
+        public static readonly string Physics = Path.Combine(RootDir, "Physics");
+        public static readonly string Physics_Meshes = Path.Combine(Physics, "Meshes");
+        public static readonly string Tools = Path.Combine(RootDir, "Tools");
+        public static readonly string Tools_Ffmpeg = Path.Combine(Tools, "ffmpeg");
+        public static readonly string Tools_Ktx = Path.Combine(Tools, "ktx");
+        public static readonly string Tools_Basisu = Path.Combine(Tools, "basisu");
         public static readonly string Tools_GltfTransform = Path.Combine(Tools, "gltf-transform");
-        public static readonly string Tools_Gltfpack  = Path.Combine(Tools, "gltfpack");
+        public static readonly string Tools_Gltfpack = Path.Combine(Tools, "gltfpack");
 
         /// <summary>
         /// Training workspace under %LOCALAPPDATA%\Lazarus\System-Data\Training
@@ -219,16 +219,16 @@ public static class LazarusPaths
             public static readonly string RootDir = Path.Combine(SystemData.RootDir, "Training");
 
             // Datasets normalized for trainers (JSONL/parquet etc.)
-            public static readonly string DatasetsRoot        = Path.Combine(RootDir, "Datasets");
+            public static readonly string DatasetsRoot = Path.Combine(RootDir, "Datasets");
             public static readonly string Datasets_Conversations = Path.Combine(DatasetsRoot, "Conversations");
-            public static readonly string Datasets_Preferences    = Path.Combine(DatasetsRoot, "Preferences");
-            public static readonly string Datasets_Eval           = Path.Combine(DatasetsRoot, "Eval");
+            public static readonly string Datasets_Preferences = Path.Combine(DatasetsRoot, "Preferences");
+            public static readonly string Datasets_Eval = Path.Combine(DatasetsRoot, "Eval");
 
             // Jobs: per-run working directories with manifests/config/checkpoints
-            public static readonly string JobsRoot    = Path.Combine(RootDir, "Jobs");
+            public static readonly string JobsRoot = Path.Combine(RootDir, "Jobs");
 
             // Outputs copied/promoted from Jobs/<id>/artifacts
-            public static readonly string OutputsRoot   = Path.Combine(RootDir, "Outputs");
+            public static readonly string OutputsRoot = Path.Combine(RootDir, "Outputs");
             public static readonly string Outputs_Adapters = Path.Combine(OutputsRoot, "Adapters");
         }
     }
@@ -238,16 +238,16 @@ public static class LazarusPaths
     /// </summary>
     public static class Audio
     {
-        public static readonly string RootDir   = Path.Combine(Root, "Audio");
-        public static readonly string Input     = Path.Combine(RootDir, "Input");
+        public static readonly string RootDir = Path.Combine(Root, "Audio");
+        public static readonly string Input = Path.Combine(RootDir, "Input");
         public static readonly string Processed = Path.Combine(RootDir, "Processed");
-        public static readonly string Temp      = Path.Combine(RootDir, "Temp");
-        public static readonly string Models    = Path.Combine(RootDir, "Models");
-        public static readonly string Models_Asr   = Path.Combine(Models, "ASR");
-        public static readonly string Models_Tts   = Path.Combine(Models, "TTS");
+        public static readonly string Temp = Path.Combine(RootDir, "Temp");
+        public static readonly string Models = Path.Combine(RootDir, "Models");
+        public static readonly string Models_Asr = Path.Combine(Models, "ASR");
+        public static readonly string Models_Tts = Path.Combine(Models, "TTS");
         public static readonly string Models_Tts_Piper = Path.Combine(Models_Tts, "Piper");
-        public static readonly string Models_Vad   = Path.Combine(Models, "VAD");
-        public static readonly string Engines   = Path.Combine(RootDir, "Engines");
+        public static readonly string Models_Vad = Path.Combine(Models, "VAD");
+        public static readonly string Engines = Path.Combine(RootDir, "Engines");
         public static readonly string Waveforms = Path.Combine(Temp, "waveforms");
 
         /// <summary>
@@ -271,11 +271,11 @@ public static class LazarusPaths
     /// </summary>
     public static class UserContent
     {
-        public static readonly string RootDir         = Path.Combine(Root, "User-Content");
+        public static readonly string RootDir = Path.Combine(Root, "User-Content");
         public static readonly string GeneratedOutput = Path.Combine(RootDir, "Generated-Output");
-        public static readonly string InputFiles      = Path.Combine(RootDir, "Input-Files");
-        public static readonly string Projects        = Path.Combine(RootDir, "Projects");
-        public static readonly string Scratch         = Path.Combine(RootDir, "Scratch");
+        public static readonly string InputFiles = Path.Combine(RootDir, "Input-Files");
+        public static readonly string Projects = Path.Combine(RootDir, "Projects");
+        public static readonly string Scratch = Path.Combine(RootDir, "Scratch");
     }
 
     /// <summary>
@@ -283,48 +283,48 @@ public static class LazarusPaths
     /// </summary>
     public static class Runners
     {
-        public static readonly string RootDir  = Path.Combine(Root, "Runners");
+        public static readonly string RootDir = Path.Combine(Root, "Runners");
 
         // Domain roots
-        public static readonly string ChatsRoot   = Path.Combine(RootDir, "Chats");
-        public static readonly string ImagesRoot  = Path.Combine(RootDir, "Images");
-        public static readonly string VideosRoot  = Path.Combine(RootDir, "Videos");
-        public static readonly string AudioRoot   = Path.Combine(RootDir, "Audio");
+        public static readonly string ChatsRoot = Path.Combine(RootDir, "Chats");
+        public static readonly string ImagesRoot = Path.Combine(RootDir, "Images");
+        public static readonly string VideosRoot = Path.Combine(RootDir, "Videos");
+        public static readonly string AudioRoot = Path.Combine(RootDir, "Audio");
         public static readonly string AvatarsRoot = Path.Combine(RootDir, "Avatars");
-        public static readonly string SharedRoot  = Path.Combine(RootDir, "Shared");
+        public static readonly string SharedRoot = Path.Combine(RootDir, "Shared");
 
         // Chats engines
         public static readonly string Chats_LlamaCpp = Path.Combine(ChatsRoot, "llama.cpp");
-        public static readonly string Chats_Vllm     = Path.Combine(ChatsRoot, "vllm");
-        public static readonly string Chats_ExLlamaV2= Path.Combine(ChatsRoot, "exllamav2");
+        public static readonly string Chats_Vllm = Path.Combine(ChatsRoot, "vllm");
+        public static readonly string Chats_ExLlamaV2 = Path.Combine(ChatsRoot, "exllamav2");
 
         // Images engines
         public static readonly string Images_StableDiffusion = Path.Combine(ImagesRoot, "stable-diffusion");
         public static readonly string Images_ComfyUi = Path.Combine(ImagesRoot, "comfyui");
         public static readonly string Images_SdWebUi = Path.Combine(ImagesRoot, "sdwebui");
-        public static readonly string Images_InvokeAi= Path.Combine(ImagesRoot, "invokeai");
+        public static readonly string Images_InvokeAi = Path.Combine(ImagesRoot, "invokeai");
 
         // Videos engines
-        public static readonly string Videos_AnimateDiff  = Path.Combine(VideosRoot, "animatediff");
-        public static readonly string Videos_Svd          = Path.Combine(VideosRoot, "svd");
-        public static readonly string Videos_Rife         = Path.Combine(VideosRoot, "rife");
+        public static readonly string Videos_AnimateDiff = Path.Combine(VideosRoot, "animatediff");
+        public static readonly string Videos_Svd = Path.Combine(VideosRoot, "svd");
+        public static readonly string Videos_Rife = Path.Combine(VideosRoot, "rife");
 
         // Audio engines
         public static readonly string Audio_FasterWhisper = Path.Combine(AudioRoot, "faster-whisper");
-        public static readonly string Audio_Piper         = Path.Combine(AudioRoot, "piper");
-        public static readonly string Audio_Rvc           = Path.Combine(AudioRoot, "rvc");
-        public static readonly string Audio_NoiseReduction= Path.Combine(AudioRoot, "noise-reduction");
+        public static readonly string Audio_Piper = Path.Combine(AudioRoot, "piper");
+        public static readonly string Audio_Rvc = Path.Combine(AudioRoot, "rvc");
+        public static readonly string Audio_NoiseReduction = Path.Combine(AudioRoot, "noise-reduction");
 
         // Avatar engines
-        public static readonly string Avatars_Rhubarb   = Path.Combine(AvatarsRoot, "rhubarb");
-        public static readonly string Avatars_TripoSr   = Path.Combine(AvatarsRoot, "tripo-sr");
-        public static readonly string Avatars_Nerfstudio= Path.Combine(AvatarsRoot, "nerfstudio");
+        public static readonly string Avatars_Rhubarb = Path.Combine(AvatarsRoot, "rhubarb");
+        public static readonly string Avatars_TripoSr = Path.Combine(AvatarsRoot, "tripo-sr");
+        public static readonly string Avatars_Nerfstudio = Path.Combine(AvatarsRoot, "nerfstudio");
 
         // Shared
         public static readonly string Shared_Ffmpeg = Path.Combine(SharedRoot, "ffmpeg");
-        public static readonly string Shared_Utils  = Path.Combine(SharedRoot, "utils");
+        public static readonly string Shared_Utils = Path.Combine(SharedRoot, "utils");
         // Helix/Assimp caches
-        public static readonly string HelixRoot    = Path.Combine(RootDir, "Helix");
+        public static readonly string HelixRoot = Path.Combine(RootDir, "Helix");
         public static readonly string Helix_AssimpCache = Path.Combine(HelixRoot, "Assimp-Cache");
 
         /// <summary>

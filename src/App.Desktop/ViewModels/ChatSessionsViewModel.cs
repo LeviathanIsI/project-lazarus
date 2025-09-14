@@ -32,32 +32,32 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         private DateTime _timestamp = DateTime.Now;
         private bool _isStreaming;
 
-        public string Role 
-        { 
-            get => _role; 
-            set { if (_role != value) { _role = value; OnPropertyChanged(); } } 
+        public string Role
+        {
+            get => _role;
+            set { if (_role != value) { _role = value; OnPropertyChanged(); } }
         }
-        
-        public string Content 
-        { 
-            get => _content; 
-            set { if (_content != value) { _content = value; OnPropertyChanged(); } } 
+
+        public string Content
+        {
+            get => _content;
+            set { if (_content != value) { _content = value; OnPropertyChanged(); } }
         }
-        
-        public DateTime Timestamp 
-        { 
-            get => _timestamp; 
-            set { if (_timestamp != value) { _timestamp = value; OnPropertyChanged(); } } 
+
+        public DateTime Timestamp
+        {
+            get => _timestamp;
+            set { if (_timestamp != value) { _timestamp = value; OnPropertyChanged(); } }
         }
-        
-        public bool IsStreaming 
-        { 
-            get => _isStreaming; 
-            set { if (_isStreaming != value) { _isStreaming = value; OnPropertyChanged(); } } 
+
+        public bool IsStreaming
+        {
+            get => _isStreaming;
+            set { if (_isStreaming != value) { _isStreaming = value; OnPropertyChanged(); } }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string? name = null) 
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
@@ -190,7 +190,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     }
 
     public ObservableCollection<MessageVm> Messages { get; }
-    
+
     // Allow navigation to trigger a fresh load after startup settles
     public async Task RefreshConversationsAsync()
     {
@@ -322,7 +322,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     {
         ModelName = state.ModelName ?? "No model loaded";
         IsHealthy = state.IsHealthy;
-        
+
         if (!IsHealthy)
         {
             ErrorMessage = "Model not loaded. Please load a model first.";
@@ -335,7 +335,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
 
     private async Task SendMessageAsync()
     {
-        try 
+        try
         {
             if (!IsHealthy || string.IsNullOrWhiteSpace(InputText) || IsStreaming)
                 return;
@@ -679,7 +679,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private object BuildRequest()
     {
         var messages = BuildRequestMessages();
-        
+
         return new
         {
             model = LlamaModelId,
@@ -760,14 +760,14 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     protected override void Dispose(bool disposing)
     {
         if (_disposed) return;
-        
+
         if (disposing)
         {
             _cts?.Cancel();
             _runnerStatus.RunnerStateChanged -= OnRunnerStateChanged;
             _httpClient?.Dispose();
         }
-        
+
         _disposed = true;
         base.Dispose(disposing);
     }

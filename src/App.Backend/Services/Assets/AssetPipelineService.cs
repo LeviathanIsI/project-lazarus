@@ -42,7 +42,7 @@ public sealed class AssetPipelineService : IAssetPipelineService
 
         using var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
         proc.OutputDataReceived += (_, e) => { if (e.Data != null) stdout.AppendLine(e.Data); };
-        proc.ErrorDataReceived  += (_, e) => { if (e.Data != null) stderr.AppendLine(e.Data); };
+        proc.ErrorDataReceived += (_, e) => { if (e.Data != null) stderr.AppendLine(e.Data); };
 
         _logger.LogInformation("Running {Tool} {Args}", tool, arguments);
         proc.Start();

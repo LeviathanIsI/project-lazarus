@@ -12,30 +12,30 @@ public class LoggingSettingsViewModel : SettingsSectionBase
     private bool _enableLogging = true;
     private string _logLevel = "Information";
     private string _logFormat = "PlainText";
-    
+
     // File Logging
     private bool _logToFile = true;
     private string _logDirectory = "";
     private int _maxFileSize = 10;
     private string _fileRotation = "Daily";
     private int _retentionDays = 30;
-    
+
     // Performance Logging
     private bool _logPerformanceMetrics;
     private bool _logModelInference;
     private bool _logApiCalls;
-    
+
     // Debug & Diagnostics
     private bool _enableVerboseLogging;
     private bool _logStackTraces = true;
     private bool _logSensitiveData;
     private bool _logToConsole = true;
-    
+
     // Crash Reporting
     private bool _sendCrashReports;
     private bool _includeSystemInfo = true;
     private bool _createLocalDumps = true;
-    
+
     // Legacy properties for compatibility
     private int _maxLogSizeMB;
     private int _logRetentionDays;
@@ -49,7 +49,7 @@ public class LoggingSettingsViewModel : SettingsSectionBase
         OpenLogFolderCommand = new RelayCommand(OpenLogFolder);
         ClearLogsCommand = new RelayCommand(ClearLogs);
         ResetToDefaultCommand = new RelayCommand(() => { ResetToDefault(); OnPropertyChanged(""); });
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -273,38 +273,38 @@ public class LoggingSettingsViewModel : SettingsSectionBase
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
-        
+
         // Load saved settings
         LogLevel = settings.LogLevel;
         MaxLogSizeMB = settings.MaxLogSizeMB;
         LogRetentionDays = settings.LogRetentionDays;
         ConsoleOutput = settings.ConsoleOutput;
-        
+
         // Initialize all properties with defaults
         EnableLogging = true;
         LogToFile = true;
         LogDirectory = SettingsPaths.LogsDirectory;
         LogFormat = "PlainText";
-        
+
         MaxFileSize = MaxLogSizeMB > 0 ? MaxLogSizeMB : 10;
         FileRotation = "Daily";
         RetentionDays = LogRetentionDays > 0 ? LogRetentionDays : 30;
-        
+
         LogPerformanceMetrics = false;
         LogModelInference = false;
         LogApiCalls = false;
-        
+
         EnableVerboseLogging = false;
         LogStackTraces = true;
         LogSensitiveData = false;
         LogToConsole = ConsoleOutput;
-        
+
         SendCrashReports = false;
         IncludeSystemInfo = true;
         CreateLocalDumps = true;
-        
+
         LoggingEnableStructured = true;
-        
+
         // Fix empty values
         if (string.IsNullOrEmpty(LogLevel)) LogLevel = "Information";
         if (MaxFileSize == 0) MaxFileSize = 10;
@@ -327,7 +327,7 @@ public class LoggingSettingsViewModel : SettingsSectionBase
         EnableLogging = true;
         LogLevel = "Information";
         LogFormat = "PlainText";
-        
+
         // File Logging
         LogToFile = true;
         try
@@ -341,23 +341,23 @@ public class LoggingSettingsViewModel : SettingsSectionBase
         MaxFileSize = 10;
         FileRotation = "Daily";
         RetentionDays = 30;
-        
+
         // Performance Logging
         LogPerformanceMetrics = false;
         LogModelInference = false;
         LogApiCalls = false;
-        
+
         // Debug & Diagnostics
         EnableVerboseLogging = false;
         LogStackTraces = true;
         LogSensitiveData = false;
         LogToConsole = true;
-        
+
         // Crash Reporting
         SendCrashReports = false;
         IncludeSystemInfo = true;
         CreateLocalDumps = true;
-        
+
         // Legacy properties
         MaxLogSizeMB = 10;
         LogRetentionDays = 30;

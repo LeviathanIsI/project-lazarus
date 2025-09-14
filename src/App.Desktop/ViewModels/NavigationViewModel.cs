@@ -237,7 +237,7 @@ namespace Lazarus.Desktop.ViewModels
             {
                 // Create the ViewModels using DI
                 var settingsViewModel = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
-                
+
                 // Try to create SettingsShell first
                 try
                 {

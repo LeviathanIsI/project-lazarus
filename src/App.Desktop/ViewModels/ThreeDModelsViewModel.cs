@@ -293,7 +293,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
         }
     }
 
-    
+
 
     private static string FormatBytes(long bytes)
     {
@@ -307,7 +307,7 @@ public sealed class ThreeDModelsViewModel : ViewModelBase, IDisposable
     protected override void OnDisposing()
     {
         try { _watchImport?.Dispose(); } catch { }
-        
+
         base.OnDisposing();
     }
 }

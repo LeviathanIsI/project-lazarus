@@ -19,12 +19,12 @@ public sealed class AudioServicePreview : IAudioService
     private readonly List<AudioItem> _previewItems = new();
     private readonly Dictionary<string, AudioAnalysis> _analyses = new();
     private readonly Dictionary<string, float[]> _waveformCache = new();
-    
+
     public AudioServicePreview()
     {
         GeneratePreviewItems();
     }
-    
+
     private void GeneratePreviewItems()
     {
         var random = new Random();
@@ -39,13 +39,13 @@ public sealed class AudioServicePreview : IAudioService
             "Voice Memo - Project Ideas.m4a",
             "Electronic Mix Vol.3.mp3"
         };
-        
+
         for (int i = 0; i < fileNames.Length; i++)
         {
             var id = Guid.NewGuid().ToString();
             var duration = TimeSpan.FromSeconds(random.Next(30, 600));
             var sizeBytes = random.Next(1_000_000, 50_000_000);
-            
+
             var item = new AudioItem
             {
                 Id = id,
@@ -63,13 +63,13 @@ public sealed class AudioServicePreview : IAudioService
                 HasAnalysis = true,
                 AnalyzedUtc = DateTime.UtcNow
             };
-            
+
             _previewItems.Add(item);
-            
+
             // Generate waveform for this item
             var samples = GeneratePreviewWaveform(i);
             _waveformCache[id] = samples;
-            
+
             // Create analysis
             var analysis = new AudioAnalysis
             {
@@ -86,55 +86,55 @@ public sealed class AudioServicePreview : IAudioService
                 CodecName = item.Format,
                 TotalSamples = (long)(duration.TotalSeconds * item.SampleRate)
             };
-            
+
             _analyses[id] = analysis;
         }
     }
-    
+
     private float[] GeneratePreviewWaveform(int seed)
     {
         var random = new Random(seed);
         int sampleCount = 44100 * 5; // 5 seconds worth
-        
+
         // Mix different frequencies
         var freq1 = 200f + random.Next(0, 500);
         var freq2 = 400f + random.Next(0, 800);
         var freq3 = 800f + random.Next(0, 1200);
-        
+
         var sine1 = WaveformPng.GenerateSineWave(sampleCount, freq1, 0.3f);
         var sine2 = WaveformPng.GenerateSineWave(sampleCount, freq2, 0.2f);
         var sine3 = WaveformPng.GenerateSineWave(sampleCount, freq3, 0.1f);
         var noise = WaveformPng.GenerateNoise(sampleCount, 0.05f);
-        
+
         var mixed = WaveformPng.MixSignals(sine1, sine2, sine3, noise);
-        
+
         // Apply random envelope
         float attack = 0.05f + (float)random.NextDouble() * 0.15f;
         float decay = 0.05f + (float)random.NextDouble() * 0.1f;
         float sustain = 0.6f + (float)random.NextDouble() * 0.3f;
         float release = 0.1f + (float)random.NextDouble() * 0.2f;
-        
+
         return WaveformPng.ApplyEnvelope(mixed, attack, decay, sustain, release);
     }
-    
+
     private string GenerateHash()
     {
         var bytes = new byte[32];
         new Random().NextBytes(bytes);
         return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
     }
-    
+
     public Task<IReadOnlyList<AudioItem>> ListAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<AudioItem>>(_previewItems.AsReadOnly());
     }
-    
+
     public Task<AudioItem?> ImportAsync(string sourcePath, CancellationToken cancellationToken = default)
     {
         // In preview mode, create a fake import
         var fileName = System.IO.Path.GetFileName(sourcePath);
         var id = Guid.NewGuid().ToString();
-        
+
         var item = new AudioItem
         {
             Id = id,
@@ -151,11 +151,11 @@ public sealed class AudioServicePreview : IAudioService
             Format = System.IO.Path.GetExtension(fileName).TrimStart('.').ToUpperInvariant(),
             HasAnalysis = false
         };
-        
+
         _previewItems.Add(item);
         return Task.FromResult<AudioItem?>(item);
     }
-    
+
     public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         _previewItems.RemoveAll(x => x.Id == id);
@@ -163,20 +163,20 @@ public sealed class AudioServicePreview : IAudioService
         _waveformCache.Remove(id);
         return Task.CompletedTask;
     }
-    
+
     public Task<AudioAnalysis> AnalyzeAsync(string id, bool force, CancellationToken cancellationToken = default)
     {
         if (!force && _analyses.TryGetValue(id, out var existing))
             return Task.FromResult(existing);
-        
+
         var item = _previewItems.FirstOrDefault(x => x.Id == id);
         if (item == null)
             throw new InvalidOperationException($"Audio item {id} not found");
-        
+
         // Generate new analysis
         var samples = GeneratePreviewWaveform(id.GetHashCode());
         _waveformCache[id] = samples;
-        
+
         var analysis = new AudioAnalysis
         {
             Id = id,
@@ -192,23 +192,23 @@ public sealed class AudioServicePreview : IAudioService
             CodecName = item.Format,
             TotalSamples = (long)(item.Duration.TotalSeconds * item.SampleRate)
         };
-        
+
         _analyses[id] = analysis;
         item.HasAnalysis = true;
         item.AnalyzedUtc = DateTime.UtcNow;
-        
+
         return Task.FromResult(analysis);
     }
-    
+
     public IPlaybackSession Play(string id)
     {
         var item = _previewItems.FirstOrDefault(x => x.Id == id);
         if (item == null)
             throw new InvalidOperationException($"Audio item {id} not found");
-        
+
         return new PreviewPlaybackSession(item);
     }
-    
+
     private sealed class PreviewPlaybackSession : IPlaybackSession, INotifyPropertyChanged
     {
         private readonly AudioItem _item;
@@ -217,7 +217,7 @@ public sealed class AudioServicePreview : IAudioService
         private PlaybackState _state;
         private float _volume = 1.0f;
         private bool _disposed;
-        
+
         public PreviewPlaybackSession(AudioItem item)
         {
             _item = item;
@@ -227,9 +227,9 @@ public sealed class AudioServicePreview : IAudioService
             _state = PlaybackState.Playing;
             _timer.Start();
         }
-        
+
         public string AudioId { get; }
-        
+
         public TimeSpan Position
         {
             get => _position;
@@ -243,9 +243,9 @@ public sealed class AudioServicePreview : IAudioService
                 }
             }
         }
-        
+
         public TimeSpan Duration => _item.Duration;
-        
+
         public PlaybackState State
         {
             get => _state;
@@ -260,7 +260,7 @@ public sealed class AudioServicePreview : IAudioService
                 }
             }
         }
-        
+
         public float Volume
         {
             get => _volume;
@@ -270,11 +270,11 @@ public sealed class AudioServicePreview : IAudioService
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Volume)));
             }
         }
-        
+
         public event EventHandler<PlaybackStateChangedEventArgs>? StateChanged;
         public event EventHandler<TimeSpan>? PositionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
-        
+
         private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
         {
             if (_state == PlaybackState.Playing)
@@ -287,26 +287,26 @@ public sealed class AudioServicePreview : IAudioService
                 }
             }
         }
-        
+
         public void Pause()
         {
             State = PlaybackState.Paused;
             _timer.Stop();
         }
-        
+
         public void Resume()
         {
             State = PlaybackState.Playing;
             _timer.Start();
         }
-        
+
         public void Stop()
         {
             State = PlaybackState.Stopped;
             _timer.Stop();
             Position = TimeSpan.Zero;
         }
-        
+
         public void Dispose()
         {
             if (!_disposed)

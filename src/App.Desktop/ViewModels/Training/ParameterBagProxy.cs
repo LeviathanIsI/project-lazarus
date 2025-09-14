@@ -13,18 +13,18 @@ namespace Lazarus.Desktop.ViewModels.Training
     {
         private TrainingJob? _currentJob;
         private readonly TrainingDraft _draft;
-        
+
         public ParameterBagProxy(TrainingDraft draft)
         {
             _draft = draft ?? throw new ArgumentNullException(nameof(draft));
         }
-        
+
         public void SetCurrentJob(TrainingJob? job)
         {
             _currentJob = job;
             OnPropertyChanged(); // Notify all indexed properties may have changed
         }
-        
+
         public string this[string key]
         {
             get
@@ -49,7 +49,7 @@ namespace Lazarus.Desktop.ViewModels.Training
                 OnPropertyChanged($"Item[{key}]");
             }
         }
-        
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {

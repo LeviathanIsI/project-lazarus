@@ -55,9 +55,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\lazarus-logo.png.png">
-      <LogicalName>LazarusLogo.png</LogicalName>
-    </Resource>
+    <Resource Include="Assets\lazarus-logo.png.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    
   </ItemGroup>
 
 </Project>
