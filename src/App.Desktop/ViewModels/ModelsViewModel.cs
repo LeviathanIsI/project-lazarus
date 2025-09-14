@@ -563,8 +563,8 @@ public sealed class ModelsViewModel : ViewModelBase
         return engine switch
         {
             "llama.cpp" => model.Format == ModelFormat.GGUF,
-            "vllm" => model.Format == ModelFormat.HF,
-            "exllamav2" => model.Format == ModelFormat.HF,
+            "vllm" => model.Format == ModelFormat.HF || model.Format == ModelFormat.ONNX, // vLLM supports HF and ONNX
+            "exllamav2" => model.Format == ModelFormat.HF, // ExLlamaV2 primarily for HF models
             _ => false
         };
     }

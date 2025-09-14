@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Lazarus.Shared;
+using static Lazarus.Shared.ModelDetector;
 
 namespace Lazarus.Backend.Services;
 
@@ -38,37 +39,41 @@ public sealed class ModelInventoryService : IModelInventoryService
         var list = new List<BaseModelInfo>();
         if (!Directory.Exists(LazarusPaths.Models.BaseModels)) return list;
 
-        foreach (var path in Directory.EnumerateFiles(LazarusPaths.Models.BaseModels, "*.*", SearchOption.AllDirectories))
+        // Scan files first
+        foreach (var filePath in Directory.EnumerateFiles(LazarusPaths.Models.BaseModels, "*.*", SearchOption.AllDirectories))
         {
-            var ext = Path.GetExtension(path).ToLowerInvariant();
-            if (ext == ".gguf")
+            var detection = ModelDetector.DetectFormat(filePath);
+            if (detection != null)
             {
-                var key = Path.GetFileNameWithoutExtension(path);
+                var key = Path.GetFileNameWithoutExtension(filePath);
                 list.Add(new BaseModelInfo(
                     ModelKey: key,
                     DisplayName: key.Replace('_', ' ').Replace('-', ' '),
-                    Format: ModelFormat.GGUF,
-                    FilePath: path,
-                    PreferredRunner: RunnerKind.LlamaCpp
-                ));
-            }
-            else if (Path.GetFileName(path).Equals("config.json", StringComparison.OrdinalIgnoreCase) ||
-                     ext == ".safetensors")
-            {
-                // Heuristic for HF folders: presence of config.json or safetensors
-                var folder = Directory.GetParent(path)!.FullName;
-                var key = new DirectoryInfo(folder).Name;
-                var mainFile = File.Exists(Path.Combine(folder, "config.json")) ? Path.Combine(folder, "config.json") : path;
-                list.Add(new BaseModelInfo(
-                    ModelKey: key,
-                    DisplayName: key.Replace('_', ' ').Replace('-', ' '),
-                    Format: ModelFormat.HF,
-                    FilePath: mainFile,
-                    PreferredRunner: RunnerKind.Vllm
+                    Format: detection.Format,
+                    FilePath: filePath,
+                    PreferredRunner: detection.PreferredRunner
                 ));
             }
         }
-        // de-dupe by key, prefer GGUF if both detected
+
+        // Scan directories for folder-based models (like HuggingFace repos)
+        foreach (var dirPath in Directory.EnumerateDirectories(LazarusPaths.Models.BaseModels, "*", SearchOption.TopDirectoryOnly))
+        {
+            var detection = ModelDetector.DetectFormat(dirPath);
+            if (detection != null)
+            {
+                var key = new DirectoryInfo(dirPath).Name;
+                list.Add(new BaseModelInfo(
+                    ModelKey: key,
+                    DisplayName: key.Replace('_', ' ').Replace('-', ' '),
+                    Format: detection.Format,
+                    FilePath: dirPath,
+                    PreferredRunner: detection.PreferredRunner
+                ));
+            }
+        }
+
+        // De-dupe by key, prefer GGUF if both detected (maintains backward compatibility)
         return list.GroupBy(m => m.ModelKey).Select(g =>
             g.OrderBy(m => m.Format == ModelFormat.GGUF ? 0 : 1).First()
         ).OrderBy(m => m.DisplayName).ToList();
@@ -138,6 +143,28 @@ public sealed class ModelInventoryService : IModelInventoryService
         catch
         {
             return Array.Empty<string>();
+        }
+    }
+
+    /// <summary>
+    /// Simple test method to validate ModelDetector functionality.
+    /// </summary>
+    public static void TestModelDetection()
+    {
+        var testPaths = new[]
+        {
+            @"C:\Users\Josh\AppData\Local\Lazarus\Models\Base-Models\test-model.gguf",
+            @"C:\Users\Josh\AppData\Local\Lazarus\Models\Base-Models\test-model.bin",
+            @"C:\Users\Josh\AppData\Local\Lazarus\Models\Base-Models\test-model.safetensors",
+            @"C:\Users\Josh\AppData\Local\Lazarus\Models\Base-Models\Qwen3-Coder-30B-A3B-Instruct"
+        };
+
+        Console.WriteLine("Testing ModelDetector:");
+        foreach (var path in testPaths)
+        {
+            var result = ModelDetector.DetectFormat(path);
+            Console.WriteLine($"Path: {Path.GetFileName(path)}");
+            Console.WriteLine($"  Detected: Format={result?.Format ?? ModelFormat.Unknown}, Runner={result?.PreferredRunner ?? RunnerKind.Unknown}");
         }
     }
 }
