@@ -13,7 +13,7 @@ namespace Lazarus.Desktop.Views
         private readonly Stopwatch _sw = new();
         private readonly DispatcherTimer _tracerTimer;
         private double _progress01; // 0..1
-        
+
 
         public StartupWindow()
         {

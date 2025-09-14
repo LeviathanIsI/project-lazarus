@@ -24,11 +24,11 @@ public sealed class ModelInventoryService : IModelInventoryService
         return new ModelInventory
         {
             BaseModels = baseModels,
-            Loras      = ScanFiles(LazarusPaths.Models.LoRAAdapters,  new[] { ".safetensors", ".gguf", ".pt", ".bin" })
+            Loras = ScanFiles(LazarusPaths.Models.LoRAAdapters, new[] { ".safetensors", ".gguf", ".pt", ".bin" })
                           .Select(p => new AdapterInfo(Path.GetFileNameWithoutExtension(p), p)).ToList(),
-            Tokenizers = ScanFiles(LazarusPaths.Models.Tokenizers,    new[] { "tokenizer.json", ".model", ".spm", ".txt", ".vocab" })
+            Tokenizers = ScanFiles(LazarusPaths.Models.Tokenizers, new[] { "tokenizer.json", ".model", ".spm", ".txt", ".vocab" })
                           .Select(p => new TokenizerInfo(Path.GetFileName(p), p)).ToList(),
-            Embeddings = ScanFiles(LazarusPaths.Models.Embeddings,    new[] { ".gguf", ".bin", ".onnx", ".safetensors" })
+            Embeddings = ScanFiles(LazarusPaths.Models.Embeddings, new[] { ".gguf", ".bin", ".onnx", ".safetensors" })
                           .Select(p => new EmbeddingInfo(Path.GetFileNameWithoutExtension(p), p)).ToList()
         };
     }
@@ -46,7 +46,7 @@ public sealed class ModelInventoryService : IModelInventoryService
                 var key = Path.GetFileNameWithoutExtension(path);
                 list.Add(new BaseModelInfo(
                     ModelKey: key,
-                    DisplayName: key.Replace('_',' ').Replace('-',' '),
+                    DisplayName: key.Replace('_', ' ').Replace('-', ' '),
                     Format: ModelFormat.GGUF,
                     FilePath: path,
                     PreferredRunner: RunnerKind.LlamaCpp
@@ -61,7 +61,7 @@ public sealed class ModelInventoryService : IModelInventoryService
                 var mainFile = File.Exists(Path.Combine(folder, "config.json")) ? Path.Combine(folder, "config.json") : path;
                 list.Add(new BaseModelInfo(
                     ModelKey: key,
-                    DisplayName: key.Replace('_',' ').Replace('-',' '),
+                    DisplayName: key.Replace('_', ' ').Replace('-', ' '),
                     Format: ModelFormat.HF,
                     FilePath: mainFile,
                     PreferredRunner: RunnerKind.Vllm
@@ -80,7 +80,7 @@ public sealed class ModelInventoryService : IModelInventoryService
         foreach (var file in Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories))
         {
             var name = Path.GetFileName(file).ToLowerInvariant();
-            var ext  = Path.GetExtension(file).ToLowerInvariant();
+            var ext = Path.GetExtension(file).ToLowerInvariant();
             if (patterns.Any(p => p.StartsWith(".") ? ext == p : name == p))
                 yield return file;
         }

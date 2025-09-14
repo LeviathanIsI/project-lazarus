@@ -21,7 +21,7 @@ namespace Lazarus.Desktop.Views
     public partial class ImagesView : UserControl, System.ComponentModel.INotifyPropertyChanged
     {
         private Lazarus.Desktop.ViewModels.ImagesViewModel? _vm;
-        
+
         private sealed class RelayCommand : ICommand
         {
             private readonly Action _exec;
@@ -337,7 +337,7 @@ namespace Lazarus.Desktop.Views
                     }
                     catch { }
                 };
-                proc.ErrorDataReceived  += (_, e) =>
+                proc.ErrorDataReceived += (_, e) =>
                 {
                     try
                     {
@@ -511,14 +511,14 @@ namespace Lazarus.Desktop.Views
                 // Default mode selection
                 Mode = ImageMode.Txt2Img;
                 RefreshAssets();
-                
+
                 // Helpful tooltips showing actual directories
-                ControlNetCombo.ToolTip  = LazarusPaths.GenAssets.ControlNet;
-                LoraCombo.ToolTip        = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_LoRAs, LazarusPaths.GenAssets.StylePresets);
-                EmbeddingCombo.ToolTip   = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Embeddings, LazarusPaths.GenAssets.StylePresets);
-                HyperCombo.ToolTip       = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Hypernetworks, LazarusPaths.GenAssets.StylePresets);
-                UpscalerCombo.ToolTip    = LazarusPaths.GenAssets.Upscale;
-                VaeCombo.ToolTip         = LazarusPaths.GenAssets.Vae;
+                ControlNetCombo.ToolTip = LazarusPaths.GenAssets.ControlNet;
+                LoraCombo.ToolTip = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_LoRAs, LazarusPaths.GenAssets.StylePresets);
+                EmbeddingCombo.ToolTip = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Embeddings, LazarusPaths.GenAssets.StylePresets);
+                HyperCombo.ToolTip = LazarusPaths.ResolveFirstExisting(LazarusPaths.GenAssets.StylePresets_Hypernetworks, LazarusPaths.GenAssets.StylePresets);
+                UpscalerCombo.ToolTip = LazarusPaths.GenAssets.Upscale;
+                VaeCombo.ToolTip = LazarusPaths.GenAssets.Vae;
             }
             catch
             {
@@ -587,9 +587,9 @@ namespace Lazarus.Desktop.Views
                 {
                     // Popular image engines with common entrypoints (Windows)
                     "stable-diffusion" => new[] { "webui-user.bat", "webui.bat", "launch*.bat", "start*.bat", "sd.exe", "sd*.exe" },
-                    "sdwebui"          => new[] { "webui-user.bat", "webui.bat" },
-                    "comfyui"          => new[] { "run*.bat", "main.py" },
-                    "invokeai"         => new[] { "invoke*.bat", "invokeai*.exe" },
+                    "sdwebui" => new[] { "webui-user.bat", "webui.bat" },
+                    "comfyui" => new[] { "run*.bat", "main.py" },
+                    "invokeai" => new[] { "invoke*.bat", "invokeai*.exe" },
                     _ => Array.Empty<string>()
                 };
                 if (patterns.Length == 0) continue; // skip unknown folders completely
@@ -621,7 +621,7 @@ namespace Lazarus.Desktop.Views
 
         private void RefreshAssets()
         {
-            ControlNetCombo.ItemsSource  = EnumerateFilesSafe(
+            ControlNetCombo.ItemsSource = EnumerateFilesSafe(
                 LazarusPaths.GenAssets.ControlNet,
                 new[] { ".pt", ".pth", ".onnx", ".safetensors", ".bin" }
             );
@@ -638,14 +638,14 @@ namespace Lazarus.Desktop.Views
                 LazarusPaths.GenAssets.StylePresets_Hypernetworks,
                 LazarusPaths.GenAssets.StylePresets
             );
-            SetComboItems(LoraCombo,   EnumerateFilesSafe(loraDir,  new[] { ".safetensors", ".pt", ".pth" }));
+            SetComboItems(LoraCombo, EnumerateFilesSafe(loraDir, new[] { ".safetensors", ".pt", ".pth" }));
             SetComboItems(EmbeddingCombo, EnumerateFilesSafe(embedDir, new[] { ".pt", ".bin", ".txt", ".safetensors" }));
             SetComboItems(HyperCombo, EnumerateFilesSafe(hyperDir, new[] { ".pt", ".pth" }));
-            UpscalerCombo.ItemsSource    = EnumerateFilesSafe(
+            UpscalerCombo.ItemsSource = EnumerateFilesSafe(
                 LazarusPaths.GenAssets.Upscale,
                 new[] { ".pt", ".pth", ".onnx", ".bin", ".safetensors" }
             );
-            VaeCombo.ItemsSource         = EnumerateFilesSafe(
+            VaeCombo.ItemsSource = EnumerateFilesSafe(
                 LazarusPaths.GenAssets.Vae,
                 new[] { ".pt", ".pth", ".safetensors", ".bin" }
             );

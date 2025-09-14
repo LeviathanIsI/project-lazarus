@@ -65,11 +65,11 @@ namespace Lazarus.Desktop.Views.Effects
 
             // Fit to bounds with uniform scale
             var srcBounds = g.Bounds;
-            var dst = new Rect(Padding, Padding, Math.Max(0, ActualWidth - 2*Padding), Math.Max(0, ActualHeight - 2*Padding));
-            double sx = dst.Width  / Math.Max(1, srcBounds.Width);
+            var dst = new Rect(Padding, Padding, Math.Max(0, ActualWidth - 2 * Padding), Math.Max(0, ActualHeight - 2 * Padding));
+            double sx = dst.Width / Math.Max(1, srcBounds.Width);
             double sy = dst.Height / Math.Max(1, srcBounds.Height);
             double s = Math.Min(sx, sy);
-            var tx = dst.X + (dst.Width  - srcBounds.Width  * s) * 0.5 - srcBounds.X * s;
+            var tx = dst.X + (dst.Width - srcBounds.Width * s) * 0.5 - srcBounds.X * s;
             var ty = dst.Y + (dst.Height - srcBounds.Height * s) * 0.5 - srcBounds.Y * s;
 
             // Flare (100%): pulse scale + glow
@@ -84,7 +84,7 @@ namespace Lazarus.Desktop.Views.Effects
                     _flareTcs = null;
                 }
             }
-            var pulse = _flare.IsRunning ? (1.0 + 0.15 * EaseOutCubic(1 - Math.Abs(2*flareT - 1))) : 1.0;
+            var pulse = _flare.IsRunning ? (1.0 + 0.15 * EaseOutCubic(1 - Math.Abs(2 * flareT - 1))) : 1.0;
 
             var tg = new TransformGroup();
             tg.Children.Add(new ScaleTransform(s * pulse, s * pulse));
@@ -106,7 +106,7 @@ namespace Lazarus.Desktop.Views.Effects
             if (_flare.IsRunning)
             {
                 var b = partial.Bounds;
-                var center = new Point(b.X + b.Width/2, b.Y + b.Height/3);
+                var center = new Point(b.X + b.Width / 2, b.Y + b.Height / 3);
                 double r = Math.Max(b.Width, b.Height) * (0.15 + 0.35 * flareT);
                 var bloom = new RadialGradientBrush(
                     Color.FromArgb((byte)(160 * (1.0 - flareT)), NeonColor.R, NeonColor.G, NeonColor.B),
@@ -225,7 +225,7 @@ namespace Lazarus.Desktop.Views.Effects
         {
             public readonly Point A, B;
             public readonly double Length;
-            public Line(Point a, Point b) { A = a; B = b; Length = Math.Sqrt((b.X - a.X)*(b.X - a.X) + (b.Y - a.Y)*(b.Y - a.Y)); }
+            public Line(Point a, Point b) { A = a; B = b; Length = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y)); }
         }
 
         static double EaseOutCubic(double x) => 1 - Math.Pow(1 - x, 3);

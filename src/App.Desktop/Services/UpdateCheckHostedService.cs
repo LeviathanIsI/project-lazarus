@@ -50,7 +50,7 @@ public class UpdateCheckHostedService : BackgroundService
 
             if (updateResult.IsAvailable)
             {
-                _logger.LogInformation("Update available: {Latest} (current: {Current})", 
+                _logger.LogInformation("Update available: {Latest} (current: {Current})",
                     updateResult.Latest, updateResult.Current);
 
                 // Notify the user about the available update

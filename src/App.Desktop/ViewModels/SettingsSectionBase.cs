@@ -72,11 +72,11 @@ public abstract class SettingsSectionBase : ViewModelBase
         // Don't mark as changed during initialization
         if (_isInitializing)
             return;
-            
+
         HasUnsavedChanges = true;
         _parentSettings?.MarkAsChanged();
     }
-    
+
     /// <summary>
     /// Completes initialization and allows change tracking
     /// </summary>

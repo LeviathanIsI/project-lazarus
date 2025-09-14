@@ -78,7 +78,7 @@ namespace Lazarus.Desktop.Views.Effects
                     var pen = new Pen(new SolidColorBrush(c), Math.Max(1.0, p.Size * 0.75));
                     pen.StartLineCap = PenLineCap.Round; pen.EndLineCap = PenLineCap.Round;
                     var from = new Point(p.X - p.VX * 0.02, p.Y - p.VY * 0.02);
-                    var to   = new Point(p.X, p.Y);
+                    var to = new Point(p.X, p.Y);
                     dc.DrawLine(pen, from, to);
                 }
             }

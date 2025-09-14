@@ -30,7 +30,7 @@ namespace Lazarus.Shared.Contracts
     public enum LogLevel
     {
         Debug,
-        Info, 
+        Info,
         Warning,
         Error,
         Critical

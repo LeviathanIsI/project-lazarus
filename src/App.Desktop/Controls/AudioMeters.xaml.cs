@@ -6,7 +6,7 @@ namespace Lazarus.Desktop.Controls;
 
 public partial class AudioMeters : UserControl
 {
-    public AudioMeters(){ InitializeComponent(); SizeChanged += (_, __) => UpdateHeights(); }
+    public AudioMeters() { InitializeComponent(); SizeChanged += (_, __) => UpdateHeights(); }
 
     public static readonly DependencyProperty PeakLProperty = DependencyProperty.Register(
         nameof(PeakL), typeof(float), typeof(AudioMeters), new PropertyMetadata(0f, OnAnyChanged));
@@ -31,9 +31,9 @@ public partial class AudioMeters : UserControl
     {
         var h = Math.Max(0, ActualHeight - 2);
         LPeak.Height = h * Clamp01(PeakL);
-        LRms.Height  = h * Clamp01(RmsL);
+        LRms.Height = h * Clamp01(RmsL);
         RPeak.Height = h * Clamp01(PeakR);
-        RRms.Height  = h * Clamp01(RmsR);
+        RRms.Height = h * Clamp01(RmsR);
     }
     private static double Clamp01(float v) => v < 0 ? 0 : v > 1 ? 1 : v;
 }

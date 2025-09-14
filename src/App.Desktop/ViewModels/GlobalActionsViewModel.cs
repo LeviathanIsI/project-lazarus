@@ -20,9 +20,9 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
     {
         SectionDescription = "Global application actions and utilities";
         _logger = App.ServiceProvider.GetRequiredService<ILogger<GlobalActionsViewModel>>();
-        
+
         InitializeCommands();
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -40,7 +40,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
             else
                 _logger.LogInformation("Up-to-date: {Current}", result.Current);
         });
-        
+
         ViewChangelogCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo("https://github.com/project-lazarus/releases") { UseShellExecute = true }));
 
         // System Operations - Orchestrator
@@ -55,7 +55,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
             var proc = App.ServiceProvider.GetRequiredService<IOrchestratorProcessService>();
             await proc.StopIfOwnedAsync(CancellationToken.None).ConfigureAwait(false);
         });
-        
+
         RestartOrchestratorCommand = new RelayCommand(async () =>
         {
             var proc = App.ServiceProvider.GetRequiredService<IOrchestratorProcessService>();
@@ -63,7 +63,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
             await Task.Delay(1000);
             await proc.StartIfNeededAsync(CancellationToken.None).ConfigureAwait(false);
         });
-        
+
         ViewOrchestratorStatusCommand = new RelayCommand(() => _logger.LogInformation("Orchestrator status requested"));
 
         // System Operations - Runner
@@ -81,7 +81,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
             // TODO: Implement unload model
             _logger.LogInformation("Unload model requested");
         });
-        
+
         ViewRunnersCommand = new RelayCommand(() => _logger.LogInformation("View runners requested"));
 
         // System Operations - Health Monitoring
@@ -89,7 +89,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
         {
             await Task.Run(() => _logger.LogInformation("Running health check..."));
         });
-        
+
         ViewMetricsCommand = new RelayCommand(() => _logger.LogInformation("View metrics requested"));
 
         // System Operations - Maintenance
@@ -114,7 +114,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
                 _logger.LogWarning(ex, "Clear Cache encountered issues; some files may be in use");
             }
         });
-        
+
         OptimizeDatabaseCommand = new RelayCommand(() => _logger.LogInformation("Database optimization requested"));
 
         // System Operations - Backup & Restore
@@ -195,7 +195,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
                 // TODO: Implement process killing
             }
         });
-        
+
         EnterSafeModeCommand = new RelayCommand(() =>
         {
             if (MessageBox.Show("Restart in safe mode?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
@@ -204,7 +204,7 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
                 // TODO: Implement safe mode
             }
         });
-        
+
         FactoryResetCommand = new RelayCommand(() =>
         {
             if (MessageBox.Show("Factory reset will DELETE ALL DATA. Continue?", "WARNING", MessageBoxButton.YesNo, MessageBoxImage.Error) == MessageBoxResult.Yes)

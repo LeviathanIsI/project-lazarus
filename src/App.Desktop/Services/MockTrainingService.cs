@@ -97,12 +97,12 @@ namespace Lazarus.Desktop.Services
                 new() { Id = Guid.NewGuid().ToString(), Name = "Sample Conversations", Type = DatasetType.ConversationJsonl, Modality = TrainingModality.Conversations, Path = "./datasets/conversations.jsonl", Stats = new DatasetStats { TotalItems = 1000, TotalTokens = 50000 } },
                 new() { Id = Guid.NewGuid().ToString(), Name = "Sample Images", Type = DatasetType.ImageDirectory, Modality = TrainingModality.Images, Path = "./datasets/images/", Stats = new DatasetStats { TotalItems = 500 } }
             };
-            
+
             if (modality.HasValue)
             {
                 datasets = datasets.Where(d => d.Modality == modality.Value).ToList();
             }
-            
+
             return Task.FromResult<IReadOnlyList<TrainingDatasetRef>>(datasets);
         }
 

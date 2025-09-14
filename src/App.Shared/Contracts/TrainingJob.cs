@@ -37,17 +37,17 @@ namespace Lazarus.Shared.Contracts
         public required string OutputPath { get; set; }
         public double Progress { get; set; } // 0.0 to 1.0
         public string? LastError { get; set; }
-        
+
         // Configuration references
         public required string ConfigId { get; set; }
         public required string ResourcesId { get; set; }
         public List<string> DatasetIds { get; set; } = new();
-        
+
         // Runtime metadata
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public TimeSpan? Duration => CompletedAt?.Subtract(StartedAt ?? DateTime.UtcNow);
-        
+
         // UI persistence
         public string? LastOpenTab { get; set; }
         public bool MonitorDockOpen { get; set; }

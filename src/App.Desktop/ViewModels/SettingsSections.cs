@@ -35,7 +35,7 @@ public class GeneralSettingsViewModel : SettingsSectionBase
     public GeneralSettingsViewModel(SettingsViewModel settings) : base(settings, "General")
     {
         SectionDescription = "Basic application settings and preferences";
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -249,7 +249,7 @@ public class PathsSettingsViewModel : SettingsSectionBase
         BrowseTemplatesCommand = new RelayCommand(() => BrowseFolder(path => TemplatesDirectory = path));
         BrowseLogsCommand = new RelayCommand(() => BrowseFolder(path => LogsDirectory = path));
         BrowsePluginsCommand = new RelayCommand(() => BrowseFolder(path => PluginsDirectory = path));
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -483,7 +483,7 @@ public class OrchestratorSettingsViewModel : SettingsSectionBase
     public OrchestratorSettingsViewModel(SettingsViewModel settings) : base(settings, "Orchestrator")
     {
         SectionDescription = "Configure the orchestrator service behavior";
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -575,7 +575,7 @@ public class RunnersSettingsViewModel : SettingsSectionBase
         DetectHardwareCommand = new RelayCommand(DetectHardware);
         TestRunnerCommand = new RelayCommand(TestRunner);
         ResetToDefaultCommand = new RelayCommand(() => { ResetToDefault(); OnPropertyChanged(""); });
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -791,13 +791,13 @@ public class RunnersSettingsViewModel : SettingsSectionBase
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
-        
+
         // Load saved settings
         ExecutionMode = settings.ExecutionMode;
         CpuThreads = settings.CpuThreads;
         GpuMemoryLimitGB = settings.GpuMemoryLimitGB;
         PriorityLevel = settings.PriorityLevel;
-        
+
         // Initialize other properties with defaults since they're not in AppSettings yet
         DefaultRunner = "llama.cpp";
         AutoStartRunners = false;
@@ -813,7 +813,7 @@ public class RunnersSettingsViewModel : SettingsSectionBase
         EnableProfiling = false;
         LogTokenTiming = false;
         ResponseTimeoutSeconds = 120;
-        
+
         // Fix empty values
         if (CpuThreads == 0) CpuThreads = Environment.ProcessorCount / 2;
         if (string.IsNullOrEmpty(ExecutionMode)) ExecutionMode = "CPU";
@@ -867,7 +867,7 @@ public class ModelsSettingsViewModel : SettingsSectionBase
     {
         SectionDescription = "Configure AI model settings and parameters";
         BrowseModelCommand = new RelayCommand(BrowseModel);
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -954,7 +954,7 @@ public class AudioSettingsViewModel : SettingsSectionBase
     public AudioSettingsViewModel(SettingsViewModel settings) : base(settings, "Audio")
     {
         SectionDescription = "Configure text-to-speech and speech-to-text settings";
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -1025,7 +1025,7 @@ public class TrainingSettingsViewModel : SettingsSectionBase
     public TrainingSettingsViewModel(SettingsViewModel settings) : base(settings, "Training")
     {
         SectionDescription = "Configure model training parameters";
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -1096,7 +1096,7 @@ public class AdvancedSettingsViewModel : SettingsSectionBase
     public AdvancedSettingsViewModel(SettingsViewModel settings) : base(settings, "Advanced")
     {
         SectionDescription = "Advanced configuration and experimental features";
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();

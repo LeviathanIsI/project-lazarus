@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddLazarusCore(configuration);
         services.AddLazarusUI(configuration);
         services.AddLazarusViewModels();
-        
+
         // Add initialization services
         services.AddSingleton<IInitializationManager, InitializationManager>();
 
@@ -56,7 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<ViewModelLocator>();
         services.AddLazarusBackgroundServices();
-        
+
         // Training services
         services.AddSingleton<ITrainingService, MockTrainingService>(); // legacy broader training surface
         services.AddSingleton<Lazarus.Backend.Services.IConversationTrainingService, Lazarus.Backend.Services.ConversationTrainingService>();
@@ -169,9 +169,9 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddLazarusUI(this IServiceCollection services, IConfiguration configuration)
-        {
-            // Singleton services for app-wide state
+    public static IServiceCollection AddLazarusUI(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Singleton services for app-wide state
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IBinaryValidationService, BinaryValidationService>();
@@ -179,7 +179,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IModelCatalogService, ModelCatalogService>();
         services.AddSingleton<Lazarus.Backend.Services.IImageService, Lazarus.Backend.Services.ImageService>();
         services.AddSingleton<UiDebounceDispatcher>();
-        
+
         // Runner status must be a single source of truth across the app
         services.AddSingleton<RunnerStatusProvider>();
 
@@ -191,7 +191,7 @@ public static class ServiceCollectionExtensions
 
         // Chat persistence service (singleton that creates scoped repos internally)
         services.AddSingleton<Lazarus.Desktop.Services.IChatService, ChatService>();
-        
+
         // Audio service - use preview mode if configured (legacy v1 API)
         var audioPreviewMode = configuration.GetValue<bool>("AudioUi:PreviewMode", false);
         if (audioPreviewMode)
@@ -221,17 +221,17 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddLazarusViewModels(this IServiceCollection services)
-        {
-            // Register ViewModels with transient lifetime for fresh instances
-            // The ViewModelLocator will manage singleton instances as needed
-            services.AddTransient<MainViewModel>();
-            services.AddTransient<NavigationViewModel>();
-            services.AddTransient<ModelsViewModel>();
-            services.AddTransient<SettingsViewModel>();
-            services.AddTransient<SettingsShellViewModel>();
-            services.AddTransient<ChatSessionsViewModel>();
-            services.AddTransient<AudioViewModel>();
+    public static IServiceCollection AddLazarusViewModels(this IServiceCollection services)
+    {
+        // Register ViewModels with transient lifetime for fresh instances
+        // The ViewModelLocator will manage singleton instances as needed
+        services.AddTransient<MainViewModel>();
+        services.AddTransient<NavigationViewModel>();
+        services.AddTransient<ModelsViewModel>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SettingsShellViewModel>();
+        services.AddTransient<ChatSessionsViewModel>();
+        services.AddTransient<AudioViewModel>();
 
         // Auto-register all ViewModels in the assembly
         var assembly = Assembly.GetExecutingAssembly();

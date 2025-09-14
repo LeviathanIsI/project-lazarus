@@ -81,7 +81,7 @@ public sealed class AudioService : IAudioService
                         }
                         catch { }
                     }
-                    
+
                     // Quick metadata if no analysis
                     if (!item.HasAnalysis)
                     {
@@ -122,7 +122,7 @@ public sealed class AudioService : IAudioService
             {
                 // Calculate hash for deduplication
                 var hash = await ComputeFileHashAsync(sourcePath, ct);
-                
+
                 // Check for existing file with same hash
                 var existing = await ListAsync(ct);
                 var duplicate = existing.FirstOrDefault(i => i.FileHash == hash);
@@ -135,7 +135,7 @@ public sealed class AudioService : IAudioService
                 // Copy to import directory
                 var fileName = Path.GetFileName(sourcePath);
                 var destPath = Path.Combine(_audioDirectory, fileName);
-                
+
                 // Handle name conflicts
                 if (File.Exists(destPath))
                 {
@@ -219,12 +219,12 @@ public sealed class AudioService : IAudioService
     {
         var files = Directory.GetFiles(_audioDirectory, $"{id}.*");
         var audioFile = files.FirstOrDefault(f => !f.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
-        
+
         if (string.IsNullOrEmpty(audioFile) || !File.Exists(audioFile))
             throw new FileNotFoundException($"Audio file not found for ID: {id}");
 
         var analysisPath = GetAnalysisPath(audioFile);
-        
+
         // Load cached if exists and not forced
         if (!force && File.Exists(analysisPath))
         {
@@ -244,7 +244,7 @@ public sealed class AudioService : IAudioService
         return await Task.Run(async () =>
         {
             _logger.LogInformation("Analyzing audio file: {File}", audioFile);
-            
+
             var analysis = new AudioAnalysis
             {
                 Id = id,
@@ -262,22 +262,22 @@ public sealed class AudioService : IAudioService
                 analysis.Channels = reader.WaveFormat.Channels;
                 analysis.Bitrate = reader.WaveFormat.AverageBytesPerSecond * 8;
                 analysis.TotalSamples = reader.Length / (reader.WaveFormat.BitsPerSample / 8);
-                
+
                 // Read samples for waveform
                 var sampleProvider = reader.ToSampleProvider();
                 var samples = new List<float>();
                 var buffer = new float[1024];
                 int read;
-                
+
                 while ((read = sampleProvider.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     ct.ThrowIfCancellationRequested();
                     for (int i = 0; i < read; i++)
                         samples.Add(buffer[i]);
                 }
-                
+
                 var sampleArray = samples.ToArray();
-                
+
                 // Generate waveforms
                 analysis.WaveformSmall = WaveformGenerator.GenerateSmall(sampleArray);
                 analysis.WaveformLarge = WaveformGenerator.GenerateLarge(sampleArray);
@@ -286,7 +286,7 @@ public sealed class AudioService : IAudioService
             // Save analysis
             var analysisJson = JsonSerializer.Serialize(analysis, _jsonOptions);
             await File.WriteAllTextAsync(analysisPath, analysisJson, ct);
-            
+
             _logger.LogInformation("Analysis complete for {Id}", id);
             return analysis;
         }, ct);
@@ -303,13 +303,13 @@ public sealed class AudioService : IAudioService
 
         var files = Directory.GetFiles(_audioDirectory, $"{id}.*");
         var audioFile = files.FirstOrDefault(f => !f.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
-        
+
         if (string.IsNullOrEmpty(audioFile) || !File.Exists(audioFile))
             throw new FileNotFoundException($"Audio file not found for ID: {id}");
 
         var session = new PlaybackSession(id, audioFile);
         _activeSessions[id] = session;
-        
+
         // Auto-remove when stopped
         session.StateChanged += (s, e) =>
         {
@@ -318,7 +318,7 @@ public sealed class AudioService : IAudioService
                 _activeSessions.Remove(id);
             }
         };
-        
+
         return session;
     }
 

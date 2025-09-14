@@ -71,7 +71,7 @@ public class AppSettings : INotifyPropertyChanged
     private bool _autoDownloadUpdates;
     private bool _sendAnonymousUsage;
     private bool _sendCrashReports;
-    
+
     // Toolchain / Asset pipeline
     private string _toolFfmpegPath = string.Empty;
     private string _toolToktxPath = string.Empty;
@@ -109,7 +109,7 @@ public class AppSettings : INotifyPropertyChanged
 
     // Chat Persona Settings
     [JsonPropertyName("userName")]
-    [Description("Display name shown for the user in chats")] 
+    [Description("Display name shown for the user in chats")]
     public string UserName
     {
         get => string.IsNullOrWhiteSpace(_userName) ? "You" : _userName;
@@ -117,7 +117,7 @@ public class AppSettings : INotifyPropertyChanged
     }
 
     [JsonPropertyName("assistantName")]
-    [Description("Display name shown for the assistant in chats")] 
+    [Description("Display name shown for the assistant in chats")]
     public string AssistantName
     {
         get => string.IsNullOrWhiteSpace(_assistantName) ? "Assistant" : _assistantName;
@@ -125,7 +125,7 @@ public class AppSettings : INotifyPropertyChanged
     }
 
     [JsonPropertyName("systemPrompt")]
-    [Description("Custom system prompt injected into each chat request")] 
+    [Description("Custom system prompt injected into each chat request")]
     public string SystemPrompt
     {
         get => _systemPrompt ?? string.Empty;

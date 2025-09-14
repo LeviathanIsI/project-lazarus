@@ -461,7 +461,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             catch { return (false, null); }
         }
 
-        
+
 
         // --- LLaMAFactory intelligence helpers ---
         private void ApplyTrainerIntelligence()

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Lazarus.Shared;
 
 public enum ModelFormat { Unknown = 0, GGUF, HF }
-public enum RunnerKind  { Unknown = 0, LlamaCpp, Vllm, ExLlamaV2 }
+public enum RunnerKind { Unknown = 0, LlamaCpp, Vllm, ExLlamaV2 }
 
 public sealed record BaseModelInfo(
     string ModelKey,           // derived from filename or folder
@@ -31,9 +31,9 @@ public sealed record ModelArtifact(string Name, string FullPath, ModelArtifactKi
 public sealed record ModelParams(
     double Temperature,
     double TopP,
-    int    MaxTokens,
+    int MaxTokens,
     double RepeatPenalty,
-    int    Mirostat
+    int Mirostat
 )
 {
     public static ModelParams Default => new(0.7, 0.9, 4096, 1.1, 0);

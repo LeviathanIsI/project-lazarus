@@ -21,11 +21,11 @@ namespace Lazarus.Shared.Contracts
         public PrecisionType Precision { get; set; } = PrecisionType.FP16;
         public bool UseGradientCheckpointing { get; set; } = true;
         public int? MaxMemoryMB { get; set; }
-        
+
         // Estimates (computed)
         public long EstimatedVRAMBytes { get; set; }
         public TimeSpan? EstimatedTimePerEpoch { get; set; }
-        
+
         // Runtime monitoring
         public double CurrentVRAMUsagePercent { get; set; }
         public double CurrentCPUUsagePercent { get; set; }
