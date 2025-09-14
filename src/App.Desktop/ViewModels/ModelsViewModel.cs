@@ -397,9 +397,7 @@ public sealed class ModelsViewModel : ViewModelBase
         }
 
         RunnerStatusMessage = null;
-        var loraPath = _appState.LoadedLora;
-        var loraScale = _appState.LoraScale;
-        var ok = await _runnerClient.LoadModelAsync(model.FilePath, loraPath, loraScale).ConfigureAwait(false);
+        var ok = await _runnerClient.LoadModelAsync(model.FilePath).ConfigureAwait(false);
         if (!ok)
         {
             RunnerStatusMessage = _runnerClient.LastError ?? "Failed to load model.";
@@ -409,12 +407,10 @@ public sealed class ModelsViewModel : ViewModelBase
         {
             // Log post-load status and surface concise UI message
             var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
-            _logger.LogInformation("Runner after reload: model={Model} pid={Pid} port={Port} lora={Lora} scale={Scale}",
-                status.ModelPath ?? "<none>", status.Pid, status.Port, loraPath ?? "<none>", loraScale?.ToString("0.###") ?? "<n/a>");
+            _logger.LogInformation("Runner after reload: model={Model} pid={Pid} port={Port}",
+                status.ModelPath ?? "<none>", status.Pid, status.Port);
 
-            RunnerStatusMessage = loraPath is null
-                ? "Loaded (no LoRA)"
-                : $"Loaded with LoRA: {System.IO.Path.GetFileName(loraPath)}  {(_appState.LoraScale ?? 0):0.###}";
+            RunnerStatusMessage = "Loaded";
         }
         await RefreshRunnerStatusAsync().ConfigureAwait(false);
     }
