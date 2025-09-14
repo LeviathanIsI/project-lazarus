@@ -14,12 +14,12 @@ namespace Lazarus.Desktop.ViewModels.Training
     {
         private readonly ITrainingService _trainingService;
         private readonly List<IDisposable> _disposables = new();
-        
+
         public JobsSidebarViewModel JobsSidebar { get; }
         public JobDesignerViewModel JobDesigner { get; }
         public MonitorDockViewModel MonitorDock { get; }
         public InspectorViewModel Inspector { get; }
-        
+
         // Modality-specific designers
         public ConversationsDesignerViewModel Conversations { get; }
         public VoiceDesignerViewModel Voice { get; }
@@ -28,7 +28,7 @@ namespace Lazarus.Desktop.ViewModels.Training
         public EntitiesDesignerViewModel Entities { get; }
         public VideosDesignerViewModel Videos { get; }
         public DesignProgressViewModel DesignProgress { get; }
-        
+
         private object? _activeDesigner;
         public object? ActiveDesigner
         {
@@ -40,8 +40,8 @@ namespace Lazarus.Desktop.ViewModels.Training
         public string SelectedModality
         {
             get => _selectedModality;
-            set 
-            { 
+            set
+            {
                 if (SetProperty(ref _selectedModality, value))
                 {
                     ApplySelectedModality(value);
@@ -84,18 +84,18 @@ namespace Lazarus.Desktop.ViewModels.Training
 
         public bool CanStart { get; private set; } = true;
         public bool CanPause { get; private set; } = false;
-        public bool CanStop  { get; private set; } = false;
-        public bool CanExport{ get; private set; } = false;
+        public bool CanStop { get; private set; } = false;
+        public bool CanExport { get; private set; } = false;
 
         public TrainingViewModel(ITrainingService trainingService, IConversationTrainingService conversationService)
         {
             _trainingService = trainingService ?? throw new ArgumentNullException(nameof(trainingService));
-            
+
             JobsSidebar = new JobsSidebarViewModel(_trainingService);
             JobDesigner = new JobDesignerViewModel(_trainingService);
             MonitorDock = new MonitorDockViewModel(_trainingService);
             Inspector = new InspectorViewModel(_trainingService);
-            
+
             // Create modality-specific designers
             Conversations = new ConversationsDesignerViewModel(conversationService, _trainingService);
             Voice = new VoiceDesignerViewModel(_trainingService);
@@ -104,10 +104,10 @@ namespace Lazarus.Desktop.ViewModels.Training
             Entities = new EntitiesDesignerViewModel(_trainingService);
             Videos = new VideosDesignerViewModel(_trainingService);
             DesignProgress = new DesignProgressViewModel(trainingService);
-            
+
             // Set default active designer
             ActiveDesigner = Conversations;
-            
+
             StartCommand = new RelayCommand(async _ => await StartSelectedJobsAsync(), _ => CanStart);
             PauseCommand = new RelayCommand(async _ => await PauseSelectedJobsAsync(), _ => CanPause);
             StopCommand = new RelayCommand(async _ => await StopSelectedJobsAsync(), _ => CanStop);
@@ -122,7 +122,7 @@ namespace Lazarus.Desktop.ViewModels.Training
             // Wire up cross-VM communication
             JobsSidebar.SelectedJobChanged += OnSelectedJobChanged;
             Conversations.JobCreated += OnConversationJobCreated;
-            
+
             _disposables.Add(JobsSidebar);
             _disposables.Add(JobDesigner);
             _disposables.Add(MonitorDock);
@@ -139,13 +139,13 @@ namespace Lazarus.Desktop.ViewModels.Training
             }
             _disposables.Clear();
         }
-        
+
         private void OnSelectedJobChanged(object? sender, TrainingJob? selectedJob)
         {
             JobDesigner.SetSelectedJob(selectedJob);
             Inspector.SetSelectedJob(selectedJob);
             MonitorDock.SetSelectedJob(selectedJob);
-            
+
             // Notify all modality designers
             Conversations.SetCurrentJob(selectedJob);
             Voice.SetCurrentJob(selectedJob);
@@ -154,10 +154,10 @@ namespace Lazarus.Desktop.ViewModels.Training
             Entities.SetCurrentJob(selectedJob);
             Videos.SetCurrentJob(selectedJob);
             DesignProgress.SetCurrentJob(selectedJob);
-            
+
             UpdateCanExecuteStates();
         }
-        
+
         private void UpdateCanExecuteStates()
         {
             var selectedJobs = JobsSidebar.SelectedJobs;
@@ -165,13 +165,13 @@ namespace Lazarus.Desktop.ViewModels.Training
             CanPause = selectedJobs.Any(j => j.Status == TrainingStatus.Running);
             CanStop = selectedJobs.Any(j => j.Status == TrainingStatus.Running || j.Status == TrainingStatus.Paused);
             CanExport = selectedJobs.Count == 1 && selectedJobs.First().Status == TrainingStatus.Completed;
-            
+
             OnPropertyChanged(nameof(CanStart));
             OnPropertyChanged(nameof(CanPause));
             OnPropertyChanged(nameof(CanStop));
             OnPropertyChanged(nameof(CanExport));
         }
-        
+
         // TODO(training): Implement job control methods
         private async Task StartSelectedJobsAsync()
         {
@@ -179,19 +179,19 @@ namespace Lazarus.Desktop.ViewModels.Training
             var jobIds = JobsSidebar.SelectedJobs.Where(j => j.Status == TrainingStatus.Draft || j.Status == TrainingStatus.Paused).Select(j => j.Id);
             await _trainingService.StartMultipleAsync(jobIds);
         }
-        
+
         private async Task PauseSelectedJobsAsync()
         {
             var jobIds = JobsSidebar.SelectedJobs.Where(j => j.Status == TrainingStatus.Running).Select(j => j.Id);
             await _trainingService.PauseMultipleAsync(jobIds);
         }
-        
+
         private async Task StopSelectedJobsAsync()
         {
             var jobIds = JobsSidebar.SelectedJobs.Where(j => j.Status == TrainingStatus.Running || j.Status == TrainingStatus.Paused).Select(j => j.Id);
             await _trainingService.StopMultipleAsync(jobIds);
         }
-        
+
         private async Task ExportSelectedJobAsync()
         {
             var job = JobsSidebar.SelectedJobs.FirstOrDefault();

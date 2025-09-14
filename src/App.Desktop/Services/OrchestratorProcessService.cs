@@ -206,7 +206,7 @@ internal sealed class OrchestratorProcessService : IOrchestratorProcessService
 
         return null;
     }
-    
+
     private static void MirrorDirectory(string sourceDir, string destDir)
     {
         foreach (var dir in Directory.EnumerateDirectories(sourceDir, "*", SearchOption.AllDirectories))

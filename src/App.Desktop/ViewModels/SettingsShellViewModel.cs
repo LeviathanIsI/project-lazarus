@@ -16,7 +16,7 @@ public class SettingsShellViewModel : ViewModelBase
     public SettingsShellViewModel(SettingsViewModel settingsViewModel)
     {
         _settingsViewModel = settingsViewModel ?? throw new ArgumentNullException(nameof(settingsViewModel));
-        
+
         // Initialize commands
         NavigateToSectionCommand = new RelayCommand<SettingsSectionBase>(NavigateToSection);
         ApplyCommand = new RelayCommand(async () => await ApplySettingsAsync());

@@ -7,7 +7,7 @@
     <Color x:Key="CardBackgroundColor">#0A0A0F</Color>
     <Color x:Key="CardOverlayColor">#1A1A1A</Color>
     <!-- Surface: neutral container background consistent with dark glass theme -->
-    <Color x:Key="SurfaceColor">{StaticResource CardOverlayColor}</Color>
+    <Color x:Key="SurfaceColor">#1A1A1A</Color>
     <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
     <Color x:Key="TextSecondaryColor">#A0A0A0</Color>
     <Color x:Key="GlassBorderColor">#19FFFFFF</Color>

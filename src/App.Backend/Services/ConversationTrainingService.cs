@@ -212,7 +212,7 @@ namespace Lazarus.Backend.Services
                                         psi.Environment["PYTHONPATH"] = string.IsNullOrEmpty(existing) ? lfRoot : existing + Path.PathSeparator + lfRoot;
                                     }
                                     // Favor forward slashes in env paths if consumed later
-                                    psi.Environment["HF_HOME"] = LazarusPaths.Models.RootDir.Replace('\\','/');
+                                    psi.Environment["HF_HOME"] = LazarusPaths.Models.RootDir.Replace('\\', '/');
 
                                     using var proc = Process.Start(psi);
                                     if (proc != null)
@@ -267,7 +267,7 @@ namespace Lazarus.Backend.Services
                     Message = "training"
                 };
                 ProgressChanged?.Invoke(this, progressArgs);
-                
+
                 await Task.Delay(100, job.Cts.Token);
             }
 

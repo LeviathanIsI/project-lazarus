@@ -81,8 +81,8 @@ public partial class WaveformPreview : UserControl
         }
     }
 
-    private void OnZoomIn(object sender, RoutedEventArgs e){ _zoom = Math.Min(8.0, _zoom * 1.25); ApplyZoom(); }
-    private void OnZoomOut(object sender, RoutedEventArgs e){ _zoom = Math.Max(1.0, _zoom / 1.25); ApplyZoom(); }
+    private void OnZoomIn(object sender, RoutedEventArgs e) { _zoom = Math.Min(8.0, _zoom * 1.25); ApplyZoom(); }
+    private void OnZoomOut(object sender, RoutedEventArgs e) { _zoom = Math.Max(1.0, _zoom / 1.25); ApplyZoom(); }
     private void ApplyZoom()
     {
         Image.LayoutTransform = new ScaleTransform(_zoom, 1.0);

@@ -149,7 +149,7 @@ public class SettingsViewModel : ViewModelBase
         try
         {
             Settings = await _settingsService.LoadAsync();
-            
+
             // Refresh all sections
             foreach (var section in Sections)
             {

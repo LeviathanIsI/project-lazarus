@@ -25,7 +25,8 @@ public sealed record AudioItem(
 public enum AudioJobType { Asr, NoiseReduce, VadTrim, Normalize, Convert, SplitOnSilence, Tts, VoiceClone }
 public enum JobStatus { Pending, Running, Succeeded, Failed, Canceled }
 
-public sealed class AudioJob {
+public sealed class AudioJob
+{
     public Guid Id { get; init; } = Guid.NewGuid();
     public AudioJobType Type { get; init; }
     public IReadOnlyList<Guid> AudioItemIds { get; init; } = Array.Empty<Guid>();

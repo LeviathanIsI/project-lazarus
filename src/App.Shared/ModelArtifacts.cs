@@ -3,8 +3,30 @@ using System.Collections.Generic;
 
 namespace Lazarus.Shared;
 
-public enum ModelFormat { Unknown = 0, GGUF, HF }
-public enum RunnerKind  { Unknown = 0, LlamaCpp, Vllm, ExLlamaV2 }
+/// <summary>
+/// Model format enumeration with support for current and future formats.
+/// </summary>
+public enum ModelFormat
+{
+    Unknown = 0,
+    GGUF,       // GGUF format (llama.cpp)
+    HF,         // HuggingFace format (SafeTensors, PyTorch, etc.)
+    ONNX,       // Open Neural Network Exchange (future)
+    TFLite,     // TensorFlow Lite (future)
+    // Add new formats here as needed
+}
+
+/// <summary>
+/// Runner/engine kind enumeration.
+/// </summary>
+public enum RunnerKind
+{
+    Unknown = 0,
+    LlamaCpp,   // llama.cpp for GGUF models
+    Vllm,       // vLLM for HF and ONNX models
+    ExLlamaV2,  // ExLlamaV2 for HF models
+    // Add new runners here as needed
+}
 
 public sealed record BaseModelInfo(
     string ModelKey,           // derived from filename or folder
@@ -31,9 +53,9 @@ public sealed record ModelArtifact(string Name, string FullPath, ModelArtifactKi
 public sealed record ModelParams(
     double Temperature,
     double TopP,
-    int    MaxTokens,
+    int MaxTokens,
     double RepeatPenalty,
-    int    Mirostat
+    int Mirostat
 )
 {
     public static ModelParams Default => new(0.7, 0.9, 4096, 1.1, 0);

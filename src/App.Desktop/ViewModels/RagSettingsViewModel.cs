@@ -18,21 +18,21 @@ public class RagSettingsViewModel : SettingsSectionBase
     private string _databasePath = "";
     private bool _useSQLiteVss;
     private string _storageEngine = "SQLite";
-    
+
     // Embedding Model properties
     private string _embeddingProvider = "OpenAI";
     private string _embeddingModel = "text-embedding-3-large";
     private int _embeddingDimensions = 1536;
-    
+
     // Document Processing properties
     private string _chunkingMethod = "Fixed Size";
     private int _chunkOverlap = 100;
-    
+
     // Retrieval Settings
     private string _searchType = "Cosine Similarity";
     private int _topKResults = 5;
     private bool _enableReranking;
-    
+
     // Data Sources
     private string _documentDirectory = "";
     private bool _supportPdf = true;
@@ -41,7 +41,7 @@ public class RagSettingsViewModel : SettingsSectionBase
     private bool _supportMarkdown = true;
     private bool _supportHtml = true;
     private bool _supportCsv;
-    
+
     // Advanced Settings
     private bool _extractMetadata = true;
     private bool _useMetadataFiltering;
@@ -59,7 +59,7 @@ public class RagSettingsViewModel : SettingsSectionBase
         ClearIndexCommand = new RelayCommand(ClearIndex);
         TestRetrievalCommand = new RelayCommand(TestRetrieval);
         ResetToDefaultCommand = new RelayCommand(() => { ResetToDefault(); OnPropertyChanged(""); });
-        
+
         // Initialize with default values immediately
         ResetToDefault();
         CompleteInitialization();
@@ -324,30 +324,30 @@ public class RagSettingsViewModel : SettingsSectionBase
     public override void RefreshFromSettings()
     {
         var settings = ParentSettings.Settings;
-        
+
         // Load saved settings
         VectorDbType = settings.VectorDbType;
         ChunkSize = settings.ChunkSize;
         OverlapSize = settings.OverlapSize;
         SimilarityThreshold = settings.SimilarityThreshold;
-        
+
         // Initialize all properties with defaults
         EmbeddingProvider = "OpenAI";
         EmbeddingModel = "text-embedding-3-large";
         EmbeddingDimensions = 1536;
-        
+
         RagEnableVectorStore = true;
         RagDatabasePath = System.IO.Path.Combine(SettingsPaths.DatabaseDirectory, "vectors.db");
         RagUseSQLiteVss = VectorDbType == "SQLite-VSS";
         RagStorageEngine = VectorDbType;
-        
+
         ChunkingMethod = "Fixed Size";
         ChunkOverlap = 100;
-        
+
         SearchType = "Cosine Similarity";
         TopKResults = 5;
         EnableReranking = false;
-        
+
         DocumentDirectory = System.IO.Path.Combine(SettingsPaths.AppDataRoot, "documents");
         SupportPdf = true;
         SupportDocx = true;
@@ -355,14 +355,14 @@ public class RagSettingsViewModel : SettingsSectionBase
         SupportMarkdown = true;
         SupportHtml = true;
         SupportCsv = false;
-        
+
         ExtractMetadata = true;
         UseMetadataFiltering = false;
         IndexMetadata = false;
         IndexingBatchSize = 10;
         CacheEmbeddings = true;
         CacheSearchResults = false;
-        
+
         // Fix empty values
         if (string.IsNullOrEmpty(VectorDbType)) VectorDbType = "SQLite";
         if (ChunkSize == 0) ChunkSize = 512;
@@ -386,7 +386,7 @@ public class RagSettingsViewModel : SettingsSectionBase
         EmbeddingProvider = "OpenAI";
         EmbeddingModel = "text-embedding-3-large";
         EmbeddingDimensions = 1536;
-        
+
         // Vector Database defaults
         VectorDbType = "SQLite";
         RagEnableVectorStore = true;
@@ -399,20 +399,20 @@ public class RagSettingsViewModel : SettingsSectionBase
         {
             RagDatabasePath = @"C:\Lazarus\Database\vectors.db";
         }
-        
+
         // Document Processing defaults
         ChunkingMethod = "Fixed Size";
         ChunkSize = 512;
         ChunkOverlap = 100;
         OverlapSize = 50;
-        
+
         // Retrieval Settings defaults
         SearchType = "Cosine Similarity";
         TopKResults = 5;
         SimilarityThreshold = 0.7;
         EnableReranking = false;
         RagUseSQLiteVss = false;
-        
+
         // Data Sources defaults
         try
         {
@@ -428,7 +428,7 @@ public class RagSettingsViewModel : SettingsSectionBase
         SupportMarkdown = true;
         SupportHtml = true;
         SupportCsv = false;
-        
+
         // Advanced Settings defaults
         ExtractMetadata = true;
         UseMetadataFiltering = false;
