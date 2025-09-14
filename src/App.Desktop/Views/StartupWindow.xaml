@@ -1,9 +1,9 @@
-<Window x:Class="Lazarus.Desktop.Views.StartupWindow"
+﻿<Window x:Class="Lazarus.Desktop.Views.StartupWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Lazarus.Desktop.Views"
         xmlns:fx="clr-namespace:Lazarus.Desktop.Views.Effects"
-        Title="Starting Lazarus"
+        Title="Lazarus - Digital Resurrection"
         Width="840" Height="320"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -11,12 +11,14 @@
         AllowsTransparency="True"
         WindowStyle="None"
         Background="Transparent">
-    <Border CornerRadius="14" Padding="22"
-            Background="#0F0A15"
-            BorderBrush="#45236B" BorderThickness="2">
+
+    <!-- Main container with glassmorphic styling -->
+    <Border Style="{StaticResource StaticRainbowCardStyle}" 
+            Padding="22">
         <Grid>
-            <!-- Phoenix geometry resource -->
+            <!-- Phoenix geometry fragments for assembly animation -->
             <Grid.Resources>
+                <!-- Main phoenix path -->
                 <Geometry x:Key="PhoenixGeometry">
                     M 100,140
                     C  80,110  80,90   100,70
@@ -31,118 +33,417 @@
                     M 60,125
                     C 90,115  110,115  140,125
                 </Geometry>
+
+                <!-- Fragmented pieces for assembly -->
+                <Geometry x:Key="PhoenixFragment1">
+                    M 100,140 C 80,110 80,90 100,70
+                </Geometry>
+                <Geometry x:Key="PhoenixFragment2">
+                    M 100,90 C 92,70 96,50 110,35
+                </Geometry>
+                <Geometry x:Key="PhoenixFragment3">
+                    M 30,80 C 70,40 130,40 170,80
+                </Geometry>
+
+                <!-- Corruption glitch storyboard -->
+                <Storyboard x:Key="CorruptionPulse" RepeatBehavior="Forever">
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                     From="1" To="0.3" Duration="0:0:0.1"
+                                     AutoReverse="True"/>
+                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                     From="1" To="1.02" Duration="0:0:0.15"
+                                     AutoReverse="True">
+                        <DoubleAnimation.EasingFunction>
+                            <ElasticEase EasingMode="EaseOut" Oscillations="1"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+
+                <!-- Text glitch animation -->
+                <Storyboard x:Key="TextGlitch">
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Text"
+                                                   Duration="0:0:2" RepeatBehavior="Forever">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="LAZARUS"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0.1" Value="L4Z4RU5"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="LAZARUS"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0.8" Value="LAZARUS"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0.9" Value="0x4C415A"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:1" Value="LAZARUS"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:1.7" Value="LAZARUS"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:1.8" Value="LAZ∆RUS"/>
+                        <DiscreteObjectKeyFrame KeyTime="0:0:1.9" Value="LAZARUS"/>
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
             </Grid.Resources>
 
-            <!-- Phoenix stroke (behind the title stack) -->
-            <fx:PhoenixPath x:Name="Phoenix"
-                            Panel.ZIndex="0"
-                            Geometry="{StaticResource PhoenixGeometry}"
-                            StrokeThickness="2.6"
-                            GlowThickness="11"
-                            Opacity="0.9"
-                            Margin="0,36,0,0">
-                <fx:PhoenixPath.Stroke>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#A900FF" Offset="0"/>
-                        <GradientStop Color="#FF00E6" Offset="0.6"/>
-                        <GradientStop Color="#FFFFFF" Offset="1"/>
-                    </LinearGradientBrush>
-                </fx:PhoenixPath.Stroke>
-            </fx:PhoenixPath>
+            <!-- LAYER 0: Corrupted particle system -->
+            <Grid Panel.ZIndex="0">
+                <!-- Multiple glass fragment layers for depth -->
+                <Canvas x:Name="GlassFragmentsLayer1">
+                    <Canvas.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform Y="0"/>
+                        </TransformGroup>
+                    </Canvas.RenderTransform>
+                    <Canvas.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                                                     From="320" To="-100" Duration="0:0:12"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Canvas.Triggers>
 
-            <!-- Particle layer -->
-            <fx:ParticleCanvas x:Name="Fx"
-                               Margin="0"
-                               Panel.ZIndex="1" />
+                    <!-- Corrupted memory fragments -->
+                    <Border Width="18" Height="18" Canvas.Left="80" Canvas.Top="250"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource RainbowFlowBrush}"
+                            BorderThickness="0.5" CornerRadius="3" Opacity="0.2">
+                        <TextBlock Text="0xDE" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="7" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="12" Height="12" Canvas.Left="200" Canvas.Top="280"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource GlassBorderGradientBrush}"
+                            BorderThickness="0.5" CornerRadius="2" Opacity="0.15">
+                        <TextBlock Text="AD" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="6" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="22" Height="22" Canvas.Left="420" Canvas.Top="200"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource RainbowDiagonalFlowBrush}"
+                            BorderThickness="0.5" CornerRadius="4" Opacity="0.25">
+                        <TextBlock Text="BEEF" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="14" Height="14" Canvas.Left="600" Canvas.Top="220"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource GlassBorderGradientBrush}"
+                            BorderThickness="0.5" CornerRadius="2" Opacity="0.18">
+                        <TextBlock Text="CA" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="6" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="16" Height="16" Canvas.Left="150" Canvas.Top="260"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource RainbowFlowBrush}"
+                            BorderThickness="0.5" CornerRadius="3" Opacity="0.22">
+                        <TextBlock Text="FE" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="7" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                </Canvas>
 
-            <!-- Content -->
+                <!-- Second layer moving at different speed -->
+                <Canvas x:Name="GlassFragmentsLayer2">
+                    <Canvas.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform Y="0"/>
+                        </TransformGroup>
+                    </Canvas.RenderTransform>
+                    <Canvas.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                                                     From="320" To="-100" Duration="0:0:8"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Canvas.Triggers>
+
+                    <!-- More hex fragments -->
+                    <Border Width="20" Height="20" Canvas.Left="350" Canvas.Top="240"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource RainbowDiagonalFlowBrush}"
+                            BorderThickness="0.5" CornerRadius="3" Opacity="0.3">
+                        <TextBlock Text="0xFF" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="10" Height="10" Canvas.Left="520" Canvas.Top="290"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource GlassBorderGradientBrush}"
+                            BorderThickness="0.5" CornerRadius="2" Opacity="0.12">
+                        <TextBlock Text="BA" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="5" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="24" Height="24" Canvas.Left="250" Canvas.Top="210"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource RainbowFlowBrush}"
+                            BorderThickness="0.5" CornerRadius="4" Opacity="0.35">
+                        <TextBlock Text="FACE" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                    <Border Width="15" Height="15" Canvas.Left="700" Canvas.Top="250"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource GlassBorderGradientBrush}"
+                            BorderThickness="0.5" CornerRadius="2" Opacity="0.2">
+                        <TextBlock Text="BE" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="6" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                </Canvas>
+
+                <!-- Third layer with rainbow fragments -->
+                <Canvas x:Name="GlassFragmentsLayer3">
+                    <Canvas.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform Y="0"/>
+                        </TransformGroup>
+                    </Canvas.RenderTransform>
+                    <Canvas.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                                                     From="320" To="-100" Duration="0:0:15"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Canvas.Triggers>
+
+                    <!-- Larger corrupted blocks -->
+                    <Border Width="30" Height="8" Canvas.Left="180" Canvas.Top="270"
+                            Background="{StaticResource RainbowFlowBrush}" 
+                            CornerRadius="2" Opacity="0.1"/>
+                    <Border Width="25" Height="6" Canvas.Left="450" Canvas.Top="230"
+                            Background="{StaticResource RainbowDiagonalFlowBrush}" 
+                            CornerRadius="2" Opacity="0.08"/>
+                    <Border Width="18" Height="18" Canvas.Left="50" Canvas.Top="190"
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource RainbowFlowBrush}"
+                            BorderThickness="1" CornerRadius="3" Opacity="0.15">
+                        <TextBlock Text="∆" Style="{StaticResource MonoTextStyle}" 
+                                   FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                </Canvas>
+            </Grid>
+
+            <!-- LAYER 1: Phoenix assembly -->
+            <Grid Panel.ZIndex="1">
+                <!-- Fragment 1 -->
+                <Path x:Name="PhoenixPart1" Height="180" Margin="32,24,32,0"
+                      VerticalAlignment="Top" Opacity="0"
+                      Data="{StaticResource PhoenixFragment1}"
+                      Stroke="{StaticResource RainbowDiagonalFlowBrush}"
+                      StrokeThickness="2.6">
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform X="-50" Y="30"/>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                    <Path.Effect>
+                        <DropShadowEffect Color="{StaticResource ShadowColor}" 
+                                          BlurRadius="20" ShadowDepth="0" Opacity="0.6"/>
+                    </Path.Effect>
+                    <Path.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard BeginTime="0:0:0.5">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="1" Duration="0:0:0.8"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.X)"
+                                                     To="0" Duration="0:0:0.8">
+                                        <DoubleAnimation.EasingFunction>
+                                            <ElasticEase EasingMode="EaseOut" Oscillations="2"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                                                     To="0" Duration="0:0:0.8">
+                                        <DoubleAnimation.EasingFunction>
+                                            <ElasticEase EasingMode="EaseOut" Oscillations="2"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Path.Triggers>
+                </Path>
+
+                <!-- Main phoenix with corruption pulse -->
+                <fx:PhoenixPath x:Name="Phoenix" Height="180" Margin="32,24,32,0"
+                                VerticalAlignment="Top" Opacity="0"
+                                StrokeThickness="2.6" GlowThickness="11"
+                                Geometry="{StaticResource PhoenixGeometry}"
+                                Stroke="{StaticResource RainbowFlowBrush}">
+                    <fx:PhoenixPath.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <RotateTransform Angle="0"/>
+                        </TransformGroup>
+                    </fx:PhoenixPath.RenderTransform>
+                    <fx:PhoenixPath.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard BeginTime="0:0:1.5">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="0.9" Duration="0:0:1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </fx:PhoenixPath.Triggers>
+                </fx:PhoenixPath>
+            </Grid>
+
+            <!-- LAYER 2: Title/Status/Progress -->
             <Grid Panel.ZIndex="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Title stack -->
+                <!-- Title with corruption glitch -->
                 <StackPanel Grid.Row="0" VerticalAlignment="Center">
-                    <TextBlock x:Name="TitleText"
-                               Text="LAZARUS"
-                               HorizontalAlignment="Center"
-                               FontSize="48" FontWeight="Black"
-                               Foreground="#E900FF">
-                        <TextBlock.Effect>
-                            <DropShadowEffect BlurRadius="24" ShadowDepth="0" Color="#E900FF" Opacity="0.9"/>
-                        </TextBlock.Effect>
-                    </TextBlock>
+                    <Grid>
+                        <!-- Background corrupted text -->
+                        <TextBlock Text="0xDEADBEEF" Style="{StaticResource H1TextStyle}"
+                                   HorizontalAlignment="Center" Opacity="0.1"
+                                   Foreground="{StaticResource RainbowDiagonalFlowBrush}">
+                            <TextBlock.RenderTransform>
+                                <TranslateTransform X="2" Y="2"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+
+                        <!-- Main title -->
+                        <TextBlock x:Name="TitleText" Text="LAZARUS"
+                                   Style="{StaticResource H1TextStyle}"
+                                   HorizontalAlignment="Center" FontSize="48">
+                            <TextBlock.Foreground>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <LinearGradientBrush.Transform>
+                                        <TranslateTransform X="0"/>
+                                    </LinearGradientBrush.Transform>
+                                    <GradientStop Color="#FF0000" Offset="0"/>
+                                    <GradientStop Color="#FF7F00" Offset="0.14"/>
+                                    <GradientStop Color="#FFFF00" Offset="0.28"/>
+                                    <GradientStop Color="#00FF00" Offset="0.42"/>
+                                    <GradientStop Color="#0000FF" Offset="0.57"/>
+                                    <GradientStop Color="#4B0082" Offset="0.71"/>
+                                    <GradientStop Color="#9400D3" Offset="0.85"/>
+                                    <GradientStop Color="#FF0000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </TextBlock.Foreground>
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="{StaticResource ShadowColor}" 
+                                                  BlurRadius="32" ShadowDepth="0" Opacity="0.8"/>
+                            </TextBlock.Effect>
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource TextGlitch}"/>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+                    </Grid>
 
                     <TextBlock Text="Powered by the Amity Framework."
-                               HorizontalAlignment="Center"
-                               Margin="0,8,0,0"
-                               FontSize="14" Foreground="#C8B3E6">
+                               Style="{StaticResource SecondaryTextStyle}"
+                               HorizontalAlignment="Center" Margin="0,8,0,0">
                         <TextBlock.Effect>
-                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="#6A4FB9" Opacity="0.6"/>
+                            <DropShadowEffect Color="{StaticResource ShadowColor}" 
+                                              BlurRadius="16" ShadowDepth="0" Opacity="0.4"/>
                         </TextBlock.Effect>
                     </TextBlock>
                 </StackPanel>
 
-                <!-- Status -->
-                <TextBlock x:Name="StatusText"
-                           Grid.Row="1" Margin="0,18,0,6"
-                           HorizontalAlignment="Center"
-                           FontSize="18" FontFamily="Consolas"
-                           Foreground="#C8B3E6" Text="Binding service wraiths..." />
+                <!-- Status with corruption states -->
+                <Grid Grid.Row="1" Margin="0,18,0,6">
+                    <TextBlock x:Name="StatusTextCorrupted" 
+                               Style="{StaticResource MonoTextStyle}"
+                               HorizontalAlignment="Center" FontSize="18"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Text="0x42696E64696E672073657276696365..." Opacity="0.2"/>
+                    <TextBlock x:Name="StatusText"
+                               Style="{StaticResource MonoTextStyle}"
+                               HorizontalAlignment="Center" FontSize="18"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Text="Binding service wraiths...">
+                        <TextBlock.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </TransformGroup>
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                </Grid>
 
-                <!-- Progress -->
+                <!-- Progress with decay mechanics -->
                 <Grid Grid.Row="2" Margin="12,4,12,6">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="18" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Glow progress bar -->
+                    <!-- Glass progress bar background -->
                     <Border Height="18" CornerRadius="9"
-                            Background="#1E0F2E" BorderBrush="#3B215E" BorderThickness="1">
+                            Background="{StaticResource GlassCardBrush}"
+                            BorderBrush="{StaticResource GlassBorderGradientBrush}"
+                            BorderThickness="1">
                         <Grid ClipToBounds="True" x:Name="ProgressClip">
+                            <!-- Corruption artifacts layer -->
+                            <TextBlock Text="0xDEAD 0xBEEF 0xCAFE 0xBABE 0xFACE"
+                                       Style="{StaticResource MonoTextStyle}"
+                                       FontSize="8" Opacity="0.1"
+                                       HorizontalAlignment="Left" VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
+
+                            <!-- Progress fill with rainbow flow -->
                             <Rectangle x:Name="ProgressFill" RadiusX="9" RadiusY="9"
-                                       Height="18" HorizontalAlignment="Left" Width="0">
-                                <Rectangle.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#A900FF" Offset="0" />
-                                        <GradientStop Color="#E900FF" Offset="1" />
-                                    </LinearGradientBrush>
-                                </Rectangle.Fill>
+                                       Height="18" HorizontalAlignment="Left" Width="0"
+                                       Fill="{StaticResource RainbowFlowBrush}">
                                 <Rectangle.Effect>
-                                    <DropShadowEffect BlurRadius="16" ShadowDepth="0"
-                                                      Color="#E900FF" Opacity="0.9"/>
+                                    <DropShadowEffect Color="{StaticResource ShadowColor}"
+                                                      BlurRadius="20" ShadowDepth="0" Opacity="0.7"/>
                                 </Rectangle.Effect>
                             </Rectangle>
 
-                            <!-- moving tracer -->
+                            <!-- Corruption scanner tracer -->
                             <Rectangle x:Name="Tracer" Width="120" Height="18"
-                                       HorizontalAlignment="Left" Opacity="0.65">
+                                       HorizontalAlignment="Left" Opacity="0.4">
                                 <Rectangle.Fill>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#00FFFFFF" Offset="0.0"/>
-                                        <GradientStop Color="#FFFFFFFF" Offset="0.5"/>
-                                        <GradientStop Color="#00FFFFFF" Offset="1.0"/>
+                                        <GradientStop Color="Transparent" Offset="0"/>
+                                        <GradientStop Color="#40FFFFFF" Offset="0.5"/>
+                                        <GradientStop Color="Transparent" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
+                                <Rectangle.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="0"/>
+                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    </TransformGroup>
+                                </Rectangle.RenderTransform>
                             </Rectangle>
                         </Grid>
                     </Border>
 
-                    <TextBlock x:Name="PercentText"
-                               Grid.Row="1" Margin="0,8,0,0"
-                               HorizontalAlignment="Center"
-                               FontFamily="Consolas" FontSize="14"
-                               Foreground="#8DE6FF" Text="0%" />
+                    <!-- Percentage with glitch states -->
+                    <Grid Grid.Row="1" Margin="0,8,0,0" HorizontalAlignment="Center">
+                        <TextBlock x:Name="PercentGlitch" Style="{StaticResource MonoTextStyle}"
+                                   FontSize="14" Foreground="{StaticResource ErrorBrush}"
+                                   Text="NaN%" Opacity="0" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="PercentText" Style="{StaticResource MonoTextStyle}"
+                                   FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"
+                                   Text="0%" HorizontalAlignment="Center"/>
+                    </Grid>
                 </Grid>
             </Grid>
 
-            <!-- Close handle (optional) -->
-            <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-8,0,0"
-                    Width="56" Height="10" CornerRadius="2"
-                    Background="#332244" BorderBrush="#553377" BorderThickness="1"/>
+            <!-- Window control handle with glass style -->
+            <Border HorizontalAlignment="Center" VerticalAlignment="Top" 
+                    Margin="0,-8,0,0" Width="56" Height="10" CornerRadius="2"
+                    Background="{StaticResource GlassCardBrush}"
+                    BorderBrush="{StaticResource GlassBorderGradientBrush}"
+                    BorderThickness="1" Opacity="0.5"/>
         </Grid>
     </Border>
 </Window>
