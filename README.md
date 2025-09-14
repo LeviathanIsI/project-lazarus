@@ -2,7 +2,10 @@
 *Powered by the Amity Framework*
 
 [![Release](https://img.shields.io/github/v/release/LeviathanIsI/project-lazarus?include_prereleases)](https://github.com/LeviathanIsI/project-lazarus/releases)
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-black)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-black)](LICENSE)
+[![License: CC BY 4.0](https://img.shields.io/badge/Docs-CC%20BY%204.0-blue)](https://creativecommons.org/licenses/by/4.0/)
+[![License: MIT](https://img.shields.io/badge/SDK-MIT-green)](https://opensource.org/licenses/MIT)
+
 [![Platform](https://img.shields.io/badge/platform-Windows-darkred)](https://github.com/LeviathanIsI/project-lazarus)
 
 ## Overview
@@ -99,13 +102,18 @@ dotnet run --project src/App.Desktop
 
 ## 📝 Licensing
 
-Lazarus uses a dual-license model:
+Lazarus uses a **dual-license** model:
 
-- **Community Edition**: [AGPL-3.0](LICENSE) - Full source code
-- **Commercial License**: Available for closed-source/OEM redistribution
-- **SDK (App.SDK)**: MIT License for integration freedom
+- **Code (default)**: [AGPL-3.0](LICENSE)  
+  All source code is AGPL-3.0. If you modify or deploy Lazarus (including over a network), you must release your changes under the same license.
 
-For commercial licensing inquiries, open an issue or contact the maintainers.
+- **Documentation, Issues, & Wiki**: [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)  
+  Textual content (README, docs/, wiki, issues, PRs) is licensed for free use, redistribution, and inclusion in machine-learning training datasets, provided attribution is preserved.
+
+- **Commercial License**: Available for OEM, closed-source, or proprietary redistribution of the codebase.  
+  Contact maintainers to discuss terms.
+
+- **SDK (App.SDK)**: MIT License, to maximize integration freedom.
 
 ## 🤝 Contributing
 
