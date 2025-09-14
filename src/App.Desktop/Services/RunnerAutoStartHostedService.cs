@@ -72,7 +72,7 @@ internal sealed class RunnerAutoStartHostedService : IHostedService
 
             // Attempt to load the last model
             _logger.LogInformation("Auto-starting runner with last model: {ModelPath}", modelPath);
-            var ok = await _runnerClient.LoadModelAsync(modelPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var ok = await _runnerClient.LoadModelAsync(modelPath, cancellationToken).ConfigureAwait(false);
             if (!ok)
             {
                 _logger.LogWarning("Auto-start last runner failed: {Error}", _runnerClient.LastError ?? "unknown error");

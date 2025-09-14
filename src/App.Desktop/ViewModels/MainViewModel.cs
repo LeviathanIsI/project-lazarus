@@ -1,7 +1,5 @@
 using Lazarus.Desktop.Services;
-using Lazarus.Backend.Adapters;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace Lazarus.Desktop.ViewModels
 {
@@ -57,7 +55,6 @@ namespace Lazarus.Desktop.ViewModels
                 OnPropertyChanged(nameof(LoraScale));
                 OnPropertyChanged(nameof(LoadedLoraDisplay));
                 OnPropertyChanged(nameof(AdaptersHudText));
-                OnPropertyChanged(nameof(ActiveAdapterDisplay));
             };
 
             _logger.LogDebug("MainViewModel initialized");
@@ -113,7 +110,9 @@ namespace Lazarus.Desktop.ViewModels
         private string? _loadedModelName;
 
         // HUD: Adapters overview (proxied from AppState)
-        public string? LoadedLoraName => GetLoadedLoraDisplayName();
+        public string? LoadedLoraName => string.IsNullOrWhiteSpace(_appState.LoadedLora)
+            ? null
+            : System.IO.Path.GetFileNameWithoutExtension(_appState.LoadedLora);
         public string? LoadedTokenizerName => string.IsNullOrWhiteSpace(_appState.LoadedTokenizer)
             ? null
             : System.IO.Path.GetFileName(_appState.LoadedTokenizer);
@@ -144,9 +143,6 @@ namespace Lazarus.Desktop.ViewModels
                 return parts.Count == 0 ? string.Empty : string.Join("  •  ", parts);
             }
         }
-
-        // Active adapter display for header
-        public string ActiveAdapterDisplay => HasLora ? $"Adapter: {LoadedLoraName}" : "Adapter: None";
 
         public string OrchestratorStatusTooltip => IsOrchestratorHealthy ? "Orchestrator: Healthy" : "Orchestrator: Unreachable";
         public string RunnerStatusTooltip => IsOrchestratorHealthy
@@ -242,25 +238,6 @@ namespace Lazarus.Desktop.ViewModels
                 });
             }
             catch { }
-        }
-
-        private string? GetLoadedLoraDisplayName()
-        {
-            if (string.IsNullOrWhiteSpace(_appState.LoadedLora)) return null;
-            
-            // Try to get the friendly display name by scanning the LoRA adapters
-            // This matches the logic in ModelsViewModel.GetLoadedLoraDisplayName()
-            var loraAdapters = LoraScanner.ScanAll();
-            var loadedLora = loraAdapters.FirstOrDefault(l => 
-                string.Equals(l.Path, _appState.LoadedLora, StringComparison.OrdinalIgnoreCase));
-            
-            if (loadedLora != null)
-            {
-                return loadedLora.Display;
-            }
-            
-            // Fallback to filename if we can't find the friendly name
-            return System.IO.Path.GetFileNameWithoutExtension(_appState.LoadedLora);
         }
     }
 }

@@ -2,7 +2,6 @@ using Lazarus.Data.Entities;
 using Lazarus.Data.Enums;
 using Lazarus.Desktop.Services;
 using Lazarus.Shared.Settings;
-using Lazarus.Backend.Adapters;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;
@@ -163,12 +162,6 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             OnPropertyChanged(nameof(AssistantDisplayName));
         };
 
-        // React to app state changes to update adapter display
-        _appState.PropertyChanged += (_, __) =>
-        {
-            OnPropertyChanged(nameof(AdapterDisplayName));
-        };
-
         // Commands
         SendMessageCommand = new RelayCommand(
             async () => await SendMessageAsync(),
@@ -246,8 +239,6 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         get => _modelName;
         private set => SetProperty(ref _modelName, value);
     }
-
-    public string? AdapterDisplayName => GetAdapterDisplayName();
 
     public bool IsHealthy
     {
@@ -331,9 +322,6 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     {
         ModelName = state.ModelName ?? "No model loaded";
         IsHealthy = state.IsHealthy;
-        
-        // Also update adapter display name when runner state changes
-        OnPropertyChanged(nameof(AdapterDisplayName));
 
         if (!IsHealthy)
         {
@@ -954,34 +942,6 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         else idx = Math.Max(idxR, idxN);
         var one = idx >= 0 ? content.Substring(0, idx) : content;
         return one;
-    }
-
-    private string? GetAdapterDisplayName()
-    {
-        if (string.IsNullOrWhiteSpace(_appState.LoadedLora)) return null;
-        
-        // Try to get the friendly display name by scanning the LoRA adapters
-        var loraAdapters = LoraScanner.ScanAll();
-        var loadedLora = loraAdapters.FirstOrDefault(l => 
-            string.Equals(l.Path, _appState.LoadedLora, StringComparison.OrdinalIgnoreCase));
-        
-        if (loadedLora != null)
-        {
-            var display = loadedLora.Display;
-            if (_appState.LoraScale.HasValue && _appState.LoraScale.Value != 1.0)
-            {
-                display += $" (weight: {_appState.LoraScale.Value:F2})";
-            }
-            return display;
-        }
-        
-        // Fallback to filename if we can't find the friendly name
-        var fallback = System.IO.Path.GetFileNameWithoutExtension(_appState.LoadedLora);
-        if (_appState.LoraScale.HasValue && _appState.LoraScale.Value != 1.0)
-        {
-            fallback += $" (weight: {_appState.LoraScale.Value:F2})";
-        }
-        return fallback;
     }
 
     // JSON response models

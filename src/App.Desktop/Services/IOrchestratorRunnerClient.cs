@@ -4,7 +4,7 @@ namespace Lazarus.Desktop.Services;
 
 public interface IOrchestratorRunnerClient : IDisposable
 {
-    Task<bool> LoadModelAsync(string modelPath, string? loraPath = null, double? loraScale = null, CancellationToken cancellationToken = default);
+    Task<bool> LoadModelAsync(string modelPath, CancellationToken cancellationToken = default);
     Task<bool> UnloadAsync(CancellationToken cancellationToken = default);
     Task<RunnerProcessStatus> GetStatusAsync(CancellationToken cancellationToken = default);
     string? LastError { get; }

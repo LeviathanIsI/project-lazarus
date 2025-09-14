@@ -220,32 +220,6 @@
                                 </TextBlock>
                                 <TextBlock Text="  •  " Style="{StaticResource SmallTextStyle}"/>
                                 <TextBlock Text="{Binding AssistantDisplayName}" Style="{StaticResource SmallTextStyle}"/>
-                                <TextBlock>
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock" BasedOn="{StaticResource SmallTextStyle}">
-                                            <Setter Property="Text" Value="  •  "/>
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding AdapterDisplayName}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                <TextBlock>
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock" BasedOn="{StaticResource SmallTextStyle}">
-                                            <Setter Property="Text" Value="{Binding AdapterDisplayName}"/>
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding AdapterDisplayName}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
                             </StackPanel>
                         </StackPanel>
                         

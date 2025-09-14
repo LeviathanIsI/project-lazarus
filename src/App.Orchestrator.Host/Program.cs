@@ -298,7 +298,7 @@ app.MapPost("/runner/load", async (LoadRunnerRequest req, IRunnerSupervisor sup,
     var runnerType = HostHelpers.InferRunnerType(fullPath);
     var modelId = HostHelpers.InferModelKey(fullPath);
 
-    var started = await sup.LoadAsync(fullPath, req.LoraPath, req.LoraScale, ct);
+    var started = await sup.LoadAsync(fullPath, ct);
     if (!started)
         return Results.BadRequest(new { error = "failed to start runner" });
 
@@ -378,8 +378,6 @@ public sealed class RunnerStatus
 public sealed class LoadRunnerRequest
 {
     public required string ModelPath { get; set; }
-    public string? LoraPath { get; set; }
-    public double? LoraScale { get; set; }
 }
 
 public interface IRunnerSupervisor
@@ -391,7 +389,7 @@ public interface IRunnerSupervisor
     string? RunnerExePath { get; }
     string? LastOutLogPath { get; }
     string? LastErrLogPath { get; }
-    Task<bool> LoadAsync(string modelPath, string? loraPath = null, double? loraScale = null, CancellationToken cancellationToken = default);
+    Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken);
     Task UnloadAsync(CancellationToken cancellationToken);
 }
 
@@ -423,7 +421,7 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
     public int? ProcessId => _process?.HasExited == false ? _process.Id : null;
     public string? CurrentModelPath => _currentModelPath;
 
-    public async Task<bool> LoadAsync(string modelPath, string? loraPath = null, double? loraScale = null, CancellationToken cancellationToken = default)
+    public async Task<bool> LoadAsync(string modelPath, CancellationToken cancellationToken)
     {
         // Stop any existing process
         await UnloadAsync(cancellationToken).ConfigureAwait(false);
@@ -441,20 +439,20 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         // Resolve a sane initial GPU layer count (user-configurable). Avoid extreme values to reduce startup failures.
         var initialGpuLayers = ResolveGpuLayers(preferGpu);
 
-        if (await StartOnceAsync(exe, modelPath, initialGpuLayers, loraPath, loraScale, cancellationToken).ConfigureAwait(false))
+        if (await StartOnceAsync(exe, modelPath, initialGpuLayers, cancellationToken).ConfigureAwait(false))
             return true;
 
         // If GPU attempt failed quickly, retry with CPU-only as a fallback.
         if (preferGpu)
         {
             _logger.LogWarning("GPU-start failed; retrying llama-server with CPU-only (n-gpu-layers=0)");
-            return await StartOnceAsync(exe, modelPath, 0, loraPath, loraScale, cancellationToken).ConfigureAwait(false);
+            return await StartOnceAsync(exe, modelPath, 0, cancellationToken).ConfigureAwait(false);
         }
 
         return false;
     }
 
-    private async Task<bool> StartOnceAsync(string exe, string modelPath, int gpuLayers, string? loraPath, double? loraScale, CancellationToken cancellationToken)
+    private async Task<bool> StartOnceAsync(string exe, string modelPath, int gpuLayers, CancellationToken cancellationToken)
     {
         // Pick a usable port, avoiding collisions if the preferred is busy
         var preferred = ResolveBasePort();
@@ -468,17 +466,6 @@ internal sealed class LlamaCppSupervisor : IRunnerSupervisor
         // Many llama-server builds expose the HTTP UI/API by default; some reject the legacy --api flag.
         // Launch without --api for broad compatibility.
         var args = $"--host 127.0.0.1 --port {Port} --n-gpu-layers {gpuLayers} --model \"{modelPath}\"";
-        
-        // Add LoRA parameters if provided
-        if (!string.IsNullOrWhiteSpace(loraPath))
-        {
-            args += $" --lora \"{loraPath}\"";
-            if (loraScale.HasValue)
-            {
-                args += $" --lora-scale {loraScale.Value:F2}";
-            }
-            _logger.LogInformation("Applying LoRA adapter: {LoraPath} (scale: {LoraScale})", loraPath, loraScale ?? 1.0);
-        }
 
         try
         {
@@ -845,7 +832,7 @@ internal sealed class RunnerAutoStartService : IHostedService
         }
 
         _logger.LogInformation("Attempting runner auto-start with model: {ModelPath}", modelPath);
-        var ok = await _supervisor.LoadAsync(modelPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var ok = await _supervisor.LoadAsync(modelPath, cancellationToken).ConfigureAwait(false);
         if (!ok)
         {
             _logger.LogWarning("Runner auto-start failed; service remains idle");
