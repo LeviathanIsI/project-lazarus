@@ -71,7 +71,9 @@ namespace Lazarus.Desktop.Services
 
         private async Task InitializeDatabaseAsync(CancellationToken cancellationToken)
         {
-            var context = _serviceProvider.GetRequiredService<LazarusDbContext>();
+            // Create a scope to resolve scoped services (DbContext)
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<LazarusDbContext>();
             await context.Database.EnsureCreatedAsync(cancellationToken);
             await Task.Delay(800, cancellationToken); // Simulate database initialization
         }
@@ -86,6 +88,7 @@ namespace Lazarus.Desktop.Services
         private async Task InitializeBackendServicesAsync(CancellationToken cancellationToken)
         {
             // Get required services to ensure they're initialized
+            // These are singletons, so they can be resolved from root provider
             var modelInventoryService = _serviceProvider.GetRequiredService<Lazarus.Backend.Services.ModelInventoryService>();
             var modelPresetService = _serviceProvider.GetRequiredService<Lazarus.Backend.Services.ModelPresetService>();
             await Task.Delay(600, cancellationToken);
