@@ -43,6 +43,17 @@ namespace Lazarus.Desktop.Views.Effects
         private readonly Stopwatch _flare = new();
         private TaskCompletionSource<bool>? _flareTcs;
 
+        public PhoenixPath()
+        {
+            Loaded += (_, __) => CompositionTarget.Rendering += OnRenderFrame;
+            Unloaded += (_, __) => CompositionTarget.Rendering -= OnRenderFrame;
+        }
+
+        void OnRenderFrame(object? _, EventArgs __)
+        {
+            if (_flare.IsRunning) InvalidateVisual();
+        }
+
         protected override void OnRender(DrawingContext dc)
         {
             var g = Geometry;

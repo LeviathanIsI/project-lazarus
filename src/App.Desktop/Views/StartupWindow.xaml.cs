@@ -13,7 +13,7 @@ namespace Lazarus.Desktop.Views
         private readonly Stopwatch _sw = new();
         private readonly DispatcherTimer _tracerTimer;
         private double _progress01; // 0..1
-        private bool _burstQueued;
+        
 
         public StartupWindow()
         {
@@ -75,12 +75,7 @@ namespace Lazarus.Desktop.Views
             // PHOENIX: map to 0..1 progress
             Phoenix.Progress = _progress01;
 
-            // auto-queue burst at 100% (only once)
-            if (!_burstQueued && percent >= 100)
-            {
-                _burstQueued = true;
-                _ = PlayCompletionBurstAsync();
-            }
+            // burst is awaited explicitly by App.xaml.cs after initialization completes
         }
 
         public async Task PlayCompletionBurstAsync()
