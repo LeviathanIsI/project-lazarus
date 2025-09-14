@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using System.IO;
+using System.Windows.Threading;
 using Lazarus.Shared;
 using Lazarus.Backend.Services;
+using Lazarus.Backend.Adapters;
 using Lazarus.Desktop.Extensions;
 using Lazarus.Desktop.Services;
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,8 @@ public sealed class ModelsViewModel : ViewModelBase
     private readonly IOrchestratorClient _orchestratorClient;
     private readonly Func<AdapterInfo, SelectableAdapter> _adapterFactory;
     private readonly IAppState _appState;
+    private readonly Dispatcher _ui;
+    private readonly LoraWatcher _watcher;
 
     public ModelsViewModel(
         IModelInventoryService inventory,
@@ -40,6 +44,9 @@ public sealed class ModelsViewModel : ViewModelBase
         _runnerClient = runnerClient;
         _orchestratorClient = orchestratorClient;
         _appState = appState;
+        _ui = Dispatcher.CurrentDispatcher;
+        _watcher = new LoraWatcher();
+        _watcher.Changed += (_, __) => RefreshAdapters();
         // Ensure preset folder exists for smooth UX
         _presets.EnsureFolders();
 
@@ -47,6 +54,7 @@ public sealed class ModelsViewModel : ViewModelBase
         _appState.PropertyChanged += (_, __) =>
         {
             OnPropertyChanged(nameof(LoadedLoraPath));
+            OnPropertyChanged(nameof(LoadedLoraDisplayName));
             OnPropertyChanged(nameof(LoadedTokenizerPath));
             OnPropertyChanged(nameof(LoadedEmbeddingPath));
             OnPropertyChanged(nameof(IsLoraLoaded));
@@ -56,7 +64,7 @@ public sealed class ModelsViewModel : ViewModelBase
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
         LoadSelectedModelCommand = new RelayCommand(
             async () => await LoadSelectedModelAsync(),
-            () => SelectedModel is not null && SelectedRunner is not null && !IsRunnerRunning && _orchestratorClient.IsHealthy && !IsDisposed);
+            () => SelectedModel is not null && SelectedRunner is not null && _orchestratorClient.IsHealthy && !IsDisposed);
         UnloadRunnerCommand = new RelayCommand(async () => await UnloadRunnerAsync(), () => !IsDisposed);
         RefreshRunnerStatusCommand = new RelayCommand(async () => { await RefreshRunnerStatusAsync(); await RefreshRunnersCatalogAsync(); }, () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
@@ -67,8 +75,10 @@ public sealed class ModelsViewModel : ViewModelBase
         UnloadEmbeddingCommand = new RelayCommand(UnloadEmbedding, () => _appState.LoadedEmbedding != null);
         LoadLoraCommand = new RelayCommand(LoadLora, () => SelectedLora is not null);
         UnloadLoraCommand = new RelayCommand(UnloadLora, () => _appState.LoadedLora != null);
+        VerifyAdapterCommand = new RelayCommand(VerifyAdapter, () => SelectedLora is not null && SelectedModel is not null);
 
         Refresh();
+        RefreshAdapters();
         _ = RefreshRunnersCatalogAsync();
         _ = RefreshRunnerStatusAsync();
 
@@ -84,6 +94,7 @@ public sealed class ModelsViewModel : ViewModelBase
 
     // Collections (bound to dropdowns/lists)
     public ObservableCollection<BaseModelInfo> BaseModels { get; } = new();
+    public ObservableCollection<LoraOption> LoraAdapters { get; } = new();
     public ObservableCollection<AdapterInfo> Loras { get; } = new();
     public ObservableCollection<TokenizerInfo> Tokenizers { get; } = new();
     public ObservableCollection<EmbeddingInfo> Embeddings { get; } = new();
@@ -112,8 +123,8 @@ public sealed class ModelsViewModel : ViewModelBase
     }
 
     // Selected single LoRA adapter for now
-    private AdapterInfo? _selectedLora;
-    public AdapterInfo? SelectedLora { get => _selectedLora; set => SetProperty(ref _selectedLora, value); }
+    private LoraOption? _selectedLora;
+    public LoraOption? SelectedLora { get => _selectedLora; set => SetProperty(ref _selectedLora, value); }
 
     private TokenizerInfo? _selectedTokenizer;
     public TokenizerInfo? SelectedTokenizer
@@ -201,6 +212,7 @@ public sealed class ModelsViewModel : ViewModelBase
     public RelayCommand UnloadEmbeddingCommand { get; }
     public RelayCommand LoadLoraCommand { get; }
     public RelayCommand UnloadLoraCommand { get; }
+    public RelayCommand VerifyAdapterCommand { get; }
 
     public ObservableCollection<RunnerCandidate> RunnerCatalog { get; } = new();
     private RunnerCandidate? _selectedRunner;
@@ -249,6 +261,7 @@ public sealed class ModelsViewModel : ViewModelBase
 
     // Adapter load state (proxy to global AppState)
     public string? LoadedLoraPath => _appState.LoadedLora;
+    public string? LoadedLoraDisplayName => GetLoadedLoraDisplayName();
     public string? LoadedTokenizerPath => _appState.LoadedTokenizer;
     public string? LoadedEmbeddingPath => _appState.LoadedEmbedding;
     public bool IsLoraLoaded => !string.IsNullOrWhiteSpace(_appState.LoadedLora);
@@ -290,7 +303,6 @@ public sealed class ModelsViewModel : ViewModelBase
     {
         get
         {
-            if (IsRunnerRunning) return "Runner already running";
             if (!IsOrchestratorHealthy) return "Orchestrator offline";
             if (SelectedRunner is null) return SelectedModel is null ? "Choose a runner and model" : "Choose a runner for this model";
             if (SelectedModel is null) return "Select a model to enable loading";
@@ -323,6 +335,21 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(PresetNames));
     }
 
+    private void RefreshAdapters()
+    {
+        var list = LoraScanner.ScanAll();
+        _ui.Invoke(() =>
+        {
+            LoraAdapters.Clear();
+            foreach (var item in list) LoraAdapters.Add(item);
+
+            // If previously selected path still exists, keep it; else auto-pick best (final or top step)
+            var keep = _selectedLora is not null && list.Any(x => x.Path == _selectedLora.Path);
+            SelectedLora = keep ? list.First(x => x.Path == _selectedLora!.Path)
+                                : list.FirstOrDefault();
+        });
+    }
+
     private void SavePreset()
     {
         ThrowIfDisposed();
@@ -332,7 +359,7 @@ public sealed class ModelsViewModel : ViewModelBase
         var preset = new ModelPreset(
             Name: NewPresetName!.Trim(),
             BaseModelKey: baseKey,
-            Loras: (_selectedLora is not null ? new System.Collections.Generic.List<string> { _selectedLora.Name } : new System.Collections.Generic.List<string>()),
+            Loras: (_selectedLora is not null ? new System.Collections.Generic.List<string> { _selectedLora.Path } : new System.Collections.Generic.List<string>()),
             Tokenizer: SelectedTokenizer?.Name,
             Embedding: SelectedEmbedding?.Name,
             Params: new ModelParams(Temperature, TopP, MaxTokens, RepeatPenalty, Mirostat)
@@ -370,11 +397,24 @@ public sealed class ModelsViewModel : ViewModelBase
         }
 
         RunnerStatusMessage = null;
-        var ok = await _runnerClient.LoadModelAsync(model.FilePath).ConfigureAwait(false);
+        var loraPath = _appState.LoadedLora;
+        var loraScale = _appState.LoraScale;
+        var ok = await _runnerClient.LoadModelAsync(model.FilePath, loraPath, loraScale).ConfigureAwait(false);
         if (!ok)
         {
             RunnerStatusMessage = _runnerClient.LastError ?? "Failed to load model.";
             _logger.LogWarning("LoadSelectedModel failed: {Message}", RunnerStatusMessage);
+        }
+        else
+        {
+            // Log post-load status and surface concise UI message
+            var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
+            _logger.LogInformation("Runner after reload: model={Model} pid={Pid} port={Port} lora={Lora} scale={Scale}",
+                status.ModelPath ?? "<none>", status.Pid, status.Port, loraPath ?? "<none>", loraScale?.ToString("0.###") ?? "<n/a>");
+
+            RunnerStatusMessage = loraPath is null
+                ? "Loaded (no LoRA)"
+                : $"Loaded with LoRA: {System.IO.Path.GetFileName(loraPath)}  {(_appState.LoraScale ?? 0):0.###}";
         }
         await RefreshRunnerStatusAsync().ConfigureAwait(false);
     }
@@ -526,7 +566,7 @@ public sealed class ModelsViewModel : ViewModelBase
         SelectedTokenizer = Tokenizers.FirstOrDefault(m => string.Equals(m.Name, preset.Tokenizer, StringComparison.OrdinalIgnoreCase));
         SelectedEmbedding = Embeddings.FirstOrDefault(m => string.Equals(m.Name, preset.Embedding, StringComparison.OrdinalIgnoreCase));
 
-        _selectedLora = Loras.FirstOrDefault(a => preset.Loras.Any(name => string.Equals(name, a.Name, StringComparison.OrdinalIgnoreCase)));
+        _selectedLora = LoraAdapters.FirstOrDefault(a => preset.Loras.Any(path => string.Equals(path, a.Path, StringComparison.OrdinalIgnoreCase)));
         OnPropertyChanged(nameof(SelectedLora));
 
         Temperature = preset.Params.Temperature;
@@ -542,12 +582,80 @@ public sealed class ModelsViewModel : ViewModelBase
     private void UnloadTokenizer() { _appState.LoadedTokenizer = null; }
     private void LoadEmbedding() { if (SelectedEmbedding != null) _appState.LoadedEmbedding = SelectedEmbedding.FilePath; }
     private void UnloadEmbedding() { _appState.LoadedEmbedding = null; }
-    private void LoadLora() { if (SelectedLora != null) _appState.LoadedLora = SelectedLora.FilePath; }
-    private void UnloadLora() { _appState.LoadedLora = null; }
+    private async void LoadLora()
+    {
+        if (SelectedLora == null) return;
+        _appState.LoadedLora = SelectedLora.Path;
+        _logger.LogInformation("LoRA selected: {Path}", _appState.LoadedLora);
+        if (IsRunnerRunning && SelectedModel is not null)
+        {
+            _logger.LogInformation("Reloading runner to apply LoRA...");
+            await LoadSelectedModelAsync();
+        }
+    }
+
+    private async void UnloadLora()
+    {
+        _appState.LoadedLora = null;
+        _logger.LogInformation("LoRA cleared.");
+        if (IsRunnerRunning && SelectedModel is not null)
+        {
+            _logger.LogInformation("Reloading runner to remove LoRA...");
+            await LoadSelectedModelAsync();
+        }
+    }
+
+    private async void VerifyAdapter()
+    {
+        if (SelectedLora == null || SelectedModel == null) return;
+
+        try
+        {
+            RunnerStatusMessage = "Verifying adapter...";
+            
+            // Simple verification: check if the runner is running with the LoRA path
+            var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
+            
+            if (status.IsRunning && !string.IsNullOrWhiteSpace(status.ModelPath))
+            {
+                // Check if the loaded LoRA matches the selected one
+                var isLoraActive = string.Equals(_appState.LoadedLora, SelectedLora.Path, StringComparison.OrdinalIgnoreCase);
+                
+                if (isLoraActive)
+                {
+                    RunnerStatusMessage = $"✅ LoRA ACTIVE: {SelectedLora.Display}";
+                    _logger.LogInformation("LoRA verification successful: {Display} at {Path}", SelectedLora.Display, SelectedLora.Path);
+                }
+                else
+                {
+                    RunnerStatusMessage = $"❌ LoRA INACTIVE: Expected {SelectedLora.Display}, but {_appState.LoadedLora ?? "none"} is loaded";
+                    _logger.LogWarning("LoRA verification failed: Expected {Expected}, but {Actual} is loaded", SelectedLora.Path, _appState.LoadedLora);
+                }
+            }
+            else
+            {
+                RunnerStatusMessage = "❌ Runner not running - cannot verify adapter";
+            }
+        }
+        catch (Exception ex)
+        {
+            RunnerStatusMessage = $"❌ Verification failed: {ex.Message}";
+            _logger.LogError(ex, "LoRA verification failed");
+        }
+    }
+
+    private string? GetLoadedLoraDisplayName()
+    {
+        if (string.IsNullOrWhiteSpace(_appState.LoadedLora)) return null;
+        
+        var loadedLora = LoraAdapters.FirstOrDefault(l => string.Equals(l.Path, _appState.LoadedLora, StringComparison.OrdinalIgnoreCase));
+        return loadedLora?.Display ?? Path.GetFileName(_appState.LoadedLora);
+    }
 
     protected override void OnDisposing()
     {
         _logger.LogDebug("ModelsViewModel disposed");
+        _watcher.Dispose();
     }
 
     private static readonly ParameterSchema Schema = ParameterSchema.Default;
