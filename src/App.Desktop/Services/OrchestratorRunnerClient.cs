@@ -32,7 +32,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
         ConfigureHttpClient();
     }
 
-    public async Task<bool> LoadModelAsync(string modelPath, CancellationToken cancellationToken = default)
+    public async Task<bool> LoadModelAsync(string modelPath, string? loraPath = null, double? loraScale = null, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(modelPath))
@@ -40,7 +40,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
 
         try
         {
-            using var response = await _httpClient.PostAsJsonAsync("/runner/load", new { modelPath }, _jsonOptions, cancellationToken)
+            using var response = await _httpClient.PostAsJsonAsync("/runner/load", new { modelPath, loraPath, loraScale }, _jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {

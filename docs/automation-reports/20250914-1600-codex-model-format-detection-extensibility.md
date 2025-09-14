@@ -75,3 +75,4 @@ dotnet format
   **Mitigation:** Minimal impact - only scans when ModelsView is refreshed; existing files remain cached
 
 - **Rollback:** `git revert 1483e25c71cd6d16ef1e67ba43370bfacd0ada76` or revert the specific commit(s) that introduced these changes.
+

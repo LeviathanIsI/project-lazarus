@@ -534,11 +534,15 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Page Title -->
-                        <TextBlock Grid.Column="0" 
-                                   Text="{Binding Navigation.SelectedView}" 
-                                   Style="{StaticResource H2TextStyle}"
-                                   VerticalAlignment="Center"/>
+                        <!-- Page Title and Status -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Navigation.SelectedView}" 
+                                       Style="{StaticResource H2TextStyle}"/>
+                            <TextBlock Text="{Binding ActiveAdapterDisplay}"
+                                       Style="{StaticResource SecondaryTextStyle}"
+                                       Margin="16,0,0,0"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
 
                         <!-- Actions -->
                         <StackPanel Grid.Column="1" 
