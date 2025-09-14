@@ -70,6 +70,9 @@ namespace Lazarus.Desktop
                 });
                 await bootstrapper.InitializeAsync(progress, CancellationToken.None);
 
+                // let the phoenix flare be seen
+                await splash.PlayCompletionBurstAsync();
+
                 // 4) Resolve & show MainWindow AFTER host is ready
                 System.Diagnostics.Debug.WriteLine("Resolving MainWindow");
                 var main = Services.GetRequiredService<MainWindow>();
