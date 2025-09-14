@@ -150,8 +150,11 @@ public static class ServiceCollectionExtensions
 
         // Settings service (JSON-backed under LazarusPaths.Root)
         services.AddSingleton<ISettingsService, SettingsService>();
-        // Models/presets
-        services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
+        // Models/presets - register both interface and concrete type for DI flexibility
+        services.AddSingleton<Lazarus.Backend.Services.ModelInventoryService>();
+        services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService>(sp => sp.GetRequiredService<Lazarus.Backend.Services.ModelInventoryService>());
+        services.AddSingleton<Lazarus.Backend.Services.ModelPresetService>();
+        services.AddSingleton<Lazarus.Backend.Services.IModelPresetService>(sp => sp.GetRequiredService<Lazarus.Backend.Services.ModelPresetService>());
         // Update service for checking latest releases
         services.AddSingleton<IUpdateService, UpdateService>();
 
@@ -174,8 +177,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBinaryValidationService, BinaryValidationService>();
         services.AddSingleton<IHardwareInfoService, HardwareInfoService>();
         services.AddSingleton<IModelCatalogService, ModelCatalogService>();
-        services.AddSingleton<Lazarus.Backend.Services.IModelInventoryService, Lazarus.Backend.Services.ModelInventoryService>();
-        services.AddSingleton<Lazarus.Backend.Services.IModelPresetService, Lazarus.Backend.Services.ModelPresetService>();
         services.AddSingleton<Lazarus.Backend.Services.IImageService, Lazarus.Backend.Services.ImageService>();
         services.AddSingleton<UiDebounceDispatcher>();
         
