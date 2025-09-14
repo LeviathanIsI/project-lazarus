@@ -8,7 +8,7 @@
 
     <!-- Optimized BitmapImage Resources -->
     <BitmapImage x:Key="LazarusPngLogo" 
-                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 UriSource="pack://application:,,,/Assets/lazarus-logo.png.png"
                  CacheOption="OnLoad"
                  CreateOptions="PreservePixelFormat,IgnoreColorProfile">
         <BitmapImage.DecodePixelWidth>512</BitmapImage.DecodePixelWidth>
@@ -17,7 +17,7 @@
 
     <!-- Size-Optimized Variants -->
     <BitmapImage x:Key="LazarusPngLogo24" 
-                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 UriSource="pack://application:,,,/Assets/lazarus-logo.png.png"
                  CacheOption="OnLoad"
                  CreateOptions="PreservePixelFormat,IgnoreColorProfile">
         <BitmapImage.DecodePixelWidth>24</BitmapImage.DecodePixelWidth>
@@ -25,7 +25,7 @@
     </BitmapImage>
 
     <BitmapImage x:Key="LazarusPngLogo32" 
-                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 UriSource="pack://application:,,,/Assets/lazarus-logo.png.png"
                  CacheOption="OnLoad"
                  CreateOptions="PreservePixelFormat,IgnoreColorProfile">
         <BitmapImage.DecodePixelWidth>32</BitmapImage.DecodePixelWidth>
@@ -33,7 +33,7 @@
     </BitmapImage>
 
     <BitmapImage x:Key="LazarusPngLogo48" 
-                 UriSource="pack://application:,,,/LazarusLogo.png"
+                 UriSource="pack://application:,,,/Assets/lazarus-logo.png.png"
                  CacheOption="OnLoad"
                  CreateOptions="PreservePixelFormat,IgnoreColorProfile">
         <BitmapImage.DecodePixelWidth>48</BitmapImage.DecodePixelWidth>

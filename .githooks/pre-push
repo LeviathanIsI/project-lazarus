@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Block direct pushes to protected branches unless explicitly overridden.
+
+protected_regex='^(main|release/.*)$'
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  branch="${remote_ref#refs/heads/}"
+  if [[ "$branch" =~ $protected_regex ]]; then
+    if [[ -z "$ALLOW_MAIN_PUSH" ]]; then
+      echo "🚫 Direct pushes to '$branch' are blocked. Use a PR from a feature branch."
+      echo "   Override once with: ALLOW_MAIN_PUSH=1 git push origin $branch"
+      exit 1
+    fi
+  fi
+done
+exit 0

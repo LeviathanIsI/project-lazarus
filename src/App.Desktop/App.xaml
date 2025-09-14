@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Load in dependency order -->
                 <ResourceDictionary Source="Themes/BaseResources.xaml"/>
+                <ResourceDictionary Source="Resources/Themes/DarkTheme.xaml"/>
                 <ResourceDictionary Source="Resources/Themes/RainbowGradients.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/Buttons.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/Chips.xaml"/>

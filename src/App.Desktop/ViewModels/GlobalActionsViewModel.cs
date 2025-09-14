@@ -184,7 +184,14 @@ public sealed partial class GlobalActionsViewModel : SettingsSectionBase
         ReportIssueCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo("https://github.com/project-lazarus/issues") { UseShellExecute = true }));
         OpenForumCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo("https://github.com/project-lazarus/discussions") { UseShellExecute = true }));
         ContactSupportCommand = new RelayCommand(() => _logger.LogInformation("Contact support requested"));
-        ShowAboutCommand = new RelayCommand(() => MessageBox.Show("Lazarus v1.0.0\n© 2024 Lazarus Project", "About", MessageBoxButton.OK, MessageBoxImage.Information));
+        ShowAboutCommand = new RelayCommand(() => MessageBox.Show(
+         "Lazarus v0.1.0-alpha.1\n" +
+         "Powered by the Amity Framework\n\n" +
+         "© 2025 LeviathanIsI\n" +
+         "Licensed under AGPL-3.0",
+         "About Lazarus",
+         MessageBoxButton.OK,
+         MessageBoxImage.Information));
 
         // Emergency Actions
         KillAllProcessesCommand = new RelayCommand(() =>

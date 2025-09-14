@@ -61,6 +61,11 @@ namespace Lazarus.Desktop
                 await _host.StartAsync();
                 System.Diagnostics.Debug.WriteLine("Host started");
 
+                // Register ViewModelLocator as a resource for XAML binding
+                var viewModelLocator = Services.GetRequiredService<ViewModelLocator>();
+                Current.Resources["ViewModelLocator"] = viewModelLocator;
+                System.Diagnostics.Debug.WriteLine("ViewModelLocator registered as resource");
+
                 // 3) Run bootstrap tasks with progress reporting
                 var bootstrapper = Services.GetRequiredService<IAppBootstrapper>();
                 System.Diagnostics.Debug.WriteLine("Bootstrapper resolved");
@@ -72,7 +77,6 @@ namespace Lazarus.Desktop
                 await bootstrapper.InitializeAsync(progress, CancellationToken.None);
 
                 // let the phoenix flare be seen
-                await splash.PlayCompletionBurstAsync();
 
                 // 4) Resolve & show MainWindow AFTER host is ready
                 System.Diagnostics.Debug.WriteLine("Resolving MainWindow");

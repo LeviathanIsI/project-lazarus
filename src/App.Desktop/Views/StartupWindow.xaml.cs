@@ -21,7 +21,6 @@ namespace Lazarus.Desktop.Views
 
         // Named elements resolved at runtime (avoid reliance on generated fields)
         private ParticleCanvas? _fx;
-        private PhoenixPath? _phoenix;
         private TextBlock? _titleText;
         private TextBlock? _statusText;
         private TextBlock? _percentText;
@@ -34,7 +33,6 @@ namespace Lazarus.Desktop.Views
             InitializeComponent();
             // Resolve elements explicitly
             _fx = (ParticleCanvas?)FindName("Fx");
-            _phoenix = (PhoenixPath?)FindName("Phoenix");
             _titleText = (TextBlock?)FindName("TitleText");
             _statusText = (TextBlock?)FindName("StatusText");
             _percentText = (TextBlock?)FindName("PercentText");
@@ -136,12 +134,6 @@ namespace Lazarus.Desktop.Views
                 _fx.AshIntensity = 0.6 + 0.6 * _progress01;
             }
 
-            // phoenix reveal
-            if (_phoenix is not null)
-            {
-                _phoenix.Progress = _progress01;
-            }
-
             // trigger title flicker once at 70%
             if (percent >= 70 && !_hasFlickeredTitle)
             {
@@ -153,18 +145,6 @@ namespace Lazarus.Desktop.Views
             if (percent >= 100 && !_hasCompleted)
             {
                 _hasCompleted = true;
-                _ = PlayCompletionBurstAsync(); // fire-and-forget
-            }
-        }
-
-
-        public async Task PlayCompletionBurstAsync()
-        {
-            // flare the phoenix + extra particles, then give it ~550ms before close
-            _fx?.Burst(ashes: 220, tracers: 140);
-            if (_phoenix is not null)
-            {
-                await _phoenix.PlayBurstAsync();
             }
         }
 
@@ -184,12 +164,6 @@ namespace Lazarus.Desktop.Views
             {
                 _fx.NeonColor = accent;
                 _fx.BackgroundColor = surface;
-            }
-
-            // Phoenix stroke (already set in XAML, but ensure neon color is updated)
-            if (_phoenix is not null)
-            {
-                _phoenix.NeonColor = accent;
             }
 
             // Progress bar gradient (already set in XAML)
