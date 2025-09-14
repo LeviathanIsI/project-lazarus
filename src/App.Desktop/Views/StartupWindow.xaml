@@ -1,0 +1,68 @@
+<Window x:Class="Lazarus.Desktop.Views.StartupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Starting Lazarus"
+        Width="520"
+        Height="180"
+        WindowStyle="ToolWindow"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True"
+        Topmost="True"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+        <!-- Dark Ceremony Radial Gradient Background -->
+        <RadialGradientBrush x:Key="DarkCeremonyBrush" Center="0.5,0.5" RadiusX="1.2" RadiusY="1.2">
+            <GradientStop Color="#1a0f1f" Offset="0.0"/>
+            <GradientStop Color="#000000" Offset="1.0"/>
+        </RadialGradientBrush>
+
+        <!-- Purple Glow Effect -->
+        <DropShadowEffect x:Key="PurpleGlow" Color="#8b00ff" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+    </Window.Resources>
+
+    <Border Background="{StaticResource DarkCeremonyBrush}"
+            CornerRadius="8"
+            BorderBrush="#8b00ff40"
+            BorderThickness="1">
+
+        <Grid Margin="20">
+            <!-- Status Text -->
+            <TextBlock x:Name="StatusText"
+                      Text="Initializing Lazarus..."
+                      FontFamily="Courier New"
+                      FontSize="14"
+                      FontWeight="Bold"
+                      Foreground="#8b00ff"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Top"
+                      TextAlignment="Center"
+                      Effect="{StaticResource PurpleGlow}"
+                      Margin="0,0,0,20" />
+
+            <!-- Progress Bar -->
+            <ProgressBar x:Name="ProgressBar"
+                        Height="8"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="0"
+                        Background="#333333"
+                        Foreground="#8b00ff"
+                        Margin="0,40,0,0"
+                        VerticalAlignment="Top" />
+
+            <!-- Progress Text (subtle) -->
+            <TextBlock x:Name="ProgressText"
+                      Text="Starting services..."
+                      FontFamily="Courier New"
+                      FontSize="10"
+                      Foreground="#8b00ff60"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Bottom"
+                      TextAlignment="Center"
+                      Opacity="0.7" />
+        </Grid>
+    </Border>
+</Window>

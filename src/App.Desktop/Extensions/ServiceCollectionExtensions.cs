@@ -51,6 +51,10 @@ public static class ServiceCollectionExtensions
         
         // Add initialization services
         services.AddSingleton<IInitializationManager, InitializationManager>();
+
+        // Register ViewModels
+        services.AddSingleton<MainViewModel>();
+        services.AddSingleton<ViewModelLocator>();
         services.AddLazarusBackgroundServices();
         
         // Training services
