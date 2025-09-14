@@ -4,7 +4,7 @@
         Title="Starting Lazarus"
         Width="520"
         Height="180"
-        WindowStyle="ToolWindow"
+        WindowStyle="None"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="True"
@@ -26,7 +26,8 @@
     <Border Background="{StaticResource DarkCeremonyBrush}"
             CornerRadius="8"
             BorderBrush="#8b00ff40"
-            BorderThickness="1">
+            BorderThickness="1"
+            Effect="{StaticResource PurpleGlow}">
 
         <Grid Margin="20">
             <!-- Status Text -->
