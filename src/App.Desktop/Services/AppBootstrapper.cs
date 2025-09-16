@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Lazarus.Data;
@@ -71,9 +72,9 @@ namespace Lazarus.Desktop.Services
 
         private async Task InitializeDatabaseAsync(CancellationToken cancellationToken)
         {
-            // Create a scope to resolve scoped services (DbContext)
-            using var scope = _serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<LazarusDbContext>();
+            // Use factory pattern for database initialization
+            var dbf = _serviceProvider.GetRequiredService<IDbContextFactory<LazarusDbContext>>();
+            await using var context = await dbf.CreateDbContextAsync(cancellationToken);
             await context.Database.EnsureCreatedAsync(cancellationToken);
             await Task.Delay(800, cancellationToken); // Simulate database initialization
         }

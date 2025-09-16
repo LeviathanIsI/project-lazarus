@@ -80,6 +80,12 @@ public class AppSettings : INotifyPropertyChanged
     private string _toolGltfpackPath = string.Empty;
     private bool _preferBundledTools = true;
 
+    // Model and LoRA state persistence
+    private string _activeLoraPath = string.Empty;
+    private double _activeLoraScale = 0.7;
+    private string _activeRunnerPath = string.Empty;
+    private string _activeRunnerEngine = string.Empty;
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     // General Settings
@@ -611,6 +617,39 @@ public class AppSettings : INotifyPropertyChanged
     {
         get => _preferBundledTools;
         set { _preferBundledTools = value; OnPropertyChanged(nameof(PreferBundledTools)); }
+    }
+
+    // Model and LoRA State Persistence
+    [JsonPropertyName("activeLoraPath")]
+    [Description("Path to the currently loaded LoRA adapter")]
+    public string ActiveLoraPath
+    {
+        get => _activeLoraPath ?? string.Empty;
+        set { _activeLoraPath = value ?? string.Empty; OnPropertyChanged(nameof(ActiveLoraPath)); }
+    }
+
+    [JsonPropertyName("activeLoraScale")]
+    [Description("Scale/influence factor for the loaded LoRA adapter")]
+    public double ActiveLoraScale
+    {
+        get => _activeLoraScale;
+        set { _activeLoraScale = Math.Max(0.0, Math.Min(1.0, value)); OnPropertyChanged(nameof(ActiveLoraScale)); }
+    }
+
+    [JsonPropertyName("activeRunnerPath")]
+    [Description("Path to the currently selected runner")]
+    public string ActiveRunnerPath
+    {
+        get => _activeRunnerPath ?? string.Empty;
+        set { _activeRunnerPath = value ?? string.Empty; OnPropertyChanged(nameof(ActiveRunnerPath)); }
+    }
+
+    [JsonPropertyName("activeRunnerEngine")]
+    [Description("Engine type of the currently selected runner")]
+    public string ActiveRunnerEngine
+    {
+        get => _activeRunnerEngine ?? string.Empty;
+        set { _activeRunnerEngine = value ?? string.Empty; OnPropertyChanged(nameof(ActiveRunnerEngine)); }
     }
 
     protected virtual void OnPropertyChanged(string propertyName)

@@ -10,32 +10,16 @@ namespace Lazarus.Data;
 /// </summary>
 public class LazarusDbContext : DbContext, IAsyncDisposable
 {
-    private readonly ILogger<LazarusDbContext>? _logger;
-    private readonly string _connectionString;
     private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LazarusDbContext"/> class.
+    /// Required constructor for DbContext pooling.
     /// </summary>
     /// <param name="options">The options for this context.</param>
-    /// <param name="logger">Optional logger for database operations.</param>
-    public LazarusDbContext(DbContextOptions<LazarusDbContext> options, ILogger<LazarusDbContext>? logger = null)
+    public LazarusDbContext(DbContextOptions<LazarusDbContext> options)
         : base(options)
     {
-        _logger = logger;
-        _connectionString = Database.GetConnectionString() ?? GetDefaultConnectionString();
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LazarusDbContext"/> class with connection string.
-    /// </summary>
-    /// <param name="connectionString">The SQLite connection string.</param>
-    /// <param name="logger">Optional logger for database operations.</param>
-    public LazarusDbContext(string connectionString, ILogger<LazarusDbContext>? logger = null)
-        : base()
-    {
-        _logger = logger;
-        _connectionString = connectionString;
     }
 
     /// <summary>
@@ -58,32 +42,6 @@ public class LazarusDbContext : DbContext, IAsyncDisposable
     /// </summary>
     public DbSet<Settings> Settings => Set<Settings>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var connectionString = !string.IsNullOrEmpty(_connectionString)
-                ? _connectionString
-                : GetDefaultConnectionString();
-
-            optionsBuilder.UseSqlite(connectionString, options =>
-            {
-                options.CommandTimeout(30);
-            });
-        }
-
-        // Performance optimizations
-        optionsBuilder.EnableSensitiveDataLogging(false);
-        optionsBuilder.EnableServiceProviderCaching();
-        optionsBuilder.EnableDetailedErrors(IsDevelopment());
-
-        // Configure logging level based on environment
-        if (_logger is not null)
-        {
-            var logLevel = IsDevelopment() ? LogLevel.Information : LogLevel.Warning;
-            optionsBuilder.LogTo(message => _logger.Log(logLevel, "{Message}", message));
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -109,11 +67,11 @@ public class LazarusDbContext : DbContext, IAsyncDisposable
         try
         {
             await Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
-            _logger?.LogInformation("Database migration completed successfully");
+            // Migration completed successfully
         }
-        catch (Exception ex)
+        catch
         {
-            _logger?.LogError(ex, "Failed to migrate database");
+            // Failed to migrate database
             throw;
         }
     }
@@ -130,9 +88,9 @@ public class LazarusDbContext : DbContext, IAsyncDisposable
         {
             return await Database.ExecuteSqlRawAsync(sql, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch
         {
-            _logger?.LogError(ex, "Failed to execute raw SQL: {Sql}", sql);
+            // Failed to execute raw SQL
             throw;
         }
     }
@@ -165,12 +123,6 @@ public class LazarusDbContext : DbContext, IAsyncDisposable
             base.Dispose();
             _disposed = true;
         }
-    }
-
-    private static string GetDefaultConnectionString()
-    {
-        var dbPath = Lazarus.Shared.LazarusPaths.DatabaseFile;
-        return $"Data Source={dbPath};Cache=Shared;";
     }
 
     private void ConfigureSqliteOptimizations(ModelBuilder modelBuilder)
@@ -211,12 +163,4 @@ public class LazarusDbContext : DbContext, IAsyncDisposable
         }
     }
 
-    private static bool IsDevelopment()
-    {
-#if DEBUG
-        return true;
-#else
-        return false;
-#endif
-    }
 }

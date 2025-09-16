@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -64,8 +65,8 @@ namespace Lazarus.Desktop.Services
                 // Step 2: Initialize database
                 await InitializeStepAsync(25, "Initializing database...", async () =>
                 {
-                    using var scope = _serviceProvider.CreateScope();
-                    var context = scope.ServiceProvider.GetRequiredService<LazarusDbContext>();
+                    var dbf = _serviceProvider.GetRequiredService<IDbContextFactory<LazarusDbContext>>();
+                    await using var context = await dbf.CreateDbContextAsync();
                     await context.Database.EnsureCreatedAsync();
                     await Task.Delay(800); // Simulate database initialization
                 });
@@ -81,10 +82,9 @@ namespace Lazarus.Desktop.Services
                 // Step 4: Initialize backend services
                 await InitializeStepAsync(60, "Initializing backend services...", async () =>
                 {
-                    using var scope = _serviceProvider.CreateScope();
-                    // Get required services to ensure they're initialized
-                    var modelInventoryService = scope.ServiceProvider.GetRequiredService<Lazarus.Backend.Services.ModelInventoryService>();
-                    var modelPresetService = scope.ServiceProvider.GetRequiredService<Lazarus.Backend.Services.ModelPresetService>();
+                    // Get singleton services directly from root provider
+                    var modelInventoryService = _serviceProvider.GetRequiredService<Lazarus.Backend.Services.ModelInventoryService>();
+                    var modelPresetService = _serviceProvider.GetRequiredService<Lazarus.Backend.Services.ModelPresetService>();
                     await Task.Delay(600);
                 });
 

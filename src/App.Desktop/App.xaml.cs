@@ -35,11 +35,13 @@ namespace Lazarus.Desktop
             // Add global exception handler
             AppDomain.CurrentDomain.UnhandledException += (s, ex) =>
             {
+                try { Serilog.Log.Fatal(ex.ExceptionObject as Exception, "UNHANDLED"); } catch { }
                 System.Diagnostics.Debug.WriteLine($"Unhandled exception: {ex.ExceptionObject}");
             };
 
             Dispatcher.UnhandledException += (s, ex) =>
             {
+                try { Serilog.Log.Error(ex.Exception, "DISPATCHER"); } catch { }
                 System.Diagnostics.Debug.WriteLine($"Dispatcher exception: {ex.Exception}");
                 ex.Handled = true;
             };

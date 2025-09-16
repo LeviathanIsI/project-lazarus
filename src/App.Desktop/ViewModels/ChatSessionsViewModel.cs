@@ -92,9 +92,6 @@ public sealed class ChatSessionsViewModel : ViewModelBase
     private bool _disposed;
     private int _sendInProgress; // prevent rapid double-submit
 
-    // llama.cpp model id must be the FULL PATH returned by /v1/models
-    private const string LlamaModelId =
-        @"C:\Users\Josh\AppData\Local\Lazarus\Models\Base-Models\Qwen2.5-32B-Instruct-Q5_K_M.gguf";
 
 
     // UI Properties
@@ -435,7 +432,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
                 var assistant = assistantMessage;
                 var req = new Lazarus.Shared.Contracts.Chat.ChatRequest
                 {
-                    Model = LlamaModelId,
+                    Model = GetCurrentModelPath(),
                     Messages = BuildPlainMessages().ToArray(),
                     Stream = true
                 };
@@ -682,7 +679,7 @@ public sealed class ChatSessionsViewModel : ViewModelBase
 
         return new
         {
-            model = LlamaModelId,
+            model = GetCurrentModelPath(),
             stream = true,
             messages = messages,
             temperature = Temperature,
@@ -693,6 +690,28 @@ public sealed class ChatSessionsViewModel : ViewModelBase
             frequency_penalty = FrequencyPenalty,
             adapters = BuildAdaptersObject()
         };
+    }
+
+    private string GetCurrentModelPath()
+    {
+        // Get the current model path from runner status or app state
+        var modelPath = _runnerStatus.Current?.ModelPath ?? _appState.LoadedModelPath;
+
+        if (string.IsNullOrWhiteSpace(modelPath))
+        {
+            // Fallback to finding a model in the default location
+            var modelsDir = Path.Combine(Lazarus.Shared.LazarusPaths.Root, "Models", "Base-Models");
+            if (Directory.Exists(modelsDir))
+            {
+                var ggufFile = Directory.GetFiles(modelsDir, "*.gguf").FirstOrDefault();
+                if (!string.IsNullOrEmpty(ggufFile))
+                {
+                    modelPath = ggufFile;
+                }
+            }
+        }
+
+        return modelPath ?? string.Empty;
     }
 
     private object[] BuildRequestMessages()
@@ -765,7 +784,8 @@ public sealed class ChatSessionsViewModel : ViewModelBase
         {
             _cts?.Cancel();
             _runnerStatus.RunnerStateChanged -= OnRunnerStateChanged;
-            _httpClient?.Dispose();
+            // Only dispose if we created it ourselves (not from DI)
+        _httpClient?.Dispose();
         }
 
         _disposed = true;

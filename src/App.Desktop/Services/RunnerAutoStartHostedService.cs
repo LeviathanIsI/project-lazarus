@@ -1,6 +1,8 @@
+using System;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Lazarus.Shared.Settings;
+using System.Linq;
 
 namespace Lazarus.Desktop.Services;
 
@@ -70,9 +72,61 @@ internal sealed class RunnerAutoStartHostedService : IHostedService
                 return;
             }
 
-            // Attempt to load the last model
+            // Prepare LoRA adapters if configured
+            List<string>? loras = null;
+            double? loraScale = null;
+
+            if (!string.IsNullOrWhiteSpace(_settings.Current.ActiveLoraPath))
+            {
+                _logger.LogInformation("Restoring LoRA adapter: {Path} with scale {Scale}",
+                    _settings.Current.ActiveLoraPath, _settings.Current.ActiveLoraScale);
+
+                // Check if the LoRA path exists
+                if (System.IO.Directory.Exists(_settings.Current.ActiveLoraPath))
+                {
+                    // Look for GGUF files for llama.cpp compatibility
+                    var ggufFiles = System.IO.Directory.GetFiles(_settings.Current.ActiveLoraPath, "*.gguf",
+                        System.IO.SearchOption.AllDirectories);
+
+                    if (ggufFiles.Length > 0)
+                    {
+                        var orderedAdapters = ggufFiles.OrderBy(System.IO.Path.GetFileName).ToList();
+                        loras = orderedAdapters;
+                        loraScale = _settings.Current.ActiveLoraScale;
+                        _logger.LogInformation("Found GGUF adapter(s): {Paths}", string.Join(", ", orderedAdapters));
+                    }
+                    else
+                    {
+                        // Pass the directory and let the runner handle it
+                        loras = new List<string> { _settings.Current.ActiveLoraPath };
+                        loraScale = _settings.Current.ActiveLoraScale;
+                        _logger.LogWarning("No GGUF files found, passing directory: {Path}",
+                            _settings.Current.ActiveLoraPath);
+                    }
+                }
+                else if (System.IO.File.Exists(_settings.Current.ActiveLoraPath))
+                {
+                    if (string.Equals(System.IO.Path.GetExtension(_settings.Current.ActiveLoraPath), ".gguf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        loras = new List<string> { _settings.Current.ActiveLoraPath };
+                        loraScale = _settings.Current.ActiveLoraScale;
+                        _logger.LogInformation("Using GGUF adapter file: {Path}", _settings.Current.ActiveLoraPath);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Active LoRA file is not GGUF: {Path}", _settings.Current.ActiveLoraPath);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Saved LoRA path no longer exists: {Path}",
+                        _settings.Current.ActiveLoraPath);
+                }
+            }
+
+            // Attempt to load the last model with LoRA if configured
             _logger.LogInformation("Auto-starting runner with last model: {ModelPath}", modelPath);
-            var ok = await _runnerClient.LoadModelAsync(modelPath, cancellationToken).ConfigureAwait(false);
+            var ok = await _runnerClient.LoadModelAsync(modelPath, loras, loraScale, cancellationToken).ConfigureAwait(false);
             if (!ok)
             {
                 _logger.LogWarning("Auto-start last runner failed: {Error}", _runnerClient.LastError ?? "unknown error");

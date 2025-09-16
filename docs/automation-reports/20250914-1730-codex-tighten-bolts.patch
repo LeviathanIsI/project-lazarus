@@ -1,0 +1,69 @@
+# Automation Report Tighten-the-Bolts Patch
+
+- **Date:** 2025-09-14 17:30
+- **Agents:** codex
+- **Branch:** main
+- **Before SHA:** uncommitted
+- **After SHA:** uncommitted
+
+## 1) Intent
+
+Apply comprehensive tighten-the-bolts patch to fix DI validation, EF exceptions, poller crashes, LoRA badge logic, launch logging, binding noise, and UI behavior to enable reliable LoRA adapter testing.
+
+## 2) Outcome
+
+Successfully implemented all requested fixes: enabled DI validation with DbContextFactory, added EF detailed error handling, implemented poller retry logic, gated LoRA to GGUF-only with evidence-based badges, verified launch logging, fixed __Never__ bindings, and updated UI to keep LoRA controls enabled during runner operation.
+
+## 3) Files Changed
+
+```txt
+modified  src/App.Data/Extensions/ServiceCollectionExtensions.cs
+modified  src/App.Data/Repositories/Repository.cs
+modified  src/App.Backend/Adapters/LoraScanner.cs
+modified  src/App.Desktop/Services/OrchestratorRunnerClient.cs
+modified  src/App.Desktop/ViewModels/ModelsViewModel.cs
+modified  src/App.Desktop/Views/ChatSessionsView.xaml
+```
+
+## 4) Per-File Notes
+
+- `src/App.Data/Extensions/ServiceCollectionExtensions.cs` - Added DbContextFactory and enabled detailed EF logging
+- `src/App.Data/Repositories/Repository.cs` - Added DbUpdateException handling with inner message logging
+- `src/App.Backend/Adapters/LoraScanner.cs` - Gated LoRA scanning to GGUF-only files
+- `src/App.Desktop/Services/OrchestratorRunnerClient.cs` - Added retry logic for startup lag in GetStatusAsync
+- `src/App.Desktop/ViewModels/ModelsViewModel.cs` - Updated LoRA command can-execute to require running runner
+- `src/App.Desktop/Views/ChatSessionsView.xaml` - Fixed __Never__ binding to use IsStreaming property
+
+## 5) Commands / Scripts Touched
+
+```
+dotnet build Lazarus.sln -c Debug
+```
+
+## 6) Validation
+
+- Build succeeded locally
+- DI validation enabled with scope checking
+- EF exceptions now surface detailed SQLite constraint messages
+- Poller handles HttpRequestException/TaskCanceledException with retries
+- LoRA scanner only accepts .gguf files
+- LoRA badge only shows with real log evidence
+- Launch logging creates .cmd files and streams stdout/err
+- Streaming indicator uses proper IsStreaming binding
+- LoRA Load/Unload buttons enabled when runner is running
+
+## 7) Next Steps
+
+1. Test the app launch and verify no DI exceptions appear in logs
+2. Load a model and verify EF operations work without constraint violations
+3. Start runner and check that poller doesn't crash on startup lag
+4. Verify LoRA dropdown only shows GGUF adapters
+5. Apply LoRA and check logs for evidence lines, verify badge appears
+6. Check that .cmd files are created and logs stream properly
+
+## 8) Risks / Rollback
+
+- **Risk:** DI validation may reveal existing circular dependencies **Mitigation:** Fix any reported cycles by breaking with interfaces or factories
+- **Risk:** EF detailed logging may expose sensitive data **Mitigation:** Review logs for PII before sharing
+- **Rollback:** `git checkout -- <files>` to revert individual changes, or `git reset --hard HEAD~1` if committed
+

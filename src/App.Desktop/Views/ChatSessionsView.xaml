@@ -349,7 +349,7 @@
                                                     <Style TargetType="TextBlock" BasedOn="{StaticResource SmallTextStyle}">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding __Never__}" Value="True">
+                                                            <DataTrigger Binding="{Binding IsStreaming}" Value="True">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>

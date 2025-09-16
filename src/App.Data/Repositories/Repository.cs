@@ -187,6 +187,12 @@ public class Repository<TEntity> : IRepository<TEntity>
         {
             return await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+        {
+            var inner = ex.GetBaseException().Message;
+            _logger?.LogError(ex, "DbUpdateException in repository {EntityType}. Inner={Inner}", typeof(TEntity).Name, inner);
+            throw;
+        }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Failed to save changes for repository of type {EntityType}", typeof(TEntity).Name);

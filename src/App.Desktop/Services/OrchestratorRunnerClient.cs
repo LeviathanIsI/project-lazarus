@@ -32,7 +32,7 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
         ConfigureHttpClient();
     }
 
-    public async Task<bool> LoadModelAsync(string modelPath, CancellationToken cancellationToken = default)
+    public async Task<bool> LoadModelAsync(string modelPath, IEnumerable<string>? loras = null, double? loraScale = null, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(modelPath))
@@ -40,7 +40,19 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
 
         try
         {
-            using var response = await _httpClient.PostAsJsonAsync("/runner/load", new { modelPath }, _jsonOptions, cancellationToken)
+            var payload = new LoadRequest(modelPath, loras?.ToList(), loraScale);
+
+            // Debug logging
+            if (loras != null && loras.Any())
+            {
+                _logger.LogInformation("Sending LoadModelAsync with LoRAs: {Loras}", string.Join(", ", loras));
+            }
+            else
+            {
+                _logger.LogInformation("Sending LoadModelAsync without LoRAs");
+            }
+
+            using var response = await _httpClient.PostAsJsonAsync("/runner/load", payload, _jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
@@ -50,9 +62,9 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
                 return false;
             }
 
-            var payload = await response.Content.ReadFromJsonAsync<LoadRunnerResponse>(_jsonOptions, cancellationToken)
+            var respPayload = await response.Content.ReadFromJsonAsync<LoadRunnerResponse>(_jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
-            var ok = payload?.Status?.Equals("ok", StringComparison.OrdinalIgnoreCase) == true;
+            var ok = respPayload?.Status?.Equals("ok", StringComparison.OrdinalIgnoreCase) == true;
             if (ok)
             {
                 var status = await GetStatusAsync(cancellationToken).ConfigureAwait(false);
@@ -102,27 +114,48 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
     public async Task<RunnerProcessStatus> GetStatusAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        try
+
+        // Retry logic for startup lag - runner might not be ready yet
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            var status = await _httpClient.GetFromJsonAsync<RunnerProcessStatus>("/runner/status", _jsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-            var s = status ?? new RunnerProcessStatus(false, null, null);
-            RunnerStatusChanged?.Invoke(this, s);
-            return s;
+            try
+            {
+                var status = await _httpClient.GetFromJsonAsync<RunnerProcessStatus>("/runner/status", _jsonOptions, cancellationToken)
+                    .ConfigureAwait(false);
+                var s = status ?? new RunnerProcessStatus(false, null, null);
+                RunnerStatusChanged?.Invoke(this, s);
+                return s;
+            }
+            catch (HttpRequestException ex) when (attempt < 2)
+            {
+                _logger.LogDebug(ex, "Runner status check failed (attempt {Attempt}/3), retrying...", attempt + 1);
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException ex) when (attempt < 2)
+            {
+                _logger.LogDebug(ex, "Runner status check timed out (attempt {Attempt}/3), retrying...", attempt + 1);
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _lastError = ex.Message;
+                _logger.LogWarning(ex, "Failed to get runner status after {Attempts} attempts", attempt + 1);
+                return new RunnerProcessStatus(false, null, null);
+            }
         }
-        catch (Exception ex)
-        {
-            _lastError = ex.Message;
-            _logger.LogWarning(ex, "Failed to get runner status");
-            return new RunnerProcessStatus(false, null, null);
-        }
+
+        // Final attempt failed
+        _lastError = "Runner status check failed after retries";
+        _logger.LogWarning("Runner status check failed after all retries");
+        return new RunnerProcessStatus(false, null, null);
     }
 
     public void Dispose()
     {
         if (!_disposed)
         {
-            _httpClient?.Dispose();
+            // HttpClient is managed by IHttpClientFactory, don't dispose it
+            // Only set the disposed flag to prevent further use
             _disposed = true;
         }
     }
@@ -144,7 +177,8 @@ public sealed class OrchestratorRunnerClient : IOrchestratorRunnerClient
     }
 
     private sealed record SimpleStatus(string Status);
-    private sealed record LoadRunnerResponse(string Status, bool HotSwapped, string? RunnerId, int? Port, string? RunnerType, string? ModelId, string? ModelPath, int? Pid);
+    private sealed record LoadRunnerResponse(string Status, bool HotSwapped, string? RunnerId, int? Port, string? RunnerType, string? ModelId, string? ModelPath, int? Pid, int? LorasApplied, string? LaunchArgs);
+    private sealed record LoadRequest(string ModelPath, List<string>? Loras, double? LoraScale);
 
     private static string? TryExtractError(string body)
     {

@@ -9,6 +9,7 @@
     <UserControl.Resources>
         <conv:RunnerKindToStringConverter x:Key="RunnerKindToStringConverter"/>
         <conv:PathToFileNameConverter x:Key="PathToFileNameConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid Background="{StaticResource BackgroundBrush}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -69,7 +70,7 @@
                                                             <TextBlock>
                                                                 <Run Text="{Binding Format}"/>
                                                                 <Run Text="  "/>
-                                                                <Run Text="•  "/>
+                                                                <Run Text="-  "/>
                                                                 <Run Text="{Binding PreferredRunner, Converter={StaticResource RunnerKindToStringConverter}}"/>
                                                             </TextBlock>
                                                         </ContentControl.Content>
@@ -385,6 +386,25 @@
                                 <TextBlock Text="{Binding RunnerErrLog}" TextWrapping="Wrap"/>
                                 <TextBlock Text="Out Log:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding RunnerOutLog}" TextWrapping="Wrap"/>
+                                <!-- LoRA diagnostics -->
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
+                                    <Border CornerRadius="6" Padding="8,2" Background="#10A779">
+                                        <TextBlock>
+                                            <Run Text="LoRA applied "/>
+                                            <Run Text="("/>
+                                            <Run Text="{Binding LorasApplied, Mode=OneWay}"/>
+                                            <Run Text=")"/>
+                                            <Run Text="  "/>
+                                            <Run Text="[evidence:"/>
+                                            <Run Text="{Binding LoraEvidenceCount, Mode=OneWay}"/>
+                                            <Run Text="]"/>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="Launch Args:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding LaunchArgs}" TextWrapping="Wrap"/>
+                                <TextBlock Text="Launch .cmd:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding CmdPath}" TextWrapping="Wrap"/>
                                 <TextBlock Text="Message:" Style="{StaticResource SecondaryTextStyle}" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding RunnerStatusMessage}" TextWrapping="Wrap"/>
                             </StackPanel>
@@ -393,6 +413,55 @@
                 </Grid>
             </Grid>
         </ScrollViewer>
+        <Grid Style="{StaticResource LoadingOverlayStyle}"
+              IsHitTestVisible="{Binding IsLoadingModel}"
+              Panel.ZIndex="20"
+              Visibility="{Binding IsLoadingModel, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Style="{StaticResource GlassCardStyle}"
+                    Padding="32"
+                    Width="420"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Model loading in progress">
+                <StackPanel>
+                    <ContentControl Template="{StaticResource RainbowLoadingSpinnerTemplate}"
+                                    HorizontalAlignment="Center"/>
+                    <TextBlock Text="Preparing inference runner..."
+                               Style="{StaticResource H2TextStyle}"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0"/>
+                    <TextBlock Text="{Binding RunnerStatusMessage, TargetNullValue=Preparing model and adapters..., FallbackValue=Preparing model and adapters...}"
+                               Style="{StaticResource SecondaryTextStyle}"
+                               Margin="0,12,0,0"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite"/>
+                    <Border Height="1"
+                            Margin="0,20,0,16"
+                            Background="{StaticResource GlassBorderBrush}"
+                            Opacity="0.6"/>
+                    <StackPanel>
+                        <TextBlock Text="Base model"
+                                   Style="{StaticResource SecondaryTextStyle}"/>
+                        <TextBlock Text="{Binding SelectedModel.DisplayName, TargetNullValue=None selected, FallbackValue=None selected}"
+                                   Style="{StaticResource H3TextStyle}"
+                                   Margin="0,4,0,12"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="LoRA adapter"
+                                   Style="{StaticResource SecondaryTextStyle}"/>
+                        <TextBlock Text="{Binding LoadedLoraDisplayName, TargetNullValue=No adapter selected, FallbackValue=No adapter selected}"
+                                   Style="{StaticResource BodyTextStyle}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding LoraScaleValue, StringFormat='Influence = {0:F2}'}"
+                                   Style="{StaticResource SecondaryTextStyle}"
+                                   Margin="0,8,0,0"
+                                   Visibility="{Binding IsLoraLoaded, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </UserControl>
 

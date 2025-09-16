@@ -6,12 +6,12 @@ using System.Windows.Input;
 using System.IO;
 using System.Windows.Threading;
 using Lazarus.Shared;
+using Lazarus.Shared.Settings;
 using Lazarus.Backend.Services;
 using Lazarus.Backend.Adapters;
 using Lazarus.Desktop.Extensions;
 using Lazarus.Desktop.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Lazarus.Desktop.ViewModels;
 
@@ -23,32 +23,38 @@ public sealed class ModelsViewModel : ViewModelBase
     private readonly ILogger<ModelsViewModel> _logger;
     private readonly IOrchestratorRunnerClient _runnerClient;
     private readonly IOrchestratorClient _orchestratorClient;
-    private readonly Func<AdapterInfo, SelectableAdapter> _adapterFactory;
     private readonly IAppState _appState;
+    private readonly ISettingsService _settingsService;
     private readonly Dispatcher _ui;
     private readonly LoraWatcher _watcher;
+    private string? _initialRunnerPath;
+    private string? _initialRunnerEngine;
+    private string? _initialModelPath;
+    private string? _initialLoraPath;
 
     public ModelsViewModel(
         IModelInventoryService inventory,
         IModelPresetService presets,
         ILogger<ModelsViewModel> logger,
-        Func<AdapterInfo, SelectableAdapter> adapterFactory,
         Lazarus.Desktop.Services.IOrchestratorRunnerClient runnerClient,
         IOrchestratorClient orchestratorClient,
-        IAppState appState)
+        IAppState appState,
+        ISettingsService settingsService)
     {
         _inventory = inventory;
         _presets = presets;
         _logger = logger;
-        _adapterFactory = adapterFactory;
         _runnerClient = runnerClient;
         _orchestratorClient = orchestratorClient;
         _appState = appState;
+        _settingsService = settingsService;
         _ui = Dispatcher.CurrentDispatcher;
         _watcher = new LoraWatcher();
         _watcher.Changed += (_, __) => RefreshAdapters();
         // Ensure preset folder exists for smooth UX
         _presets.EnsureFolders();
+
+        LoadInitialStateFromSettings();
 
         // Observe global app state so the view can reflect loaded adapters immediately
         _appState.PropertyChanged += (_, __) =>
@@ -64,7 +70,7 @@ public sealed class ModelsViewModel : ViewModelBase
         RefreshCommand = new RelayCommand(Refresh, () => !IsDisposed);
         LoadSelectedModelCommand = new RelayCommand(
             async () => await LoadSelectedModelAsync(),
-            () => SelectedModel is not null && SelectedRunner is not null && _orchestratorClient.IsHealthy && !IsDisposed);
+            () => SelectedModel is not null && SelectedRunner is not null && _orchestratorClient.IsHealthy && !IsDisposed && !IsLoadingModel);
         UnloadRunnerCommand = new RelayCommand(async () => await UnloadRunnerAsync(), () => !IsDisposed);
         RefreshRunnerStatusCommand = new RelayCommand(async () => { await RefreshRunnerStatusAsync(); await RefreshRunnersCatalogAsync(); }, () => !IsDisposed);
         SavePresetCommand = new RelayCommand(SavePreset, CanSave);
@@ -73,8 +79,8 @@ public sealed class ModelsViewModel : ViewModelBase
         UnloadTokenizerCommand = new RelayCommand(UnloadTokenizer, () => _appState.LoadedTokenizer != null);
         LoadEmbeddingCommand = new RelayCommand(LoadEmbedding, () => SelectedEmbedding is not null);
         UnloadEmbeddingCommand = new RelayCommand(UnloadEmbedding, () => _appState.LoadedEmbedding != null);
-        LoadLoraCommand = new RelayCommand(LoadLora, () => SelectedLora is not null);
-        UnloadLoraCommand = new RelayCommand(UnloadLora, () => _appState.LoadedLora != null);
+        LoadLoraCommand = new RelayCommand(LoadLora, () => SelectedLora is not null && !IsLoadingModel);
+        UnloadLoraCommand = new RelayCommand(UnloadLora, () => _appState.LoadedLora != null && !IsLoadingModel);
         VerifyAdapterCommand = new RelayCommand(VerifyAdapter, () => SelectedLora is not null && SelectedModel is not null);
 
         Refresh();
@@ -118,6 +124,10 @@ public sealed class ModelsViewModel : ViewModelBase
             {
                 SelectedRunner = null;
             }
+
+            // Refresh LoRA adapters to show only compatible ones
+            RefreshAdapters();
+
             LoadSelectedModelCommand.RaiseCanExecuteChanged();
         }
     }
@@ -231,6 +241,13 @@ public sealed class ModelsViewModel : ViewModelBase
             {
                 SelectedModel = null;
             }
+
+            // Save runner selection to settings
+            if (_selectedRunner is not null)
+            {
+                _ = SaveRunnerStateAsync(_selectedRunner);
+            }
+
             LoadSelectedModelCommand.RaiseCanExecuteChanged();
         }
     }
@@ -258,6 +275,35 @@ public sealed class ModelsViewModel : ViewModelBase
 
     private string? _runnerOutLog;
     public string? RunnerOutLog { get => _runnerOutLog; private set => SetProperty(ref _runnerOutLog, value); }
+
+    private int? _lorasApplied;
+    public int? LorasApplied { get => _lorasApplied; private set => SetProperty(ref _lorasApplied, value); }
+
+    private string? _launchArgs;
+    public string? LaunchArgs { get => _launchArgs; private set => SetProperty(ref _launchArgs, value); }
+
+    private string? _cmdPath;
+    public string? CmdPath { get => _cmdPath; private set => SetProperty(ref _cmdPath, value); }
+
+    private int? _loraEvidenceCount;
+    public int? LoraEvidenceCount { get => _loraEvidenceCount; private set => SetProperty(ref _loraEvidenceCount, value); }
+
+    private bool _isLoadingModel;
+    public bool IsLoadingModel
+    {
+        get => _isLoadingModel;
+        private set
+        {
+            if (SetProperty(ref _isLoadingModel, value))
+            {
+                LoadSelectedModelCommand.RaiseCanExecuteChanged();
+                LoadLoraCommand.RaiseCanExecuteChanged();
+                UnloadLoraCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+    private bool _isLoadingLora;
+    public bool IsLoadingLora { get => _isLoadingLora; private set => SetProperty(ref _isLoadingLora, value); }
 
     // Adapter load state (proxy to global AppState)
     public string? LoadedLoraPath => _appState.LoadedLora;
@@ -312,6 +358,37 @@ public sealed class ModelsViewModel : ViewModelBase
 
     private bool CanSave() => !IsDisposed && !string.IsNullOrWhiteSpace(NewPresetName);
 
+    private void LoadInitialStateFromSettings()
+    {
+        try
+        {
+            _initialRunnerPath = Normalize(_settingsService.GetValue(nameof(AppSettings.ActiveRunnerPath), string.Empty));
+            _initialRunnerEngine = Normalize(_settingsService.GetValue(nameof(AppSettings.ActiveRunnerEngine), string.Empty));
+            _initialModelPath = Normalize(_settingsService.GetValue(nameof(AppSettings.ActiveModelId), string.Empty));
+            _initialLoraPath = Normalize(_settingsService.GetValue(nameof(AppSettings.ActiveLoraPath), string.Empty));
+
+            var savedScale = _settingsService.GetValue(nameof(AppSettings.ActiveLoraScale), LoraDefault);
+            if (savedScale >= LoraMin && savedScale <= LoraMax)
+            {
+                _appState.LoraScale = savedScale;
+            }
+
+            if (!string.IsNullOrEmpty(_initialLoraPath))
+            {
+                _appState.LoadedLora = _initialLoraPath;
+            }
+
+            if (!string.IsNullOrEmpty(_initialModelPath))
+            {
+                _appState.LoadedModelPath = _initialModelPath;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to restore saved model selection state");
+        }
+    }
+
     private void Refresh()
     {
         ThrowIfDisposed();
@@ -333,22 +410,141 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(Tokenizers));
         OnPropertyChanged(nameof(Embeddings));
         OnPropertyChanged(nameof(PresetNames));
+
+        ApplyInitialModelSelection();
     }
 
     private void RefreshAdapters()
     {
         var list = LoraScanner.ScanAll();
+
+        // Filter based on the selected model's format
+        if (SelectedModel != null)
+        {
+            list = list.Where(adapter => IsLoraCompatibleWithModel(adapter, SelectedModel)).ToList();
+        }
+
         _ui.Invoke(() =>
         {
             LoraAdapters.Clear();
             foreach (var item in list) LoraAdapters.Add(item);
 
-            // If previously selected path still exists, keep it; else auto-pick best (final or top step)
-            var keep = _selectedLora is not null && list.Any(x => x.Path == _selectedLora.Path);
-            SelectedLora = keep ? list.First(x => x.Path == _selectedLora!.Path)
-                                : list.FirstOrDefault();
+            SelectInitialLora(list);
         });
     }
+
+
+
+private void SelectInitialLora(IReadOnlyList<LoraOption> options)
+{
+    if (options.Count == 0)
+    {
+        SelectedLora = null;
+        return;
+    }
+
+    LoraOption? chosen = null;
+
+    if (_selectedLora is not null)
+    {
+        chosen = options.FirstOrDefault(x => string.Equals(x.Path, _selectedLora.Path, StringComparison.OrdinalIgnoreCase));
+    }
+
+    if (chosen is null)
+    {
+        var target = Normalize(_appState.LoadedLora) ?? Normalize(_initialLoraPath);
+        if (!string.IsNullOrEmpty(target))
+        {
+            chosen = options.FirstOrDefault(x => string.Equals(x.Path, target, StringComparison.OrdinalIgnoreCase));
+            if (chosen != null)
+            {
+                _initialLoraPath = null;
+            }
+        }
+    }
+
+    if (chosen is null)
+    {
+        chosen = options.FirstOrDefault();
+    }
+
+    SelectedLora = chosen;
+}
+
+private void ApplyInitialModelSelection()
+{
+    var target = Normalize(_initialModelPath) ?? Normalize(_appState.LoadedModelPath);
+    if (string.IsNullOrEmpty(target))
+    {
+        return;
+    }
+
+    if (SelectedModel is not null && string.Equals(SelectedModel.FilePath, target, StringComparison.OrdinalIgnoreCase))
+    {
+        _initialModelPath = null;
+        return;
+    }
+
+    var match = BaseModels.FirstOrDefault(m => string.Equals(m.FilePath, target, StringComparison.OrdinalIgnoreCase));
+    if (match != null)
+    {
+        SelectedModel = match;
+    }
+
+    _initialModelPath = null;
+}
+
+private void ApplyInitialRunnerSelection()
+{
+    if (SelectedRunner is not null)
+    {
+        return;
+    }
+
+    var targetPath = Normalize(_initialRunnerPath);
+    if (string.IsNullOrEmpty(targetPath))
+    {
+        return;
+    }
+
+    var match = RunnerCatalog.FirstOrDefault(r =>
+        string.Equals(r.ResolvedPath, targetPath, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(r.Entrypoint, targetPath, StringComparison.OrdinalIgnoreCase));
+
+    if (match is null)
+    {
+        return;
+    }
+
+    if (!string.IsNullOrEmpty(_initialRunnerEngine) &&
+        !string.Equals(match.Engine, _initialRunnerEngine, StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    SelectedRunner = match;
+    _initialRunnerPath = null;
+    _initialRunnerEngine = null;
+}
+    private bool IsLoraCompatibleWithModel(LoraOption lora, BaseModelInfo model)
+    {
+        // For GGUF models (llama.cpp), only show GGUF LoRA adapters
+        if (model.Format == ModelFormat.GGUF)
+        {
+            return lora.Format == LoraFormat.GGUF;
+        }
+
+        // For HuggingFace models, show safetensors and PyTorch formats
+        if (model.Format == ModelFormat.HF)
+        {
+            return lora.Format == LoraFormat.Safetensors ||
+                   lora.Format == LoraFormat.PyTorch;
+        }
+
+        // For other formats, show all adapters
+        return true;
+    }
+
 
     private void SavePreset()
     {
@@ -374,48 +570,147 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(PresetNames));
     }
 
-    private async Task LoadSelectedModelAsync()
+
+private async Task LoadSelectedModelAsync()
+{
+    ThrowIfDisposed();
+    var model = SelectedModel;
+    if (model is null)
     {
-        ThrowIfDisposed();
-        var model = SelectedModel;
-        if (model is null)
+        RunnerStatusMessage = "Choose a model to load.";
+        return;
+    }
+
+    var runner = SelectedRunner;
+    if (runner is null)
+    {
+        RunnerStatusMessage = "Choose a runner engine.";
+        return;
+    }
+
+    if (!string.Equals(runner.Engine, "llama.cpp", StringComparison.OrdinalIgnoreCase))
+    {
+        RunnerStatusMessage = $"Engine '{runner.Engine}' not supported yet.";
+        return;
+    }
+
+    IsLoadingModel = true;
+    RunnerStatusMessage = "Loading model...";
+
+    List<string>? loras = null;
+
+    try
+    {
+        await SaveModelStateAsync(model.FilePath).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(_appState.LoadedLora))
         {
-            RunnerStatusMessage = "Choose a model to load.";
-            return;
+            _logger.LogInformation("LoadSelectedModelAsync: LoRA path from app state: {Path}", _appState.LoadedLora);
+            RunnerStatusMessage = "Preparing LoRA adapter...";
+
+            try
+            {
+                if (Directory.Exists(_appState.LoadedLora))
+                {
+                    var ggufs = Directory.EnumerateFiles(_appState.LoadedLora, "*.gguf", SearchOption.AllDirectories).ToList();
+                    if (ggufs.Count > 0)
+                    {
+                        var orderedAdapters = ggufs.OrderBy(Path.GetFileName).ToList();
+                        loras = orderedAdapters;
+                        _logger.LogInformation("Found GGUF adapter file(s): {Paths}", string.Join(", ", orderedAdapters));
+                    }
+                    else
+                    {
+                        loras = new List<string> { _appState.LoadedLora };
+                        _logger.LogWarning("No GGUF files found in LoRA directory, passing directory: {Path}", _appState.LoadedLora);
+                        RunnerStatusMessage = "Warning: LoRA adapter may need conversion to GGUF format";
+                    }
+                }
+                else if (File.Exists(_appState.LoadedLora))
+                {
+                    if (string.Equals(Path.GetExtension(_appState.LoadedLora), ".gguf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        loras = new List<string> { _appState.LoadedLora };
+                        _logger.LogInformation("Using GGUF adapter file: {Path}", _appState.LoadedLora);
+                    }
+                    else
+                    {
+                        RunnerStatusMessage = "Warning: Selected LoRA file is not GGUF. Conversion required.";
+                        _logger.LogWarning("LoRA file is not GGUF: {Path}", _appState.LoadedLora);
+                    }
+                }
+                else
+                {
+                    RunnerStatusMessage = "Warning: LoRA path no longer exists.";
+                    _logger.LogWarning("LoRA path does not exist: {Path}", _appState.LoadedLora);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error preparing LoRA adapter: {Path}", _appState.LoadedLora);
+                RunnerStatusMessage = $"Error accessing LoRA: {ex.Message}";
+            }
+        }
+        else
+        {
+            _logger.LogInformation("LoadSelectedModelAsync: No LoRA loaded in app state");
         }
 
-        if (SelectedRunner is null)
+        if (loras != null && loras.Count > 0)
         {
-            RunnerStatusMessage = "Choose a runner engine.";
-            return;
+            _logger.LogInformation("Prepared {Count} LoRA adapter(s): {Adapters}", loras.Count, string.Join(", ", loras));
+        }
+        else
+        {
+            _logger.LogInformation("No LoRA adapters prepared for this load.");
         }
 
-        if (!string.Equals(SelectedRunner.Engine, "llama.cpp", StringComparison.OrdinalIgnoreCase))
-        {
-            RunnerStatusMessage = $"Engine '{SelectedRunner.Engine}' not supported yet.";
-            return;
-        }
+        RunnerStatusMessage = loras != null ? "Loading model with LoRA..." : "Loading model...";
+        var ok = await _runnerClient.LoadModelAsync(model.FilePath, loras, _appState.LoraScale).ConfigureAwait(false);
 
-        RunnerStatusMessage = null;
-        var ok = await _runnerClient.LoadModelAsync(model.FilePath).ConfigureAwait(false);
         if (!ok)
         {
             RunnerStatusMessage = _runnerClient.LastError ?? "Failed to load model.";
             _logger.LogWarning("LoadSelectedModel failed: {Message}", RunnerStatusMessage);
+            return;
+        }
+
+        RunnerStatusMessage = "Verifying model load...";
+
+        await Task.Delay(1500).ConfigureAwait(false);
+
+        var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
+        var applied = status.LorasApplied ?? 0;
+        _logger.LogInformation("Runner after reload: model={Model} pid={Pid} port={Port} loras={Loras}",
+            status.ModelPath ?? "<none>", status.Pid, status.Port, applied);
+
+        if (loras != null && applied == 0)
+        {
+            RunnerStatusMessage = "Warning: Model loaded but LoRA not applied - check logs";
+        }
+        else if (applied > 0)
+        {
+            RunnerStatusMessage = $"Model loaded with {applied} LoRA adapter(s).";
         }
         else
         {
-            // Log post-load status and surface concise UI message
-            var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
-            _logger.LogInformation("Runner after reload: model={Model} pid={Pid} port={Port}",
-                status.ModelPath ?? "<none>", status.Pid, status.Port);
-
-            RunnerStatusMessage = "Loaded";
+            RunnerStatusMessage = "Model loaded successfully.";
         }
+    }
+    catch (Exception ex)
+    {
+        RunnerStatusMessage = $"Failed to load model: {ex.Message}";
+        _logger.LogError(ex, "LoadSelectedModelAsync failed");
+    }
+    finally
+    {
+        IsLoadingModel = false;
         await RefreshRunnerStatusAsync().ConfigureAwait(false);
     }
+}
 
-    private async Task UnloadRunnerAsync()
+private async Task UnloadRunnerAsync()
+
     {
         ThrowIfDisposed();
         RunnerStatusMessage = null;
@@ -438,6 +733,10 @@ public sealed class ModelsViewModel : ViewModelBase
         RunnerExePath = status.ExePath;
         RunnerErrLog = status.ErrLog;
         RunnerOutLog = status.OutLog;
+        LorasApplied = status.LorasApplied;
+        LaunchArgs = status.LaunchArgs;
+        CmdPath = status.CmdPath;
+        LoraEvidenceCount = status.LoraEvidenceCount;
         OnPropertyChanged(nameof(IsRunnerRunning));
         OnPropertyChanged(nameof(RunnerModelPath));
         OnPropertyChanged(nameof(RunnerPid));
@@ -445,7 +744,13 @@ public sealed class ModelsViewModel : ViewModelBase
         OnPropertyChanged(nameof(RunnerExePath));
         OnPropertyChanged(nameof(RunnerErrLog));
         OnPropertyChanged(nameof(RunnerOutLog));
+        OnPropertyChanged(nameof(LorasApplied));
+        OnPropertyChanged(nameof(LaunchArgs));
+        OnPropertyChanged(nameof(CmdPath));
+        OnPropertyChanged(nameof(LoraEvidenceCount));
         LoadSelectedModelCommand.RaiseCanExecuteChanged();
+        LoadLoraCommand.RaiseCanExecuteChanged();
+        UnloadLoraCommand.RaiseCanExecuteChanged();
         OnPropertyChanged(nameof(LoadDisabledReason));
         _appState.IsRunnerRunning = IsRunnerRunning;
         _appState.RunnerPort = RunnerPort;
@@ -479,6 +784,7 @@ public sealed class ModelsViewModel : ViewModelBase
             RunnerCatalog.SmartReset(list);
             OnPropertyChanged(nameof(RunnerCatalog));
             OnPropertyChanged(nameof(VisibleRunnerCatalog));
+            ApplyInitialRunnerSelection();
         }
         catch (Exception ex)
         {
@@ -578,59 +884,120 @@ public sealed class ModelsViewModel : ViewModelBase
     private void UnloadTokenizer() { _appState.LoadedTokenizer = null; }
     private void LoadEmbedding() { if (SelectedEmbedding != null) _appState.LoadedEmbedding = SelectedEmbedding.FilePath; }
     private void UnloadEmbedding() { _appState.LoadedEmbedding = null; }
-    private async void LoadLora()
+
+private async void LoadLora()
+{
+    if (SelectedLora == null) return;
+
+    IsLoadingLora = true;
+
+    try
     {
-        if (SelectedLora == null) return;
+        if (SelectedModel is not null && SelectedModel.Format == ModelFormat.GGUF &&
+            SelectedLora.Format != LoraFormat.GGUF)
+        {
+            var hasGguf = false;
+            try
+            {
+                hasGguf = Directory.EnumerateFiles(SelectedLora.Path, "*.gguf", SearchOption.AllDirectories).Any();
+            }
+            catch
+            {
+            }
+
+            if (!hasGguf)
+            {
+                RunnerStatusMessage = $"?? LoRA adapter format ({SelectedLora.Format}) needs conversion to GGUF for llama.cpp";
+                _logger.LogWarning("LoRA adapter {Path} is in {Format} format but needs GGUF for llama.cpp",
+                    SelectedLora.Path, SelectedLora.Format);
+            }
+        }
+
         _appState.LoadedLora = SelectedLora.Path;
         _logger.LogInformation("LoRA selected: {Path}", _appState.LoadedLora);
+
+        _ = SaveLoraStateAsync(SelectedLora.Path, _appState.LoraScale ?? LoraDefault);
+
         if (IsRunnerRunning && SelectedModel is not null)
         {
+            RunnerStatusMessage = "Loading LoRA adapter...";
             _logger.LogInformation("Reloading runner to apply LoRA...");
             await LoadSelectedModelAsync();
         }
     }
+    catch (Exception ex)
+    {
+        RunnerStatusMessage = $"Failed to load LoRA: {ex.Message}";
+        _logger.LogError(ex, "LoadLora failed");
+    }
+    finally
+    {
+        IsLoadingLora = false;
+    }
+}
 
-    private async void UnloadLora()
+private async void UnloadLora()
+{
+    try
     {
         _appState.LoadedLora = null;
         _logger.LogInformation("LoRA cleared.");
+
+        _ = SaveLoraStateAsync(null, LoraDefault);
+
         if (IsRunnerRunning && SelectedModel is not null)
         {
+            RunnerStatusMessage = "Unloading LoRA adapter...";
             _logger.LogInformation("Reloading runner to remove LoRA...");
             await LoadSelectedModelAsync();
         }
     }
+    catch (Exception ex)
+    {
+        RunnerStatusMessage = $"Failed to unload LoRA: {ex.Message}";
+        _logger.LogError(ex, "UnloadLora failed");
+    }
+}
 
-    private async void VerifyAdapter()
+private async void VerifyAdapter()
+
     {
         if (SelectedLora == null || SelectedModel == null) return;
 
         try
         {
             RunnerStatusMessage = "Verifying adapter...";
-            
-            // Simple verification: check if the runner is running with the LoRA path
+
+            // Step 1: Check if the runner is running with the LoRA path
             var status = await _runnerClient.GetStatusAsync().ConfigureAwait(false);
-            
-            if (status.IsRunning && !string.IsNullOrWhiteSpace(status.ModelPath))
+
+            if (!status.IsRunning || string.IsNullOrWhiteSpace(status.ModelPath))
             {
-                // Check if the loaded LoRA matches the selected one
-                var isLoraActive = string.Equals(_appState.LoadedLora, SelectedLora.Path, StringComparison.OrdinalIgnoreCase);
-                
-                if (isLoraActive)
-                {
-                    RunnerStatusMessage = $"✅ LoRA ACTIVE: {SelectedLora.Display}";
-                    _logger.LogInformation("LoRA verification successful: {Display} at {Path}", SelectedLora.Display, SelectedLora.Path);
-                }
-                else
-                {
-                    RunnerStatusMessage = $"❌ LoRA INACTIVE: Expected {SelectedLora.Display}, but {_appState.LoadedLora ?? "none"} is loaded";
-                    _logger.LogWarning("LoRA verification failed: Expected {Expected}, but {Actual} is loaded", SelectedLora.Path, _appState.LoadedLora);
-                }
+                RunnerStatusMessage = "❌ Runner not running. Load a model first.";
+                return;
+            }
+
+            // Step 2: Check if the loaded LoRA matches the selected one
+            var isLoraActive = string.Equals(_appState.LoadedLora, SelectedLora.Path, StringComparison.OrdinalIgnoreCase);
+
+            if (!isLoraActive)
+            {
+                RunnerStatusMessage = $"❌ LoRA INACTIVE: Expected {SelectedLora.Display}, but {_appState.LoadedLora ?? "none"} is loaded";
+                _logger.LogWarning("LoRA verification failed: Expected {Expected}, but {Actual} is loaded", SelectedLora.Path, _appState.LoadedLora);
+                return;
+            }
+
+            // Step 3: Check if LoRA was actually applied (from runner status)
+            if (status.LorasApplied.HasValue && status.LorasApplied > 0)
+            {
+                RunnerStatusMessage = $"✅ LoRA VERIFIED: {SelectedLora.Display} ({status.LorasApplied} adapter(s) active)";
+                _logger.LogInformation("LoRA verification successful: {Display} at {Path} - {Count} adapters applied",
+                    SelectedLora.Display, SelectedLora.Path, status.LorasApplied);
             }
             else
             {
-                RunnerStatusMessage = "❌ Runner not running - cannot verify adapter";
+                RunnerStatusMessage = $"⚠️ LoRA LOADED but NOT APPLIED: Check logs for errors";
+                _logger.LogWarning("LoRA loaded but not applied: {Path} - Check llama.cpp logs", SelectedLora.Path);
             }
         }
         catch (Exception ex)
@@ -653,6 +1020,50 @@ public sealed class ModelsViewModel : ViewModelBase
         _logger.LogDebug("ModelsViewModel disposed");
         _watcher.Dispose();
     }
+
+    private async Task SaveLoraStateAsync(string? loraPath, double loraScale)
+    {
+        try
+        {
+            await _settingsService.SetValueAsync(nameof(AppSettings.ActiveLoraPath), loraPath ?? string.Empty);
+            await _settingsService.SetValueAsync(nameof(AppSettings.ActiveLoraScale), loraScale);
+            _logger.LogDebug("Saved LoRA state: {Path}, Scale: {Scale}", loraPath, loraScale);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save LoRA state");
+        }
+    }
+
+    private async Task SaveRunnerStateAsync(RunnerCandidate runner)
+    {
+        try
+        {
+            await _settingsService.SetValueAsync(nameof(AppSettings.ActiveRunnerPath), runner.ResolvedPath);
+            await _settingsService.SetValueAsync(nameof(AppSettings.ActiveRunnerEngine), runner.Engine);
+            _logger.LogDebug("Saved runner state: {Path}, Engine: {Engine}", runner.ResolvedPath, runner.Engine);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save runner state");
+        }
+    }
+
+    private async Task SaveModelStateAsync(string modelPath)
+    {
+        try
+        {
+            await _settingsService.SetValueAsync(nameof(AppSettings.ActiveModelId), modelPath);
+            _logger.LogDebug("Saved model state: {Path}", modelPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save model state");
+        }
+    }
+
+    private static string? Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static readonly ParameterSchema Schema = ParameterSchema.Default;
     private static double Clamp(double value, DoubleParam param)

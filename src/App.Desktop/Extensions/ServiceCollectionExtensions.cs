@@ -81,9 +81,30 @@ public static class ServiceCollectionExtensions
 
             var loggerConfig = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
-                .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+                .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                // Mirror ERROR-level logs to D:\project-lazarus\logs as requested
+                .WriteTo.File(path: @"D:\project-lazarus\logs\desktop-errors-.log",
+                    rollingInterval: Serilog.RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}");
 
-            // Only write file logs if the expected directory already exists
+            // Add verbose application log under System-Data\Logs
+            try
+            {
+                var appLogsDir = Lazarus.Shared.LazarusPaths.SystemData.Logs;
+                Directory.CreateDirectory(appLogsDir);
+                var appLogFile = Path.Combine(appLogsDir, "app-.log");
+                loggerConfig = loggerConfig.WriteTo.File(
+                    path: appLogFile,
+                    rollingInterval: Serilog.RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    shared: true,
+                    outputTemplate: "[{Timestamp:O} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}");
+            }
+            catch { }
+
+            // Only write flat file logs if the expected directory already exists
             if (Directory.Exists(logsDir))
             {
                 loggerConfig = loggerConfig.WriteTo.File(

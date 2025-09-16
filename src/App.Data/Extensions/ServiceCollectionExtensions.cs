@@ -19,8 +19,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddLazarusData(this IServiceCollection services, string? connectionString = null)
     {
-        // Configure DbContext
-        services.AddDbContext<LazarusDbContext>(options =>
+        // Configure pooled DbContext factory (singletons use this; scoped services can too)
+        services.AddPooledDbContextFactory<LazarusDbContext>(options =>
         {
             var connString = connectionString ?? GetDefaultConnectionString();
 
@@ -29,12 +29,25 @@ public static class ServiceCollectionExtensions
                 sqliteOptions.CommandTimeout(30);
             });
 
-            options.EnableSensitiveDataLogging(false);
-            options.EnableServiceProviderCaching();
-
-            // Enable detailed errors in development
 #if DEBUG
-            options.EnableDetailedErrors();
+            // Enable detailed errors and sensitive logging for better debugging
+            options.EnableDetailedErrors().EnableSensitiveDataLogging();
+#endif
+        });
+
+        // Also register DbContext for scoped repositories
+        services.AddDbContext<LazarusDbContext>((serviceProvider, options) =>
+        {
+            var connString = connectionString ?? GetDefaultConnectionString();
+
+            options.UseSqlite(connString, sqliteOptions =>
+            {
+                sqliteOptions.CommandTimeout(30);
+            });
+
+#if DEBUG
+            // Enable detailed errors and sensitive logging for better debugging
+            options.EnableDetailedErrors().EnableSensitiveDataLogging();
 #endif
         });
 
@@ -64,7 +77,10 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddLazarusData(this IServiceCollection services, Action<DbContextOptionsBuilder> configureDbContext)
     {
-        // Configure DbContext with custom configuration
+        // Configure pooled DbContext factory with custom configuration
+        services.AddPooledDbContextFactory<LazarusDbContext>(configureDbContext);
+
+        // Also register DbContext for scoped repositories
         services.AddDbContext<LazarusDbContext>(configureDbContext);
 
         // Configure repositories
@@ -94,12 +110,12 @@ public static class ServiceCollectionExtensions
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task EnsureDatabaseAsync(this IServiceProvider serviceProvider, bool seedData = true, CancellationToken cancellationToken = default)
     {
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<LazarusDbContext>();
-        var logger = scope.ServiceProvider.GetService<ILogger<LazarusDbContext>>();
+        var dbf = serviceProvider.GetRequiredService<IDbContextFactory<LazarusDbContext>>();
+        var logger = serviceProvider.GetService<ILogger<LazarusDbContext>>();
 
         try
         {
+            await using var context = await dbf.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
             await context.EnsureDatabaseAsync(cancellationToken).ConfigureAwait(false);
 
             if (seedData)
@@ -125,12 +141,13 @@ public static class ServiceCollectionExtensions
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task OptimizeSqliteAsync(this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<LazarusDbContext>();
-        var logger = scope.ServiceProvider.GetService<ILogger<LazarusDbContext>>();
+        var dbf = serviceProvider.GetRequiredService<IDbContextFactory<LazarusDbContext>>();
+        var logger = serviceProvider.GetService<ILogger<LazarusDbContext>>();
 
         try
         {
+            await using var context = await dbf.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
             // Enable SQLite performance optimizations
             await context.ExecuteRawSqlAsync("PRAGMA journal_mode = WAL;", cancellationToken).ConfigureAwait(false);
             await context.ExecuteRawSqlAsync("PRAGMA synchronous = NORMAL;", cancellationToken).ConfigureAwait(false);
@@ -148,7 +165,7 @@ public static class ServiceCollectionExtensions
 
     private static string GetDefaultConnectionString()
     {
-        var dbPath = Path.Combine(Lazarus.Shared.LazarusPaths.Root, "lazarus.db");
+        var dbPath = Lazarus.Shared.LazarusPaths.DatabaseFile;
         return $"Data Source={dbPath};Cache=Shared;";
     }
 }
